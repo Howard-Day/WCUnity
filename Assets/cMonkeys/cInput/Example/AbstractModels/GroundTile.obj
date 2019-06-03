@@ -1,0 +1,30 @@
+# 3ds Max Wavefront OBJ Exporter v0.97b - (c)2007 guruware
+# File Created: 14.12.2011 14:28:33
+
+mtllib GroundTile.mtl
+
+#
+# object Plane007
+#
+
+v  2.4590 -0.0000 9.1695
+v  22.4590 -0.0000 9.1695
+v  22.4590 0.0000 -10.8305
+v  2.4590 0.0000 -10.8305
+# 4 vertices
+
+vn 0.0000 -0.0000 1.0000
+# 1 vertex normals
+
+vt 0.0100 0.0100 0.0000
+vt 0.9900 0.0100 0.0000
+vt 0.9900 0.9900 0.0000
+vt 0.0100 0.9900 0.0000
+# 4 texture coords
+
+g Plane007
+usemtl Material__26
+s 1
+f 1/1/1 2/2/1 3/3/1 4/4/1 
+# 1 polygons
+

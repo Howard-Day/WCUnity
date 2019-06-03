@@ -1,0 +1,273 @@
+﻿cInput Version History
+
+v2.9.1
+- Fixed saving individual axis sensitivity, gravity, and deadzone settings. (Thanks Kailan)
+- Better handle edge cases when trying to use GetText for invalid inputs. (Thanks Guray)
+- Fixed some console warnings in recent versions of Unity.
+- No longer support versions of Unity older than 5.6.4.
+
+v2.9.0
+- Corrected/added Keys class entries for Xbox One's View and Menu buttons.
+- Fixed error in Unity 5.4 about making an API call from the constructor. (Thanks Steven)
+
+v2.8.9
+- Fixed IndexOutOfRangeException introduced in 2.8.8. (Thanks Doghelmer)
+- Xbox One gamepad triggers now try to map to axes 9 and 10 when scanning for inputs.
+
+v2.8.8
+- Keys class attempts to smartly handle Xbox 360 and Xbox One gamepad differences.
+
+v2.8.7
+- Loading no longer "stomps" axis sensitivity, gravity, and deadzone settings. (Thanks SinisterCycle)
+- cInput only loads settings once on startup.
+- Modifiers now do some sanity checking.
+- Fixed input values not updating while scanning during key rebind. (Thanks Sascha)
+- Other minor bugfixes.
+
+v2.8.6
+- Forbidden keys are now completely ignored when changing input.
+- You can now forbid axes using ForbidAxis. (Thanks Dan)
+- cInput setup no longer requires restarting the Unity Editor.
+- Fixed more gravity/sensitivity/deadzone errors caused by changes in 2.8.4. (Thanks Doghelmer)
+- cInput now warns when trying to change inputs for keys that haven't been defined. (Thanks Joshmond)
+
+v2.8.5
+- Fixed IndexOutOfRange exception introduced in 2.8.4. (Thanks paulordbm)
+- Added optional parameter to cInput.Init to disable cGUI. (Thanks willtrax)
+- No more garbage collection each frame when getting calibrated axis inputs.
+
+v2.8.4
+- cInput can now be set up to check for input from any gamepad axis.
+- Fixed disabling PlayerPrefs causing problems. (Thanks jpthek9)
+- Keys class now has proper mappings for Xbox 360 gamepad on WebGL player.
+
+v2.8.3
+- Fixed gravity/sensitivity/deadzone not working for positive axis inputs. (Thanks Doghelmer)
+
+v2.8.2
+- Fixed error when setting deadzone/gravity/sensitivity for axis with 1 input. (Thanks Doghelmer)
+- cInput fires an event (OnKeyChanged) when keys are changed via GUI or ResetInputs. (Thanks CaptainChristian)
+
+v2.8.1
+- Added cInput.anyKey and cInput.anyKeyDown properties.
+- Using PlayerPrefs is now optional with usePlayerPrefs bool (default is enabled).
+
+v2.8.0
+- Fixed Xbox 360 DPad up/down axis on Windows in Keys class. (Thanks yvesgrolet)
+- Updates to documentation.
+- Updates to demo scene for compatibility with Unity 5.
+
+v2.7.9
+- Added public setter for scanning variable. (Thanks Ed)
+- Increased the limit on inputs from 99 to 250. (Thanks Chris)
+- Fixed cGUI being transparent when cGUI.bgColor isn't set properly.
+
+v2.7.8
+- Expanded cross-platform Xbox 360 controller mappings in the Keys class to all buttons/axes. (Thanks Phi)
+- ChangeKey now warns if you try to change an invalid input. (Thanks Foxxis)
+- cGUI will no longer warn about cSkin if cGUI isn't being used. (Thanks Walter)
+
+v2.7.7
+- Fixed Dictionary lookup sometimes causing an exception. (Thanks Andre)
+- Fixed possible out of range exception when loading from external string. (Thanks Nick)
+- Setting Keys/Axes now returns the hashcode for easy future reference. (Thanks Foxxis)
+- Added overloaded GetText functions to return empty string instead of None. (Thanks Kurt)
+
+v2.7.6
+- cInput now uses hash lookups for functions like GetKey, GetAxis, etc. (Thanks Foxxis)
+- Fixed Xbox triggers returning strange values on OSX. (Thanks Warbands)
+- Keys class now returns appropriate axes for Xbox triggers on OSX.
+- Various performance improvements, less loops/iterations per frame.
+
+v2.7.5
+- Fixed Axis 10 always returning positive. (Thanks Erik)
+- Fixed case where analog input wouldn't always give correct value. (Thanks Manolo)
+- Fixed GetButtonDown and GetButtonUp not working properly with analog inputs. (Thanks hoeloe)
+- Fixed external string loading working with recent axis inversion status changes.
+- You can now retrieve sensitivity, deadzone, and gravity values. (Thanks defaxer)
+
+v2.7.4
+- Fixed misplaced #endif which caused build problems. (Thanks Credd)
+
+v2.7.3
+- GetKey and GetButton functions now work on cInput's first run. (Thanks Erhune)
+- cInput now compares hashes instead of strings in many places. (Thanks Foxxis)
+- Make sure inversion status was saved before trying to load it. (Thanks nagisaki)
+- A debug warning is more clear and should show up less often.
+- Fixed a couple cases of redundant lookups. (Thanks Foxxis)
+
+v2.7.2
+- Axes no longer return 0 if deltaTime is 0. (Thanks Mel)
+- SetAxis no longer resets the axis inversion to false. (Thanks SpectralRook)
+- Changed Script Execution Order for cInput so that it runs before other scripts.
+- No more errors if cGUI files are missing. (Thanks Shyam)
+- An important debug log warning is no longer commented out. (Thanks Shyam)
+
+v2.7.1
+- Fixed cInput sometimes not being initialized properly. (Thanks Warbands and Jesse)
+- Added event to cGUI for when the GUI is opened/closed. (Thanks Kelly and Mike)
+- Removed the last remnants of the Necromancer GUI. (Thanks Mike)
+- Fixed axis gradually increasing more than it was being pressed. (Thanks Chris)
+
+v2.7.0
+- GetAxis returns uniformly smoothed results for both digital and analog inputs.
+- GetAxisRaw actually returns raw values (no more clamping values). (Thanks Goblox)
+- cInput now binds Xbox triggers to axis 9 or 10 for left or right trigger respectively. (Thanks Lexie)
+- Added easier access to Xbox triggers in Keys class.
+- Fixed ArrayOutOfBounds exception when setting axis Sensitivity, Gravity, Deadzone. (Thanks dbarbieri and morten_nost)
+- cInput now restores the instantiated cInput object if it gets destroyed. (Thanks Sean)
+- cInput no longer appears to support 5 gamepads since Unity only supports 4. (Thanks OhiraKyou)
+- MonoDevelop should no longer complain about unsupported default parameters. (Thanks Daithi)
+- Implemented a "scanningDeadzone" to prevent axes with deadzone issues from breaking input scanning. (Thanks megan_l_fox)
+
+v2.6.1
+- Corrected installation instructions in readme file.
+- Fixed GetKeyUp and GetKeyDown always returning false for Mouse Wheel. (Thanks Krileon)
+- Replaced cInput.dat with plaintext version.
+
+v2.6.0
+- Fixed immediately selecting an axis that gives non-zero value by default. (Thanks Goblox)
+- Fixed case where GetAxisRaw always returned 0. (Thanks gumboots)
+- Fixed axes sometimes returning max value (1) when halfway down. (Thanks Goblox)
+- Fixed some issues with axis calibration.
+
+v2.5.9
+- Fixed SetAxis overload function not working properly. (Thanks Goblox)
+
+v2.5.8
+- Fixed an error in the console log. (Thanks Matt and Harabeck)
+
+v2.5.7
+- Fixed a bug in axis calibration code. (Thanks gumboots and Krileon)
+
+v2.5.6
+- Converted cInput scripts to UTF-8 which should prevent MonoDevelop errors. (Thanks Matumit)
+- Renamed Demo Class files to prevent Class/Namspace conflicts. (Thanks Michael)
+- Cleaned up a bunch of Debug Logs that accidentally got left in there somehow.
+
+v2.5.5
+- Added deadzone settings on a per-axis basis with SetAxisDeadzone().
+- Fixed ChangeKey not setting modifiers properly (for reals). (Thanks ratking)
+- Fixed mixing keyboard and joystick/mouse inputs on an axis being totally broken. (Thanks Laztor)
+- Fixed individual sensitivity and gravity not working properly.
+
+v2.5.4
+
+- Fixed GetAxisRaw almost always returning 0 when using gamepad and mouse axis. (Thanks V4nKw15h)
+- Fixed ChangeKey not setting modifiers properly. (Thanks Krileon)
+- Fixed secondary inputs not accepting modifiers. (Thanks hjupter)
+
+v2.5.3
+
+- Fixed cGUI not working when cSkin wasn't set. (Thanks KeithT)
+- Fixed trying to load from PlayerPrefs when there was nothing saved.
+
+v2.5.2
+
+- Added Editor script to create the InputManager.asset file.
+- Removed unused variable which caused Editor warnings. (Thanks Neurological)
+- GUI color now works in both Unity 3.x and 4.x. (Thanks Neurological)
+- Added functions to remove modifiers. (Thanks xadhoom)
+
+v2.5.1
+
+- Got individual axis gravity and sensitivity settings to work for reals. (Thanks Kementh)
+- Fixed bug where duplicate copies of same axis could be created.
+
+v2.5.0
+
+- Added the ability to set up and use modifier keys with AddModifier() and SetKey(). (Thanks Steve Tack and others)
+- Added the ability to set gravity with SetAxisGravity() rather than having all axes use the same gravity. (Thanks Can Baycay)
+- You can now also set the gravity for an axis when you create it with SetAxis(). (Thanks Can Baycay)
+- Rewrote GUI code and separated it from cInput into its own script (see cGUI documentation).
+- Separated Keys class from cInput into separate script.
+- Added new GUISkins.
+
+v2.4.5
+
+- Fixed inability to use SetKey after cInput object was created. (Thanks Rob)
+
+v2.4.4
+
+- Fixed using mouse button as input triggering another call to ChangeKey. (Thanks Joseph)
+- Fixed flickering Axis name in GUI when changing key.
+- Deadzone for axes used as buttons now uses public "deadzone". (Thanks Lexie)
+- Prevented _string2Key Dictionary from being created more than once.
+
+v2.4.3
+
+- Fixed out of range null-reference exception related to number of gamepads. (Thanks Julian)
+
+v2.4.2
+
+- cInput now caches joystick axis strings. (Thanks goodhustle)
+- Escape doesn't close GUI menu in demo if scanning for new inputs. (Thanks MrG)
+
+v2.4.1
+
+- Added public Init() to manually create the cInput object. (Thanks goodustle)
+- cInput now supports saving/loading inputs to/from sources other than PlayerPrefs. (Thanks gumboots)
+- Made "scanning" property static. (Thanks goodhustle)
+- Fixed a bug with allowDuplicates.
+- ResetInputs() now re-saves defaults to PlayerPrefs. (Thanks goodhustle)
+- Fixed ChangeKey() to properly (dis)allow certain inputs. (Thanks Adrian)
+- Fixed certain debug messages showing when they shouldn't.
+
+v2.4.0
+
+- cInput is now compatible with iOS, Android, and Flash.
+- Improved efficiency (less CPU overhead).
+- Fixed key & axis mapped to same input causing KeyUp to fire instantly. (Thanks goodhustle)
+- Added read-only public bool "scanning" as getter for the private bool "_scanning" (Thanks goodhustle)
+
+v2.3.1
+
+- Added the ability to set sensitivity with SetAxisSensitivity() rather than having all axes use the same sensitivity. (Thanks Jacob)
+- You can now also set the sensitivity for an axis when you create it with SetAxis().
+- You can now forbid keys from being used as inputs with ForbidKey(). (Thanks Kurt)
+
+v2.3.0
+
+- Added IsKeyDefined() and IsAxisDefined() methods to allow other developers to make cInput-compatible plugins. (Thanks David)
+- Added GetAxisRaw() method. (Thanks Jay, patrickw)
+- Added Clear() method to remove all PlayerPrefs keys stored by cInput
+- Fixed changed/deleted/added keys not saving/loading properly
+- Keys class properties are now const, as they should be. (Thanks Jay)
+- SetAxis() now has some error checking to make sure you're using it correctly. (Thanks Jay)
+
+v2.2.3
+
+- Fixed bug with GetAxis() not creating cInput object properly. (Thanks Christopher)
+
+v2.2.2
+
+- Fixed bug with inverted axes not saving/loading properly. (Thanks Christopher)
+
+v2.2.1
+
+- Analog inputs are now compatible with GetKeyDown(), GetKeyUp(), GetButtonDown(), and GetButtonUp() functions. (Thanks goodhustle)
+
+v2.2.0
+
+- ShowMenu() now accepts additional arguments for easier customization of cInput's menu. (Thanks goodhustle)
+
+v2.1.1
+
+- InvertAxis() and IsAxisInverted() have been combined into a single function: AxisInverted().
+- Minor bugfixes.
+
+v2.1.0
+
+- Length() method has been replaced by the read-only cInput.length property.
+- Can now manually assign keys with ChangeKey() instead of waiting for input from player.
+  - This can be used to pre-designate control "Profiles" that can be switched from a menu.
+- Added GetButton(), GetButtonDown(), and GetButtonUp(). (Thanks patrickw)
+- Can now allow duplicate inputs for multiple actions using cInput.allowDuplicates (Thanks patrickw)
+- Can now invert an axis using InvertAxis("axisName"). (Thanks Ryan)
+- Can get axis inversion status with IsAxisInverted("axisName"). (Thanks Ryan)
+- SetAxis() can now accept 1 action instead of requiring 2. (Thanks patrickw)
+- Better support for sliders, gas pedals and other analog inputs with Calibrate(). (Thanks patrickw)
+
+v2.0
+
+- Initial release of cInput 2.
