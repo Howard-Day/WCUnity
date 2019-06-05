@@ -54,7 +54,7 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 2
+  near clip plane: 1
   far clip plane: 1000
   field of view: 60
   orthographic: 0
@@ -62,7 +62,7 @@ Camera:
   m_Depth: -2
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 55
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -140,7 +140,7 @@ Camera:
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 256
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -167,7 +167,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2187516062843138488}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6a160d838ff8b4b4693ac20007e008c7, type: 3}
   m_Name: 
@@ -190,9 +190,9 @@ GameObject:
   m_Component:
   - component: {fileID: 2187516062933745092}
   - component: {fileID: 2187516062933745095}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Cockpit_Front
-  m_TagString: Untagged
+  m_TagString: Cockpit
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -269,6 +269,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 86800494226051090}
+  - component: {fileID: 566986660}
   m_Layer: 0
   m_Name: DemoCockpit
   m_TagString: Untagged
@@ -283,7 +284,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5517306084593632097}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -291,3 +292,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &566986660
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5517306084593632097}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9381e042c574de1478756c7cc7a7c1e2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetSpeed: 15
+  turnRate: 0.5
+  invertYAxis: 0
