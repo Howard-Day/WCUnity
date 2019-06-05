@@ -191,12 +191,12 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Mesh
       value: 
-      objectReference: {fileID: 1136666612}
+      objectReference: {fileID: 1601554405}
     - target: {fileID: 2311620947440507632, guid: 9b157e26264de564a99c8983fe59f486,
         type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 854884550}
+      objectReference: {fileID: 473117895}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9b157e26264de564a99c8983fe59f486, type: 3}
 --- !u!1 &142663754
@@ -4952,7 +4952,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!21 &854884550
+--- !u!21 &473117895
 Material:
   serializedVersion: 6
   m_ObjectHideFlags: 0
@@ -5029,7 +5029,7 @@ Material:
     m_Colors:
     - _Color: {r: 1, g: 1, b: 0, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
---- !u!43 &1136666612
+--- !u!43 &1601554405
 Mesh:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -5270,6 +5270,10 @@ PrefabInstance:
     - target: {fileID: 566986660, guid: ab212981a8655a24389a00ff4bbe01bd, type: 3}
       propertyPath: topSpeed
       value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 566986660, guid: ab212981a8655a24389a00ff4bbe01bd, type: 3}
+      propertyPath: acceleration
+      value: 1.5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ab212981a8655a24389a00ff4bbe01bd, type: 3}
