@@ -69,8 +69,6 @@ public class CockpitController : MonoBehaviour
       speed = Mathf.Lerp(speed, targetSpeed, deceleration * Time.deltaTime);
     }
 
-    Debug.Log("Speed: " + speed);
-
     transform.position += transform.forward * speed * Time.deltaTime;
   }
 }
