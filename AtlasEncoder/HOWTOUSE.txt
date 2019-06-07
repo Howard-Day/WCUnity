@@ -1,0 +1,5 @@
+STEP 1: Open "info.ini" with a text editor, delete what's in there and put in the path to your 544 textures that you rendered out with MAX. If your 544 sprites are "C:/sprites/sprite0001.png" to "C:/sprites/sprite0544.png", you have to put "C:/sprites/sprite" in the "info.ini" file.
+
+STEP 2: Run "DeadSilent_TextureAtlasEncoder.exe", this will run the tool. It will take up to a minute to do the conversion. Hit okay twice and close the tool when it's done. The tool will have created 17 PNG files in the tool folder, ignore these, they will be deleted automatically in the next step.
+
+STEP 3: Now run "to_dxt1.bat" or "to_dxt5.bat" - depending on which texture compression you want the textures to use (dxt1 has 1-bit alpha, dxt5 a full 8 bit alpha channel), this will take a couple of seconds. Once that's done, your 17 DXT1 DDS with no mip levels are ready in the "output" folder.
