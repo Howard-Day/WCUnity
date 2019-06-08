@@ -91,10 +91,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0884dceb0d4308c4eb8bc763c8f8deae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_templateMaterial: {fileID: 2100000, guid: 95504187e1807a54397c96dca76466d0, type: 2}
-  m_doNotOverwriteTemplateMaterialProperties: 1
+  m_templateMaterial: {fileID: 2100000, guid: 8240045a860023845b5a96c3e009bee3, type: 2}
+  m_doNotOverwriteTemplateMaterialProperties: 0
   m_startPos: {x: 0, y: 0, z: 0}
-  m_endPos: {x: 0, y: 0, z: 5}
+  m_endPos: {x: 0, y: 0, z: 6}
   m_lineColor: {r: 1, g: 0.7812411, b: 0, a: 1}
-  m_lineWidth: 0.75
+  m_lineWidth: 1.25
   m_lightSaberFactor: 0
