@@ -4,6 +4,7 @@ public class Ship : MonoBehaviour
 {
   [HideInInspector] public float yaw;
   [HideInInspector] public float pitch;
+  [HideInInspector] public float roll;
   [HideInInspector] public float targetSpeed;
 
   [SerializeField] float turnRate = 50f;
@@ -30,11 +31,11 @@ public class Ship : MonoBehaviour
   {
     var yaw_ = Mathf.Clamp(yaw, -1f, 1f);
     var pitch_ = Mathf.Clamp(pitch, -1f, 1f);
-
+    var roll_ = Mathf.Clamp(roll, -1f, 1f);
     yaw_ *= turnRate * Time.deltaTime;
     pitch_ *= turnRate * Time.deltaTime;
-
-    transform.localRotation *= Quaternion.AngleAxis(yaw_, Vector3.up) * Quaternion.AngleAxis(pitch_, invertYAxis ? Vector3.right : Vector3.left);
+    roll_ *= turnRate * 1.5f * Time.deltaTime;
+    transform.localRotation *= Quaternion.AngleAxis(roll_, Vector3.forward) * Quaternion.AngleAxis(yaw_, Vector3.up) * Quaternion.AngleAxis(pitch_, invertYAxis ? Vector3.right : Vector3.left);
   }
 
   void Throttle()
