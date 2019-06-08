@@ -2,10 +2,12 @@
 
 // credit goes to Daniel Koozer for his amazing solution
 
+[ExecuteInEditMode]
 public class SpritePicker : MonoBehaviour
 {
   [SerializeField] Texture[] textureSheets = null;
   [SerializeField] Vector2Int frames = Vector2Int.zero;
+  [SerializeField] Transform gameCamera = null;
 
   Transform billboard;
   Material billboardMaterial;
@@ -13,11 +15,16 @@ public class SpritePicker : MonoBehaviour
   void Start()
   {
     billboard = transform.Find("Billboard");
-    billboardMaterial = billboard.GetComponent<Renderer>().material;
+    billboardMaterial = billboard.GetComponent<Renderer>().sharedMaterial;
   }
 
   void Update()
   {
+    if (!billboard || !billboardMaterial || frames == Vector2Int.zero || !gameCamera)
+    {
+      return;
+    }
+
     int yaw = 0, pitch = 0;
     float theta = 0f, phi = 0f;
 
@@ -58,7 +65,7 @@ public class SpritePicker : MonoBehaviour
 
   void SpritePick(ref float theta, ref float phi, ref int yaw, ref int pitch)
   {
-    var objectToCamera = Camera.main.transform.position - transform.position;
+    var objectToCamera = gameCamera.position - transform.position;
     objectToCamera.Normalize();
 
     // since the ship may be rotated, we need to take that into account before converting to spherical
@@ -99,8 +106,6 @@ public class SpritePicker : MonoBehaviour
 
     // 0..16
     pitch = (int)(spritePhi / interval);
-
-    Debug.Log("yaw: " + yaw + "   pitch: " + pitch);
 
     // convert theta and phi back to usable values for steps 2+, notice these are snapped to nearest sprite yaw/pitch
     // adding one due to the fact that zero is not front-on
