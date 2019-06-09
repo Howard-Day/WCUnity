@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 2311620947440507633}
   - component: {fileID: 2311620947440507632}
   - component: {fileID: 2311620947440507599}
+  - component: {fileID: 1087558889436847991}
   m_Layer: 0
   m_Name: LaserBolt
   m_TagString: Untagged
@@ -98,3 +99,17 @@ MonoBehaviour:
   m_lineColor: {r: 1, g: 0.7812411, b: 0, a: 1}
   m_lineWidth: 1.25
   m_lightSaberFactor: 0
+--- !u!114 &1087558889436847991
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2311620947440507598}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 133c6fb22a38a4141893cdf67f182274, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  speed: 100
+  range: 1000

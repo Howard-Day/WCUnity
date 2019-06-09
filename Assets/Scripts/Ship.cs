@@ -13,12 +13,7 @@ public class Ship : MonoBehaviour
   [SerializeField] float acceleration = 1.5f;
   [SerializeField] float deceleration = 1f;
 
-  float speed;
-
-  void Start()
-  {
-    speed = 0f;
-  }
+  float speed = 0f;
 
   // late update to give human or AI player scripts a chance to set values first
   void LateUpdate()

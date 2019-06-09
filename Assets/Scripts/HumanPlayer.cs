@@ -6,16 +6,19 @@ public class HumanPlayer : MonoBehaviour
   [SerializeField] float speedSelectionSpeed = 10f;
 
   Ship ship;
+  LaserCannon[] laserCannons;
 
   void Start()
   {
     ship = GetComponent<Ship>();
+    laserCannons = GetComponentsInChildren<LaserCannon>();
   }
 
   void Update()
   {
     Steer();
     Throttle();
+    FireGuns();
   }
 
   void Steer()
@@ -44,6 +47,15 @@ public class HumanPlayer : MonoBehaviour
       {
         ship.targetSpeed -= speedSelectionSpeed * Time.deltaTime;
       }
+    }
+  }
+
+  void FireGuns()
+  {
+    var fire = Input.GetKey(KeyCode.Space) || Input.GetMouseButton(0);
+    foreach (LaserCannon laserCannon in laserCannons)
+    {
+      laserCannon.fire = fire;
     }
   }
 }
