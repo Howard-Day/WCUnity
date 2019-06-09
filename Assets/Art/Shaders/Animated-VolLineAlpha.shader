@@ -17,7 +17,7 @@
 /// Shader code optimization and cleanup by Lex Darlog (aka DRL)
 /// http://forum.unity3d.com/members/lex-drl.67487/
 /// 
-Shader "VolumetricLine/Animated_AlphaBlended" {
+Shader "VolumetricLine/Animated_AlphaCutout" {
 	Properties {
 		[NoScaleOffset] _MainTex ("Base (RGB)", 2D) = "white" {}
 		_LineWidth ("Line Width", Range(0.01, 100)) = 1.0
@@ -28,24 +28,14 @@ Shader "VolumetricLine/Animated_AlphaBlended" {
 	}
 	SubShader {
 		// batching is forcefully disabled here because the shader simply won't work with it:
-		Tags {
-			"DisableBatching"="True"
-			"RenderType"="Transparent"
-			"Queue"="Transparent"
-			"IgnoreProjector"="True"
-			"ForceNoShadowCasting"="True"
-			"PreviewType"="Plane"
-		}
-		LOD 200
+		Tags { "RenderType"="Opaque" }
+		LOD 100
 		
 		Pass {
 			
 			Cull Off
-			ZWrite Off
-			ZTest LEqual
-			Blend SrcAlpha OneMinusSrcAlpha
 			Lighting On
-			
+			AlphaToMask On
 			CGPROGRAM
 				#pragma glsl_no_auto_normalization
 				#pragma vertex vert

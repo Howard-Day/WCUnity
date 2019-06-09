@@ -40,7 +40,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 05454442705c0e846bbca93b57828394, type: 3}
+        m_Texture: {fileID: 2800000, guid: 03b9125c8d64d824489572be47559149, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
@@ -71,8 +71,8 @@ Material:
     - _SrcBlend: 1
     - _UVSec: 0
     - _ZWrite: 1
-    - _animSpeed: 256
-    - _animTiles: 1
+    - _animSpeed: 30
+    - _animTiles: 16
     - _pixelsPerUnit: 100
     m_Colors:
     - _Color: {r: 1, g: 1, b: 0, a: 1}

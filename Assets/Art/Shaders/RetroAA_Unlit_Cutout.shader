@@ -3,6 +3,7 @@
 	Properties
 	{
 		_MainTex ("Texture", 2D) = "white" {}
+		_pixelsPerUnit("Pixels Per Unit", Float) = 16
 	}
 	SubShader
 	{
@@ -36,13 +37,27 @@
 				sampler2D _MainTex;
 				float4 _MainTex_ST;
 				float4 _MainTex_TexelSize;
-				
+				float _pixelsPerUnit;
+
+				float4 AlignToPixelGrid(float4 vertex)
+				{
+					float4 worldPos = mul(unity_ObjectToWorld, vertex);
+
+					worldPos.x = floor(worldPos.x * _pixelsPerUnit + 0.5) / _pixelsPerUnit;
+					worldPos.y = floor(worldPos.y * _pixelsPerUnit + 0.5) / _pixelsPerUnit;
+
+					return mul(unity_WorldToObject, worldPos);
+				}			
 				v2f vert (appdata_t v)
 				{
 					v2f o;
 					UNITY_SETUP_INSTANCE_ID(v);
 					UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
-					o.vertex = UnityObjectToClipPos(v.vertex);
+					float4 alignedPos = AlignToPixelGrid(v.vertex);
+
+				
+
+					o.vertex = UnityObjectToClipPos(alignedPos);
 					o.texcoord = TRANSFORM_TEX(v.texcoord, _MainTex);
 					UNITY_TRANSFER_FOG(o,o.vertex);
 					return o;

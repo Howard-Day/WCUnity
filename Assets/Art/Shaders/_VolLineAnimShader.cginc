@@ -3,7 +3,8 @@
 
 	
 	#include "UnityCG.cginc"
-	
+	#include "RetroAA.cginc"
+
 	float _LineWidth;
 	float _LineScale;
 	float _pixelsPerUnit;
@@ -37,7 +38,7 @@
 	v2f vert (a2v v)
 	{
 		v2f o;
-		float animY = (floor(frac(_Time*_animSpeed)*_animTiles)/_animTiles) + (v.texcoord.y/_animTiles);
+		float animY = (floor(frac(_Time*-_animSpeed)*_animTiles)/_animTiles) + (v.texcoord.y/_animTiles);
 		o.uv = float2(v.texcoord.x,animY);
 		
 #if UNITY_VERSION >= 540
@@ -87,10 +88,12 @@
 	fixed4 _Color;
 #endif
 	sampler2D _MainTex;
-
+	float4 _MainTex_ST;
+	float4 _MainTex_TexelSize;
 	fixed4 frag(v2f i) : SV_Target
 	{
-		fixed4 tx = tex2D(_MainTex, i.uv);
+		fixed4 tx = RetroAA(_MainTex, i.uv, _MainTex_TexelSize);//tex2D(_MainTex, i.uv);
+		
 		return tx;
 
 	}
