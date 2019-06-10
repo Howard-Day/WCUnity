@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 7989437017167104986}
   - component: {fileID: 7989437017167104987}
   - component: {fileID: 7989437017167104996}
+  - component: {fileID: 2967868975163282982}
   m_Layer: 0
   m_Name: EngineFlare
   m_TagString: Untagged
@@ -99,3 +100,22 @@ MonoBehaviour:
   m_lineWidth: 3
   m_lightSaberFactor: 0
   MinimumFlipAngle: 1.5
+--- !u!114 &2967868975163282982
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7989437017167104997}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b261fcf9ebe5ab84faef0e1a8439f595, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  IdleThrottle: {fileID: 2800000, guid: b6592c1bda2b2994f9f9742493c42d9b, type: 3}
+  ThirdThrottle: {fileID: 2800000, guid: 942b7de749e64ba429106a1855cfc2dc, type: 3}
+  CruiseThrottle: {fileID: 2800000, guid: 03b9125c8d64d824489572be47559149, type: 3}
+  FullThrottle: {fileID: 2800000, guid: 03b9125c8d64d824489572be47559149, type: 3}
+  Afterburn: {fileID: 2800000, guid: c2b14833cbe460840ad9904d373eebf8, type: 3}
+  FlareWidths: {x: 2, y: 4}
+  FlareThrottle: 0

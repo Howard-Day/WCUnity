@@ -19,7 +19,7 @@
 /// 
 Shader "VolumetricLine/Animated_AlphaCutout" {
 	Properties {
-		[NoScaleOffset] _MainTex ("Base (RGB)", 2D) = "white" {}
+		_MainTex ("Base (RGB)", 2D) = "white" {}
 		_LineWidth ("Line Width", Range(0.01, 100)) = 1.0
 		_LineScale ("Line Scale", Float) = 1.0
 		_pixelsPerUnit("Pixels Per Unit", Float) = 16

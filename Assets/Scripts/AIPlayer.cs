@@ -10,7 +10,6 @@ public class AIPlayer : MonoBehaviour
   {
     ship = GetComponent<Ship>();
     laserCannons = GetComponentsInChildren<LaserCannon>();
-
     // hardcoded to fly in circle for now
     ship.yaw = -0.5f;
     ship.pitch = 0.2f;
@@ -22,5 +21,12 @@ public class AIPlayer : MonoBehaviour
     {
       laserCannon.fire = true;
     }
+  }
+  /// <summary>
+  /// Update is called every frame, if the MonoBehaviour is enabled.
+  /// </summary>
+  void Update()
+  {
+      ship.targetSpeed = Mathf.Sin(Time.time)*40f;
   }
 }

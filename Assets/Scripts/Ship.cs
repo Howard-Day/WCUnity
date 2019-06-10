@@ -10,10 +10,17 @@ public class Ship : MonoBehaviour
   [SerializeField] float turnRate = 50f;
   [SerializeField] bool invertYAxis = false;
   [SerializeField] float topSpeed = 20f;
+  [SerializeField] float burnSpeed = 50f;
   [SerializeField] float acceleration = 1.5f;
   [SerializeField] float deceleration = 1f;
 
+  EngineFlare[] engineFlares;
+
   float speed = 0f;
+  void Start()
+  {
+    engineFlares = GetComponentsInChildren<EngineFlare>();
+  }
 
   // late update to give human or AI player scripts a chance to set values first
   void LateUpdate()
@@ -35,7 +42,7 @@ public class Ship : MonoBehaviour
 
   void Throttle()
   {
-    var targetSpeed_ = Mathf.Clamp(targetSpeed, 0f, topSpeed);
+    var targetSpeed_ = Mathf.Clamp(targetSpeed, 0f, burnSpeed);
     
     if (speed < targetSpeed_)
     // accelerating
@@ -49,5 +56,11 @@ public class Ship : MonoBehaviour
     }
 
     transform.position += transform.forward * speed * Time.deltaTime;
+
+    // also set the visible flare throttles
+    foreach (EngineFlare flare in engineFlares)
+    {
+      flare.FlareThrottle = speed/topSpeed;
+    }
   }
 }

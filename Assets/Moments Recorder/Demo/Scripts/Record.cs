@@ -84,7 +84,7 @@ public class Record : MonoBehaviour
 			GUILayout.BeginVertical();
 
 				GUILayout.Space(10f);
-				GUILayout.Label("Press [SPACE] to export the buffered frames to a gif file.");
+				GUILayout.Label("Press [F5] to export the buffered frames to a gif file.");
 				GUILayout.Label("Recorder State : " + m_Recorder.State.ToString());
 
 				if (m_IsSaving)
