@@ -4,9 +4,11 @@
 public class HumanPlayer : MonoBehaviour
 {
   [SerializeField] float speedSelectionSpeed = 10f;
+  [SerializeField] CockpitShift CockpitShifterRoot;
 
   Ship ship;
   LaserCannon[] laserCannons;
+  
 
   void Start()
   {
@@ -23,8 +25,9 @@ public class HumanPlayer : MonoBehaviour
 
   void Steer()
   {
-    ship.yaw = (Input.mousePosition.x / Screen.width) * 2f - 1f;
-    ship.pitch = (Input.mousePosition.y / Screen.height) * 2f - 1f;
+    ship.yaw = Mathf.Clamp((Input.mousePosition.x / Screen.width) * 2f - 1f,-1f,1f);
+    ship.pitch = Mathf.Clamp((Input.mousePosition.y / Screen.height) * 2f - 1f,-1f,1f);;
+    CockpitShifterRoot.TargetShift = new Vector2(-ship.yaw,-ship.pitch);
   }
 
   void Throttle()

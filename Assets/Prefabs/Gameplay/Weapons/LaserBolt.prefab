@@ -95,10 +95,11 @@ MonoBehaviour:
   m_templateMaterial: {fileID: 2100000, guid: 8240045a860023845b5a96c3e009bee3, type: 2}
   m_doNotOverwriteTemplateMaterialProperties: 0
   m_startPos: {x: 0, y: 0, z: 0}
-  m_endPos: {x: 0, y: 0, z: 6}
+  m_endPos: {x: 0, y: 0, z: 12}
   m_lineColor: {r: 1, g: 0.7812411, b: 0, a: 1}
-  m_lineWidth: 1.25
+  m_lineWidth: 2
   m_lightSaberFactor: 0
+  MinimumFlipAngle: 1.5
 --- !u!114 &1087558889436847991
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -111,5 +112,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 133c6fb22a38a4141893cdf67f182274, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 100
-  range: 1000
+  speed: 200
+  range: 1400

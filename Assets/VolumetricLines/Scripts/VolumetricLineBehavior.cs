@@ -145,10 +145,10 @@ namespace VolumetricLines
 			}
 		}
 
-		/// <summary>
+/*		/// <summary>
 		/// Get or set the light saber factor of this volumetric line's material
 		/// </summary>
-		public float LightSaberFactor
+		float LightSaberFactor
 		{
 			get { return m_lightSaberFactor; }
 			set
@@ -160,8 +160,8 @@ namespace VolumetricLines
 					m_material.SetFloat("_LightSaberFactor", m_lightSaberFactor);
 				}
 			}
-		}
-
+		}*/
+		public float MinimumFlipAngle = 1.5f;
 		/// <summary>
 		/// Get or set the start position of this volumetric line's mesh
 		/// </summary>
@@ -352,7 +352,7 @@ namespace VolumetricLines
 			}
 		    float AngleToCamera = Vector3.Angle(gameObject.transform.forward, Camera.main.transform.position-gameObject.transform.position);
 
-			if(AngleToCamera < 1.5 || AngleToCamera > 178.5 )
+			if(AngleToCamera < MinimumFlipAngle || AngleToCamera > (180-MinimumFlipAngle) )
 			{
 				UVsNeedMirrored = true;
 				SwitchMirroredUVs();
