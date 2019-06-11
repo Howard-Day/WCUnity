@@ -27,6 +27,6 @@ public class AIPlayer : MonoBehaviour
   /// </summary>
   void Update()
   {
-      ship.targetSpeed = Mathf.Sin(Time.time)*40f;
+      ship.targetSpeed = Mathf.Clamp01(Mathf.Sin(Time.time)*1.5f-.25f)*60f;
   }
 }

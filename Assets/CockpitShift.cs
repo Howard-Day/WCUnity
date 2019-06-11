@@ -10,7 +10,7 @@ public class CockpitShift : MonoBehaviour
     public float ShiftSmoothness = .2f;
 
     Transform CockpitRoot;
-
+    bool Shaking = false;
     Vector2 RefShift;
     Vector2 SmoothShift;
     // Start is called before the first frame update
@@ -18,7 +18,11 @@ public class CockpitShift : MonoBehaviour
     {
         CockpitRoot = gameObject.transform;
     }
+    float shakeStart;
+void DoShake(float intensity, float length) 
+{
 
+}
     // Update is called once per frame
     void Update()
     {
