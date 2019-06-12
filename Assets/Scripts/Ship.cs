@@ -6,6 +6,7 @@ public class Ship : MonoBehaviour
   [HideInInspector] public float pitch;
   [HideInInspector] public float roll;
   [HideInInspector] public float targetSpeed;
+  [HideInInspector] public float capacitorLevel;
 
   [SerializeField] float turnRate = 50f;
   [SerializeField] bool invertYAxis = false;
@@ -14,12 +15,15 @@ public class Ship : MonoBehaviour
   [SerializeField] float acceleration = 1.5f;
   [SerializeField] float deceleration = 1f;
 
+  [SerializeField] public float capacitorSize = 50f;
+  [SerializeField] float rechargeRate = 1f;
   EngineFlare[] engineFlares;
 
   float speed = 0f;
   void Start()
   {
     engineFlares = GetComponentsInChildren<EngineFlare>();
+    capacitorLevel = capacitorSize;
   }
 
   // late update to give human or AI player scripts a chance to set values first
@@ -27,6 +31,16 @@ public class Ship : MonoBehaviour
   {
     Steer();
     Throttle();
+    Power();
+  }
+
+  void Power()
+  {
+    if(capacitorLevel<capacitorSize)
+    {
+      capacitorLevel += rechargeRate*Time.deltaTime;
+    }
+    //print(gameObject.name + " capacitor level is " + capacitorLevel);
   }
 
   void Steer()

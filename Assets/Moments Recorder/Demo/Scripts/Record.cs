@@ -8,7 +8,8 @@ public class Record : MonoBehaviour
 	float m_Progress = 0f;
 	string m_LastFile = "";
 	bool m_IsSaving = false;
-
+	public Font guiFont;
+	
 	void Start()
 	{
 		// Get our Recorder instance (there can be only one per camera).
@@ -79,19 +80,22 @@ public class Record : MonoBehaviour
 
 	void OnGUI()
 	{
+		GUIStyle myToggle = new GUIStyle(GUI.skin.label);
+		myToggle.normal.textColor = Color.green;
+		myToggle.font = guiFont;
+		myToggle.margin.top = 8;
 		GUILayout.BeginHorizontal();
-			GUILayout.Space(10f);
+			GUILayout.Space(40f);
 			GUILayout.BeginVertical();
-
-				GUILayout.Space(10f);
-				GUILayout.Label("Press [F5] to export the buffered frames to a gif file.");
-				GUILayout.Label("Recorder State : " + m_Recorder.State.ToString());
-
+				GUILayout.Space(40f);
+				GUILayout.Label("Press [F5] to export the buffered frames to a gif file.",myToggle);
+				GUILayout.Space(-20f);
+				GUILayout.Label("Recorder State : " + m_Recorder.State.ToString(),myToggle);
 				if (m_IsSaving)
-					GUILayout.Label("Progress Report : " + m_Progress.ToString("F2") + "%");
+					GUILayout.Label("Progress Report : " + m_Progress.ToString("F2") + "%", myToggle);
 
 				if (!string.IsNullOrEmpty(m_LastFile))
-					GUILayout.Label("Last File Saved : " + m_LastFile);
+					GUILayout.Label("Last File Saved : " + m_LastFile, myToggle);
 
 			GUILayout.EndVertical();
 		GUILayout.EndHorizontal();

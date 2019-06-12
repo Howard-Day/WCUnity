@@ -3,6 +3,7 @@
 	Properties
 	{
 		_MainTex ("Texture", 2D) = "white" {}
+		_Color ("Color", Color ) = (1,1,1,0)
 		_pixelsPerUnit("Pixels Per Unit", Float) = 16
 	}
 	SubShader
@@ -38,6 +39,7 @@
 				float4 _MainTex_ST;
 				float4 _MainTex_TexelSize;
 				float _pixelsPerUnit;
+				float4 _Color;
 
 				float4 AlignToPixelGrid(float4 vertex)
 				{
@@ -66,6 +68,8 @@
 				fixed4 frag (v2f i) : SV_Target
 				{
 					fixed4 col = RetroAA(_MainTex, i.texcoord, _MainTex_TexelSize);
+					col.rgb += _Color.rgb;
+					col.a *= _Color.a;
 					UNITY_APPLY_FOG(i.fogCoord, col);
 					return col;
 				}
