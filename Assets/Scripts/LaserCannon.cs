@@ -10,7 +10,7 @@ public class LaserCannon : MonoBehaviour
   [SerializeField] float powerDrain = 2.1f;
   
   float cooldown = 0f;
-  Ship MainShip;
+  ShipSettings MainShip;
 
   /// <summary>
   /// Start is called on the frame when a script is enabled just before
@@ -18,14 +18,14 @@ public class LaserCannon : MonoBehaviour
   /// </summary>
   void Start()
   {
-      MainShip = gameObject.GetComponent<Ship>();
+      MainShip = gameObject.GetComponent<ShipSettings>();
   }
   // late update to give human or AI player scripts a chance to set values first
   void LateUpdate()
   {
     cooldown = Mathf.Max(cooldown - Time.deltaTime, 0f);
 
-    if (fire && cooldown <= 0f && MainShip.capacitorLevel > powerDrain*2.1f)
+    if (fire && cooldown <= 0f && MainShip.capacitorLevel > powerDrain)
     {
       Instantiate(laserBoltPrefab, mountingPoint.position, mountingPoint.rotation);
       MainShip.capacitorLevel -= powerDrain;

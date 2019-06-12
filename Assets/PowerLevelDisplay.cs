@@ -5,7 +5,7 @@ using UnityEngine.UI; // Required when Using UI elements.
 
 public class PowerLevelDisplay : MonoBehaviour
 {
-    public Ship mainShip;
+    public ShipSettings mainShip;
     Slider PowerLevel;
  /// <summary>
 /// Start is called on the frame when a script is enabled just before

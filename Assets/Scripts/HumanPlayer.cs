@@ -1,18 +1,18 @@
 ﻿using UnityEngine;
 
-[RequireComponent(typeof(Ship))]
+[RequireComponent(typeof(ShipSettings))]
 public class HumanPlayer : MonoBehaviour
 {
   [SerializeField] float speedSelectionSpeed = 10f;
   [SerializeField] CockpitShift CockpitShifterRoot;
 
-  Ship ship;
+  ShipSettings ship;
   LaserCannon[] laserCannons;
   
 
   void Start()
   {
-    ship = GetComponent<Ship>();
+    ship = GetComponent<ShipSettings>();
     laserCannons = GetComponentsInChildren<LaserCannon>();
   }
 
@@ -33,24 +33,44 @@ public class HumanPlayer : MonoBehaviour
   void Throttle()
   {
     var fullStop = Input.GetKey(KeyCode.Backspace);
+    var fullSpeed = Input.GetKey(KeyCode.Backslash);
+    var afterBurn = Input.GetKey(KeyCode.Tab);    
+    var afterBurnOff = Input.GetKeyUp(KeyCode.Tab);
     var accelerate = Input.GetKey(KeyCode.Equals) || Input.GetKey(KeyCode.KeypadPlus); // KeyCode.Equals is the plus key without modifier
     var decelerate = Input.GetKey(KeyCode.Minus) || Input.GetKey(KeyCode.KeypadMinus);
     
-    if (fullStop)
-    {
-      ship.targetSpeed = 0f;
-    }
-    else
-    {
-      if (accelerate && !decelerate)
+    if(afterBurnOff)
       {
-        ship.targetSpeed += speedSelectionSpeed * Time.deltaTime;
-      }
-      else if (decelerate && !accelerate)
+        ship.targetSpeed = ship.topSpeed/2;
+      }   
+
+    if (afterBurn)
+    {
+      ship.targetSpeed = ship.burnSpeed;
+    }
+    else {
+    
+      if (fullSpeed)
       {
-        ship.targetSpeed -= speedSelectionSpeed * Time.deltaTime;
+        ship.targetSpeed = ship.topSpeed;
+      }
+      if (fullStop)
+      {
+        ship.targetSpeed = 0f;
+      }
+      else
+      {      
+        if (accelerate && !decelerate && ship.targetSpeed < ship.topSpeed )
+        {
+          ship.targetSpeed += speedSelectionSpeed * Time.deltaTime;
+        }
+        else if (decelerate && !accelerate && ship.targetSpeed > 0f)
+        {
+          ship.targetSpeed -= speedSelectionSpeed * Time.deltaTime;
+        }
       }
     }
+
   }
 
   void FireGuns()

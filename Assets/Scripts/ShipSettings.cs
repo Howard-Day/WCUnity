@@ -1,17 +1,19 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 
-public class Ship : MonoBehaviour
+public class ShipSettings : MonoBehaviour
 {
   [HideInInspector] public float yaw;
   [HideInInspector] public float pitch;
   [HideInInspector] public float roll;
   [HideInInspector] public float targetSpeed;
   [HideInInspector] public float capacitorLevel;
-
+  [HideInInspector] public bool isAfterburning;
   [SerializeField] float turnRate = 50f;
   [SerializeField] bool invertYAxis = false;
-  [SerializeField] float topSpeed = 20f;
-  [SerializeField] float burnSpeed = 50f;
+  [SerializeField] public float topSpeed = 20f;
+  [SerializeField] public float burnSpeed = 50f;
   [SerializeField] float acceleration = 1.5f;
   [SerializeField] float deceleration = 1f;
 
@@ -19,7 +21,7 @@ public class Ship : MonoBehaviour
   [SerializeField] float rechargeRate = 1f;
   EngineFlare[] engineFlares;
 
-  float speed = 0f;
+  [HideInInspector]  public float speed = 0f;
   void Start()
   {
     engineFlares = GetComponentsInChildren<EngineFlare>();
@@ -50,7 +52,7 @@ public class Ship : MonoBehaviour
     var roll_ = Mathf.Clamp(roll, -1f, 1f);
     yaw_ *= turnRate * Time.deltaTime;
     pitch_ *= turnRate * Time.deltaTime;
-    roll_ *= turnRate * 1.5f * Time.deltaTime;
+    roll_ *= turnRate * 2f * Time.deltaTime;
     transform.localRotation *= Quaternion.AngleAxis(roll_, Vector3.forward) * Quaternion.AngleAxis(yaw_, Vector3.up) * Quaternion.AngleAxis(pitch_, invertYAxis ? Vector3.right : Vector3.left);
   }
 
@@ -71,6 +73,12 @@ public class Ship : MonoBehaviour
 
     transform.position += transform.forward * speed * Time.deltaTime;
 
+    //set Afterburning flag
+    if(targetSpeed > topSpeed+1)
+     isAfterburning = true;
+     else
+     isAfterburning = false;
+    //print(speed);
     // also set the visible flare throttles
     foreach (EngineFlare flare in engineFlares)
     {

@@ -1,18 +1,18 @@
 ﻿using UnityEngine;
 
-[RequireComponent(typeof(Ship))]
+[RequireComponent(typeof(ShipSettings))]
 public class AIPlayer : MonoBehaviour
 {
-  Ship ship;
+  ShipSettings ship;
   LaserCannon[] laserCannons;
 
   void Start()
   {
-    ship = GetComponent<Ship>();
+    ship = GetComponent<ShipSettings>();
     laserCannons = GetComponentsInChildren<LaserCannon>();
     // hardcoded to fly in circle for now
     ship.yaw = -0.5f;
-    ship.pitch = 0.2f;
+    ship.pitch = .1f;
     ship.roll = .1f;
     ship.targetSpeed = 10f;
 
@@ -27,6 +27,6 @@ public class AIPlayer : MonoBehaviour
   /// </summary>
   void Update()
   {
-      ship.targetSpeed = Mathf.Clamp01(Mathf.Sin(Time.time)*1.5f-.25f)*60f;
+      ship.targetSpeed = Mathf.Clamp01(Mathf.Sin(Time.time)*2.5f-.5f)*ship.burnSpeed;
   }
 }

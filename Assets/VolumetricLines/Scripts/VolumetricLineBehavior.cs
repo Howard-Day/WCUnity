@@ -351,18 +351,18 @@ namespace VolumetricLines
 				m_material.SetFloat("_LineScale", transform.GetGlobalUniformScaleForLineWidth());
 			}
 		    float AngleToCamera = Vector3.Angle(gameObject.transform.forward, Camera.main.transform.position-gameObject.transform.position);
-
-			if(AngleToCamera < MinimumFlipAngle || AngleToCamera > (180-MinimumFlipAngle) )
-			{
-				UVsNeedMirrored = true;
-				SwitchMirroredUVs();
+			if(Application.isPlaying){
+				if(AngleToCamera < MinimumFlipAngle || AngleToCamera > (180-MinimumFlipAngle) )
+				{
+					UVsNeedMirrored = true;
+					SwitchMirroredUVs();
+				}
+				else
+				{
+					UVsNeedMirrored = false;
+					SwitchMirroredUVs();
+				}
 			}
-			else
-			{
-				UVsNeedMirrored = false;
-				SwitchMirroredUVs();
-			}
-
 		}
 
 		void OnValidate()
