@@ -14,8 +14,9 @@ public class SpritePicker : MonoBehaviour
 
   void Start()
   {
-    billboard = transform.Find("Billboard");
-    billboardMaterial = billboard.GetComponent<Renderer>().sharedMaterial;
+    billboard = transform.Find("Billboard");    
+    if(Application.isPlaying)
+      billboardMaterial = billboard.GetComponent<Renderer>().material;
   }
 
   void Update()

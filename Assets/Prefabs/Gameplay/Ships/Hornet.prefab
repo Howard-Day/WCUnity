@@ -59,12 +59,12 @@ MonoBehaviour:
   isAfterburning: 0
   turnRate: 50
   invertYAxis: 0
-  topSpeed: 20
-  burnSpeed: 50
+  topSpeed: 55
+  burnSpeed: 95
   acceleration: 1.5
   deceleration: 1
   capacitorSize: 25
-  rechargeRate: 2
+  rechargeRate: 4
   speed: 0
 --- !u!114 &5695718655840442023
 MonoBehaviour:
@@ -171,7 +171,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5695718656521392418}
-  m_LocalRotation: {x: -0, y: 0.00000008742278, z: -0, w: 1}
+  m_LocalRotation: {x: -0, y: -0.19509019, z: -0, w: 0.9807853}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 20, y: 20, z: 20}
   m_Children: []

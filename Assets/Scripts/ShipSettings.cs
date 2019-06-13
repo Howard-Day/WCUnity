@@ -24,6 +24,7 @@ public class ShipSettings : MonoBehaviour
   [HideInInspector]  public float speed = 0f;
   void Start()
   {
+    gameObject.transform.SetParent(GameObject.FindWithTag("GamePlayObjs").transform); 
     engineFlares = GetComponentsInChildren<EngineFlare>();
     capacitorLevel = capacitorSize;
   }

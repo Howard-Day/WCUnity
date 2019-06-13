@@ -1,3 +1,5 @@
+// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
+
 // Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
 
 
@@ -38,6 +40,7 @@
 	v2f vert (a2v v)
 	{
 		v2f o;
+		//float rand = mul (unity_ObjectToWorld, v.vertex).x; 
 		float animY = (floor(frac(_Time*-_animSpeed)*_animTiles)/_animTiles) + (v.texcoord.y/_animTiles);
 		o.uv = float2(v.texcoord.x,animY);
 		

@@ -89,13 +89,16 @@ public class Record : MonoBehaviour
 			GUILayout.BeginVertical();
 				GUILayout.Space(40f);
 				GUILayout.Label("Press [F5] to export the buffered frames to a gif file.",myToggle);
-				GUILayout.Space(-20f);
+				GUILayout.Space(-30f);
 				GUILayout.Label("Recorder State : " + m_Recorder.State.ToString(),myToggle);
 				if (m_IsSaving)
+				{	GUILayout.Space(-10f);
 					GUILayout.Label("Progress Report : " + m_Progress.ToString("F2") + "%", myToggle);
-
+				}
 				if (!string.IsNullOrEmpty(m_LastFile))
+				{	GUILayout.Space(-30f);
 					GUILayout.Label("Last File Saved : " + m_LastFile, myToggle);
+				}
 
 			GUILayout.EndVertical();
 		GUILayout.EndHorizontal();
