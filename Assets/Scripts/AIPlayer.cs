@@ -22,8 +22,8 @@ public class AIPlayer : MonoBehaviour
   /// </summary>
   void Update()
   {
-    ship.targetSpeed = Mathf.Clamp01(Mathf.Sin(Time.time)*2.5f-1f)*ship.burnSpeed;
-    ship.roll = (1f-Mathf.Clamp01(Mathf.Sin(Time.time)*2.5f-1f))*.2f;
+    ship.targetSpeed = Mathf.Clamp01(Mathf.Sin(Time.time)*4f-3f)*ship.burnSpeed;
+    //ship.roll = (1f-Mathf.Clamp01(Mathf.Sin(Time.time)*2.5f-1f))*.2f;
 
     //Occasionally Fire the guns
     if(Mathf.Clamp01(Mathf.Sin(Time.time/2)*5f-3f) > 0)
