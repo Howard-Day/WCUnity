@@ -653,7 +653,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &8394922024170057277
 Transform:
   m_ObjectHideFlags: 0
@@ -1452,6 +1452,28 @@ PrefabInstance:
       propertyPath: m_Name
       value: KPSSpeed
       objectReference: {fileID: 0}
+    - target: {fileID: 6731280398668435443, guid: 3b5718893238c6847b1588fdb4b5b1a4,
+        type: 3}
+      propertyPath: m_FontData.m_Font
+      value: 
+      objectReference: {fileID: 12800000, guid: f1ea7c64ebbb1784e99bae51de53e9f0,
+        type: 2}
+    - target: {fileID: 6731280398668435443, guid: 3b5718893238c6847b1588fdb4b5b1a4,
+        type: 3}
+      propertyPath: m_FontData.m_FontSize
+      value: 32
+      objectReference: {fileID: 0}
+    - target: {fileID: 2830857601802736797, guid: 3b5718893238c6847b1588fdb4b5b1a4,
+        type: 3}
+      propertyPath: m_FontData.m_Font
+      value: 
+      objectReference: {fileID: 12800000, guid: f1ea7c64ebbb1784e99bae51de53e9f0,
+        type: 2}
+    - target: {fileID: 2830857601802736797, guid: 3b5718893238c6847b1588fdb4b5b1a4,
+        type: 3}
+      propertyPath: m_FontData.m_FontSize
+      value: 32
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3b5718893238c6847b1588fdb4b5b1a4, type: 3}
 --- !u!224 &2792089598339486435 stripped
@@ -1576,6 +1598,28 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: SetSpeed
+      objectReference: {fileID: 0}
+    - target: {fileID: 8007055198886904427, guid: 383655fdad40969428f6a8f86eea8cb1,
+        type: 3}
+      propertyPath: m_FontData.m_Font
+      value: 
+      objectReference: {fileID: 12800000, guid: f1ea7c64ebbb1784e99bae51de53e9f0,
+        type: 2}
+    - target: {fileID: 8007055198886904427, guid: 383655fdad40969428f6a8f86eea8cb1,
+        type: 3}
+      propertyPath: m_FontData.m_FontSize
+      value: 32
+      objectReference: {fileID: 0}
+    - target: {fileID: 3229884601781345046, guid: 383655fdad40969428f6a8f86eea8cb1,
+        type: 3}
+      propertyPath: m_FontData.m_Font
+      value: 
+      objectReference: {fileID: 12800000, guid: f1ea7c64ebbb1784e99bae51de53e9f0,
+        type: 2}
+    - target: {fileID: 3229884601781345046, guid: 383655fdad40969428f6a8f86eea8cb1,
+        type: 3}
+      propertyPath: m_FontData.m_FontSize
+      value: 32
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 383655fdad40969428f6a8f86eea8cb1, type: 3}

@@ -34,13 +34,13 @@ public class EngineFlare : MonoBehaviour
     void Update()
     {
         FlareMat.SetFloat("_LineWidth", Mathf.Lerp(FlareWidths.x,FlareWidths.y,FlareThrottle ) );
-        if(FlareThrottle <= .1f && TextureSwap == false)
+        if(FlareThrottle <= .2f && TextureSwap == false)
         {
             TextureSwap = true;
             SwapTexture(IdleThrottle,FlareMat);
         }
         
-        if(FlareThrottle <= .35f && FlareThrottle > .1f  && TextureSwap == false)
+        if(FlareThrottle <= .45f && FlareThrottle > .1f  && TextureSwap == false)
         {
             TextureSwap = true;
             SwapTexture(ThirdThrottle,FlareMat);

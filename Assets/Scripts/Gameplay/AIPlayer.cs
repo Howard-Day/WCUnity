@@ -22,7 +22,7 @@ public class AIPlayer : MonoBehaviour
   /// </summary>
   void Update()
   {
-    ship.targetSpeed = Mathf.Clamp01(Mathf.Sin(Time.time)*4f-3f)*ship.burnSpeed;
+    ship.targetSpeed = Mathf.Clamp01(Mathf.Sin(Time.time*1.5f)*4f-3f)*ship.burnSpeed;
     //ship.roll = (1f-Mathf.Clamp01(Mathf.Sin(Time.time)*2.5f-1f))*.2f;
 
     //Occasionally Fire the guns
