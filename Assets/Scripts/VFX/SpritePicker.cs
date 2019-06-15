@@ -7,13 +7,14 @@ public class SpritePicker : MonoBehaviour
 {
   [SerializeField] Texture[] textureSheets = null;
   [SerializeField] Vector2Int frames = Vector2Int.zero;
-  [SerializeField] Transform gameCamera = null;
+  Transform gameCamera = null;
 
   Transform billboard;
   Material billboardMaterial;
 
   void Start()
   {
+    gameCamera = (Transform)GameObject.FindGameObjectWithTag("GameCamera").transform;
     billboard = transform.Find("Billboard");    
     if(Application.isPlaying)
       billboardMaterial = billboard.GetComponent<Renderer>().material;
@@ -21,6 +22,8 @@ public class SpritePicker : MonoBehaviour
 
   void Update()
   {
+    if(!gameCamera)
+      gameCamera = (Transform)GameObject.FindGameObjectWithTag("GameCamera").transform;
     if (!billboard || !billboardMaterial || frames == Vector2Int.zero || !gameCamera)
     {
       return;

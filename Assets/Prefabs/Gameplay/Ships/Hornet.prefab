@@ -145,7 +145,6 @@ MonoBehaviour:
   - {fileID: 2800000, guid: 8b7b7da655f799a43b7ba39005db1e2c, type: 3}
   - {fileID: 2800000, guid: 699e0dca159cf6545bd811591a255cf8, type: 3}
   frames: {x: 8, y: 4}
-  gameCamera: {fileID: 0}
 --- !u!1 &5695718656521392418
 GameObject:
   m_ObjectHideFlags: 0
@@ -173,7 +172,7 @@ Transform:
   m_GameObject: {fileID: 5695718656521392418}
   m_LocalRotation: {x: -0, y: -0.19509019, z: -0, w: 0.9807853}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 20, y: 20, z: 20}
+  m_LocalScale: {x: 25, y: 25, z: 25}
   m_Children: []
   m_Father: {fileID: 5695718655840442018}
   m_RootOrder: 0
@@ -247,13 +246,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5695718656718068060}
-  m_LocalRotation: {x: 0, y: 0.004363274, z: 0, w: 0.9999905}
-  m_LocalPosition: {x: -6.75, y: -0.06, z: 3}
+  m_LocalRotation: {x: 0, y: 0.008726558, z: 0, w: 0.999962}
+  m_LocalPosition: {x: -7.75, y: -0.06, z: 3.25}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 5695718655840442018}
   m_RootOrder: 2
-  m_LocalEulerAnglesHint: {x: 0, y: 0.5, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 1, z: 0}
 --- !u!1 &5695718656935944158
 GameObject:
   m_ObjectHideFlags: 0
@@ -277,13 +276,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5695718656935944158}
-  m_LocalRotation: {x: 0, y: -0.004363368, z: 0, w: 0.9999905}
-  m_LocalPosition: {x: 6.75, y: -0.06, z: 3}
+  m_LocalRotation: {x: 0, y: -0.008726465, z: 0, w: 0.999962}
+  m_LocalPosition: {x: 7.75, y: -0.06, z: 3.25}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 5695718655840442018}
   m_RootOrder: 3
-  m_LocalEulerAnglesHint: {x: 0, y: -0.5, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: -1, z: 0}
 --- !u!1001 &3725917912906691530
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -356,6 +355,16 @@ PrefabInstance:
       propertyPath: FullThrottle
       value: 
       objectReference: {fileID: 2800000, guid: 05454442705c0e846bbca93b57828394, type: 3}
+    - target: {fileID: 2967868975163282982, guid: 2097a4efc6d07894fad7c4356faa2704,
+        type: 3}
+      propertyPath: FlareWidths.x
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2967868975163282982, guid: 2097a4efc6d07894fad7c4356faa2704,
+        type: 3}
+      propertyPath: FlareWidths.y
+      value: 4
+      objectReference: {fileID: 0}
     - target: {fileID: 7989437017167104987, guid: 2097a4efc6d07894fad7c4356faa2704,
         type: 3}
       propertyPath: m_Materials.Array.data[0]

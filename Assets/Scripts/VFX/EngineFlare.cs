@@ -10,15 +10,18 @@ public class EngineFlare : MonoBehaviour
     public Texture2D FullThrottle;
     public Texture2D Afterburn;
     public Vector2 FlareWidths;
+    public Vector2 FlareLengths;
     public float FlareThrottle;
 
     Material FlareMat; 
     bool TextureSwap = false; 
+    VolumetricLines.VolumetricLineBehavior VolLine;
 
     // Start is called before the first frame update
     void Start()
     {
         FlareMat = (Material)gameObject.GetComponent<MeshRenderer>().sharedMaterial;
+        VolLine = (VolumetricLines.VolumetricLineBehavior)gameObject.GetComponent<VolumetricLines.VolumetricLineBehavior>();
     }
 
     void SwapTexture(Texture2D to, Material mat)
@@ -63,6 +66,7 @@ public class EngineFlare : MonoBehaviour
             TextureSwap = true;
             SwapTexture(Afterburn,FlareMat);
         }
+        VolLine.StartPos = new Vector3(0,0,Mathf.Lerp(FlareLengths.y,FlareLengths.x,FlareThrottle));
 
     }
 }
