@@ -57,12 +57,12 @@ MonoBehaviour:
   targetSpeed: 0
   capacitorLevel: 0
   isAfterburning: 0
-  turnRate: 50
+  turnRate: 75
   invertYAxis: 0
   topSpeed: 55
   burnSpeed: 95
-  acceleration: 1.5
-  deceleration: 1
+  acceleration: 2.25
+  deceleration: 1.5
   capacitorSize: 25
   rechargeRate: 4
   speed: 0

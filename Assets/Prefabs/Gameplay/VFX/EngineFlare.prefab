@@ -117,5 +117,5 @@ MonoBehaviour:
   CruiseThrottle: {fileID: 2800000, guid: 03b9125c8d64d824489572be47559149, type: 3}
   FullThrottle: {fileID: 2800000, guid: 03b9125c8d64d824489572be47559149, type: 3}
   Afterburn: {fileID: 2800000, guid: c2b14833cbe460840ad9904d373eebf8, type: 3}
-  FlareWidths: {x: 2, y: 4}
+  FlareWidths: {x: 1.5, y: 3}
   FlareThrottle: 0
