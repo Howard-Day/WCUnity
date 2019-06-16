@@ -10,7 +10,7 @@ public class ShipSettings : MonoBehaviour
   [HideInInspector] public float targetSpeed;
   [HideInInspector] public float capacitorLevel;
   [HideInInspector] public bool isAfterburning;
-  [SerializeField] float turnRate = 50f;
+  [SerializeField] public float turnRate = 50f;
   [SerializeField] bool invertYAxis = false;
   [SerializeField] public float topSpeed = 20f;
   [SerializeField] public float burnSpeed = 50f;

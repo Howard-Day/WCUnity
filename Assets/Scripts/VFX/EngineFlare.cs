@@ -65,6 +65,7 @@ public class EngineFlare : MonoBehaviour
         {
             TextureSwap = true;
             SwapTexture(Afterburn,FlareMat);
+            FlareMat.SetFloat("_LineWidth", FlareWidths.y*1.5f);
         }
         VolLine.StartPos = new Vector3(0,0,Mathf.Lerp(FlareLengths.y,FlareLengths.x,FlareThrottle));
 
