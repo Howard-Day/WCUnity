@@ -33,7 +33,7 @@ public class CockpitShift : MonoBehaviour
         CockpitRoot.localPosition = new Vector3(SmoothShift.x*MaxXShift,SmoothShift.y*MaxYShift, CockpitRoot.localPosition.z);
 
         if (temp_shake_intensity > 0){
-            SmoothShake = Vector3.SmoothDamp(SmoothShake,new Vector3(Random.insideUnitSphere.x,Random.insideUnitSphere.y,0) * temp_shake_intensity,ref smoothRef,.075f); 
+            SmoothShake = Vector3.SmoothDamp(SmoothShake,new Vector3(Random.insideUnitSphere.x,Random.insideUnitSphere.y,0) * temp_shake_intensity,ref smoothRef,.025f); 
             transform.localPosition += SmoothShake;
             temp_shake_intensity -= shake_decay;
         }

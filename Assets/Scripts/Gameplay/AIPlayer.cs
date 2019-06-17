@@ -183,7 +183,7 @@ void NoviceAI()
   }
 //print("Current target is" + AITargetShip.name);
   DoAIStates();
-  RollControl(Random.Range(-10000f,1f));
+  RollControl(Random.Range(-1000f,1f));
 }
 
 
@@ -244,9 +244,9 @@ switch(ActiveAIState)
   {
      FireGuns(false);
     if(randPos.magnitude == 0)
-    {  randPos = transform.position+Random.insideUnitSphere*150f;
+    {  randPos = transform.position+Random.insideUnitSphere*100f;
     }
-    if(Vector3.Distance(AITarget.position,gameObject.transform.position) > 150f)
+    if(Vector3.Distance(AITarget.position,gameObject.transform.position) < 50f)
     {
       ship.targetSpeed = ship.burnSpeed;
     }

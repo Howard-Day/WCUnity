@@ -98,7 +98,7 @@ public class ShipSettings : MonoBehaviour
     // also set the visible flare throttles
     foreach (EngineFlare flare in engineFlares)
     {
-      flare.FlareThrottle = speed/(topSpeed*2);
+      flare.FlareThrottle = speed/(topSpeed);
     }
   }
 }
