@@ -99,7 +99,7 @@ MonoBehaviour:
   m_lineColor: {r: 1, g: 0.7812411, b: 0, a: 1}
   m_lineWidth: 3
   m_lightSaberFactor: 0
-  MinimumFlipAngle: 1.5
+  MinimumFlipAngle: 5
 --- !u!114 &2967868975163282982
 MonoBehaviour:
   m_ObjectHideFlags: 0

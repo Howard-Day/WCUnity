@@ -15,6 +15,7 @@ public class LaserBolt : MonoBehaviour
   void Start()
   {    
     gameObject.transform.SetParent(GameObject.FindWithTag("Projectiles").transform);   
+    
   }
   void Update()
   {

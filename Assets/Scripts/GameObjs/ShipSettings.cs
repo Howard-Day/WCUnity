@@ -10,6 +10,9 @@ public class ShipSettings : MonoBehaviour
   [HideInInspector] public float targetSpeed;
   [HideInInspector] public float capacitorLevel;
   [HideInInspector] public bool isAfterburning;
+  public enum TEAM {CONFED, KILRATHI, NEUTRAL, PIRATE};
+  [SerializeField]
+  public TEAM AITeam = TEAM.CONFED;
   [SerializeField] public float turnRate = 50f;
   [SerializeField] bool invertYAxis = false;
   [SerializeField] public float topSpeed = 20f;
@@ -22,11 +25,18 @@ public class ShipSettings : MonoBehaviour
   EngineFlare[] engineFlares;
 
   [HideInInspector]  public float speed = 0f;
+  [HideInInspector] GameObjTracker Tracker;
   void Start()
   {
     gameObject.transform.SetParent(GameObject.FindWithTag("GamePlayObjs").transform); 
+    Tracker = gameObject.GetComponentInParent<GameObjTracker>();
+    Tracker.RegisterAllShips();
+    Tracker.RegisterTeams();
     engineFlares = GetComponentsInChildren<EngineFlare>();
     capacitorLevel = capacitorSize;
+    burnSpeed = burnSpeed * Tracker.speedMultiplier;
+    topSpeed = topSpeed * Tracker.speedMultiplier;
+
   }
 
   // late update to give human or AI player scripts a chance to set values first
@@ -46,6 +56,8 @@ public class ShipSettings : MonoBehaviour
     //print(gameObject.name + " capacitor level is " + capacitorLevel);
   }
 
+  public Vector3 refTurn;
+  Vector3 oldRot;
   void Steer()
   {
     var yaw_ = Mathf.Clamp(yaw, -1f, 1f);
@@ -55,6 +67,9 @@ public class ShipSettings : MonoBehaviour
     pitch_ *= turnRate * Time.deltaTime;
     roll_ *= turnRate * 2f * Time.deltaTime;
     transform.localRotation *= Quaternion.AngleAxis(roll_, Vector3.forward) * Quaternion.AngleAxis(yaw_, Vector3.up) * Quaternion.AngleAxis(pitch_, invertYAxis ? Vector3.right : Vector3.left);
+    refTurn = (transform.localEulerAngles-oldRot);
+    //print(refTurn);
+    oldRot = transform.localEulerAngles;
   }
 
   void Throttle()
@@ -83,7 +98,7 @@ public class ShipSettings : MonoBehaviour
     // also set the visible flare throttles
     foreach (EngineFlare flare in engineFlares)
     {
-      flare.FlareThrottle = speed/topSpeed;
+      flare.FlareThrottle = speed/(topSpeed*2);
     }
   }
 }

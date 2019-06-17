@@ -4,7 +4,7 @@ public class LaserCannon : MonoBehaviour
 {
   [HideInInspector] public bool fire = false;
 
-  [SerializeField] Transform mountingPoint = null;
+  Transform mountingPoint = null;
   [SerializeField] Transform laserBoltPrefab = null;
   [SerializeField] float fireRate = .4f;
   [SerializeField] float powerDrain = 2.1f;
@@ -18,7 +18,8 @@ public class LaserCannon : MonoBehaviour
   /// </summary>
   void Start()
   {
-      MainShip = gameObject.GetComponent<ShipSettings>();
+      MainShip = gameObject.GetComponentInParent<ShipSettings>();
+      mountingPoint = gameObject.transform;
   }
   // late update to give human or AI player scripts a chance to set values first
   void LateUpdate()
