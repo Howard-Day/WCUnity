@@ -1,4 +1,7 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
 using Moments;
 
 [RequireComponent(typeof(Recorder)), AddComponentMenu("")]
@@ -9,7 +12,10 @@ public class Record : MonoBehaviour
 	string m_LastFile = "";
 	bool m_IsSaving = false;
 	public Font guiFont;
-	
+	public Text TopLine;
+	public Text MidLine;	
+	public Text BottomLine;	
+
 	void Start()
 	{
 		// Get our Recorder instance (there can be only one per camera).
@@ -67,7 +73,7 @@ public class Record : MonoBehaviour
 
 	void Update()
 	{
-		if (Input.GetKeyDown(KeyCode.F5))
+		if (Input.GetKeyDown(KeyCode.F2))
 		{
 			// Compress & save the buffered frames to a gif file. We should check the State
 			// of the Recorder before saving, but for the sake of this example we won't, so
@@ -76,19 +82,31 @@ public class Record : MonoBehaviour
 			m_Recorder.Save();
 			m_Progress = 0f;
 		}
+		TopLine.text = ("Press [F2] to export the buffered frames to a gif file.").ToUpper();
+		MidLine.text = ("Recorder State : " + m_Recorder.State.ToString()).ToUpper();
+		if (m_IsSaving)
+				{
+					BottomLine.text = ("Progress Report : " + m_Progress.ToString("F2") + "%").ToUpper();
+				}
+		if (!string.IsNullOrEmpty(m_LastFile))
+		{	
+			BottomLine.text =("Last File Saved : " + m_LastFile).ToUpper();
+		}
 	}
 
-	void OnGUI()
+/*	void OnGUI()
 	{
 		GUIStyle myToggle = new GUIStyle(GUI.skin.label);
 		myToggle.normal.textColor = Color.green;
 		myToggle.font = guiFont;
 		myToggle.margin.top = 8;
+		myToggle.fontSize = 24;
+		GUILayout.BeginArea(AspectUtility.screenRect); 
 		GUILayout.BeginHorizontal();
 			GUILayout.Space(40f);
 			GUILayout.BeginVertical();
 				GUILayout.Space(40f);
-				GUILayout.Label("Press [F5] to export the buffered frames to a gif file.",myToggle);
+				GUILayout.Label("Press [F8] to export the buffered frames to a gif file.",myToggle);
 				GUILayout.Space(-30f);
 				GUILayout.Label("Recorder State : " + m_Recorder.State.ToString(),myToggle);
 				if (m_IsSaving)
@@ -102,5 +120,7 @@ public class Record : MonoBehaviour
 
 			GUILayout.EndVertical();
 		GUILayout.EndHorizontal();
-	}
+		GUILayout.EndArea();
+	}*/
+
 }

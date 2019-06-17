@@ -40,7 +40,7 @@ public class AIPlayer : MonoBehaviour
     Vector3 targetDir = aimAt - transform.position;
     smoothDir = Vector3.SmoothDamp(smoothDir,targetDir,ref refDir, .25f);
     
-    Quaternion newDir = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(smoothDir,transform.up), turnSpeed * 16f * Time.deltaTime);
+    Quaternion newDir = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(smoothDir,transform.up), turnSpeed * 6f * Time.fixedUnscaledDeltaTime);
     transform.rotation = QuaternionUtil.SmoothDamp(transform.rotation,newDir, ref refRot, .15f);
   }
   bool rolling = false;
