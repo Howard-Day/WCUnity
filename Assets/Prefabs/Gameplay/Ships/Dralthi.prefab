@@ -27,7 +27,7 @@ Transform:
   m_GameObject: {fileID: 2289861989968530047}
   m_LocalRotation: {x: 0.25600818, y: 0.45109892, z: -0.13683935, w: 0.8439459}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 16, y: 16, z: 16}
+  m_LocalScale: {x: 18, y: 18, z: 18}
   m_Children: []
   m_Father: {fileID: 2289861991765167615}
   m_RootOrder: 0
@@ -87,10 +87,12 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2289861991765167615}
+  - component: {fileID: 1524424820}
   - component: {fileID: 2289861991765167608}
+  - component: {fileID: 2844008454367371773}
   - component: {fileID: 2289861991765167609}
   - component: {fileID: 2289861991765167614}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Dralthi
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -116,6 +118,19 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!135 &1524424820
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2289861991765167612}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 7
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &2289861991765167608
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -128,12 +143,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9381e042c574de1478756c7cc7a7c1e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  yaw: 0
-  pitch: 0
-  roll: 0
-  targetSpeed: 0
-  capacitorLevel: 0
-  isAfterburning: 0
   AITeam: 1
   turnRate: 65
   invertYAxis: 0
@@ -143,8 +152,37 @@ MonoBehaviour:
   deceleration: 1.5
   capacitorSize: 20
   rechargeRate: 5
+  Armor: {x: 4.5, y: 3.5, z: 3, w: 3}
+  Shield: {x: 5, y: 5}
+  shieldRechargeRate: 4.5
+  DeathVFX: {fileID: 7789471376337144576, guid: 00b8cbe808eda81448b2786984607fcd,
+    type: 3}
+  ShipID: 0
+  yaw: 0
+  pitch: 0
+  roll: 0
+  targetSpeed: 0
+  capacitorLevel: 0
+  isAfterburning: 0
   speed: 0
   refTurn: {x: 0, y: 0, z: 0}
+--- !u!114 &2844008454367371773
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2289861991765167612}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af4d4b77870d3794386aa40c6ef77e06, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _pitch: 0
+  _yaw: 0
+  _roll: 0
+  _targetthrottle: 0.5
+  fireGuns: 0
 --- !u!114 &2289861991765167609
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -158,7 +196,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ActiveAIState: 0
-  AISkillLevel: 0
+  AISkillLevel: 1
   AITarget: {fileID: 0}
   Tracker: {fileID: 0}
 --- !u!114 &2289861991765167614

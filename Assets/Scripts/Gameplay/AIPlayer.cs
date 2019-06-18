@@ -131,6 +131,11 @@ void FireGuns(bool fire)
     ShipSettings nearestShip = null;
     foreach (ShipSettings shipTest in Tracker.Ships)
     {
+      if(shipTest == null) //SOMEONE MUSTA DIED
+      {
+        Tracker.RegisterAllShips();
+        Tracker.RegisterTeams();
+      }
       Transform shipTrans = (Transform)shipTest.gameObject.GetComponent<Transform>();
       float shipDist = Vector3.Distance(shipTrans.position, toObj.position);
       if (shipTest.AITeam != ShipSettings.TEAM.NEUTRAL && shipTest != ship)
@@ -165,8 +170,9 @@ void NoviceAI()
     //print(name + " has a follow distance of " +followDist);
   }
   AITargetShip = FindNearestShip(gameObject.transform,ship.AITeam);
-  AITarget = AITargetShip.gameObject.GetComponent<Transform>();
-
+  if(AITargetShip != null)
+  {AITarget = AITargetShip.gameObject.GetComponent<Transform>();
+  }
   if (AITargetShip && Vector3.Distance(AITarget.position,gameObject.transform.position) <= engageDist && ActiveAIState != AIState.WINGMAN)
   { 
     if(ActiveAIState == AIState.PATROL || ActiveAIState == AIState.SEARCH )

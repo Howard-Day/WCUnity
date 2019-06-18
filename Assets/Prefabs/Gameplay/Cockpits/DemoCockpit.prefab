@@ -989,10 +989,11 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 86800494226051090}
+  - component: {fileID: 803592486456706536}
   - component: {fileID: 566986660}
   - component: {fileID: 665893096}
   - component: {fileID: 1207496231}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: DemoCockpit
   m_TagString: PlayerShip
   m_Icon: {fileID: 0}
@@ -1016,6 +1017,19 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!135 &803592486456706536
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5517306084593632097}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 6
+  m_Center: {x: 0, y: -0.5, z: -4}
 --- !u!114 &566986660
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1028,12 +1042,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9381e042c574de1478756c7cc7a7c1e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  yaw: 0
-  pitch: 0
-  roll: 0
-  targetSpeed: 0
-  capacitorLevel: 0
-  isAfterburning: 0
   AITeam: 0
   turnRate: 75
   invertYAxis: 0
@@ -1043,6 +1051,18 @@ MonoBehaviour:
   deceleration: 1.5
   capacitorSize: 25
   rechargeRate: 4
+  Armor: {x: 4.5, y: 4, z: 3, w: 3}
+  Shield: {x: 4, y: 4}
+  shieldRechargeRate: 5
+  DeathVFX: {fileID: 7789471376337144576, guid: 00b8cbe808eda81448b2786984607fcd,
+    type: 3}
+  ShipID: 0
+  yaw: 0
+  pitch: 0
+  roll: 0
+  targetSpeed: 0
+  capacitorLevel: 0
+  isAfterburning: 0
   speed: 0
   refTurn: {x: 0, y: 0, z: 0}
 --- !u!114 &665893096

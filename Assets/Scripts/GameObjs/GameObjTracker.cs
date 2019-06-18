@@ -10,6 +10,9 @@ public class GameObjTracker : MonoBehaviour
     public List<ShipSettings> KilrathiShips;
     public List<ShipSettings> NeutralShips;
     public List<ShipSettings> PirateShips;
+
+    public GameObject KilrathiSpawn;
+    public GameObject ConfedSpawn;
     // Start is called before the first frame update
     [HideInInspector] public int frames;
     void Start()
@@ -55,9 +58,22 @@ public class GameObjTracker : MonoBehaviour
 
     }
 
+    void SpawnExtraShips()
+    {
+        if(KilrathiShips.Count < 3)
+        {
+            Instantiate(KilrathiSpawn, Random.onUnitSphere*1200f,Quaternion.identity);
+        }        
+        if(ConfedShips.Count < 3)
+        {
+            Instantiate(ConfedSpawn, Random.onUnitSphere*1200f,Quaternion.identity);
+        }
+    }
     // Update is called once per frame
     void Update()
     {
         frames ++;
+        SpawnExtraShips();
+    
     }
 }
