@@ -67,9 +67,9 @@ MonoBehaviour:
   AITeam: 0
   turnRate: 75
   invertYAxis: 0
-  topSpeed: 55
-  burnSpeed: 95
-  acceleration: 2.25
+  topSpeed: 42
+  burnSpeed: 124
+  acceleration: 2.5
   deceleration: 1.5
   capacitorSize: 25
   rechargeRate: 4
@@ -371,6 +371,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: EngineFlare
       objectReference: {fileID: 0}
+    - target: {fileID: 7989437017167104987, guid: 2097a4efc6d07894fad7c4356faa2704,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 2967868975163282982, guid: 2097a4efc6d07894fad7c4356faa2704,
         type: 3}
       propertyPath: FullThrottle
@@ -385,11 +390,6 @@ PrefabInstance:
         type: 3}
       propertyPath: FlareWidths.y
       value: 4
-      objectReference: {fileID: 0}
-    - target: {fileID: 7989437017167104987, guid: 2097a4efc6d07894fad7c4356faa2704,
-        type: 3}
-      propertyPath: m_Materials.Array.data[0]
-      value: 
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2097a4efc6d07894fad7c4356faa2704, type: 3}

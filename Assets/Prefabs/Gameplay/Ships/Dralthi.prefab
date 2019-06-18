@@ -147,8 +147,8 @@ MonoBehaviour:
   turnRate: 65
   invertYAxis: 0
   topSpeed: 40
-  burnSpeed: 75
-  acceleration: 2
+  burnSpeed: 120
+  acceleration: 2.5
   deceleration: 1.5
   capacitorSize: 20
   rechargeRate: 5
@@ -297,16 +297,16 @@ PrefabInstance:
       propertyPath: m_Name
       value: EngineFlare
       objectReference: {fileID: 0}
-    - target: {fileID: 2967868975163282982, guid: 2097a4efc6d07894fad7c4356faa2704,
-        type: 3}
-      propertyPath: FullThrottle
-      value: 
-      objectReference: {fileID: 2800000, guid: 05454442705c0e846bbca93b57828394, type: 3}
     - target: {fileID: 7989437017167104987, guid: 2097a4efc6d07894fad7c4356faa2704,
         type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 2967868975163282982, guid: 2097a4efc6d07894fad7c4356faa2704,
+        type: 3}
+      propertyPath: FullThrottle
+      value: 
+      objectReference: {fileID: 2800000, guid: 05454442705c0e846bbca93b57828394, type: 3}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2097a4efc6d07894fad7c4356faa2704, type: 3}
 --- !u!4 &3422188428729394271 stripped
@@ -457,16 +457,16 @@ PrefabInstance:
       propertyPath: m_Name
       value: EngineFlare
       objectReference: {fileID: 0}
-    - target: {fileID: 2967868975163282982, guid: 2097a4efc6d07894fad7c4356faa2704,
-        type: 3}
-      propertyPath: FullThrottle
-      value: 
-      objectReference: {fileID: 2800000, guid: 05454442705c0e846bbca93b57828394, type: 3}
     - target: {fileID: 7989437017167104987, guid: 2097a4efc6d07894fad7c4356faa2704,
         type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 2967868975163282982, guid: 2097a4efc6d07894fad7c4356faa2704,
+        type: 3}
+      propertyPath: FullThrottle
+      value: 
+      objectReference: {fileID: 2800000, guid: 05454442705c0e846bbca93b57828394, type: 3}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2097a4efc6d07894fad7c4356faa2704, type: 3}
 --- !u!4 &979894190675649358 stripped
