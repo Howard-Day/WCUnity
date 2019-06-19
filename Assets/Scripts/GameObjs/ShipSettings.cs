@@ -28,12 +28,16 @@ public class ShipSettings : MonoBehaviour
   [SerializeField] public float shieldRechargeRate = 1;
   [Header("Death Effect")]
   [SerializeField] public GameObject DeathVFX;
+  [SerializeField] public GameObject DamageVFX;
+  [SerializeField] public GameObject DamageTrails;
+
 
 
   //Hidden Attributes
   EngineFlare[] engineFlares;
   Vector4 _ArmorMax;
   Vector2 _ShieldMax;
+  float Core;
   float _CoreStrength;
 
   [HideInInspector] public int ShipID;
@@ -45,6 +49,7 @@ public class ShipSettings : MonoBehaviour
   [HideInInspector] public bool isAfterburning;
   [HideInInspector]  public float speed = 0f;
   [HideInInspector] GameObjTracker Tracker;
+  [HideInInspector] public bool isDead = false;
 
   void Start()
   {
@@ -67,15 +72,24 @@ public class ShipSettings : MonoBehaviour
     _ArmorMax = Armor; //Give us something to compare to later on
     _ShieldMax = Shield; //same
     _CoreStrength = (Armor.x+Armor.y+Armor.z+Armor.w+(Shield.x+Shield.y)/2)/3; //Generalized fomula for the unarmored mechanical core of the ship
+    Core = _CoreStrength;
   }
 
   // late update to give human or AI player scripts a chance to set values first
   void LateUpdate()
   {
+    if(!isDead)
+    {
     Steer();
     Throttle();
     Power();
+    }
     DoHealth();
+  }
+
+  void InternalDamage(){
+    //Show that internal damage has taken place! 
+    Instantiate(DamageVFX,transform.position,Quaternion.identity,transform);
   }
 
   public void DoDamage(Vector3 hitLoc, float damage)
@@ -103,6 +117,7 @@ public class ShipSettings : MonoBehaviour
                 damage -= Armor.x;
                 Armor.x = 0;
                 _CoreStrength -= damage;
+                InternalDamage();
               }
           }
           else if(Vector3.Angle(-transform.right, damageAngle) <= 45) // left armor hit!)
@@ -115,6 +130,7 @@ public class ShipSettings : MonoBehaviour
                 damage -= Armor.z;
                 Armor.z = 0;
                 _CoreStrength -= damage;
+                InternalDamage();
               }
           }
           else if(Vector3.Angle(transform.right, damageAngle) <= 45) // right armor hit!)
@@ -127,6 +143,7 @@ public class ShipSettings : MonoBehaviour
                 damage -= Armor.w;
                 Armor.w = 0;
                 _CoreStrength -= damage;
+                InternalDamage();
               }
           }
           else //HUH, no armor seems to have been hit. That's a dirty lie, so let's make them all suffer, plus a liiitle bit of core damage for fibbing.
@@ -159,6 +176,7 @@ public class ShipSettings : MonoBehaviour
                 damage -= Armor.y;
                 Armor.y = 0;
                 _CoreStrength -= damage;
+                InternalDamage();
               }
           }
           else if(Vector3.Angle(-transform.right, damageAngle) <= 45) // left armor hit!)
@@ -171,6 +189,7 @@ public class ShipSettings : MonoBehaviour
                 damage -= Armor.z;
                 Armor.z = 0;
                 _CoreStrength -= damage;
+                InternalDamage();
               }
           }
           else if(Vector3.Angle(transform.right, damageAngle) <= 45) // right armor hit!)
@@ -183,6 +202,7 @@ public class ShipSettings : MonoBehaviour
                 damage -= Armor.w;
                 Armor.w = 0;
                 _CoreStrength -= damage;
+                InternalDamage();
               }
           }
           else //HUH, no armor seems to have been hit. That's a dirty lie, so let's make them all suffer, plus a liiitle bit of core damage for fibbing.
@@ -194,6 +214,10 @@ public class ShipSettings : MonoBehaviour
     }
   }
   GameObject Boom;
+  Vector3 DeathDir = Vector3.zero;
+  float DeathVel;
+  Vector3 DeathSpin;
+  GameObject Trail;
   void DoHealth()
   {
     //Constantly recharge the shields till full
@@ -202,14 +226,41 @@ public class ShipSettings : MonoBehaviour
     if(Shield.y < _ShieldMax.y)
       Shield.y += shieldRechargeRate*Time.deltaTime/20;
     //Should do component damage here when the corestrength is low. Ignore for now
+    if(_CoreStrength < Core*.666f)
+    {
+      if(!Trail)
+      {
+        foreach(EngineFlare flare in engineFlares)
+        {
+          Trail = Instantiate(DamageTrails,flare.gameObject.transform.position+flare.gameObject.transform.forward*4,Quaternion.identity,flare.gameObject.transform);
+        }
+      }
+    }
+
     if(_CoreStrength <= 0) //We dead, son
     { 
+      isDead = true;
+      if (DeathDir == Vector3.zero)
+      {  DeathDir = transform.forward;
+         DeathVel = speed;
+         DeathSpin = new Vector3(Random.Range(-3f,3f),Random.Range(-3f,3f),Random.Range(-3f,3f));
+      }
+      var dyaw_ = Mathf.Clamp(DeathSpin.y, -1f, 1f);
+      var dpitch_ = Mathf.Clamp(DeathSpin.x, -1f, 1f);
+      var droll_ = Mathf.Clamp(DeathSpin.z, -1f, 1f);
+      dyaw_ *= turnRate * 2f * Time.deltaTime;
+      dpitch_ *= turnRate * 2f * Time.deltaTime;
+      droll_ *= turnRate * 3f * Time.deltaTime;
+      transform.localRotation *= Quaternion.AngleAxis(droll_, Vector3.forward) * Quaternion.AngleAxis(dyaw_, Vector3.up) * Quaternion.AngleAxis(dpitch_, invertYAxis ? Vector3.right : Vector3.left);
+      transform.position += DeathDir * DeathVel* Time.deltaTime;
       if (!Boom)
-      { Boom = Instantiate(DeathVFX,transform.position,Quaternion.identity,transform.parent);}
-      Destroy(gameObject, .25f);
-      //Makre sure everyone knows we're gone
-      Tracker.RegisterAllShips();
-      Tracker.RegisterTeams();
+      { 
+        Boom = Instantiate(DeathVFX,transform.position,Quaternion.identity,transform.parent);
+      }
+      else{
+        Boom.transform.position += DeathDir * DeathVel* Time.deltaTime;
+      }
+      Destroy(gameObject, .5f);
     }
   }
 

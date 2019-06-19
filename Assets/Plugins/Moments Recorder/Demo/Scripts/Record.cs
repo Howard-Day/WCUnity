@@ -73,6 +73,8 @@ public class Record : MonoBehaviour
 
 	void Update()
 	{
+		if(Application.isEditor)
+		{
 		if (Input.GetKeyDown(KeyCode.F2))
 		{
 			// Compress & save the buffered frames to a gif file. We should check the State
@@ -91,6 +93,7 @@ public class Record : MonoBehaviour
 		if (!string.IsNullOrEmpty(m_LastFile))
 		{	
 			BottomLine.text =("Last File Saved : " + m_LastFile).ToUpper();
+		}
 		}
 	}
 

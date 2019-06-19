@@ -129,7 +129,7 @@ SphereCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 7
+  m_Radius: 9
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &2289861991765167608
 MonoBehaviour:
@@ -157,6 +157,10 @@ MonoBehaviour:
   shieldRechargeRate: 4.5
   DeathVFX: {fileID: 7789471376337144576, guid: 00b8cbe808eda81448b2786984607fcd,
     type: 3}
+  DamageVFX: {fileID: 3380178483321881586, guid: 35013c63d5e50ae44b9dae095c0895f1,
+    type: 3}
+  DamageTrails: {fileID: 1507481365441476783, guid: edceb4824a5b55a43a13f2d0bd9a92b9,
+    type: 3}
   ShipID: 0
   yaw: 0
   pitch: 0
@@ -165,6 +169,7 @@ MonoBehaviour:
   capacitorLevel: 0
   isAfterburning: 0
   speed: 0
+  isDead: 0
   refTurn: {x: 0, y: 0, z: 0}
 --- !u!114 &2844008454367371773
 MonoBehaviour:
@@ -181,7 +186,7 @@ MonoBehaviour:
   _pitch: 0
   _yaw: 0
   _roll: 0
-  _targetthrottle: 0.5
+  _targetthrottle: 1
   fireGuns: 0
 --- !u!114 &2289861991765167609
 MonoBehaviour:

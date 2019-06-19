@@ -136,14 +136,18 @@ void FireGuns(bool fire)
         Tracker.RegisterAllShips();
         Tracker.RegisterTeams();
       }
-      Transform shipTrans = (Transform)shipTest.gameObject.GetComponent<Transform>();
-      float shipDist = Vector3.Distance(shipTrans.position, toObj.position);
-      if (shipTest.AITeam != ShipSettings.TEAM.NEUTRAL && shipTest != ship)
-      {
-        if (shipDist < distance && shipTest.AITeam != ignoreTEAM)
+      if(shipTest != null)
         {
-          distance = shipDist;
-          nearestShip = shipTest;
+          Transform shipTrans = (Transform)shipTest.gameObject.GetComponent<Transform>();
+        
+        float shipDist = Vector3.Distance(shipTrans.position, toObj.position);
+        if (shipTest.AITeam != ShipSettings.TEAM.NEUTRAL && shipTest != ship)
+        {
+          if (shipDist < distance && shipTest.AITeam != ignoreTEAM)
+          {
+            distance = shipDist;
+            nearestShip = shipTest;
+          }
         }
       }
     }

@@ -78,6 +78,10 @@ MonoBehaviour:
   shieldRechargeRate: 5
   DeathVFX: {fileID: 7789471376337144576, guid: 00b8cbe808eda81448b2786984607fcd,
     type: 3}
+  DamageVFX: {fileID: 3380178483321881586, guid: 35013c63d5e50ae44b9dae095c0895f1,
+    type: 3}
+  DamageTrails: {fileID: 1507481365441476783, guid: edceb4824a5b55a43a13f2d0bd9a92b9,
+    type: 3}
   ShipID: 0
   yaw: 0
   pitch: 0
@@ -86,6 +90,7 @@ MonoBehaviour:
   capacitorLevel: 0
   isAfterburning: 0
   speed: 0
+  isDead: 0
   refTurn: {x: 0, y: 0, z: 0}
 --- !u!114 &369351026039379756
 MonoBehaviour:
