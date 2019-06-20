@@ -113,7 +113,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 350
-  damage: 1.75
+  damage: 1.25
   range: 2400
   hitShield: {fileID: 400538386877157161, guid: 86510d0776ceb1c47b4efd13c49ff3c1,
     type: 3}

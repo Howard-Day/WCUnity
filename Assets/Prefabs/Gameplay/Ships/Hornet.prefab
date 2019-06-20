@@ -65,12 +65,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   AITeam: 0
+  CollidesWith:
+    serializedVersion: 2
+    m_Bits: 3072
   turnRate: 75
   invertYAxis: 0
   topSpeed: 42
   burnSpeed: 124
   acceleration: 2.5
   deceleration: 1.5
+  AutoAvoids:
+    serializedVersion: 2
+    m_Bits: 3072
   capacitorSize: 25
   rechargeRate: 4
   Armor: {x: 4.5, y: 4, z: 3, w: 3}
@@ -91,6 +97,10 @@ MonoBehaviour:
   isAfterburning: 0
   speed: 0
   isDead: 0
+  recover: 1
+  BounceDir: {x: 0, y: 0, z: 0}
+  BounceSpin: {x: 0, y: 0, z: 0}
+  BouncePush: 0
   refTurn: {x: 0, y: 0, z: 0}
 --- !u!114 &369351026039379756
 MonoBehaviour:

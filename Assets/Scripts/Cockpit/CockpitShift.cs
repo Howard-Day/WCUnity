@@ -19,14 +19,17 @@ public class CockpitShift : MonoBehaviour
     Vector2 SmoothShift;
     Vector3 SmoothShake;
     Vector3 smoothRef;
+
+    Vector3 StartPos;
     // Start is called before the first frame update
     void Start()
     {
         shipMain = (ShipSettings)Camera.main.gameObject.GetComponentInParent<ShipSettings>();
         CockpitRoot = gameObject.transform;
+         
     }
     // Update is called once per frame
-    void Update()
+    void LateUpdate()
     {
         TargetShift = new Vector2(Mathf.Clamp(shipMain.refTurn.y,-1f,1f),Mathf.Clamp(shipMain.refTurn.x,-1f,1f));
         SmoothShift = Vector2.SmoothDamp(SmoothShift,TargetShift,ref RefShift, ShiftSmoothness);

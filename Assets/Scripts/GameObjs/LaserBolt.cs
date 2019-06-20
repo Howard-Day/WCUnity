@@ -7,9 +7,9 @@ public class LaserBolt : MonoBehaviour
   [SerializeField] float speed = 100f;
   [SerializeField] float damage = 1f;
   [SerializeField] float range = 1000f;
-  [SerializeField] GameObject hitShield;
-  [SerializeField] GameObject hitHull;
-  [SerializeField] LayerMask shootMask;
+  [SerializeField] public GameObject hitShield;
+  [SerializeField] public GameObject hitHull;
+  [SerializeField] public LayerMask shootMask;
 
   [HideInInspector] public int ProjID;
   float distanceTraveled = 0f;

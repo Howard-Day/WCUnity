@@ -53,6 +53,7 @@ void FireGuns(bool fire)
   foreach (LaserCannon laserCannon in laserCannons)
   {
    laserCannon.fire = fire;
+   bloodThirst = 0f; //Ahh, our bloodthirst is sated
   }
 }
   void DoABarrelRoll(float direction, float length)
@@ -161,9 +162,11 @@ void FireGuns(bool fire)
   float aimAccuracy = 30f;
   int aimUpdate = 60;
   float followDist;
+  float impatience;
+  float bloodThirst;
   Vector3 randPos = Vector3.zero;
   ShipSettings AITargetShip;
-
+  
 void NoviceAI()
 {
   engageDist = 1500f;
@@ -191,12 +194,31 @@ void NoviceAI()
       ActiveAIState = AIState.HUNT;
     }
   }
+  
 //print("Current target is" + AITargetShip.name);
+  DoImpatience(1f);
   DoAIStates();
   RollControl(Random.Range(-1000f,1f));
 }
+//Ai frustration
+public void DoImpatience(float maxImpatience) 
+{
+  if(ship.capacitorLevel <=2f) //if the AI can't shoot, increase impatience
+  {
+    impatience += Time.deltaTime;
+  }
+  if (impatience >= maxImpatience) //had enough, break off to recharge guns
+  {
+    ActiveAIState = AIState.REPOSITION;
+  }
+  ///but we gradually calm down
+   impatience -= Time.deltaTime/4;
+}
+//AI bloodthirstyness
+public void DoBloodThirsty(float maxThirsty)
+{
 
-
+}
 
 Vector3 randDist = Vector3.zero;
 public Vector3 DoTargeting(float Accuracy, float Update)
@@ -218,11 +240,15 @@ switch(ActiveAIState)
 {
   case AIState.ENGAGE:
   {
-    SteerTo(DoAim(5f), ship.turnRate);
+    SteerTo(DoAim(15f), ship.turnRate);
     ship.targetSpeed = ship.topSpeed;
-    if(Vector3.Distance(AITarget.position,gameObject.transform.position) < engageDist/2)
+    if(Vector3.Distance(AITarget.position,gameObject.transform.position) < engageDist/4)
     {
       ship.targetSpeed = ship.burnSpeed;
+    }
+    if(Vector3.Distance(AITarget.position,gameObject.transform.position) < engageDist/16)
+    {
+      ActiveAIState = AIState.HUNT;
     }
     //print(gameObject.name + " Is engaging! Throttle set to " + ship.targetSpeed);
   }

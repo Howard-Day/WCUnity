@@ -3,7 +3,7 @@
 public class LaserCannon : MonoBehaviour
 {
   [HideInInspector] public bool fire = false;
-  [HideInInspector] public int GunId;
+  [HideInInspector] public int GunId = 0;
 
   Transform mountingPoint = null;
   [SerializeField] Transform laserBoltPrefab = null;
@@ -28,7 +28,7 @@ public class LaserCannon : MonoBehaviour
   void LateUpdate()
   {
     //Catch case in occurance of not having an ID
-    if(GunId == 0 | GunId == null)
+    if(GunId == 0)
       GunId = MainShip.ShipID;
 
     cooldown = Mathf.Max(cooldown - Time.deltaTime, 0f);

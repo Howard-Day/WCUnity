@@ -9,6 +9,7 @@ public class ShipSettings : MonoBehaviour
   
   [Header("Choose Team!")]
   [SerializeField] public TEAM AITeam = TEAM.CONFED;
+  [SerializeField] public LayerMask CollidesWith;
   [Header("Movement Settings")]
   [SerializeField] public float turnRate = 50f;
   [SerializeField] bool invertYAxis = false;
@@ -16,6 +17,7 @@ public class ShipSettings : MonoBehaviour
   [SerializeField] public float burnSpeed = 50f;
   [SerializeField] float acceleration = 1.5f;
   [SerializeField] float deceleration = 1f;
+  [SerializeField] public LayerMask AutoAvoids;
   [Header("Weapon Settings")]
   [SerializeField] public float capacitorSize = 50f;
   [SerializeField] float rechargeRate = 1f;
@@ -34,6 +36,7 @@ public class ShipSettings : MonoBehaviour
 
 
   //Hidden Attributes
+  float shipRadius;
   EngineFlare[] engineFlares;
   Vector4 _ArmorMax;
   Vector2 _ShieldMax;
@@ -55,6 +58,7 @@ public class ShipSettings : MonoBehaviour
   {
     //assign a random ID
     ShipID = Random.Range(-32000,32000);
+    shipRadius = GetComponent<SphereCollider>().radius;
     //Organize the scene
     gameObject.transform.SetParent(GameObject.FindWithTag("GamePlayObjs").transform); 
     //Make sure everyone knows we're here
@@ -85,11 +89,106 @@ public class ShipSettings : MonoBehaviour
     Power();
     }
     DoHealth();
+    AvoidObstacles(.5f,shipRadius*3f);
+    DoBounce(.5f);
   }
 
   void InternalDamage(){
     //Show that internal damage has taken place! 
     Instantiate(DamageVFX,transform.position,Quaternion.identity,transform);
+  }
+
+  //Gently avoid obstacles!
+  public void AvoidObstacles(float urgency, float avoidRadius)
+  {
+    //Check for all coliders within a reasonable distance
+    Collider[] hitColliders = Physics.OverlapSphere(gameObject.transform.position, avoidRadius, AutoAvoids);
+    int i = 0;
+    while (i < hitColliders.Length)
+    {
+        if(hitColliders[i] != gameObject.GetComponent<SphereCollider>()) //Ignore it if we're.. LOOKING AT OURSELVES
+        {
+          
+          //Find the direction to the obstacle
+          Vector3 avoidDir = hitColliders[i].transform.position- gameObject.transform.position;
+          //Inverse linear falloff to push out more strongly the closer they are
+          float magPush = (1-(avoidDir.magnitude/avoidRadius))+.5f;
+          //Gradually autofalloff to 0 intensity
+          //magPush = Mathf.SmoothStep(magPush,0,.5f);
+          //HEAVE AWAY, BOIS
+          transform.position -= avoidDir * urgency * magPush * Time.deltaTime;
+          //if(magPush > 0)
+            //print(name +" is pushing away from "+ hitColliders[i].name +"with an intensity of " + magPush);
+          
+        }
+        i++;
+    }
+    
+  }
+  [HideInInspector] public float recover = 1f;
+  [HideInInspector] public Vector3 BounceDir;
+   [HideInInspector] public Vector3 BounceSpin;
+  [HideInInspector] public float BouncePush;
+
+
+
+  //Violently Collide!
+  public void DoBounce(float recoverRate)
+  {
+    Collider[] bounceColliders = Physics.OverlapSphere(gameObject.transform.position, shipRadius, CollidesWith);
+    int ib = 0;
+    while (ib < bounceColliders.Length)
+    {      
+    if(bounceColliders[ib] != gameObject.GetComponent<SphereCollider>()) //Ignore it if we're.. LOOKING AT OURSELVES
+        {
+        //sprint("Bounce detected between "+ name +" and "+ bounceColliders[ib].name);
+        ShipSettings hitShip = bounceColliders[ib].gameObject.GetComponent<ShipSettings>();
+        if(recover >= 1f)// && hitShip != null)
+        {
+          //Find the direction to the collision
+          Vector3 colDir = bounceColliders[ib].transform.position-gameObject.transform.position;
+          //equally bounce each ship, damage is made from the rest of the momentum
+          BouncePush = (speed+hitShip.speed)/4;
+          var weightDamageThem = ((speed+hitShip.speed)/hitShip.speed)/4f;
+          var weightDamage = ((speed+hitShip.speed)/speed)/2f;
+          DoDamage(bounceColliders[ib].transform.position,(speed+hitShip.speed)*.05f*weightDamage); 
+          hitShip.DoDamage(transform.position,(speed+hitShip.speed)*.05f*weightDamageThem);
+          print("RAM Detected:" + name +" has rammed " + hitShip.name + "at relative speeds of " + speed +" and " + hitShip.speed+
+          " and will be damaged " + (speed+hitShip.speed)*.05f*weightDamage + "to " + (speed+hitShip.speed)*.05f*weightDamageThem);
+          hitShip.recover = 0f;
+          hitShip.BouncePush = BouncePush;
+          hitShip.BounceDir = BounceDir;
+          BounceDir = -BounceDir;
+          BounceSpin = new Vector3(Random.Range(-3f,3f),Random.Range(-3f,3f),Random.Range(-3f,3f));
+          hitShip.BounceSpin = new Vector3(Random.Range(-3f,3f),Random.Range(-3f,3f),Random.Range(-3f,3f));
+          recover = 0f;
+          
+        }       
+      }
+
+     ib++;
+    }
+    if(recover < 1)
+    {
+      var byaw_ = Mathf.Clamp(BounceSpin.y, -1f, 1f);
+      var bpitch_ = Mathf.Clamp(BounceSpin.x, -1f, 1f);
+      var broll_ = Mathf.Clamp(BounceSpin.z, -1f, 1f);
+      byaw_ *= turnRate * 5f * Time.deltaTime* (1-recover);
+      bpitch_ *= turnRate * 5f * Time.deltaTime* (1-recover);
+      broll_ *= turnRate * 5f * Time.deltaTime* (1-recover);
+      
+      pitch *= recover;
+      yaw *= recover;
+      roll *= recover;
+      targetSpeed *= recover;
+      if (recover < .25f)
+      {InternalDamage();          
+      }
+      transform.localRotation *= Quaternion.AngleAxis(broll_, Vector3.forward) * Quaternion.AngleAxis(byaw_, Vector3.up) * Quaternion.AngleAxis(bpitch_, invertYAxis ? Vector3.right : Vector3.left);
+      transform.position += BounceDir * BouncePush * Time.deltaTime * (1-recover);
+      //speed = Random.Range(-topSpeed,topSpeed/2);
+      recover += recoverRate * Time.deltaTime;
+      }
   }
 
   public void DoDamage(Vector3 hitLoc, float damage)
@@ -99,7 +198,7 @@ public class ShipSettings : MonoBehaviour
       //Check font/back hit of the impact, apply that to the shields
       if(Vector3.Angle(transform.forward, damageAngle) < 90) //Hit from the front
       {
-        print("hit from the front! Angle of" + Vector3.Angle(transform.forward, damageAngle));
+        //print("hit from the front! Angle of" + Vector3.Angle(transform.forward, damageAngle));
         if(Shield.x > damage)//if shields can take the hit, let them
           Shield.x -= damage;
         else //oh no! the armor needs to take the hit, minus whatever damage the shield can absorb.
@@ -155,16 +254,16 @@ public class ShipSettings : MonoBehaviour
       }
       else //Hit from the back
       {
-        print("hit from the back!");
+        //print("hit from the back!");
         if(Shield.y > damage)//if shields can take the hit, let them
         {  Shield.y -= damage;
-          print("Shields damaged for "+ damage);
+          //print("Shields damaged for "+ damage);
         }
         else //oh no! the armor needs to take the hit, minus whatever damage the shield can absorb.
         {
           damage -= Shield.y;
           Shield.y = 0;
-          print("damage is now "+ damage);
+          //print("damage is now "+ damage);
           //check front/left/right armor quadrants, apply damage
           if(Vector3.Angle(-transform.forward, damageAngle) <= 45) // back armor hit!
           {
@@ -253,6 +352,7 @@ public class ShipSettings : MonoBehaviour
       droll_ *= turnRate * 3f * Time.deltaTime;
       transform.localRotation *= Quaternion.AngleAxis(droll_, Vector3.forward) * Quaternion.AngleAxis(dyaw_, Vector3.up) * Quaternion.AngleAxis(dpitch_, invertYAxis ? Vector3.right : Vector3.left);
       transform.position += DeathDir * DeathVel* Time.deltaTime;
+      speed = Random.Range(-topSpeed,topSpeed/2);
       if (!Boom)
       { 
         Boom = Instantiate(DeathVFX,transform.position,Quaternion.identity,transform.parent);
