@@ -3,7 +3,7 @@ guid: 335d0d53bfc6441428594a8e8a4f3945
 TrueTypeFontImporter:
   externalObjects: {}
   serializedVersion: 4
-  fontSize: 36
+  fontSize: 32
   forceTextureCase: 0
   characterSpacing: 0
   characterPadding: 1
@@ -13,7 +13,7 @@ TrueTypeFontImporter:
   - Kapel
   fallbackFontReferences: []
   customCharacters: 
-  fontRenderingMode: 2
+  fontRenderingMode: 0
   ascentCalculationMode: 1
   useLegacyBoundsCalculation: 0
   shouldRoundAdvanceValue: 1
