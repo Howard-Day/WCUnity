@@ -9,6 +9,8 @@ public class ShipSettings : MonoBehaviour
   
   [Header("Choose Team!")]
   [SerializeField] public TEAM AITeam = TEAM.CONFED;
+  [SerializeField] public bool isWingLead = false;  
+  
   [SerializeField] public LayerMask CollidesWith;
   [Header("Movement Settings")]
   [SerializeField] public float turnRate = 50f;
@@ -36,7 +38,7 @@ public class ShipSettings : MonoBehaviour
 
 
   //Hidden Attributes
-  float shipRadius;
+  [HideInInspector] public float shipRadius;
   EngineFlare[] engineFlares;
   Vector4 _ArmorMax;
   Vector2 _ShieldMax;
@@ -52,6 +54,8 @@ public class ShipSettings : MonoBehaviour
   [HideInInspector] public bool isAfterburning;
   [HideInInspector]  public float speed = 0f;
   [HideInInspector] GameObjTracker Tracker;
+  
+  [HideInInspector] public int numWingmen = 0;
   [HideInInspector] public bool isDead = false;
 
   void Start()
@@ -89,7 +93,7 @@ public class ShipSettings : MonoBehaviour
     Power();
     }
     DoHealth();
-    AvoidObstacles(.5f,shipRadius*3f);
+    AvoidObstacles(.5f,shipRadius*2f);
     DoBounce(.5f);
   }
 
@@ -135,7 +139,7 @@ public class ShipSettings : MonoBehaviour
   //Violently Collide!
   public void DoBounce(float recoverRate)
   {
-    Collider[] bounceColliders = Physics.OverlapSphere(gameObject.transform.position, shipRadius, CollidesWith);
+    Collider[] bounceColliders = Physics.OverlapSphere(gameObject.transform.position, shipRadius*.666f, CollidesWith);
     int ib = 0;
     while (ib < bounceColliders.Length)
     {      
@@ -148,11 +152,11 @@ public class ShipSettings : MonoBehaviour
           //Find the direction to the collision
           Vector3 colDir = bounceColliders[ib].transform.position-gameObject.transform.position;
           //equally bounce each ship, damage is made from the rest of the momentum
-          BouncePush = (speed+hitShip.speed)/4;
+          BouncePush = (speed+hitShip.speed)/2f;
           var weightDamageThem = ((speed+hitShip.speed)/hitShip.speed)/4f;
-          var weightDamage = ((speed+hitShip.speed)/speed)/2f;
-          DoDamage(bounceColliders[ib].transform.position,(speed+hitShip.speed)*.05f*weightDamage); 
-          hitShip.DoDamage(transform.position,(speed+hitShip.speed)*.05f*weightDamageThem);
+          var weightDamage = ((speed+hitShip.speed)/speed)/4f;
+          DoDamage(bounceColliders[ib].transform.position,(speed+hitShip.speed)*.01f*weightDamage); 
+          hitShip.DoDamage(transform.position,(speed+hitShip.speed)*.01f*weightDamageThem);
           print("RAM Detected:" + name +" has rammed " + hitShip.name + "at relative speeds of " + speed +" and " + hitShip.speed+
           " and will be damaged " + (speed+hitShip.speed)*.05f*weightDamage + "to " + (speed+hitShip.speed)*.05f*weightDamageThem);
           hitShip.recover = 0f;
@@ -180,7 +184,7 @@ public class ShipSettings : MonoBehaviour
       pitch *= recover;
       yaw *= recover;
       roll *= recover;
-      targetSpeed *= recover;
+      speed *= recover;
       if (recover < .25f)
       {InternalDamage();          
       }

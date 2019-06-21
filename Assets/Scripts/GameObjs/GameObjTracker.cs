@@ -73,7 +73,7 @@ public class GameObjTracker : MonoBehaviour
     void Update()
     {
         frames ++;
-        SpawnExtraShips();
+        //SpawnExtraShips();
     
     }
 }
