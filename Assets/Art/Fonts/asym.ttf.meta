@@ -1,22 +1,22 @@
 fileFormatVersion: 2
-guid: 7aa0dce1e8406624c972be357897a9f1
+guid: dc2417659ce971843ac6d99ce2cbaaf2
 TrueTypeFontImporter:
   externalObjects: {}
   serializedVersion: 4
-  fontSize: 32
+  fontSize: 64
   forceTextureCase: 0
   characterSpacing: 0
   characterPadding: 1
   includeFontData: 1
-  fontName: BM army
+  fontName: Average symbol
   fontNames:
-  - BM army
+  - Average symbol
   fallbackFontReferences: []
   customCharacters: 
-  fontRenderingMode: 1
+  fontRenderingMode: 2
   ascentCalculationMode: 1
   useLegacyBoundsCalculation: 0
-  shouldRoundAdvanceValue: 0
+  shouldRoundAdvanceValue: 1
   userData: 
   assetBundleName: 
   assetBundleVariant: 

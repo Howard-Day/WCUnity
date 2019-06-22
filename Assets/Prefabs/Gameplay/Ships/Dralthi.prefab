@@ -219,6 +219,7 @@ MonoBehaviour:
   AISkillLevel: 1
   AITarget: {fileID: 0}
   Tracker: {fileID: 0}
+  angleToThing: 0
 --- !u!114 &2289861991765167614
 MonoBehaviour:
   m_ObjectHideFlags: 0

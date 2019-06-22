@@ -94,7 +94,11 @@ public class ShipSettings : MonoBehaviour
     }
     DoHealth();
     AvoidObstacles(.5f,shipRadius*2f);
-    DoBounce(.5f);
+    //Collision Detecting, but make sure the full collision is only being used if the ship is afterburning, simple manuvers won't do it as much.
+    //if(isAfterburning)
+    //{ DoBounce(.5f,shipRadius/2);}
+    //else
+    { DoBounce(.5f,shipRadius/16f);}
   }
 
   void InternalDamage(){
@@ -137,9 +141,9 @@ public class ShipSettings : MonoBehaviour
 
 
   //Violently Collide!
-  public void DoBounce(float recoverRate)
+  public void DoBounce(float recoverRate, float bounceRadius)
   {
-    Collider[] bounceColliders = Physics.OverlapSphere(gameObject.transform.position, shipRadius*.666f, CollidesWith);
+    Collider[] bounceColliders = Physics.OverlapSphere(gameObject.transform.position, bounceRadius, CollidesWith);
     int ib = 0;
     while (ib < bounceColliders.Length)
     {      
@@ -165,8 +169,7 @@ public class ShipSettings : MonoBehaviour
           BounceDir = -BounceDir;
           BounceSpin = new Vector3(Random.Range(-3f,3f),Random.Range(-3f,3f),Random.Range(-3f,3f));
           hitShip.BounceSpin = new Vector3(Random.Range(-3f,3f),Random.Range(-3f,3f),Random.Range(-3f,3f));
-          recover = 0f;
-          
+          recover = 0f;          
         }       
       }
 
