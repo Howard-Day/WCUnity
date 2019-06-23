@@ -98,7 +98,7 @@ public class ShipSettings : MonoBehaviour
     //if(isAfterburning)
     //{ DoBounce(.5f,shipRadius/2);}
     //else
-    { DoBounce(.5f,shipRadius/16f);}
+    DoBounce(.5f,shipRadius/16f);
   }
 
   void InternalDamage(){
