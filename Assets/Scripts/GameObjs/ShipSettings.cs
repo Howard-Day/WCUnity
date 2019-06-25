@@ -383,8 +383,19 @@ public class ShipSettings : MonoBehaviour
   Vector3 oldRotForward;
   Vector3 oldRotRight;
   Vector3 oldRotUp;
-  //[HideInInspector] public Quaternion deltaRot;
+  [HideInInspector] public Quaternion oldRot;
   [HideInInspector] public Vector3 deltaRot;
+
+  public static float GetSignedAngle(Quaternion A, Quaternion B, Vector3 axis) {
+     float angle = 0f;
+     Vector3 angleAxis = Vector3.zero;
+     (B*Quaternion.Inverse(A)).ToAngleAxis(out angle, out angleAxis);
+     if(Vector3.Angle(axis, angleAxis) > 90f) {
+         angle = -angle;
+     }
+     return Mathf.DeltaAngle(0f, angle);
+ }
+
   void Steer() //Autopilot!
   {
     var yaw_ = Mathf.Clamp(yaw, -1f, 1f);
@@ -395,16 +406,14 @@ public class ShipSettings : MonoBehaviour
     roll_ *= turnRate * 2f * Time.deltaTime;
     transform.localRotation *= Quaternion.AngleAxis(roll_, Vector3.forward) * Quaternion.AngleAxis(yaw_, Vector3.up) * Quaternion.AngleAxis(pitch_, invertYAxis ? Vector3.right : Vector3.left);
     
-    var anglex = Vector3.Angle(oldRotRight, transform.right);
-    var angley = Vector3.Angle(oldRotUp, transform.up);
-    var anglez = Vector3.Angle(oldRotForward, transform.forward);
+    var anglex = GetSignedAngle(transform.rotation,oldRot,transform.right);
+    var angley = GetSignedAngle(transform.rotation,oldRot,transform.up);
+    var anglez = GetSignedAngle(transform.rotation,oldRot,transform.forward);
     
     deltaRot = new Vector3(anglex,angley,anglez);
-    print(deltaRot);
-    oldRotForward = transform.forward;
-    oldRotRight = transform.right;
-    oldRotUp = transform.up;
     
+    print(deltaRot);
+    oldRot = transform.rotation;    
 
   }
 

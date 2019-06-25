@@ -47,7 +47,7 @@ public class JoystickThrottle : MonoBehaviour
         refSteerX = (SmoothShift.x+1)/2;
         refSteerY = (SmoothShift.y+1)/2;
 
-        float steerX = Mathf.Clamp01(refSteerX);
+        float steerX = 1-Mathf.Clamp01(refSteerX);
         float steerY = Mathf.Clamp01(refSteerY);
 
         int currentjoyFrame = (int)(steerY * 7f) * 8 + (int)(steerX*8f);

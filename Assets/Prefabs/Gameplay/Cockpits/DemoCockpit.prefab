@@ -3508,6 +3508,7 @@ MonoBehaviour:
   BounceDir: {x: 0, y: 0, z: 0}
   BounceSpin: {x: 0, y: 0, z: 0}
   BouncePush: 0
+  oldRot: {x: 0, y: 0, z: 0, w: 0}
   deltaRot: {x: 0, y: 0, z: 0}
 --- !u!114 &665893096
 MonoBehaviour:
