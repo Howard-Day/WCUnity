@@ -2598,7 +2598,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f3ee1fa34106d7d4fa4f053f76990af9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  shipMain: {fileID: 0}
+  shipMain: {fileID: 566986660}
   joystickSprites:
   - {fileID: 7843689836530143659, guid: e5e4237cedb3a0f43a6351a33217469d, type: 3}
   - {fileID: -7977963693970353188, guid: e5e4237cedb3a0f43a6351a33217469d, type: 3}
@@ -3508,7 +3508,7 @@ MonoBehaviour:
   BounceDir: {x: 0, y: 0, z: 0}
   BounceSpin: {x: 0, y: 0, z: 0}
   BouncePush: 0
-  refTurn: {x: 0, y: 0, z: 0}
+  deltaRot: {x: 0, y: 0, z: 0}
 --- !u!114 &665893096
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4822,16 +4822,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: PowerLevel
-      objectReference: {fileID: 0}
-    - target: {fileID: 3526977196703752432, guid: 657e7ab63ecf59e498b1fdf2b815411f,
-        type: 3}
-      propertyPath: m_AnchorMax.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3526977196703752432, guid: 657e7ab63ecf59e498b1fdf2b815411f,
-        type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3526977195968674990, guid: 657e7ab63ecf59e498b1fdf2b815411f,
         type: 3}

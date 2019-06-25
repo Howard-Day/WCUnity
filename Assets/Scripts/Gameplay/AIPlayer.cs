@@ -241,9 +241,12 @@ public Vector3 DoTargeting(float Accuracy, float Update)
 }
 public float AngleTo(Transform target) //Handy thing -since the cockpits can have offset pitches to line up the reticles, we need to adust our forward angle if it's a player ship.
 {
+  if(!target)
+    return 0f;
+
   Vector3 tempForward;
   tempForward = transform.forward;
-
+  
   return Vector3.Angle(tempForward, target.transform.position-transform.position);
 }
 public Vector3 DoAim(float aimRand)

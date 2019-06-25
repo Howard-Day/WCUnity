@@ -38,14 +38,17 @@ public class JoystickThrottle : MonoBehaviour
     void DoJoystick()
     {
         
-        TargetShift = new Vector2(Mathf.Clamp(shipMain.refTurn.y,-1f,1f),Mathf.Clamp(shipMain.refTurn.x,-1f,1f));
+        float xShift =  shipMain.deltaRot.y;
+        float yShift =  shipMain.deltaRot.x;
+        //print (xShift);
+        TargetShift = new Vector2(Mathf.Clamp(xShift,-1f,1f),-Mathf.Clamp(yShift,-1f,1f));
         SmoothShift = Vector2.SmoothDamp(SmoothShift,TargetShift,ref RefShift, ShiftSmoothness);
 
         refSteerX = (SmoothShift.x+1)/2;
         refSteerY = (SmoothShift.y+1)/2;
 
         float steerX = Mathf.Clamp01(refSteerX);
-        float steerY = 1-Mathf.Clamp01(refSteerY);
+        float steerY = Mathf.Clamp01(refSteerY);
 
         int currentjoyFrame = (int)(steerY * 7f) * 8 + (int)(steerX*8f);
         //print("current joystick frame is" + currentjoyFrame);

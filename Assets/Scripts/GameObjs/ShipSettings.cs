@@ -380,8 +380,11 @@ public class ShipSettings : MonoBehaviour
     }
   }
 
-  [HideInInspector] public Vector3 refTurn;
-  Vector3 oldRot;
+  Vector3 oldRotForward;
+  Vector3 oldRotRight;
+  Vector3 oldRotUp;
+  //[HideInInspector] public Quaternion deltaRot;
+  [HideInInspector] public Vector3 deltaRot;
   void Steer() //Autopilot!
   {
     var yaw_ = Mathf.Clamp(yaw, -1f, 1f);
@@ -391,8 +394,18 @@ public class ShipSettings : MonoBehaviour
     pitch_ *= turnRate * Time.deltaTime;
     roll_ *= turnRate * 2f * Time.deltaTime;
     transform.localRotation *= Quaternion.AngleAxis(roll_, Vector3.forward) * Quaternion.AngleAxis(yaw_, Vector3.up) * Quaternion.AngleAxis(pitch_, invertYAxis ? Vector3.right : Vector3.left);
-    refTurn = (transform.localEulerAngles-oldRot)*2;
-    oldRot = transform.localEulerAngles;
+    
+    var anglex = Vector3.Angle(oldRotRight, transform.right);
+    var angley = Vector3.Angle(oldRotUp, transform.up);
+    var anglez = Vector3.Angle(oldRotForward, transform.forward);
+    
+    deltaRot = new Vector3(anglex,angley,anglez);
+    print(deltaRot);
+    oldRotForward = transform.forward;
+    oldRotRight = transform.right;
+    oldRotUp = transform.up;
+    
+
   }
 
   void Throttle()

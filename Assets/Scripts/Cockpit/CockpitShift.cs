@@ -36,7 +36,9 @@ public class CockpitShift : MonoBehaviour
     // Update is called once per frame
     void LateUpdate()
     {
-        TargetShift = new Vector2(Mathf.Clamp(shipMain.refTurn.y,-1f,1f),Mathf.Clamp(shipMain.refTurn.x,-1f,1f));
+        float xShift =  shipMain.deltaRot.y;
+        float yShift =  shipMain.deltaRot.x;
+        TargetShift = new Vector2(Mathf.Clamp(xShift,-1f,1f),-Mathf.Clamp(yShift,-1f,1f));
         SmoothShift = Vector2.SmoothDamp(SmoothShift,TargetShift,ref RefShift, ShiftSmoothness);
         PrePixelLocked = new Vector3(SmoothShift.x*MaxXShift,SmoothShift.y*MaxYShift, CockpitRoot.localPosition.z);
 
