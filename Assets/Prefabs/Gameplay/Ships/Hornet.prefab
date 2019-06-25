@@ -96,6 +96,7 @@ MonoBehaviour:
   roll: 0
   targetSpeed: 0
   capacitorLevel: 0
+  isFiring: 0
   isAfterburning: 0
   speed: 0
   numWingmen: 0

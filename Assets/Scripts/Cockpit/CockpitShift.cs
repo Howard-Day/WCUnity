@@ -17,7 +17,7 @@ public class CockpitShift : MonoBehaviour
     ShipSettings shipMain;
     Transform CockpitRoot;
     Vector2 RefShift;
-    Vector2 SmoothShift;
+    [HideInInspector] public Vector2 SmoothShift;
     Vector3 SmoothShake;
     Vector3 smoothRef;
 

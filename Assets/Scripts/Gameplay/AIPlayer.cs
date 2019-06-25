@@ -51,7 +51,14 @@ void FireGuns(bool fire)
   foreach (LaserCannon laserCannon in laserCannons)
   {
    laserCannon.fire = fire;
-   bloodThirst = 0f; //Ahh, our bloodthirst is sated
+   if(fire)
+   { bloodThirst = 0f; //Ahh, our bloodthirst is sated
+    ship.isFiring = true;
+   }
+   else
+   {
+    ship.isFiring = false;
+   }
   }
 }
 void SteerTo(Vector3 aimAt, float turnSpeed)
@@ -166,7 +173,10 @@ void NoviceAI()
     followDist = Random.Range(75f,125f);
     //print(name + " has a follow distance of " +followDist);
   }
+  if(!AITargetShip)
+  {
   AITargetShip = FindNearestShip(gameObject.transform,ship.AITeam);
+  }
   if(AITargetShip != null)
   {AITarget = AITargetShip.gameObject.GetComponent<Transform>();
   }
@@ -241,7 +251,7 @@ public Vector3 DoAim(float aimRand)
       return AITarget.position + (Random.onUnitSphere * aimRand);
 }
 Vector3 patrolPoint;
-
+Vector3 randApproach = Vector3.zero;
 bool hasWingLead = false;
 
 //Init Wingman System vars
@@ -408,9 +418,15 @@ switch(ActiveAIState)
     }
   break;
 
+
+
   case AIState.ENGAGE:
   {
-    SteerTo(DoAim(15f), ship.turnRate);
+    if(randApproach.magnitude == 0)
+    {
+      randApproach = Random.onUnitSphere*AITargetShip.shipRadius*2f;
+    }
+    SteerTo(AITarget.position+randApproach, ship.turnRate);
     ship.targetSpeed = ship.topSpeed;
     if(!AITarget)
     {
@@ -423,6 +439,7 @@ switch(ActiveAIState)
     }
     if(Vector3.Distance(AITarget.position,transform.position) < engageDist)
     {
+      randApproach = Vector3.zero;
       ActiveAIState = AIState.HUNT;
     }
     //print(gameObject.name + " Is engaging! Throttle set to " + ship.targetSpeed);
@@ -433,7 +450,11 @@ switch(ActiveAIState)
     if(!AITarget)
     {
       ActiveAIState = AIState.PATROL;
-    }   
+    } 
+    if(randApproach.magnitude == 0)
+    {
+      randApproach = Random.onUnitSphere*AITargetShip.shipRadius*2f;
+    }  
     float angleToTarget = AngleTo(AITarget);
     Vector3 dirToTarget = AITarget.transform.position-transform.position;
     float distToTarget = Vector3.Distance(AITarget.position,transform.position);
@@ -458,7 +479,11 @@ switch(ActiveAIState)
     {//OH NOES, WE BEIN HUNTED SON
       ActiveAIState = AIState.REPOSITION;
     }
-    Vector3 huntDir = AITarget.position+AITarget.forward*AITargetShip.shipRadius*2f+DoTargeting(aimAccuracy,aimUpdate);
+    float nearDodgeBlend = 1-Mathf.Clamp01((distToTarget+15)/30);
+    //print("Ship " +name + " is near dog blending with a value of " + nearDodgeBlend +" from a distance to target of " + distToTarget);
+    Vector3 shootAt = AITarget.forward*AITargetShip.shipRadius*2f+DoTargeting(aimAccuracy,aimUpdate);
+
+    Vector3 huntDir = AITarget.position+Vector3.Lerp(shootAt,randApproach,nearDodgeBlend);
     Debug.DrawLine(transform.position,huntDir,Color.red,.05f);
     SteerTo(huntDir, ship.turnRate);
     

@@ -1,0 +1,1843 @@
+fileFormatVersion: 2
+guid: e5e4237cedb3a0f43a6351a33217469d
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -4720424934481699482
+    second: CPH_Joystick_0
+  - first:
+      213: 8187636672056843301
+    second: CPH_Joystick_1
+  - first:
+      213: -824782729264579802
+    second: CPH_Joystick_2
+  - first:
+      213: -4501333461609943545
+    second: CPH_Joystick_3
+  - first:
+      213: -6353842953443283047
+    second: CPH_Joystick_4
+  - first:
+      213: 8596359570000754575
+    second: CPH_Joystick_5
+  - first:
+      213: -8794479489622468798
+    second: CPH_Joystick_6
+  - first:
+      213: 4951095246217887352
+    second: CPH_Joystick_7
+  - first:
+      213: 8588287042983617092
+    second: CPH_Joystick_8
+  - first:
+      213: -3581557498116521653
+    second: CPH_Joystick_9
+  - first:
+      213: -1415296167108671124
+    second: CPH_Joystick_10
+  - first:
+      213: -1546073444130450222
+    second: CPH_Joystick_11
+  - first:
+      213: 6459117699228176325
+    second: CPH_Joystick_12
+  - first:
+      213: -1535446780565969852
+    second: CPH_Joystick_13
+  - first:
+      213: -2786385237807601976
+    second: CPH_Joystick_14
+  - first:
+      213: -7187693265173038127
+    second: CPH_Joystick_15
+  - first:
+      213: -834849733491718342
+    second: CPH_Joystick_16
+  - first:
+      213: -6408124171442248901
+    second: CPH_Joystick_17
+  - first:
+      213: -2103246740980615813
+    second: CPH_Joystick_18
+  - first:
+      213: -4081638895056266303
+    second: CPH_Joystick_19
+  - first:
+      213: 3331569826027490203
+    second: CPH_Joystick_20
+  - first:
+      213: -7621111979345471133
+    second: CPH_Joystick_21
+  - first:
+      213: 9185912648997946369
+    second: CPH_Joystick_22
+  - first:
+      213: -8245597690886411223
+    second: CPH_Joystick_23
+  - first:
+      213: -6159567798257403566
+    second: CPH_Joystick_24
+  - first:
+      213: -6286791614695521388
+    second: CPH_Joystick_25
+  - first:
+      213: -3263314360892700867
+    second: CPH_Joystick_26
+  - first:
+      213: -2679323628103012394
+    second: CPH_Joystick_27
+  - first:
+      213: -4944876997629533641
+    second: CPH_Joystick_28
+  - first:
+      213: -4099787859028565157
+    second: CPH_Joystick_29
+  - first:
+      213: -2947720135942327616
+    second: CPH_Joystick_30
+  - first:
+      213: -7374024299332730181
+    second: CPH_Joystick_31
+  - first:
+      213: 4279555163182772104
+    second: CPH_Joystick_32
+  - first:
+      213: -6631540391133468322
+    second: CPH_Joystick_33
+  - first:
+      213: 7190817320262120033
+    second: CPH_Joystick_34
+  - first:
+      213: -6443795081762333097
+    second: CPH_Joystick_35
+  - first:
+      213: -3544021877145346918
+    second: CPH_Joystick_36
+  - first:
+      213: -6001215373224885632
+    second: CPH_Joystick_37
+  - first:
+      213: 6520608496964504364
+    second: CPH_Joystick_38
+  - first:
+      213: -4334357439397978683
+    second: CPH_Joystick_39
+  - first:
+      213: -1167463047709277069
+    second: CPH_Joystick_40
+  - first:
+      213: -4940840575800524361
+    second: CPH_Joystick_41
+  - first:
+      213: -8505155756284470198
+    second: CPH_Joystick_42
+  - first:
+      213: 8654047508585671485
+    second: CPH_Joystick_43
+  - first:
+      213: 115186713914103213
+    second: CPH_Joystick_44
+  - first:
+      213: -7089655457549863326
+    second: CPH_Joystick_45
+  - first:
+      213: -3255957389724418869
+    second: CPH_Joystick_46
+  - first:
+      213: -1442772873027445530
+    second: CPH_Joystick_47
+  - first:
+      213: 6649241153592054369
+    second: CPH_Joystick_48
+  - first:
+      213: -7963336544344164053
+    second: CPH_Joystick_49
+  - first:
+      213: -1373459038640274215
+    second: CPH_Joystick_50
+  - first:
+      213: -5617329183784352182
+    second: CPH_Joystick_51
+  - first:
+      213: -5908934891148616413
+    second: CPH_Joystick_52
+  - first:
+      213: -4980886607082498915
+    second: CPH_Joystick_53
+  - first:
+      213: -1488100570292225198
+    second: CPH_Joystick_54
+  - first:
+      213: -900750107015580509
+    second: CPH_Joystick_55
+  - first:
+      213: 4667336772628952331
+    second: CPH_Joystick_56
+  - first:
+      213: -3212912118561281935
+    second: CPH_Joystick_57
+  - first:
+      213: -6834456718874176673
+    second: CPH_Joystick_58
+  - first:
+      213: -720010670798200998
+    second: CPH_Joystick_59
+  - first:
+      213: -2663500618873751908
+    second: CPH_Joystick_60
+  - first:
+      213: -5034952662209460837
+    second: CPH_Joystick_61
+  - first:
+      213: -8200325530373610738
+    second: CPH_Joystick_62
+  - first:
+      213: 1415511394682655676
+    second: CPH_Joystick_63
+  - first:
+      213: 7843689836530143659
+    second: Terran_Joystick_0
+  - first:
+      213: -7977963693970353188
+    second: Terran_Joystick_1
+  - first:
+      213: 6856014980997989754
+    second: Terran_Joystick_2
+  - first:
+      213: 284207864912768872
+    second: Terran_Joystick_3
+  - first:
+      213: -8830514669945213737
+    second: Terran_Joystick_4
+  - first:
+      213: 8197416654718163823
+    second: Terran_Joystick_5
+  - first:
+      213: -9166162662087452648
+    second: Terran_Joystick_6
+  - first:
+      213: -275582413810445392
+    second: Terran_Joystick_7
+  - first:
+      213: 5293356640642323973
+    second: Terran_Joystick_8
+  - first:
+      213: -6805113355888855750
+    second: Terran_Joystick_9
+  - first:
+      213: -6480244098349741505
+    second: Terran_Joystick_10
+  - first:
+      213: -235121489961540354
+    second: Terran_Joystick_11
+  - first:
+      213: -4558187065549197077
+    second: Terran_Joystick_12
+  - first:
+      213: -684167564551892445
+    second: Terran_Joystick_13
+  - first:
+      213: 342036613311216220
+    second: Terran_Joystick_14
+  - first:
+      213: -913572420209118896
+    second: Terran_Joystick_15
+  - first:
+      213: 8034206777278438982
+    second: Terran_Joystick_16
+  - first:
+      213: -1622284370537581022
+    second: Terran_Joystick_17
+  - first:
+      213: 7596133992377722992
+    second: Terran_Joystick_18
+  - first:
+      213: 7435503484980965710
+    second: Terran_Joystick_19
+  - first:
+      213: 429009516782164344
+    second: Terran_Joystick_20
+  - first:
+      213: -737890811483877354
+    second: Terran_Joystick_21
+  - first:
+      213: -4545065779521128839
+    second: Terran_Joystick_22
+  - first:
+      213: -2260910088258081839
+    second: Terran_Joystick_23
+  - first:
+      213: -3231347358463297426
+    second: Terran_Joystick_24
+  - first:
+      213: -5910755112220922913
+    second: Terran_Joystick_25
+  - first:
+      213: -850088092997347814
+    second: Terran_Joystick_26
+  - first:
+      213: 1217611631747432103
+    second: Terran_Joystick_27
+  - first:
+      213: -242964680546851710
+    second: Terran_Joystick_28
+  - first:
+      213: 8869178591149820383
+    second: Terran_Joystick_29
+  - first:
+      213: 4966947961912394101
+    second: Terran_Joystick_30
+  - first:
+      213: 207993191306484032
+    second: Terran_Joystick_31
+  - first:
+      213: 617804906524241045
+    second: Terran_Joystick_32
+  - first:
+      213: 8003064676035112272
+    second: Terran_Joystick_33
+  - first:
+      213: 1051664851999954970
+    second: Terran_Joystick_34
+  - first:
+      213: -5547292997645957203
+    second: Terran_Joystick_35
+  - first:
+      213: -6796691319132219990
+    second: Terran_Joystick_36
+  - first:
+      213: 6228105250376800443
+    second: Terran_Joystick_37
+  - first:
+      213: -8644348951327458304
+    second: Terran_Joystick_38
+  - first:
+      213: -7293499344051936610
+    second: Terran_Joystick_39
+  - first:
+      213: 8861911350729878999
+    second: Terran_Joystick_40
+  - first:
+      213: -2631239636630709643
+    second: Terran_Joystick_41
+  - first:
+      213: -4776464344106402435
+    second: Terran_Joystick_42
+  - first:
+      213: -3260374969344603595
+    second: Terran_Joystick_43
+  - first:
+      213: 905762812598583482
+    second: Terran_Joystick_44
+  - first:
+      213: 7058108662466073802
+    second: Terran_Joystick_45
+  - first:
+      213: 8968793272515927621
+    second: Terran_Joystick_46
+  - first:
+      213: 1726290379075929415
+    second: Terran_Joystick_47
+  - first:
+      213: 7196652924605026980
+    second: Terran_Joystick_48
+  - first:
+      213: -4944807045441222842
+    second: Terran_Joystick_49
+  - first:
+      213: -7237416021115485575
+    second: Terran_Joystick_50
+  - first:
+      213: 6806640338154793767
+    second: Terran_Joystick_51
+  - first:
+      213: 7827592378891435471
+    second: Terran_Joystick_52
+  - first:
+      213: -3535228671600330174
+    second: Terran_Joystick_53
+  - first:
+      213: -4787023447811905861
+    second: Terran_Joystick_54
+  - first:
+      213: 5069890692058564331
+    second: Terran_Joystick_55
+  - first:
+      213: 3412969548404518434
+    second: Terran_Joystick_56
+  - first:
+      213: 4692622505877109451
+    second: Terran_Joystick_57
+  - first:
+      213: -4623319907538996626
+    second: Terran_Joystick_58
+  - first:
+      213: -3296031062188820427
+    second: Terran_Joystick_59
+  - first:
+      213: 84671259499679346
+    second: Terran_Joystick_60
+  - first:
+      213: -2694068151808222627
+    second: Terran_Joystick_61
+  - first:
+      213: 429278985184559862
+    second: Terran_Joystick_62
+  - first:
+      213: -5486660442059459204
+    second: Terran_Joystick_63
+  externalObjects: {}
+  serializedVersion: 10
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: -1
+    mipBias: -100
+    wrapU: 1
+    wrapV: 1
+    wrapW: -1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 0
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  platformSettings:
+  - serializedVersion: 3
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Terran_Joystick_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 896
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c2ea1d18907e86543b8e6e5bf35384d8
+      internalID: 7843689836530143659
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_1
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 896
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 05c93778a03d7a54fa8e664302050a1c
+      internalID: -7977963693970353188
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_2
+      rect:
+        serializedVersion: 2
+        x: 256
+        y: 896
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2fc8beae8042d4e4689f4faf723d7762
+      internalID: 6856014980997989754
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_3
+      rect:
+        serializedVersion: 2
+        x: 384
+        y: 896
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 73ba943d9ec95a5418ca361627533417
+      internalID: 284207864912768872
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_4
+      rect:
+        serializedVersion: 2
+        x: 512
+        y: 896
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a33c36b536f9de448bbb2382fab1a720
+      internalID: -8830514669945213737
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_5
+      rect:
+        serializedVersion: 2
+        x: 640
+        y: 896
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6664357f20a12d948939a22fa982fe8c
+      internalID: 8197416654718163823
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_6
+      rect:
+        serializedVersion: 2
+        x: 768
+        y: 896
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e930b50ceb37e394dbfc1c22b504532b
+      internalID: -9166162662087452648
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_7
+      rect:
+        serializedVersion: 2
+        x: 896
+        y: 896
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 108f6dabbee73c74cb69851084e48642
+      internalID: -275582413810445392
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_8
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 768
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 355a50754f7a154409641c8dc5c17466
+      internalID: 5293356640642323973
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_9
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 768
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b3d8cf1f9ea1cb9409106af1580edf63
+      internalID: -6805113355888855750
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_10
+      rect:
+        serializedVersion: 2
+        x: 256
+        y: 768
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e5a1dec3d1b5e2b4db8539685fcd60db
+      internalID: -6480244098349741505
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_11
+      rect:
+        serializedVersion: 2
+        x: 384
+        y: 768
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 50051e3750ffceb4bb167673dda3129f
+      internalID: -235121489961540354
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_12
+      rect:
+        serializedVersion: 2
+        x: 512
+        y: 768
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c534d9ffd06d57146a7026fbc0b41dc2
+      internalID: -4558187065549197077
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_13
+      rect:
+        serializedVersion: 2
+        x: 640
+        y: 768
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3337cfdd53c967b4f8e4716f360c192a
+      internalID: -684167564551892445
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_14
+      rect:
+        serializedVersion: 2
+        x: 768
+        y: 768
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c1ae2b28ba592f84b84a852fcf87100a
+      internalID: 342036613311216220
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_15
+      rect:
+        serializedVersion: 2
+        x: 896
+        y: 768
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 95fef75295825c249aebf08cf1b2a495
+      internalID: -913572420209118896
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_16
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 640
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dee9a3d1f673a9446bcb6419ed1d83f6
+      internalID: 8034206777278438982
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_17
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 640
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6395f828be64d834684c233da2ccc3f2
+      internalID: -1622284370537581022
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_18
+      rect:
+        serializedVersion: 2
+        x: 256
+        y: 640
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 91692bf4df4ee8f4787a243d206be874
+      internalID: 7596133992377722992
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_19
+      rect:
+        serializedVersion: 2
+        x: 384
+        y: 640
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ac1f55bd693f49141bd6b510d0f94c7c
+      internalID: 7435503484980965710
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_20
+      rect:
+        serializedVersion: 2
+        x: 512
+        y: 640
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f9645f737fd752a4290527a1d237b495
+      internalID: 429009516782164344
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_21
+      rect:
+        serializedVersion: 2
+        x: 640
+        y: 640
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 36240d126c7ad5147bc2e84e35845a3c
+      internalID: -737890811483877354
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_22
+      rect:
+        serializedVersion: 2
+        x: 768
+        y: 640
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6e4b5890d8ec23b4f833789d3a4a4a1a
+      internalID: -4545065779521128839
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_23
+      rect:
+        serializedVersion: 2
+        x: 896
+        y: 640
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 44f6d27e00792664c8de8d1989f9bee4
+      internalID: -2260910088258081839
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_24
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 512
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ea131c2bb8b14e24eb568a4e826fefe3
+      internalID: -3231347358463297426
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_25
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 512
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0333476b88a1d464db942e32d11abbc6
+      internalID: -5910755112220922913
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_26
+      rect:
+        serializedVersion: 2
+        x: 256
+        y: 512
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f38d6fa64aa4d7a4ca882d218c987c37
+      internalID: -850088092997347814
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_27
+      rect:
+        serializedVersion: 2
+        x: 384
+        y: 512
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 95b30ee44889edd4ba16f82719a2a19d
+      internalID: 1217611631747432103
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_28
+      rect:
+        serializedVersion: 2
+        x: 512
+        y: 512
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 61ce145bc4ccc87408d633092a009782
+      internalID: -242964680546851710
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_29
+      rect:
+        serializedVersion: 2
+        x: 640
+        y: 512
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b9680aa6576dd664a947fa10f2a61c52
+      internalID: 8869178591149820383
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_30
+      rect:
+        serializedVersion: 2
+        x: 768
+        y: 512
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1373f52c57d5dd34997eb7de8afcf362
+      internalID: 4966947961912394101
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_31
+      rect:
+        serializedVersion: 2
+        x: 896
+        y: 512
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3a135a1fa38e81a41ae800d6a36f48ce
+      internalID: 207993191306484032
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_32
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 384
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a1e1dad8849e3b84db3c218de1baa6ed
+      internalID: 617804906524241045
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_33
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 384
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f5df3748840b5f94f84aa4cf9b2ceab9
+      internalID: 8003064676035112272
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_34
+      rect:
+        serializedVersion: 2
+        x: 256
+        y: 384
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5edd1b5ac4267994eb7e3d4d1c4c1ccd
+      internalID: 1051664851999954970
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_35
+      rect:
+        serializedVersion: 2
+        x: 384
+        y: 384
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5daec4b94ed070245b3ef778d5bdbe4a
+      internalID: -5547292997645957203
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_36
+      rect:
+        serializedVersion: 2
+        x: 512
+        y: 384
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1494e1b62708c444eab29b674f1b0d07
+      internalID: -6796691319132219990
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_37
+      rect:
+        serializedVersion: 2
+        x: 640
+        y: 384
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 840bdcca488fe6e41a84d04649d25be8
+      internalID: 6228105250376800443
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_38
+      rect:
+        serializedVersion: 2
+        x: 768
+        y: 384
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4f35b4a3f6039334b96ac7825f09e5e8
+      internalID: -8644348951327458304
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_39
+      rect:
+        serializedVersion: 2
+        x: 896
+        y: 384
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e93f74ab275db2e44addf709ae231687
+      internalID: -7293499344051936610
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_40
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 256
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 99e670b529bbcfd45bbcd52abd8d7ab5
+      internalID: 8861911350729878999
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_41
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 256
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 12c1bacd5519e1547b34c0e646343c29
+      internalID: -2631239636630709643
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_42
+      rect:
+        serializedVersion: 2
+        x: 256
+        y: 256
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b833fbf9d4347b144910cc8a32596072
+      internalID: -4776464344106402435
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_43
+      rect:
+        serializedVersion: 2
+        x: 384
+        y: 256
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ec4f1094d339402488b76f80fc317e5b
+      internalID: -3260374969344603595
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_44
+      rect:
+        serializedVersion: 2
+        x: 512
+        y: 256
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 960652e4867351d408326b72d2612798
+      internalID: 905762812598583482
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_45
+      rect:
+        serializedVersion: 2
+        x: 640
+        y: 256
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 466563f5be3dd0d42b4f936c2d3e05b3
+      internalID: 7058108662466073802
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_46
+      rect:
+        serializedVersion: 2
+        x: 768
+        y: 256
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3f1e5ff3269284b40a6154e8e052d07b
+      internalID: 8968793272515927621
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_47
+      rect:
+        serializedVersion: 2
+        x: 896
+        y: 256
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5b94e23467cc88241ac82d373cd971e9
+      internalID: 1726290379075929415
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_48
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 128
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2b5727e2711de4249a686aaabcb5216a
+      internalID: 7196652924605026980
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_49
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 128
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8a24cc1af3ba44446b8fccc70d8e8fef
+      internalID: -4944807045441222842
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_50
+      rect:
+        serializedVersion: 2
+        x: 256
+        y: 128
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f7a32dede241e7942add1a9137eb3454
+      internalID: -7237416021115485575
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_51
+      rect:
+        serializedVersion: 2
+        x: 384
+        y: 128
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 191088caa02581c418b83fe8c6a3f2f7
+      internalID: 6806640338154793767
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_52
+      rect:
+        serializedVersion: 2
+        x: 512
+        y: 128
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 99b9235feed96914d8c63a2d1a9b53c6
+      internalID: 7827592378891435471
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_53
+      rect:
+        serializedVersion: 2
+        x: 640
+        y: 128
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8d860cf3cec667b418adeb9245a52e72
+      internalID: -3535228671600330174
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_54
+      rect:
+        serializedVersion: 2
+        x: 768
+        y: 128
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 08ce791f2a25efa4a90bfdcfc0fdcb9f
+      internalID: -4787023447811905861
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_55
+      rect:
+        serializedVersion: 2
+        x: 896
+        y: 128
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b158fea3e0b416240807fdf9d3fd7766
+      internalID: 5069890692058564331
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_56
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e986f5d9c556cb04789e9855c32dd17a
+      internalID: 3412969548404518434
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_57
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 0
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b89ec749a98e19348aaf7a313c2223a8
+      internalID: 4692622505877109451
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_58
+      rect:
+        serializedVersion: 2
+        x: 256
+        y: 0
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 657277309fc2e484586acd38e5c3860f
+      internalID: -4623319907538996626
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_59
+      rect:
+        serializedVersion: 2
+        x: 384
+        y: 0
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e5f414b244a6f0648b4cfef177e2d29f
+      internalID: -3296031062188820427
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_60
+      rect:
+        serializedVersion: 2
+        x: 512
+        y: 0
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a8cd39c181abb664daa4bc0c99810d0f
+      internalID: 84671259499679346
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_61
+      rect:
+        serializedVersion: 2
+        x: 640
+        y: 0
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8fd53bb4fab029c4ea28b7e74e1eb7f6
+      internalID: -2694068151808222627
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_62
+      rect:
+        serializedVersion: 2
+        x: 768
+        y: 0
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a94efcbbdcfe57d4f957272c9c550dca
+      internalID: 429278985184559862
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Terran_Joystick_63
+      rect:
+        serializedVersion: 2
+        x: 896
+        y: 0
+        width: 128
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8fbef83093075874a8ecf433779c177a
+      internalID: -5486660442059459204
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    physicsShape: []
+    bones: []
+    spriteID: 916bb1ac3a6f73949bc5cbe89933d2f7
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+  spritePackingTag: 
+  pSDRemoveMatte: 0
+  pSDShowRemoveMatteOption: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -51,6 +51,7 @@ public class ShipSettings : MonoBehaviour
   [HideInInspector] public float roll;
   [HideInInspector] public float targetSpeed;
   [HideInInspector] public float capacitorLevel;
+  [HideInInspector] public bool isFiring = false;
   [HideInInspector] public bool isAfterburning;
   [HideInInspector]  public float speed = 0f;
   [HideInInspector] GameObjTracker Tracker;
@@ -93,7 +94,7 @@ public class ShipSettings : MonoBehaviour
     Power();
     }
     DoHealth();
-    AvoidObstacles(.5f,shipRadius*2f);
+    AvoidObstacles(.75f,shipRadius*3f);
     //Collision Detecting, but make sure the full collision is only being used if the ship is afterburning, simple manuvers won't do it as much.
     //if(isAfterburning)
     //{ DoBounce(.5f,shipRadius/2);}
@@ -390,7 +391,7 @@ public class ShipSettings : MonoBehaviour
     pitch_ *= turnRate * Time.deltaTime;
     roll_ *= turnRate * 2f * Time.deltaTime;
     transform.localRotation *= Quaternion.AngleAxis(roll_, Vector3.forward) * Quaternion.AngleAxis(yaw_, Vector3.up) * Quaternion.AngleAxis(pitch_, invertYAxis ? Vector3.right : Vector3.left);
-    refTurn = (transform.localEulerAngles-oldRot);
+    refTurn = (transform.localEulerAngles-oldRot)*2;
     oldRot = transform.localEulerAngles;
   }
 

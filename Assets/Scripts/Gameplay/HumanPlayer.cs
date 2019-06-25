@@ -75,9 +75,17 @@ public class HumanPlayer : MonoBehaviour
   void FireGuns()
   {
     var fire = Input.GetKey(KeyCode.Space) || Input.GetMouseButton(0);
-    foreach (LaserCannon laserCannon in laserCannons)
-    {
-      laserCannon.fire = fire;
-    }
+  foreach (LaserCannon laserCannon in laserCannons)
+  {
+   laserCannon.fire = fire;
+   if(fire)
+   { 
+    ship.isFiring = true;
+   }
+   else
+   {
+    ship.isFiring = false;
+   }
   }
+}
 }
