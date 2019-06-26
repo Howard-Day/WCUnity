@@ -180,13 +180,7 @@ void NoviceAI()
   if(AITargetShip != null)
   {AITarget = AITargetShip.gameObject.GetComponent<Transform>();
   }
-  /*if (AITargetShip && Vector3.Distance(AITarget.position,gameObject.transform.position) <= engageDist && ActiveAIState != AIState.WINGMAN)
-  { 
-    if(ActiveAIState == AIState.PATROL || ActiveAIState == AIState.SEARCH )
-    {
-      ActiveAIState = AIState.ENGAGE;
-    }
-  }*/
+
   if (AITargetShip && Vector3.Distance(AITarget.position,transform.position) <= 100)
   { 
     if(ActiveAIState == AIState.ENGAGE)
@@ -233,7 +227,7 @@ Vector3 randDist = Vector3.zero;
 
 public Vector3 DoTargeting(float Accuracy, float Update)
 {    
-  if(Tracker.frames % Update == 0)
+  if(GameObjTracker.frames % Update == 0)
   {
     randDist = Random.insideUnitSphere*Accuracy;
     }
@@ -381,42 +375,49 @@ switch(ActiveAIState)
     {
       ActiveAIState = AIState.PATROL;
     }
-
-    //See how far away and what direction we need to go
-    var localFormPos = formationPos-(WingmanTo.transform.forward*WingmanTo.shipRadius*5)+WingmanTo.transform.position;
-    var leadDist = Vector3.Distance(localFormPos,transform.position);
-    var dirToPos = (localFormPos)-transform.position;
-    
-    Debug.DrawLine(gameObject.transform.position,localFormPos, Color.green,.10f);
-    
-    if (leadDist > 120)//If we're a ways off, aim right at the formation point and afterburn into position.
+    if (WingmanTo != null && hasWingLead)
     {
-      ship.targetSpeed = ship.burnSpeed;
-      SteerTo(localFormPos, ship.turnRate);
-    }
-    if (leadDist <= 120 && leadDist > 20) //If we're a moderate distance away, set speed to the lead ship +25%, aim at the formation position.
+      //See how far away and what direction we need to go
+      var localFormPos = formationPos-(WingmanTo.transform.forward*WingmanTo.shipRadius*5)+WingmanTo.transform.position;
+      var leadDist = Vector3.Distance(localFormPos,transform.position);
+      var dirToPos = (localFormPos)-transform.position;
+      
+      Debug.DrawLine(gameObject.transform.position,localFormPos, Color.green,.10f);
+      if(leadDist != 0)
       {
-        ship.targetSpeed = WingmanTo.speed+ship.topSpeed/4;
-        SteerTo(localFormPos, ship.turnRate);
+        if (leadDist > 120)//If we're a ways off, aim right at the formation point and afterburn into position.
+        {
+          ship.targetSpeed = ship.burnSpeed;
+          SteerTo(localFormPos, ship.turnRate);
+        }
+        if (leadDist <= 120 && leadDist > 20) //If we're a moderate distance away, set speed to the lead ship +25%, aim at the formation position.
+          {
+            ship.targetSpeed = WingmanTo.speed+ship.topSpeed/4;
+            SteerTo(localFormPos, ship.turnRate);
+          }
+        if (leadDist <= 20) //If we're close, Match speed, and aim at a point parallel to the direction of the lead ship
+          {
+            ship.targetSpeed = WingmanTo.speed;
+            SteerTo(localFormPos+WingmanTo.transform.forward*ship.shipRadius*4f, ship.turnRate);
+            //A gentle push, like the avoidance system, to nudge us into place
+            float formPush = (dirToPos.magnitude/10) * .5f;
+            transform.position += dirToPos * formPush * Time.deltaTime;
+          }
+        if (leadDist <= 30) // attempt to match roll once we get close-ish
+          {        
+            transform.rotation = Quaternion.Lerp(transform.rotation,WingmanTo.transform.rotation,.025f);
+            //QuaternionUtil.SmoothDamp(transform.rotation,WingmanTo.transform.rotation, ref refForm, .15f);
+            ship.roll = WingmanTo.roll;
+          }
+          //AITarget is already the closest known enemy - let's use that! 
+          if (AITarget != null && Vector3.Distance(AITarget.position,transform.position) <= engageDist*.666f)
+          {//hold formation until we're very close
+            ActiveAIState = AIState.REPOSITION;
+          }
+        }
       }
-    if (leadDist <= 20) //If we're close, Match speed, and aim at a point parallel to the direction of the lead ship
-      {
-        ship.targetSpeed = WingmanTo.speed;
-        SteerTo(localFormPos+WingmanTo.transform.forward*ship.shipRadius*4f, ship.turnRate);
-        //A gentle push, like the avoidance system, to nudge us into place
-        float formPush = (dirToPos.magnitude/10) * .5f;
-        transform.position += dirToPos * formPush * Time.deltaTime;
-      }
-    if (leadDist <= 30) // attempt to match roll once we get close-ish
-      {        
-        transform.rotation = Quaternion.Lerp(transform.rotation,WingmanTo.transform.rotation,.025f);
-        //QuaternionUtil.SmoothDamp(transform.rotation,WingmanTo.transform.rotation, ref refForm, .15f);
-        ship.roll = WingmanTo.roll;
-      }
-      //AITarget is already the closest known enemy - let's use that! 
-      if (AITarget != null && Vector3.Distance(AITarget.position,transform.position) <= engageDist*.666f)
-      {//hold formation until we're very close
-        ActiveAIState = AIState.REPOSITION;
+      else {
+        ActiveAIState = AIState.PATROL;
       }
     }
   break;
@@ -492,10 +493,12 @@ switch(ActiveAIState)
     
     if (angleToTarget < aimAccuracy)
     {
+       AITargetShip.isLocked = true;
        FireGuns(true);
     }
     else
     {
+       AITargetShip.isLocked = false;
        FireGuns(false);
     }
 

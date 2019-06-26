@@ -162,13 +162,22 @@ MonoBehaviour:
   Armor: {x: 4.5, y: 3.5, z: 3, w: 3}
   Shield: {x: 5, y: 5}
   shieldRechargeRate: 4.5
-  DeathVFX: {fileID: 7789471376337144576, guid: 00b8cbe808eda81448b2786984607fcd,
+  DeathVFX:
+  - {fileID: 7789471376337144576, guid: 00b8cbe808eda81448b2786984607fcd, type: 3}
+  - {fileID: 4645451869083989364, guid: 492d5ef359e20bd41b86cb9433069e9d, type: 3}
+  DeathTrailVFX: {fileID: 3707795204099303826, guid: d2bce69b83d3773418e13260152f0018,
     type: 3}
-  DamageVFX: {fileID: 3380178483321881586, guid: 35013c63d5e50ae44b9dae095c0895f1,
+  InternalDamageVFX: {fileID: 3380178483321881586, guid: 35013c63d5e50ae44b9dae095c0895f1,
+    type: 3}
+  DamageVFX: {fileID: 8971199709986266853, guid: 17ee0f91c17bb6f44804bbd3ce74efbe,
     type: 3}
   DamageTrails: {fileID: 1507481365441476783, guid: edceb4824a5b55a43a13f2d0bd9a92b9,
     type: 3}
   shipRadius: 0
+  _ArmorMax: {x: 0, y: 0, z: 0, w: 0}
+  _ShieldMax: {x: 0, y: 0}
+  Core: 0
+  _CoreStrength: 0
   ShipID: 0
   yaw: 0
   pitch: 0
@@ -180,6 +189,7 @@ MonoBehaviour:
   speed: 0
   numWingmen: 0
   isDead: 0
+  isLocked: 0
   recover: 1
   BounceDir: {x: 0, y: 0, z: 0}
   BounceSpin: {x: 0, y: 0, z: 0}
@@ -217,7 +227,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   WingmanTo: {fileID: 0}
   PatrolPoints: []
-  ActiveAIState: 0
+  ActiveAIState: 3
   AISkillLevel: 1
   AITarget: {fileID: 0}
   Tracker: {fileID: 0}

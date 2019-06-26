@@ -31,7 +31,9 @@ public class ShipSettings : MonoBehaviour
   [SerializeField] public Vector2 Shield;
   [SerializeField] public float shieldRechargeRate = 1;
   [Header("Death Effect")]
-  [SerializeField] public GameObject DeathVFX;
+  [SerializeField] public GameObject[] DeathVFX;
+  [SerializeField] public GameObject DeathTrailVFX;
+  [SerializeField] public GameObject InternalDamageVFX;
   [SerializeField] public GameObject DamageVFX;
   [SerializeField] public GameObject DamageTrails;
 
@@ -40,10 +42,10 @@ public class ShipSettings : MonoBehaviour
   //Hidden Attributes
   [HideInInspector] public float shipRadius;
   EngineFlare[] engineFlares;
-  Vector4 _ArmorMax;
-  Vector2 _ShieldMax;
-  float Core;
-  float _CoreStrength;
+  [HideInInspector] public Vector4 _ArmorMax;
+  [HideInInspector] public Vector2 _ShieldMax;
+  [HideInInspector] public float Core;
+  [HideInInspector] public float _CoreStrength;
 
   [HideInInspector] public int ShipID;
   [HideInInspector] public float yaw;
@@ -58,6 +60,7 @@ public class ShipSettings : MonoBehaviour
   
   [HideInInspector] public int numWingmen = 0;
   [HideInInspector] public bool isDead = false;
+  [HideInInspector] public bool isLocked = false;
 
   void Start()
   {
@@ -104,7 +107,11 @@ public class ShipSettings : MonoBehaviour
 
   void InternalDamage(){
     //Show that internal damage has taken place! 
-    Instantiate(DamageVFX,transform.position,Quaternion.identity,transform);
+    Instantiate(InternalDamageVFX,transform.position,Quaternion.identity,transform);
+  }
+   void ArmorDamage(Vector3 pos){
+    //Show that internal damage has taken place! 
+    Instantiate(DamageVFX,pos,Quaternion.identity,transform);
   }
 
   //Gently avoid obstacles!
@@ -218,6 +225,7 @@ public class ShipSettings : MonoBehaviour
           {
             if(Armor.x > damage) //can the armor take the hit? 
             {  Armor.x -= damage;
+               ArmorDamage(transform.position+hitLoc/2);
             }
             else  //armor takes what it can, passes the rest onto internal damage;
               {
@@ -231,6 +239,7 @@ public class ShipSettings : MonoBehaviour
           {
             if(Armor.z > damage) //can the armor take the hit? 
             {  Armor.z -= damage;
+               ArmorDamage(transform.position+hitLoc/2);
             }
             else  //armor takes what it can, passes the rest onto internal damage;
               {
@@ -244,6 +253,7 @@ public class ShipSettings : MonoBehaviour
           {
             if(Armor.w > damage) //can the armor take the hit? 
             {  Armor.w -= damage;
+               ArmorDamage(transform.position+hitLoc/2);
             }
             else  //armor takes what it can, passes the rest onto internal damage;
               {
@@ -277,6 +287,7 @@ public class ShipSettings : MonoBehaviour
           {
             if(Armor.y > damage) //can the armor take the hit? 
             {   Armor.y -= damage;
+                ArmorDamage(transform.position+hitLoc/2);
             }
             else  //armor takes what it can, passes the rest onto internal damage;
               {
@@ -290,6 +301,7 @@ public class ShipSettings : MonoBehaviour
           {
             if(Armor.z > damage) //can the armor take the hit? 
             {  Armor.z -= damage;
+               ArmorDamage(transform.position+hitLoc/2);
             }
             else  //armor takes what it can, passes the rest onto internal damage;
               {
@@ -303,6 +315,7 @@ public class ShipSettings : MonoBehaviour
           {
             if(Armor.w > damage) //can the armor take the hit? 
             {  Armor.w -= damage;
+              ArmorDamage(transform.position+hitLoc/2);
             }
             else  //armor takes what it can, passes the rest onto internal damage;
               {
@@ -321,10 +334,14 @@ public class ShipSettings : MonoBehaviour
     }
   }
   GameObject Boom;
+
   Vector3 DeathDir = Vector3.zero;
   float DeathVel;
   Vector3 DeathSpin;
+  int DeathType;
+  float DeathLength;
   GameObject Trail;
+
   void DoHealth()
   {
     //Constantly recharge the shields till full
@@ -347,11 +364,54 @@ public class ShipSettings : MonoBehaviour
     if(_CoreStrength <= 0) //We dead, son
     { 
       isDead = true;
-      if (DeathDir == Vector3.zero)
+      //Let's set up how we're going to die!
+      if (DeathDir == Vector3.zero) //this happens once, let's take advantage!
       {  DeathDir = transform.forward;
          DeathVel = speed;
          DeathSpin = new Vector3(Random.Range(-3f,3f),Random.Range(-3f,3f),Random.Range(-3f,3f));
+         DeathType = Random.Range(0,2); //we've got three current deaths - immediate, short spin, and death tumble!
+         DeathLength = Random.Range(2f,4f);
       }
+      if(DeathType == 0) //Die Immediately.
+      {
+      if (!Boom)
+      { 
+        Boom = Instantiate(DeathVFX[Random.Range(0,DeathVFX.Length-1)],transform.position,Quaternion.identity,transform.parent);
+        Boom.GetComponent<DampInitVelocity>().initDir = DeathDir;
+        Boom.GetComponent<DampInitVelocity>().initVel = DeathVel/2;
+      }
+      Destroy(gameObject);
+      }
+
+      if(DeathType == 1)//Short burst of explosions, then Die
+      {
+        var dyaw_ = Mathf.Clamp(DeathSpin.y, -1f, 1f);
+        var dpitch_ = Mathf.Clamp(DeathSpin.x, -1f, 1f);
+        var droll_ = Mathf.Clamp(DeathSpin.z, -1f, 1f);
+        dyaw_ *= turnRate * 2f * Time.deltaTime;
+        dpitch_ *= turnRate * 2f * Time.deltaTime;
+        droll_ *= turnRate * 3f * Time.deltaTime;
+        transform.localRotation *= Quaternion.AngleAxis(droll_, Vector3.forward) * Quaternion.AngleAxis(dyaw_, Vector3.up) * Quaternion.AngleAxis(dpitch_, invertYAxis ? Vector3.right : Vector3.left);
+        transform.position += DeathDir * DeathVel* Time.deltaTime;
+        speed = 0f;
+        DeathLength -= Time.deltaTime*5.5f;
+        if (DeathLength > .5f)
+        {
+          GameObject DeathTrail = Instantiate(DeathTrailVFX,transform.position,Quaternion.identity,transform.parent);
+          DeathTrail.GetComponent<DampInitVelocity>().initDir = DeathDir;
+          DeathTrail.GetComponent<DampInitVelocity>().initVel = DeathVel/8;
+        }
+        if (DeathLength <= 0)
+        { 
+          Boom = Instantiate(DeathVFX[Random.Range(0,DeathVFX.Length-1)],transform.position,Quaternion.identity,transform.parent);
+          Boom.GetComponent<DampInitVelocity>().initDir = DeathDir;
+          Boom.GetComponent<DampInitVelocity>().initVel = DeathVel/2;
+          Destroy(gameObject);
+        }
+      }
+
+      if(DeathType == 2)
+      {
       var dyaw_ = Mathf.Clamp(DeathSpin.y, -1f, 1f);
       var dpitch_ = Mathf.Clamp(DeathSpin.x, -1f, 1f);
       var droll_ = Mathf.Clamp(DeathSpin.z, -1f, 1f);
@@ -360,15 +420,24 @@ public class ShipSettings : MonoBehaviour
       droll_ *= turnRate * 3f * Time.deltaTime;
       transform.localRotation *= Quaternion.AngleAxis(droll_, Vector3.forward) * Quaternion.AngleAxis(dyaw_, Vector3.up) * Quaternion.AngleAxis(dpitch_, invertYAxis ? Vector3.right : Vector3.left);
       transform.position += DeathDir * DeathVel* Time.deltaTime;
-      speed = Random.Range(-topSpeed,topSpeed/2);
-      if (!Boom)
-      { 
-        Boom = Instantiate(DeathVFX,transform.position,Quaternion.identity,transform.parent);
+      DeathLength -= Time.deltaTime;
+        if (DeathLength > .25f)
+        {
+          GameObject DeathTrail = Instantiate(DeathTrailVFX,transform.position,Quaternion.identity,transform.parent);
+          DeathTrail.GetComponent<DampInitVelocity>().initDir = DeathDir;
+          DeathTrail.GetComponent<DampInitVelocity>().initVel = DeathVel/8;
+        }
+        if (DeathLength <= 0)
+        { 
+          Boom = Instantiate(DeathVFX[Random.Range(0,DeathVFX.Length-1)],transform.position,Quaternion.identity,transform.parent);
+          Boom.GetComponent<DampInitVelocity>().initDir = DeathDir;
+          Boom.GetComponent<DampInitVelocity>().initVel = DeathVel/2;
+          Destroy(gameObject);
+        }
       }
-      else{
-        Boom.transform.position += DeathDir * DeathVel* Time.deltaTime;
-      }
-      Destroy(gameObject, .5f);
+
+
+
     }
   }
 
@@ -412,7 +481,7 @@ public class ShipSettings : MonoBehaviour
     
     deltaRot = new Vector3(anglex,angley,anglez);
     
-    print(deltaRot);
+    //print(deltaRot);
     oldRot = transform.rotation;    
 
   }

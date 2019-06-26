@@ -55,7 +55,7 @@ public class EngineFlare : MonoBehaviour
             SwapTexture(CruiseThrottle,FlareMat);
         }
         
-        if(FlareThrottle <= 1.0f && FlareThrottle > .75f && TextureSwap == false)
+        if(FlareThrottle <= 1.1f && FlareThrottle > .75f && TextureSwap == false)
         {
             TextureSwap = true;
             SwapTexture(FullThrottle,FlareMat);
