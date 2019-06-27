@@ -111,7 +111,9 @@ public class ShipSettings : MonoBehaviour
   }
    void ArmorDamage(Vector3 pos){
     //Show that internal damage has taken place! 
-    Instantiate(DamageVFX,pos,Quaternion.identity,transform);
+    GameObject Debris = Instantiate(DamageVFX,pos,Quaternion.identity,transform.parent);
+    Debris.GetComponent<DampInitVelocity>().initDir = DeathDir;
+    Debris.GetComponent<DampInitVelocity>().initVel = DeathVel;
   }
 
   //Gently avoid obstacles!
@@ -225,7 +227,7 @@ public class ShipSettings : MonoBehaviour
           {
             if(Armor.x > damage) //can the armor take the hit? 
             {  Armor.x -= damage;
-               ArmorDamage(transform.position+hitLoc/2);
+               ArmorDamage(hitLoc);
             }
             else  //armor takes what it can, passes the rest onto internal damage;
               {
@@ -239,7 +241,7 @@ public class ShipSettings : MonoBehaviour
           {
             if(Armor.z > damage) //can the armor take the hit? 
             {  Armor.z -= damage;
-               ArmorDamage(transform.position+hitLoc/2);
+               ArmorDamage(hitLoc);
             }
             else  //armor takes what it can, passes the rest onto internal damage;
               {
@@ -253,7 +255,7 @@ public class ShipSettings : MonoBehaviour
           {
             if(Armor.w > damage) //can the armor take the hit? 
             {  Armor.w -= damage;
-               ArmorDamage(transform.position+hitLoc/2);
+               ArmorDamage(hitLoc);
             }
             else  //armor takes what it can, passes the rest onto internal damage;
               {
@@ -287,7 +289,7 @@ public class ShipSettings : MonoBehaviour
           {
             if(Armor.y > damage) //can the armor take the hit? 
             {   Armor.y -= damage;
-                ArmorDamage(transform.position+hitLoc/2);
+                ArmorDamage(hitLoc);
             }
             else  //armor takes what it can, passes the rest onto internal damage;
               {
@@ -301,7 +303,7 @@ public class ShipSettings : MonoBehaviour
           {
             if(Armor.z > damage) //can the armor take the hit? 
             {  Armor.z -= damage;
-               ArmorDamage(transform.position+hitLoc/2);
+               ArmorDamage(hitLoc);
             }
             else  //armor takes what it can, passes the rest onto internal damage;
               {
@@ -315,7 +317,7 @@ public class ShipSettings : MonoBehaviour
           {
             if(Armor.w > damage) //can the armor take the hit? 
             {  Armor.w -= damage;
-              ArmorDamage(transform.position+hitLoc/2);
+              ArmorDamage(hitLoc);
             }
             else  //armor takes what it can, passes the rest onto internal damage;
               {
@@ -360,13 +362,19 @@ public class ShipSettings : MonoBehaviour
         }
       }
     }
+    if(_CoreStrength > 0) //We dead, son
+    { 
+    DeathDir = transform.forward;
+    DeathVel = speed;
+    }
 
     if(_CoreStrength <= 0) //We dead, son
     { 
       isDead = true;
       //Let's set up how we're going to die!
-      if (DeathDir == Vector3.zero) //this happens once, let's take advantage!
-      {  DeathDir = transform.forward;
+      if (DeathSpin == Vector3.zero) //this happens once, let's take advantage!
+      {  
+         DeathDir = transform.forward;
          DeathVel = speed;
          DeathSpin = new Vector3(Random.Range(-3f,3f),Random.Range(-3f,3f),Random.Range(-3f,3f));
          DeathType = Random.Range(0,2); //we've got three current deaths - immediate, short spin, and death tumble!
@@ -378,9 +386,10 @@ public class ShipSettings : MonoBehaviour
       { 
         Boom = Instantiate(DeathVFX[Random.Range(0,DeathVFX.Length-1)],transform.position,Quaternion.identity,transform.parent);
         Boom.GetComponent<DampInitVelocity>().initDir = DeathDir;
-        Boom.GetComponent<DampInitVelocity>().initVel = DeathVel/2;
+        Boom.GetComponent<DampInitVelocity>().initVel = DeathVel;
       }
       Destroy(gameObject, .25f);
+      transform.position += DeathDir * DeathVel* Time.deltaTime;
       }
 
       if(DeathType == 1)//Short burst of explosions, then Die
@@ -405,7 +414,7 @@ public class ShipSettings : MonoBehaviour
         { 
           Boom = Instantiate(DeathVFX[Random.Range(0,DeathVFX.Length-1)],transform.position,Quaternion.identity,transform.parent);
           Boom.GetComponent<DampInitVelocity>().initDir = DeathDir;
-          Boom.GetComponent<DampInitVelocity>().initVel = DeathVel/2;
+          Boom.GetComponent<DampInitVelocity>().initVel = DeathVel;
           Destroy(gameObject, .25f);
         }
       }
@@ -431,7 +440,7 @@ public class ShipSettings : MonoBehaviour
         { 
           Boom = Instantiate(DeathVFX[Random.Range(0,DeathVFX.Length-1)],transform.position,Quaternion.identity,transform.parent);
           Boom.GetComponent<DampInitVelocity>().initDir = DeathDir;
-          Boom.GetComponent<DampInitVelocity>().initVel = DeathVel/2;
+          Boom.GetComponent<DampInitVelocity>().initVel = DeathVel;
           Destroy(gameObject, .25f);
         }
       }

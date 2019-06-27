@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 3737487636629593735}
   - component: {fileID: 7570553588027002641}
   - component: {fileID: 8447934113291232215}
+  - component: {fileID: -5958487040459318599}
   m_Layer: 0
   m_Name: DebrisImpsct
   m_TagString: Untagged
@@ -105,7 +106,7 @@ ParticleSystem:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-  moveWithTransform: 1
+  moveWithTransform: 0
   moveWithCustomTransform: {fileID: 0}
   scalingMode: 1
   randomSeed: 0
@@ -4771,3 +4772,18 @@ ParticleSystemRenderer:
   m_Mesh2: {fileID: 0}
   m_Mesh3: {fileID: 0}
   m_MaskInteraction: 0
+--- !u!114 &-5958487040459318599
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8971199709986266853}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e363dc771be93d45a8bc98433a7808a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DampVel: 0.99
+  initDir: {x: 0, y: 0, z: 0}
+  initVel: 0
