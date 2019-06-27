@@ -14,7 +14,7 @@ public class SpritePicker : MonoBehaviour
 
   void Start()
   {
-    gameCamera = (Transform)GameObject.FindGameObjectWithTag("GameCamera").transform;
+    gameCamera =  Camera.main.transform;
     billboard = transform.Find("Billboard");    
     if(Application.isPlaying)
       billboardMaterial = billboard.GetComponent<Renderer>().material;
@@ -23,7 +23,7 @@ public class SpritePicker : MonoBehaviour
   void Update()
   {
     if(!gameCamera)
-      gameCamera = (Transform)GameObject.FindGameObjectWithTag("GameCamera").transform;
+      gameCamera = (Transform)Camera.main.transform;
     if (!billboard || !billboardMaterial || frames == Vector2Int.zero || !gameCamera)
     {
       return;

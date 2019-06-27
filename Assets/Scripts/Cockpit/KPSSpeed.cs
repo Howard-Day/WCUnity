@@ -5,17 +5,17 @@ using UnityEngine.UI; // Required when Using UI elements.
 public class KPSSpeed : MonoBehaviour
 {
     public Text Speed;
-    ShipSettings mainShip;
+    ShipSettings shipMain;
     // Start is called before the first frame update
     void Start()
     {
-        mainShip = GameObject.FindGameObjectWithTag("PlayerShip").GetComponent<ShipSettings>();
+        shipMain = (ShipSettings)gameObject.GetComponentInParent<ShipSettings>();
     }
 
     // Update is called once per frame
     void Update()
     {
-       float setSpeed = mainShip.speed;
+       float setSpeed = shipMain.speed;
        
          
        int speedDisp = Mathf.FloorToInt(setSpeed*10);

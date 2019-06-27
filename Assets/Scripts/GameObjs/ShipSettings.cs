@@ -380,7 +380,7 @@ public class ShipSettings : MonoBehaviour
         Boom.GetComponent<DampInitVelocity>().initDir = DeathDir;
         Boom.GetComponent<DampInitVelocity>().initVel = DeathVel/2;
       }
-      Destroy(gameObject);
+      Destroy(gameObject, .25f);
       }
 
       if(DeathType == 1)//Short burst of explosions, then Die
@@ -401,12 +401,12 @@ public class ShipSettings : MonoBehaviour
           DeathTrail.GetComponent<DampInitVelocity>().initDir = DeathDir;
           DeathTrail.GetComponent<DampInitVelocity>().initVel = DeathVel/8;
         }
-        if (DeathLength <= 0)
+        if (DeathLength <= 0 && !Boom)
         { 
           Boom = Instantiate(DeathVFX[Random.Range(0,DeathVFX.Length-1)],transform.position,Quaternion.identity,transform.parent);
           Boom.GetComponent<DampInitVelocity>().initDir = DeathDir;
           Boom.GetComponent<DampInitVelocity>().initVel = DeathVel/2;
-          Destroy(gameObject);
+          Destroy(gameObject, .25f);
         }
       }
 
@@ -427,12 +427,12 @@ public class ShipSettings : MonoBehaviour
           DeathTrail.GetComponent<DampInitVelocity>().initDir = DeathDir;
           DeathTrail.GetComponent<DampInitVelocity>().initVel = DeathVel/8;
         }
-        if (DeathLength <= 0)
+        if (DeathLength <= 0 && !Boom)
         { 
           Boom = Instantiate(DeathVFX[Random.Range(0,DeathVFX.Length-1)],transform.position,Quaternion.identity,transform.parent);
           Boom.GetComponent<DampInitVelocity>().initDir = DeathDir;
           Boom.GetComponent<DampInitVelocity>().initVel = DeathVel/2;
-          Destroy(gameObject);
+          Destroy(gameObject, .25f);
         }
       }
 

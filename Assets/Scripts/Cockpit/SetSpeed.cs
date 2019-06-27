@@ -5,21 +5,21 @@ using UnityEngine.UI; // Required when Using UI elements.
 public class SetSpeed : MonoBehaviour
 {
     public Text Speed;
-    ShipSettings mainShip;
+    ShipSettings shipMain;
     // Start is called before the first frame update
     void Start()
     {
-        mainShip = GameObject.FindGameObjectWithTag("PlayerShip").GetComponent<ShipSettings>();
+        shipMain = (ShipSettings)gameObject.GetComponentInParent<ShipSettings>();
     }
 
     // Update is called once per frame
     void Update()
     {
-       float setSpeed = mainShip.targetSpeed;
-       if (setSpeed >= mainShip.topSpeed)
-        setSpeed = mainShip.topSpeed;
-       if(mainShip.isAfterburning)
-        setSpeed = mainShip.burnSpeed;
+       float setSpeed = shipMain.targetSpeed;
+       if (setSpeed >= shipMain.topSpeed)
+        setSpeed = shipMain.topSpeed;
+       if(shipMain.isAfterburning)
+        setSpeed = shipMain.burnSpeed;
          
        int speedDisp = Mathf.FloorToInt(setSpeed*10);
 

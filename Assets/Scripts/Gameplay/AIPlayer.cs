@@ -31,10 +31,9 @@ public class AIPlayer : MonoBehaviour
   float rollDir;
   float rollLength;
 
-
   void Start()
   {
-    ship = GetComponent<ShipSettings>();
+    ship = GetComponent<ShipSettings>(); 
     laserCannons = GetComponentsInChildren<LaserCannon>();    
   }
 

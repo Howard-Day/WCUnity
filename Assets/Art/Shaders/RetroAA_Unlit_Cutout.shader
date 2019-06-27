@@ -8,13 +8,16 @@
 	}
 	SubShader
 	{
-		Tags { "QUEUE"="AlphaTest" "IGNOREPROJECTOR"="true" "RenderType"="TransparentCutout" }
+		Tags { "QUEUE"="Geometry"}
 		LOD 100
 
 		Pass
 		{
-			AlphaToMask On
-
+			//AlphaToMask On
+			Blend off
+			ZWrite On
+			ZTest on
+			Cull off
 			CGPROGRAM
 				#pragma vertex vert
 				#pragma fragment frag
@@ -69,7 +72,7 @@
 				{
 					fixed4 col = RetroAA(_MainTex, i.texcoord, _MainTex_TexelSize);
 					col.rgb += _Color.rgb;
-					col.a *= _Color.a;
+					clip(col.a - 16 / 255.0);
 					UNITY_APPLY_FOG(i.fogCoord, col);
 					return col;
 				}

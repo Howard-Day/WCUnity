@@ -29,8 +29,8 @@ public class CockpitShift : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        shipMain = (ShipSettings)Camera.main.gameObject.GetComponentInParent<ShipSettings>();
-        CockpitRoot = gameObject.transform;
+        shipMain = (ShipSettings)gameObject.GetComponentInParent<ShipSettings>();
+        CockpitRoot = transform;
          
     }
     // Update is called once per frame
