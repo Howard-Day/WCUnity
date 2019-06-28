@@ -68,7 +68,7 @@ public class JoystickThrottle : MonoBehaviour
         //Debug.Assert(currentjoyFrame > 63," OUT OF RANGE JOYSTICK");
         if(shipMain.isFiring)
         {
-            Joystick.sprite = firingJoystickSprites[currentjoyFrame];
+            Joystick.sprite = firingJoystickSprites[currentjoyFrame-1];
         }
         else
         {
@@ -84,7 +84,7 @@ public class JoystickThrottle : MonoBehaviour
         refSteerZ = (SmoothSpin+1)/2;
         float steerZ = Mathf.Clamp01(refSteerZ);
         //Also do Feet Spinning/steer
-        int currentFeetFrame = (int)(steerZ*16f);
+        int currentFeetFrame = (int)(steerZ*15f);
         Feet.sprite = feetSprites[currentFeetFrame];
     }
 

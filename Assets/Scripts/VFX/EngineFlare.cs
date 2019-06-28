@@ -36,7 +36,7 @@ public class EngineFlare : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        FlareMat.SetFloat("_LineWidth", Mathf.Lerp(FlareWidths.x,FlareWidths.y,FlareThrottle ) );
+        FlareMat.SetFloat("_LineWidth", Mathf.Lerp(FlareWidths.x,FlareWidths.y,FlareThrottle)*Random.Range(.9f,1.1f) );
         if(FlareThrottle <= .2f && TextureSwap == false)
         {
             TextureSwap = true;
@@ -65,7 +65,7 @@ public class EngineFlare : MonoBehaviour
         {
             TextureSwap = true;
             SwapTexture(Afterburn,FlareMat);
-            FlareMat.SetFloat("_LineWidth", FlareWidths.y*1.5f);
+            FlareMat.SetFloat("_LineWidth", FlareWidths.y*Random.Range(1.25f,1.5f));
         }
         VolLine.StartPos = new Vector3(0,0,Mathf.Lerp(FlareLengths.y,FlareLengths.x,FlareThrottle));
 

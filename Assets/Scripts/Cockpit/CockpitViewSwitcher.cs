@@ -50,13 +50,20 @@ public class CockpitViewSwitcher : MonoBehaviour
         transform.localPosition = RearCamOffset;
         transform.localEulerAngles = new Vector3(RearAngle,0,0);
         }
+        print(shipMain.deltaRot);
         
         float xShift =  shipMain.deltaRot.y;
         float yShift =  shipMain.deltaRot.x;
         
         //print (xShift);
         TargetShift = new Vector2(Mathf.Clamp(xShift,-1f,1f),-Mathf.Clamp(yShift,-1f,1f));
+        
         SmoothShift = Vector2.SmoothDamp(SmoothShift,TargetShift,ref RefShift, ShiftSmoothness);
+        
+        if(shipMain.speed > shipMain.topSpeed)
+        {
+            SmoothShift += new Vector2(Random.Range(-1f,1f),Random.Range(-1f,1f))*.025f;
+        }
 
         float zShift =  shipMain.deltaRot.z;
         float TargetSpin = Mathf.Clamp(zShift,-1f,1f);

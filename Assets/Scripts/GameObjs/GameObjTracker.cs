@@ -5,26 +5,32 @@ using UnityEngine;
 public class GameObjTracker : MonoBehaviour
 {
     public float speedMultiplier = 1f;
-    public List<ShipSettings> Ships;
-    public List<ShipSettings> ConfedShips;
-    public List<ShipSettings> KilrathiShips;
-    public List<ShipSettings> NeutralShips;
-    public List<ShipSettings> PirateShips;
+    static public List<ShipSettings> Ships;
+    static public List<ShipSettings> ConfedShips;
+    static public List<ShipSettings> KilrathiShips;
+    static public List<ShipSettings> NeutralShips;
+    static public List<ShipSettings> PirateShips;
 
     public GameObject[] KilrathiSpawn;
     public GameObject ConfedSpawn;
     public GameObject PlayerSpawn;
     // Start is called before the first frame update
     [HideInInspector] public static int frames;
+    static public GameObject Tracker;
+
     void Start()
     {
+        Tracker = gameObject;
         RegisterAllShips();
         RegisterTeams();
     }
-    public void RegisterAllShips()
+    
+
+
+    public static void RegisterAllShips()
     {
         Ships = new List<ShipSettings>(); 
-        foreach (Transform child in transform)
+        foreach (Transform child in GameObject.FindGameObjectWithTag("GamePlayObjs").transform)
         {
             ShipSettings ship = child.GetComponent<ShipSettings>();
             if(ship != null)
@@ -34,7 +40,7 @@ public class GameObjTracker : MonoBehaviour
         }
         print("GameObj Tracker: "+ Ships.Count + " ships found!");
     }
-    public void RegisterTeams()
+    public static void RegisterTeams()
     {
         if (Ships.Count == 0)
             return;

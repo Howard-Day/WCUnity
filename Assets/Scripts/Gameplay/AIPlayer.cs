@@ -35,14 +35,14 @@ public class AIPlayer : MonoBehaviour
   {
     ship = GetComponent<ShipSettings>(); 
     laserCannons = GetComponentsInChildren<LaserCannon>();    
+    ForceRegister();
   }
 
 void ForceRegister()
 {
   gameObject.transform.SetParent(GameObject.FindWithTag("GamePlayObjs").transform);
-  Tracker = gameObject.GetComponentInParent<GameObjTracker>();
-  Tracker.RegisterAllShips();
-  Tracker.RegisterTeams();
+  GameObjTracker.RegisterAllShips();
+  GameObjTracker.RegisterTeams();
 }
 
 void FireGuns(bool fire)
@@ -121,12 +121,12 @@ void RollControl(float rollOn)
   {
     float distance = 100000f;
     ShipSettings nearestShip = null;
-    foreach (ShipSettings shipTest in Tracker.Ships)
+    foreach (ShipSettings shipTest in GameObjTracker.Ships)
     {
       if(shipTest == null) //SOMEONE MUSTA DIED
       {
-        Tracker.RegisterAllShips();
-        Tracker.RegisterTeams();
+        GameObjTracker.RegisterAllShips();
+        GameObjTracker.RegisterTeams();
       }
       if(shipTest != null)
         {
@@ -282,13 +282,13 @@ public void InitWingman(ShipSettings wingman)
   {
     float distance = 100000f;
     ShipSettings wingMan = null;
-    foreach (ShipSettings friendly in Tracker.Ships)
+    foreach (ShipSettings friendly in GameObjTracker.Ships)
     {
       if(friendly == null) //SOMEONE MUSTA DIED
       {
         print("Someone Died");
-        Tracker.RegisterAllShips();
-        Tracker.RegisterTeams();
+        GameObjTracker.RegisterAllShips();
+        GameObjTracker.RegisterTeams();
       }
       //Okay, check if we're still null, and if the ship we've found is *AKTUALLY* friendly, and looking for wingmen
       //AND isn't ourselves, AND doesn't already have 4 wingmen.
@@ -559,10 +559,6 @@ switch(ActiveAIState)
   /// </summary>
   void Update()
   {
-    if(!Tracker)
-    {
-      ForceRegister();
-    }
     switch (AISkillLevel) {
       case (AILevel.CHUMP):{
         ChumpAI();

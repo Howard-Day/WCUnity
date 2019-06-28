@@ -149,6 +149,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 3072
   turnRate: 65
+  maxFuel: 2750
+  fuelBurnRate: 2.25
   invertYAxis: 0
   topSpeed: 40
   burnSpeed: 120
@@ -179,6 +181,7 @@ MonoBehaviour:
   _ShieldMax: {x: 0, y: 0}
   Core: 0
   _CoreStrength: 0
+  _Fuel: 0
   ShipID: 0
   yaw: 0
   pitch: 0
@@ -195,6 +198,7 @@ MonoBehaviour:
   BounceDir: {x: 0, y: 0, z: 0}
   BounceSpin: {x: 0, y: 0, z: 0}
   BouncePush: 0
+  lastHit: 0
   oldRot: {x: 0, y: 0, z: 0, w: 0}
   deltaRot: {x: 0, y: 0, z: 0}
 --- !u!114 &2844008454367371773

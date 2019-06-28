@@ -14,6 +14,8 @@ public class ShipSettings : MonoBehaviour
   [SerializeField] public LayerMask CollidesWith;
   [Header("Movement Settings")]
   [SerializeField] public float turnRate = 50f;
+  [SerializeField] public float maxFuel = 2500f;
+  [SerializeField] public float fuelBurnRate = 2f;
   [SerializeField] bool invertYAxis = false;
   [SerializeField] public float topSpeed = 20f;
   [SerializeField] public float burnSpeed = 50f;
@@ -46,7 +48,7 @@ public class ShipSettings : MonoBehaviour
   [HideInInspector] public Vector2 _ShieldMax;
   [HideInInspector] public float Core;
   [HideInInspector] public float _CoreStrength;
-
+  [SerializeField] public float _Fuel;
   [HideInInspector] public int ShipID;
   [HideInInspector] public float yaw;
   [HideInInspector] public float pitch;
@@ -70,16 +72,15 @@ public class ShipSettings : MonoBehaviour
     //Organize the scene
     gameObject.transform.SetParent(GameObject.FindWithTag("GamePlayObjs").transform); 
     //Make sure everyone knows we're here
-    Tracker = gameObject.GetComponentInParent<GameObjTracker>();
-    Tracker.RegisterAllShips();
-    Tracker.RegisterTeams();
+    GameObjTracker.RegisterAllShips();
+    GameObjTracker.RegisterTeams();
     //grab the sub-object engine flares to control them
     engineFlares = GetComponentsInChildren<EngineFlare>();
     //Atomic Batteries to power
     capacitorLevel = capacitorSize;
     //Turbines to speed
-    burnSpeed = burnSpeed * Tracker.speedMultiplier;
-    topSpeed = topSpeed * Tracker.speedMultiplier;
+    //check fuel Light
+    _Fuel = maxFuel;
 
     _ArmorMax = Armor; //Give us something to compare to later on
     _ShieldMax = Shield; //same
@@ -93,16 +94,39 @@ public class ShipSettings : MonoBehaviour
     if(!isDead)
     {
     Steer();
-    Throttle();
+    DoThrottle();
     Power();
     }
     DoHealth();
+    DoFuel();
     AvoidObstacles(.75f,shipRadius*3f);
     //Collision Detecting, but make sure the full collision is only being used if the ship is afterburning, simple manuvers won't do it as much.
     //if(isAfterburning)
     //{ DoBounce(.5f,shipRadius/2);}
     //else
     DoBounce(.5f,shipRadius/16f);
+  }
+
+  void DoFuel()
+  {
+    var normalizedThrottle = Mathf.Clamp01(speed/topSpeed);
+    if(_Fuel > 0 ) //WE've got fuel, let's go! 
+    { 
+      if(!isAfterburning)
+      {//Do normal fuel drain based on throttle
+        _Fuel -= normalizedThrottle*Time.deltaTime*2f;
+      }
+      else// Now we're burning fuel to GO VERY FAST
+      {
+        _Fuel -= fuelBurnRate*Time.deltaTime*2f;
+      }
+    }
+    else //Fuck, basically just a max coasting speed. Good fucking luck, cowboy
+    {
+      speed = Mathf.Min(targetSpeed, .8f);
+      isAfterburning = false;
+
+    }
   }
 
   void InternalDamage(){
@@ -143,14 +167,11 @@ public class ShipSettings : MonoBehaviour
     }
     
   }
+  //Violently Collide!
   [HideInInspector] public float recover = 1f;
   [HideInInspector] public Vector3 BounceDir;
    [HideInInspector] public Vector3 BounceSpin;
   [HideInInspector] public float BouncePush;
-
-
-
-  //Violently Collide!
   public void DoBounce(float recoverRate, float bounceRadius)
   {
     Collider[] bounceColliders = Physics.OverlapSphere(gameObject.transform.position, bounceRadius, CollidesWith);
@@ -198,7 +219,7 @@ public class ShipSettings : MonoBehaviour
       yaw *= recover;
       roll *= recover;
       speed *= recover;
-      if (recover < .25f)
+      if (recover < .05f)
       {InternalDamage();          
       }
       transform.localRotation *= Quaternion.AngleAxis(broll_, Vector3.forward) * Quaternion.AngleAxis(byaw_, Vector3.up) * Quaternion.AngleAxis(bpitch_, invertYAxis ? Vector3.right : Vector3.left);
@@ -207,6 +228,8 @@ public class ShipSettings : MonoBehaviour
       recover += recoverRate * Time.deltaTime;
       }
   }
+  public enum HitLoc {F,R,L,U,D,B, NULL};
+  public HitLoc lastHit;
 
   public void DoDamage(Vector3 hitLoc, float damage)
   {
@@ -215,6 +238,7 @@ public class ShipSettings : MonoBehaviour
       //Check font/back hit of the impact, apply that to the shields
       if(Vector3.Angle(transform.forward, damageAngle) < 90) //Hit from the front
       {
+        lastHit = HitLoc.F;
         //print("hit from the front! Angle of" + Vector3.Angle(transform.forward, damageAngle));
         if(Shield.x > damage)//if shields can take the hit, let them
           Shield.x -= damage;
@@ -239,6 +263,7 @@ public class ShipSettings : MonoBehaviour
           }
           else if(Vector3.Angle(-transform.right, damageAngle) <= 45) // left armor hit!)
           {
+            lastHit = HitLoc.L;
             if(Armor.z > damage) //can the armor take the hit? 
             {  Armor.z -= damage;
                ArmorDamage(hitLoc);
@@ -253,6 +278,7 @@ public class ShipSettings : MonoBehaviour
           }
           else if(Vector3.Angle(transform.right, damageAngle) <= 45) // right armor hit!)
           {
+            lastHit = HitLoc.R;
             if(Armor.w > damage) //can the armor take the hit? 
             {  Armor.w -= damage;
                ArmorDamage(hitLoc);
@@ -267,6 +293,10 @@ public class ShipSettings : MonoBehaviour
           }
           else //HUH, no armor seems to have been hit. That's a dirty lie, so let's make them all suffer, plus a liiitle bit of core damage for fibbing.
           {
+            if(Vector3.Angle(transform.up, damageAngle) <= 45)
+              {lastHit = HitLoc.U;}
+            if(Vector3.Angle(-transform.up, damageAngle) <= 45)
+              {lastHit = HitLoc.D;}
             Armor -= new Vector4(1,0,1,1)*damage/3;
             _CoreStrength -= damage/4;
           }
@@ -274,6 +304,7 @@ public class ShipSettings : MonoBehaviour
       }
       else //Hit from the back
       {
+        lastHit = HitLoc.B;
         //print("hit from the back!");
         if(Shield.y > damage)//if shields can take the hit, let them
         {  Shield.y -= damage;
@@ -301,6 +332,7 @@ public class ShipSettings : MonoBehaviour
           }
           else if(Vector3.Angle(-transform.right, damageAngle) <= 45) // left armor hit!)
           {
+            lastHit = HitLoc.L;
             if(Armor.z > damage) //can the armor take the hit? 
             {  Armor.z -= damage;
                ArmorDamage(hitLoc);
@@ -315,6 +347,7 @@ public class ShipSettings : MonoBehaviour
           }
           else if(Vector3.Angle(transform.right, damageAngle) <= 45) // right armor hit!)
           {
+            lastHit = HitLoc.R;
             if(Armor.w > damage) //can the armor take the hit? 
             {  Armor.w -= damage;
               ArmorDamage(hitLoc);
@@ -329,6 +362,10 @@ public class ShipSettings : MonoBehaviour
           }
           else //HUH, no armor seems to have been hit. That's a dirty lie, so let's make them all suffer, plus a liiitle bit of core damage for fibbing.
           {
+            if(Vector3.Angle(transform.up, damageAngle) <= 45)
+              {lastHit = HitLoc.U;}
+            if(Vector3.Angle(-transform.up, damageAngle) <= 45)
+              {lastHit = HitLoc.D;}
             Armor -= new Vector4(0,1,1,1)*damage/3;
             _CoreStrength -= damage/4;
           }
@@ -490,12 +527,12 @@ public class ShipSettings : MonoBehaviour
     
     deltaRot = new Vector3(anglex,angley,anglez);
     
-    //print(deltaRot);
-    oldRot = transform.rotation;    
+    
+    oldRot = transform.rotation;     
 
   }
 
-  void Throttle()
+  void DoThrottle()
   {
     var targetSpeed_ = Mathf.Clamp(targetSpeed, 0f, burnSpeed);
     
@@ -513,10 +550,10 @@ public class ShipSettings : MonoBehaviour
     transform.position += transform.forward * speed * Time.deltaTime;
 
     //set Afterburning flag
-    if(targetSpeed > topSpeed+1)
-     isAfterburning = true;
+    if(targetSpeed > topSpeed+.1f)
+     {isAfterburning = true;}
      else
-     isAfterburning = false;
+     {isAfterburning = false;}
     // also set the visible flare throttles
     foreach (EngineFlare flare in engineFlares)
     {
