@@ -96,7 +96,7 @@
 	fixed4 frag(v2f i) : SV_Target
 	{
 		fixed4 tx = RetroAA(_MainTex, i.uv, _MainTex_TexelSize);//tex2D(_MainTex, i.uv);
-		
+		clip(tx.a - 16 / 255.0);
 		return tx;
 
 	}

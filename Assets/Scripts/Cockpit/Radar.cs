@@ -23,6 +23,8 @@ public class Radar : MonoBehaviour
 
     public Color navigation;
 
+    public Material blipMat;
+
 
     public Sprite[] fighterBlips;
     public Sprite[] capitalBlips;
@@ -35,16 +37,82 @@ public class Radar : MonoBehaviour
     public Toggle HitDown;
     public Toggle HitBack;
 
+    List <BlipController> RadarBlips;
+    GameObject BlipRoot; 
     
     // Start is called before the first frame update
     void Start()
     {   //Find our Ship Root! 
+        RadarBlips = new List<BlipController>();
         shipMain = (ShipSettings)gameObject.GetComponentInParent<ShipSettings>();
+        BlipRoot = new GameObject();
+        BlipRoot.name = "BlipRoot";
+        BlipRoot.transform.parent = gameObject.transform;
+        BlipRoot.transform.localPosition = Vector3.zero;  
+        BlipRoot.transform.localScale = Vector3.one;
+        RegisterBlips();      
     }
+    //radarRefreshNeeded
     public void RegisterBlips()
     {
+        foreach (BlipController blip in RadarBlips)
+        {
+            Destroy(blip.gameObject);
+        }
+        RadarBlips = new List<BlipController>();
+
+        if(shipMain.AITeam == ShipSettings.TEAM.CONFED)
+        {
+            MakeBlips(GameObjTracker.KilrathiShips, enemyNear,enemyFar);
+            MakeBlips(GameObjTracker.ConfedShips, friendlyNear,friendlyFar);
+        }
+        if(shipMain.AITeam == ShipSettings.TEAM.KILRATHI)
+        {
+            MakeBlips(GameObjTracker.ConfedShips, enemyNear,enemyFar);
+            MakeBlips(GameObjTracker.KilrathiShips, friendlyNear,friendlyFar);
+        }
+        if(shipMain.AITeam == ShipSettings.TEAM.PIRATE)
+        {
+            MakeBlips(GameObjTracker.ConfedShips, enemyNear,enemyFar);
+            MakeBlips(GameObjTracker.KilrathiShips, enemyNear,enemyFar);
+        }
+        if(shipMain.AITeam == ShipSettings.TEAM.NEUTRAL)
+        {
+            MakeBlips(GameObjTracker.ConfedShips, neutralNear,neutralFar);
+            MakeBlips(GameObjTracker.KilrathiShips, neutralNear,neutralFar);
+        }
+        MakeBlips(GameObjTracker.PirateShips, enemyNear,enemyFar);
+        MakeBlips(GameObjTracker.NeutralShips, neutralNear,neutralFar);
+        MakeBlips(GameObjTracker.Environmental, envNear,envFar);
+        GameObjTracker.radarRefreshNeeded = false;
+        print("Radar Refresh is: "+ GameObjTracker.radarRefreshNeeded);
 
     }
+
+    void MakeBlips(List<ShipSettings> Ships, Color Near, Color Far)
+    {
+        foreach(ShipSettings ship in Ships) //Go through a list of ships, add them 
+        {
+            if (ship != shipMain) //But only if we're not looking at ourselves! 
+            {
+            GameObject blipObj = new GameObject();
+            BlipController blip = blipObj.AddComponent<BlipController>() as BlipController; 
+            blipObj.name = "blip";
+            blipObj.transform.parent = BlipRoot.transform;
+            blipObj.transform.localPosition = Vector3.zero;
+            blipObj.transform.localScale = Vector3.one;
+            blip.ship = ship;
+            blip.clipDist= nearFarClip;
+            blip.Near = Near;
+            blip.Far = Far;
+            blip.radarRoot = gameObject.GetComponent<Radar>();
+            blip.shipMain = shipMain;
+            RadarBlips.Add(blip);
+            }
+        }
+
+    }
+
     void DoHitFlash() //Show incoming fire on the radar! 
     {
         if(GameObjTracker.frames % 120 == 0) // Every 2 sec (approx) reset the hit history
@@ -80,64 +148,15 @@ public class Radar : MonoBehaviour
         {HitBack.isOn = true;
         }       
     }
-    void DoBlips(ShipSettings.TEAM dispTeam, Color Near, Color Far, Vector2 clipDist) //Generic per-Team blips
-    {
-        int i = 0;
-        while(i<GameObjTracker.Ships.Count-1)
-        {
-            ShipSettings ship = (ShipSettings)GameObjTracker.Ships[i];
-            //check team, and self!
-            if(ship != shipMain && ship.AITeam == dispTeam)
-            {
-                Vector3 blipLoc = ship.transform.position;
-                Vector3 blipAngle = shipMain.transform.position-blipLoc;
-                float blipDist = blipAngle.magnitude;
-                blipAngle.Normalize();
-                float x = Vector3.Dot(blipAngle, shipMain.transform.right);
-		        float y = Vector3.Dot(blipAngle, shipMain.transform.up);
-                //x = x/2+(Vector3.Dot(blipAngle, -shipMain.transform.forward)+1)/2;
-                //y = y/2+(Vector3.Dot(blipAngle, -shipMain.transform.forward)+1)/2;
-
-                float normalizedDist = Mathf.Clamp01((clipDist.x+blipDist)/clipDist.y);
-                GameObject blip = new GameObject();
-                Image blipSprite = (Image)blip.AddComponent<Image>();
-                if(ship.shipRadius >= 40)//Big contact! 
-                { //use the last 3 sprites as normalized distance falloffs
-                    blipSprite.sprite = capitalBlips[Mathf.CeilToInt(normalizedDist*3)];
-                }
-                else//Fighter contact! 
-                { //use the last 3 sprites as normalized distance falloffs
-                    blipSprite.sprite = fighterBlips[Mathf.CeilToInt(normalizedDist*3)];
-                }
-                blipSprite.color = Color.Lerp(Near,Far,normalizedDist);
-                blipSprite.transform.position = gameObject.transform.position;
-                blipSprite.transform.parent = gameObject.transform;
-                blipSprite.transform.localEulerAngles = Vector3.zero;
-                blipSprite.transform.Translate(x*radarMapXScale,y*radarMapYScale, -.0035f);
-                blip.transform.localScale = Vector3.one*.001f;
-                blip.name = "blip";
-            }
-            i++;
-        }
-    }
 
     // Update is called once per frame
     void LateUpdate()
     {
         DoHitFlash();
-        if(shipMain.AITeam == ShipSettings.TEAM.CONFED)
+        if(GameObjTracker.radarRefreshNeeded == true)
         {
-            DoBlips(ShipSettings.TEAM.KILRATHI,enemyNear,enemyFar,nearFarClip);
-            DoBlips(ShipSettings.TEAM.CONFED,friendlyNear,friendlyFar,nearFarClip);
-            DoBlips(ShipSettings.TEAM.PIRATE,enemyNear,enemyFar,nearFarClip);      
-            DoBlips(ShipSettings.TEAM.NEUTRAL,neutralNear,neutralFar,nearFarClip);      
+            RegisterBlips();
         }
-        if(shipMain.AITeam == ShipSettings.TEAM.KILRATHI)
-        {
-            DoBlips(ShipSettings.TEAM.CONFED,enemyNear,enemyFar,nearFarClip);
-            DoBlips(ShipSettings.TEAM.KILRATHI,friendlyNear,friendlyFar,nearFarClip);
-            DoBlips(ShipSettings.TEAM.PIRATE,enemyNear,enemyFar,nearFarClip);      
-            DoBlips(ShipSettings.TEAM.NEUTRAL,neutralNear,neutralFar,nearFarClip);      
-        }
+        
     }
 }

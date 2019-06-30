@@ -343,14 +343,20 @@ namespace VolumetricLines
 		{
 			DestroyMaterial();
 		}
-		
+		float AngleToCamera;
 		void Update()
 		{
 			if (transform.hasChanged && null != m_material)
 			{
 				m_material.SetFloat("_LineScale", transform.GetGlobalUniformScaleForLineWidth());
 			}
-		    float AngleToCamera = Vector3.Angle(gameObject.transform.forward, Camera.main.transform.position-gameObject.transform.position);
+			if(Camera.main)
+			{
+		    	AngleToCamera = Vector3.Angle(gameObject.transform.forward, Camera.main.transform.position-gameObject.transform.position);
+			}
+			else{
+				AngleToCamera = 15f;
+			}
 			if(Application.isPlaying){
 				if(AngleToCamera < MinimumFlipAngle || AngleToCamera > (180-MinimumFlipAngle) )
 				{

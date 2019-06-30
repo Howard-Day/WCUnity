@@ -5,7 +5,7 @@ using UnityEngine;
 public class ShipSettings : MonoBehaviour
 {
   
-  public enum TEAM {CONFED, KILRATHI, NEUTRAL, PIRATE};
+  public enum TEAM {CONFED, KILRATHI, NEUTRAL, PIRATE, ENV};
   
   [Header("Choose Team!")]
   [SerializeField] public TEAM AITeam = TEAM.CONFED;

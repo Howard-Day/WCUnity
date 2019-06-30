@@ -7,6 +7,9 @@ public class LockToCamera : MonoBehaviour
     // Update is called once per frame
     void LateUpdate()
     {
-        transform.position = Camera.main.transform.position;
+        if(Camera.main)
+        {
+            transform.position = Camera.main.transform.position;
+        }
     }
 }

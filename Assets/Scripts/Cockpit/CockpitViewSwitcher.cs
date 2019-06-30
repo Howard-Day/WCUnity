@@ -50,7 +50,7 @@ public class CockpitViewSwitcher : MonoBehaviour
         transform.localPosition = RearCamOffset;
         transform.localEulerAngles = new Vector3(RearAngle,0,0);
         }
-        print(shipMain.deltaRot);
+        //print(shipMain.deltaRot);
         
         float xShift =  shipMain.deltaRot.y;
         float yShift =  shipMain.deltaRot.x;

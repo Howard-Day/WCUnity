@@ -41,7 +41,7 @@ public class JoystickThrottle : MonoBehaviour
             smoothBurn = Mathf.SmoothStep(smoothBurn,1,0.3f);
         }
         smoothBurn = Mathf.Clamp01(smoothBurn);
-        Throttle.sprite = throttleSprites[Mathf.FloorToInt(smoothBurn*(throttleSprites.Length-1))];
+        Throttle.sprite = throttleSprites[Mathf.Clamp(Mathf.FloorToInt(smoothBurn*(throttleSprites.Length-1)),0,31)];
         //throttlestickAnim.SetCurrentFrame((int)((currentForwardAcceleration / forwardTopSpeed) * throttlestickAnim.totalCells));
     }
     float refSteerX;
@@ -68,11 +68,11 @@ public class JoystickThrottle : MonoBehaviour
         //Debug.Assert(currentjoyFrame > 63," OUT OF RANGE JOYSTICK");
         if(shipMain.isFiring)
         {
-            Joystick.sprite = firingJoystickSprites[currentjoyFrame-1];
+            Joystick.sprite = firingJoystickSprites[Mathf.Clamp(currentjoyFrame,0,63)];
         }
         else
         {
-            Joystick.sprite = joystickSprites[currentjoyFrame];
+            Joystick.sprite = joystickSprites[Mathf.Clamp(currentjoyFrame,0,63)];
         }
 
     }
@@ -85,7 +85,7 @@ public class JoystickThrottle : MonoBehaviour
         float steerZ = Mathf.Clamp01(refSteerZ);
         //Also do Feet Spinning/steer
         int currentFeetFrame = (int)(steerZ*15f);
-        Feet.sprite = feetSprites[currentFeetFrame];
+        Feet.sprite = feetSprites[Mathf.Clamp(currentFeetFrame, 0,15)];
     }
 
     // Update is called once per frame

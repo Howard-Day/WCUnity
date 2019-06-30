@@ -22,7 +22,7 @@ public class SpritePicker : MonoBehaviour
 
   void Update()
   {
-    if(!gameCamera)
+    if(!gameCamera && Camera.main)
       gameCamera = (Transform)Camera.main.transform;
     if (!billboard || !billboardMaterial || frames == Vector2Int.zero || !gameCamera)
     {
