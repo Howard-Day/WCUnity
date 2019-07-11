@@ -4726,7 +4726,7 @@ ParticleSystemRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: bf8ddcba8f50cf14c9903bd39ac0f7fa, type: 2}
+  - {fileID: 2100000, guid: c9970433a6568a04f9df890ea85d6ecf, type: 2}
   - {fileID: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
@@ -14319,6 +14319,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e363dc771be93d45a8bc98433a7808a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  DampVel: 0.99
+  DampVel: 0.9
   initDir: {x: 0, y: 0, z: 0}
   initVel: 0

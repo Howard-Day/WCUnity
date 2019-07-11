@@ -5,11 +5,17 @@ using UnityEngine;
 public class CockpitViewSwitcher : MonoBehaviour
 {
     ShipSettings shipMain;
+    GameObject Billboard;
+    CockpitShift Shifter;
     public bool RandomSwitch = false; 
-    
-    public Vector3 RearCamOffset;
-    public float RearAngle;
-    Transform MainView;
+    public bool ChaseSwitch = false; 
+    public enum View {Main, Right, Left, Rear, Chase};//, Cinematic, Missile};
+    public View activeView = View.Main;
+    public Vector3 ChaseCamOffset;
+    public float ChaseAngle;
+    Vector3 MainPos;
+    Vector3 MainRot;
+
     public Transform RightView;
     public Transform LeftView;
     public Transform RearView;
@@ -17,6 +23,7 @@ public class CockpitViewSwitcher : MonoBehaviour
     public GameObject RightBase;
     public GameObject LeftBase;
     public GameObject RearBase;
+    public GameObject HoverUI;
     public Vector3 DriftAmts = Vector3.zero;
     public float ShiftSmoothness = .2f;
 
@@ -31,24 +38,37 @@ public class CockpitViewSwitcher : MonoBehaviour
     [HideInInspector] public Vector2 SmoothShift;
     [HideInInspector] public float SmoothSpin;
     Vector2 RefShift;
-    public Vector2 TargetShift;
+    [HideInInspector] public Vector2 TargetShift;
     
     float refSpin;
 
     // Start is called before the first frame update
     void Start()
     {
-        MainView = transform;
+        MainPos = transform.localPosition;
+        MainRot = transform.localEulerAngles;
+        Billboard = gameObject.GetComponentInParent<SpritePicker>().billboard.gameObject;
+        Shifter = gameObject.transform.parent.GetComponentInChildren<CockpitShift>();
+        activeView = View.Main;
         shipMain = (ShipSettings)gameObject.GetComponentInParent<ShipSettings>();
+        CockpitBase.active = false;
+        RightBase.active = false;
+        LeftBase.active = false;
+        RearBase.active = false;
+        Billboard.active = false;
     }
     void DoChaseCam()
     {
-
-        if(CockpitBase.activeInHierarchy)
+        if(!Billboard.activeInHierarchy)
         {
+        HoverUI.active = true;
+        Billboard.active = true;
+        transform.localPosition = ChaseCamOffset;
+        transform.localEulerAngles = new Vector3(ChaseAngle,0,0);
         CockpitBase.active = false;
-        transform.localPosition = RearCamOffset;
-        transform.localEulerAngles = new Vector3(RearAngle,0,0);
+        RightBase.active = false;
+        LeftBase.active = false;
+        RearBase.active = false;
         }
         //print(shipMain.deltaRot);
         
@@ -69,8 +89,8 @@ public class CockpitViewSwitcher : MonoBehaviour
         float TargetSpin = Mathf.Clamp(zShift,-1f,1f);
         SmoothSpin = Mathf.SmoothDamp(SmoothSpin,TargetSpin,ref refSpin,ShiftSmoothness);
 
-        transform.localEulerAngles = new Vector3(RearAngle+SmoothShift.x*DriftAmts.x,SmoothShift.y*DriftAmts.y,SmoothSpin*DriftAmts.z);
-        transform.localPosition = RearCamOffset+(-Vector3.right*SmoothShift.x*10);
+        transform.localEulerAngles = new Vector3(ChaseAngle+SmoothShift.x*DriftAmts.x,SmoothShift.y*DriftAmts.y,SmoothSpin*DriftAmts.z);
+        transform.localPosition = ChaseCamOffset+(-Vector3.right*SmoothShift.x*10);
         recoverView = transform.forward;
 
        /* if(shipMain.recover >= 1)
@@ -83,11 +103,120 @@ public class CockpitViewSwitcher : MonoBehaviour
         }*/
     }
 
-    // Update is called once per frame
-    void LateUpdate()
+    void DoMainCam()
     {
-         if(RandomSwitch)
-        {     DoChaseCam();
+        if(!CockpitBase.activeInHierarchy)
+        {
+        transform.localPosition = MainPos;
+        transform.localEulerAngles = MainRot;
+        CockpitBase.active = true;
+        RightBase.active = false;
+        LeftBase.active = false;
+        RearBase.active = false;
+        Billboard.active = false;
+        HoverUI.active = true;
+        }
+        Shifter.xShift =  1-shipMain.deltaRot.y;// .y;
+        Shifter.yShift =  1-shipMain.deltaRot.x;//.x;
+    }
+
+    void DoRearCam()
+    {
+        if(!RearBase.activeInHierarchy)
+        {
+        transform.localPosition = RearView.localPosition;
+        transform.localEulerAngles = RearView.transform.localEulerAngles;
+        CockpitBase.active = false;
+        RightBase.active = false;
+        LeftBase.active = false;
+        RearBase.active = true;
+        Billboard.active = false;
+        HoverUI.active = false;
+        }
+        Shifter.xShift =  1-shipMain.deltaRot.y;// .y;
+        Shifter.yShift =  shipMain.deltaRot.x;//.x;
+
+    }
+    void DoRightCam()
+    {
+        if(!RightBase.activeInHierarchy)
+        {
+        transform.localPosition = RightView.localPosition;
+        transform.localEulerAngles = RightView.transform.localEulerAngles;
+        CockpitBase.active = false;
+        RightBase.active = true;
+        LeftBase.active = false;
+        RearBase.active = false;
+        Billboard.active = false;
+        HoverUI.active = false;
+        }
+        Shifter.xShift =  1-shipMain.deltaRot.y;// .y;
+        Shifter.yShift =  1-shipMain.deltaRot.z;//.x;
+    }
+
+    void DoLeftCam()
+    {
+        if(!LeftBase.activeInHierarchy)
+        {
+                         
+        transform.localPosition = LeftView.localPosition;
+        transform.localEulerAngles = LeftView.transform.localEulerAngles;
+        CockpitBase.active = false;
+        RightBase.active = false;
+        LeftBase.active = true;
+        RearBase.active = false;
+        Billboard.active = false;
+        HoverUI.active = false;
+        }
+        Shifter.xShift =  shipMain.deltaRot.y;// .y;
+        Shifter.yShift =  shipMain.deltaRot.z;//.x;
+    }
+    // Update is called once per frame
+void LateUpdate()
+{
+    if(RandomSwitch)
+    {     
+        if(GameObjTracker.frames % Random.Range(240,360) == 0)
+        {
+            activeView = (View)Random.Range(0, System.Enum.GetValues(typeof(View)).Length);
         }
     }
+    if(ChaseSwitch)
+    {
+        if(GameObjTracker.frames % Random.Range(480,360) == 0)
+        {
+            if (activeView == View.Main)
+            {activeView = View.Chase;}
+            else{ activeView =View.Main;}
+        }
+    }
+    switch (activeView)
+    {
+        case View.Main:
+        {
+            DoMainCam();
+        }
+        break;
+        case View.Chase:
+        {
+            DoChaseCam();
+        }
+        break;
+        case View.Rear:
+        {
+            DoRearCam();
+        }
+        break;
+        case View.Right:
+        {
+            DoRightCam();
+        }
+        break;
+        case View.Left:
+        {
+            DoLeftCam();
+        }
+        break;
+    }
+  }
 }

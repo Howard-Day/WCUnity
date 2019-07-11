@@ -18,6 +18,7 @@ public class CockpitShift : MonoBehaviour
     Transform CockpitRoot;
     Vector2 RefShift;
     [HideInInspector] public Vector2 SmoothShift;
+
     Vector3 SmoothShake;
     Vector3 smoothRef;
 
@@ -25,6 +26,8 @@ public class CockpitShift : MonoBehaviour
 
     Vector3 PrePixelLocked;
     Vector3 PixelLocked;
+    [HideInInspector] public float xShift = 0;
+    [HideInInspector] public float yShift = 0;
 
     // Start is called before the first frame update
     void Start()
@@ -36,8 +39,7 @@ public class CockpitShift : MonoBehaviour
     // Update is called once per frame
     void LateUpdate()
     {
-        float xShift =  1-shipMain.deltaRot.y;
-        float yShift =  1-shipMain.deltaRot.x;
+
         TargetShift = new Vector2(Mathf.Clamp(xShift-1,-1f,1f),-Mathf.Clamp(yShift-1,-1f,1f));
         SmoothShift = Vector2.SmoothDamp(SmoothShift,TargetShift,ref RefShift, ShiftSmoothness);
         PrePixelLocked = new Vector3(SmoothShift.x*MaxXShift,SmoothShift.y*MaxYShift, CockpitRoot.localPosition.z);

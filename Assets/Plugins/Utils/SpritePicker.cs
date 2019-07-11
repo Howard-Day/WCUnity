@@ -9,7 +9,7 @@ public class SpritePicker : MonoBehaviour
   [SerializeField] Vector2Int frames = Vector2Int.zero;
   Transform gameCamera = null;
 
-  Transform billboard;
+  [HideInInspector] public Transform billboard;
   Material billboardMaterial;
 
   void Start()

@@ -119,7 +119,7 @@ public class Radar : MonoBehaviour
         {
             shipMain.lastHit = ShipSettings.HitLoc.NULL;
         }
-        if(GameObjTracker.frames % 60 == 0) //every sec (approx) reset the hit flashes to off
+        if(GameObjTracker.frames % 30 == 0) //every sec (approx) reset the hit flashes to off
         {
             HitFore.isOn = false;
             HitRight.isOn = false;

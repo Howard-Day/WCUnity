@@ -26,8 +26,6 @@ public class GameObjTracker : MonoBehaviour
         RegisterTeams();
     }
     
-
-
     public static void RegisterAllShips()
     {
         Ships = new List<ShipSettings>(); 

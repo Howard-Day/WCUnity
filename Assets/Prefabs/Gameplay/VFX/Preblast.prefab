@@ -26,7 +26,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3707795204099303826}
-  m_LocalRotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
+  m_LocalRotation: {x: -0.7071068, y: 0, z: 0, w: 0.7071068}
   m_LocalPosition: {x: -52.85331, y: 55.722572, z: -589.7274}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
@@ -286,7 +286,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 3
       scalar: 6
-      minScalar: 3
+      minScalar: 5
       maxCurve:
         serializedVersion: 2
         m_Curve:
@@ -4767,7 +4767,7 @@ ParticleSystemRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: fbfc8ca652d68bd40872bc089a3b1468, type: 2}
+  - {fileID: 2100000, guid: a01b8aa1ba8aa2b49ba328ead87c2236, type: 2}
   - {fileID: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
@@ -4792,7 +4792,7 @@ ParticleSystemRenderer:
   m_RenderMode: 0
   m_SortMode: 3
   m_MinParticleSize: 0
-  m_MaxParticleSize: 2
+  m_MaxParticleSize: 3
   m_CameraVelocityScale: 0
   m_VelocityScale: 0
   m_LengthScale: 2
@@ -4824,6 +4824,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e363dc771be93d45a8bc98433a7808a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  DampVel: 0.99
+  DampVel: 0.999
   initDir: {x: 0, y: 0, z: 0}
   initVel: 0

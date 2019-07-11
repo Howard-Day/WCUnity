@@ -37,6 +37,7 @@ Shader "VolumetricLine/Animated_AlphaCutout" {
 			Cull off
 			Blend off
 			ZWrite On
+			
 			CGPROGRAM
 				#pragma glsl_no_auto_normalization
 				#pragma vertex vert

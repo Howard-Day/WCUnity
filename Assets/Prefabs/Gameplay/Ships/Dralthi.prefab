@@ -156,6 +156,7 @@ MonoBehaviour:
   burnSpeed: 120
   acceleration: 2.5
   deceleration: 1.5
+  lag: 1
   AutoAvoids:
     serializedVersion: 2
     m_Bits: 3072
@@ -170,9 +171,9 @@ MonoBehaviour:
   - {fileID: 4645451869083989364, guid: 889974a88f8e43d48b60c07bb3acd59b, type: 3}
   DeathTrailVFX: {fileID: 3707795204099303826, guid: d2bce69b83d3773418e13260152f0018,
     type: 3}
-  InternalDamageVFX: {fileID: 3380178483321881586, guid: 35013c63d5e50ae44b9dae095c0895f1,
+  InternalDamageVFX: {fileID: 3380178483321881586, guid: cb28e2723bc0af54385c269e47a6f747,
     type: 3}
-  DamageVFX: {fileID: 8971199709986266853, guid: 17ee0f91c17bb6f44804bbd3ce74efbe,
+  DamageVFX: {fileID: 8971199709986266853, guid: efb0988cabbfbee41983eeecbdabf406,
     type: 3}
   DamageTrails: {fileID: 1507481365441476783, guid: edceb4824a5b55a43a13f2d0bd9a92b9,
     type: 3}
@@ -194,6 +195,7 @@ MonoBehaviour:
   numWingmen: 0
   isDead: 0
   isLocked: 0
+  currentTarget: {fileID: 0}
   recover: 1
   BounceDir: {x: 0, y: 0, z: 0}
   BounceSpin: {x: 0, y: 0, z: 0}
@@ -218,6 +220,7 @@ MonoBehaviour:
   _roll: 0
   _targetthrottle: 1
   fireGuns: 0
+  afterBurn: 0
 --- !u!114 &2289861991765167609
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -268,6 +271,7 @@ MonoBehaviour:
   - {fileID: 2800000, guid: 9832531a8b9b19c48a8352659342480c, type: 3}
   - {fileID: 2800000, guid: a7e9f082bd663744a87eb5293e049d77, type: 3}
   frames: {x: 8, y: 4}
+  billboard: {fileID: 2289861989968530043}
 --- !u!1001 &4728252520475144070
 PrefabInstance:
   m_ObjectHideFlags: 0

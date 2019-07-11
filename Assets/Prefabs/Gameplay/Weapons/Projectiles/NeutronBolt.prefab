@@ -95,9 +95,9 @@ MonoBehaviour:
   m_templateMaterial: {fileID: 2100000, guid: 475e0bd807903bc419164f452e6d640b, type: 2}
   m_doNotOverwriteTemplateMaterialProperties: 0
   m_startPos: {x: 0, y: 0, z: 0}
-  m_endPos: {x: 0, y: 0, z: 6.5}
+  m_endPos: {x: 0, y: 0, z: 8}
   m_lineColor: {r: 1, g: 0.7812411, b: 0, a: 1}
-  m_lineWidth: 5
+  m_lineWidth: 4
   m_lightSaberFactor: 0
   MinimumFlipAngle: 1.5
 --- !u!114 &236246741698921918

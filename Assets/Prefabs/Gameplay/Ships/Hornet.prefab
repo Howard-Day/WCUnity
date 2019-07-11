@@ -50,7 +50,7 @@ SphereCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 6
+  m_Radius: 8
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &5695718655840442021
 MonoBehaviour:
@@ -77,6 +77,7 @@ MonoBehaviour:
   burnSpeed: 124
   acceleration: 2.5
   deceleration: 1.5
+  lag: 1
   AutoAvoids:
     serializedVersion: 2
     m_Bits: 3072
@@ -91,7 +92,7 @@ MonoBehaviour:
   - {fileID: 4645451869083989364, guid: 889974a88f8e43d48b60c07bb3acd59b, type: 3}
   DeathTrailVFX: {fileID: 3707795204099303826, guid: d2bce69b83d3773418e13260152f0018,
     type: 3}
-  InternalDamageVFX: {fileID: 3380178483321881586, guid: 35013c63d5e50ae44b9dae095c0895f1,
+  InternalDamageVFX: {fileID: 3380178483321881586, guid: cb28e2723bc0af54385c269e47a6f747,
     type: 3}
   DamageVFX: {fileID: 8971199709986266853, guid: 17ee0f91c17bb6f44804bbd3ce74efbe,
     type: 3}
@@ -115,6 +116,7 @@ MonoBehaviour:
   numWingmen: 0
   isDead: 0
   isLocked: 0
+  currentTarget: {fileID: 0}
   recover: 1
   BounceDir: {x: 0, y: 0, z: 0}
   BounceSpin: {x: 0, y: 0, z: 0}
@@ -137,8 +139,9 @@ MonoBehaviour:
   _pitch: 0
   _yaw: 0
   _roll: 0
-  _targetthrottle: 0
+  _targetthrottle: 1
   fireGuns: 0
+  afterBurn: 0
 --- !u!114 &5695718655840442020
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -153,7 +156,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   WingmanTo: {fileID: 0}
   PatrolPoints: []
-  ActiveAIState: 0
+  ActiveAIState: 3
   AISkillLevel: 1
   AITarget: {fileID: 0}
   Tracker: {fileID: 0}
@@ -189,6 +192,7 @@ MonoBehaviour:
   - {fileID: 2800000, guid: 8b7b7da655f799a43b7ba39005db1e2c, type: 3}
   - {fileID: 2800000, guid: 699e0dca159cf6545bd811591a255cf8, type: 3}
   frames: {x: 8, y: 4}
+  billboard: {fileID: 5695718656521392422}
 --- !u!1 &5695718656521392418
 GameObject:
   m_ObjectHideFlags: 0
@@ -277,17 +281,17 @@ PrefabInstance:
     - target: {fileID: 8183780097333578743, guid: 25aa2b8dc2c23ac468e2c4e8bd236172,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 6.75
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 8183780097333578743, guid: 25aa2b8dc2c23ac468e2c4e8bd236172,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.06
+      value: -0.75
       objectReference: {fileID: 0}
     - target: {fileID: 8183780097333578743, guid: 25aa2b8dc2c23ac468e2c4e8bd236172,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 3.25
+      value: 3.5
       objectReference: {fileID: 0}
     - target: {fileID: 8183780097333578743, guid: 25aa2b8dc2c23ac468e2c4e8bd236172,
         type: 3}
@@ -414,11 +418,6 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 0}
-    - target: {fileID: 7989437017167104986, guid: 2097a4efc6d07894fad7c4356faa2704,
-        type: 3}
-      propertyPath: m_Mesh
-      value: 
-      objectReference: {fileID: 0}
     - target: {fileID: 2967868975163282982, guid: 2097a4efc6d07894fad7c4356faa2704,
         type: 3}
       propertyPath: FullThrottle
@@ -452,17 +451,17 @@ PrefabInstance:
     - target: {fileID: 8183780097333578743, guid: 25aa2b8dc2c23ac468e2c4e8bd236172,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -6.75
+      value: -7
       objectReference: {fileID: 0}
     - target: {fileID: 8183780097333578743, guid: 25aa2b8dc2c23ac468e2c4e8bd236172,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.06
+      value: -0.75
       objectReference: {fileID: 0}
     - target: {fileID: 8183780097333578743, guid: 25aa2b8dc2c23ac468e2c4e8bd236172,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 3.25
+      value: 3.5
       objectReference: {fileID: 0}
     - target: {fileID: 8183780097333578743, guid: 25aa2b8dc2c23ac468e2c4e8bd236172,
         type: 3}

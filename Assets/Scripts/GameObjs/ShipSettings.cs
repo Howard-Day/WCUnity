@@ -21,6 +21,7 @@ public class ShipSettings : MonoBehaviour
   [SerializeField] public float burnSpeed = 50f;
   [SerializeField] float acceleration = 1.5f;
   [SerializeField] float deceleration = 1f;
+  [SerializeField] float lag = 1f;
   [SerializeField] public LayerMask AutoAvoids;
   [Header("Weapon Settings")]
   [SerializeField] public float capacitorSize = 50f;
@@ -63,6 +64,7 @@ public class ShipSettings : MonoBehaviour
   [HideInInspector] public int numWingmen = 0;
   [HideInInspector] public bool isDead = false;
   [HideInInspector] public bool isLocked = false;
+  [HideInInspector] public ShipSettings currentTarget;
 
   void Start()
   {
@@ -219,7 +221,7 @@ public class ShipSettings : MonoBehaviour
       yaw *= recover;
       roll *= recover;
       speed *= recover;
-      if (recover < .05f)
+      if (recover < .0125f)
       {InternalDamage();          
       }
       transform.localRotation *= Quaternion.AngleAxis(broll_, Vector3.forward) * Quaternion.AngleAxis(byaw_, Vector3.up) * Quaternion.AngleAxis(bpitch_, invertYAxis ? Vector3.right : Vector3.left);
@@ -481,9 +483,6 @@ public class ShipSettings : MonoBehaviour
           Destroy(gameObject, .25f);
         }
       }
-
-
-
     }
   }
 
@@ -501,6 +500,8 @@ public class ShipSettings : MonoBehaviour
   [HideInInspector] public Quaternion oldRot;
   [HideInInspector] public Vector3 deltaRot;
 
+  Quaternion LagDir;
+
   public static float GetSignedAngle(Quaternion A, Quaternion B, Vector3 axis) {
      float angle = 0f;
      Vector3 angleAxis = Vector3.zero;
@@ -509,7 +510,20 @@ public class ShipSettings : MonoBehaviour
          angle = -angle;
      }
      return Mathf.DeltaAngle(0f, angle);
+     
  }
+
+ public static float SignedAngleFromRotation(Quaternion A,Quaternion B , Vector3 refAxis )
+   {
+     var forwardA = A * refAxis;
+     var forwardB = B * refAxis;
+     float angleA = Mathf.Atan2(forwardA.x, forwardA.z) * Mathf.Rad2Deg;
+		 float angleB = Mathf.Atan2(forwardB.x, forwardB.z) * Mathf.Rad2Deg;
+     float signedAngle = Mathf.DeltaAngle( angleA, angleB );
+
+     return signedAngle;
+
+   }
 
   void Steer() //Autopilot!
   {
@@ -521,14 +535,17 @@ public class ShipSettings : MonoBehaviour
     roll_ *= turnRate * 2f * Time.deltaTime;
     transform.localRotation *= Quaternion.AngleAxis(roll_, Vector3.forward) * Quaternion.AngleAxis(yaw_, Vector3.up) * Quaternion.AngleAxis(pitch_, invertYAxis ? Vector3.right : Vector3.left);
     
-    var anglex = GetSignedAngle(transform.rotation,oldRot,transform.right);
-    var angley = GetSignedAngle(transform.rotation,oldRot,transform.up);
-    var anglez = GetSignedAngle(transform.rotation,oldRot,transform.forward);
-    
+    var newRot = transform.localEulerAngles;
+
+    var anglex = Mathf.DeltaAngle(newRot.x, oldRot.eulerAngles.x);
+    var angley = Mathf.DeltaAngle(newRot.y, oldRot.eulerAngles.y);
+    var anglez = Mathf.DeltaAngle(newRot.z, oldRot.eulerAngles.z);
+
+
     deltaRot = new Vector3(anglex,angley,anglez);
+    //print(anglex);
     
-    
-    oldRot = transform.rotation;     
+    oldRot = transform.localRotation;     
 
   }
 
@@ -546,8 +563,10 @@ public class ShipSettings : MonoBehaviour
     {
       speed = Mathf.Lerp(speed, targetSpeed_, deceleration * Time.deltaTime);
     }
+    
+    LagDir = Quaternion.Slerp(LagDir,transform.rotation,.05f*(lag+(burnSpeed/speed)*lag));
 
-    transform.position += transform.forward * speed * Time.deltaTime;
+    transform.position += LagDir * Vector3.forward * speed * Time.deltaTime;
 
     //set Afterburning flag
     if(targetSpeed > topSpeed+.1f)

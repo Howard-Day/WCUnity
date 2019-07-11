@@ -50,8 +50,8 @@ public class JoystickThrottle : MonoBehaviour
     void DoJoystick()
     {
         
-        float xShift =  shipMain.deltaRot.y;
-        float yShift =  shipMain.deltaRot.x;
+        float xShift =  shipMain.deltaRot.x;
+        float yShift =  shipMain.deltaRot.y;
         
         //print (xShift);
         TargetShift = new Vector2(Mathf.Clamp(xShift,-1f,1f),-Mathf.Clamp(yShift,-1f,1f));

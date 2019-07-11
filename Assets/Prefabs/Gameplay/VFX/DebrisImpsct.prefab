@@ -51,7 +51,7 @@ ParticleSystem:
   prewarm: 0
   playOnAwake: 1
   useUnscaledTime: 0
-  autoRandomSeed: 0
+  autoRandomSeed: 1
   useRigidbodyForVelocity: 1
   startDelay:
     serializedVersion: 2
@@ -806,7 +806,7 @@ ParticleSystem:
     arc:
       value: 360
       mode: 0
-      spread: 0
+      spread: 1
       speed:
         serializedVersion: 2
         minMaxState: 0
@@ -4784,6 +4784,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e363dc771be93d45a8bc98433a7808a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  DampVel: 0.99
+  DampVel: 0.9
   initDir: {x: 0, y: 0, z: 0}
   initVel: 0

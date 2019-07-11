@@ -31,22 +31,21 @@ public class BlipController : MonoBehaviour
     {
         if(!ship)
         {
-            //GameObjTracker.RegisterAllShips();
-            //GameObjTracker.RegisterTeams();
+            GameObjTracker.RegisterAllShips();
+            GameObjTracker.RegisterTeams();
             //Destroy(this.gameObject);
             return;
         }
         Vector3 blipLoc = ship.transform.position;
-        Vector3 blipAngle = shipMain.transform.position-blipLoc;
+        Vector3 blipAngle = blipLoc-shipMain.transform.position;
         float blipDist = blipAngle.magnitude;
         blipAngle.Normalize();
-        float x = Vector3.Dot(-blipAngle, shipMain.transform.right);
-        float y = Vector3.Dot(-blipAngle, shipMain.transform.up);
+        float x = Vector3.Dot(blipAngle, shipMain.transform.right);
+        float y = Vector3.Dot(blipAngle, shipMain.transform.up);
         float z = Vector3.Dot(blipAngle, shipMain.transform.forward);
-
-        //x = x/2+(z/2+.25f);
-        //y = y/2+(z/2+.25f);
-
+        //x = //Mathf.Clamp01(x);
+        //y = //Mathf.Clamp01(y);
+              
         float normalizedDist = Mathf.Clamp01((clipDist.x+blipDist)/clipDist.y);
         if(ship.shipRadius >= 40)//Big contact! 
         { //use the last 3 sprites as normalized distance falloffs
@@ -58,9 +57,11 @@ public class BlipController : MonoBehaviour
         }               
         blipSprite.color = Color.Lerp(Near,Far,normalizedDist);
         blipSprite.transform.localEulerAngles = Vector3.zero;
+        
         Vector3 losePos = new Vector3(x*radarRoot.radarMapXScale,y*radarRoot.radarMapYScale, -.0005f);
-
-                       
+        if(z < 0)
+        {    losePos = Vector3.Scale(new Vector3(x,y,0).normalized, new Vector3(radarRoot.radarMapXScale,radarRoot.radarMapYScale,1f) );
+        }               
         newLocalPosition.x = (Mathf.Round(losePos.x * pixelsPerUnit) / pixelsPerUnit);
         newLocalPosition.y = (Mathf.Round(losePos.y * pixelsPerUnit) / pixelsPerUnit);
         newLocalPosition.z = losePos.z;
