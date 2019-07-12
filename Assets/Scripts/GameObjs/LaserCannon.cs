@@ -4,7 +4,8 @@ public class LaserCannon : MonoBehaviour
 {
   [HideInInspector] public bool fire = false;
   [HideInInspector] public int GunId = 0;
-
+  public enum GunType {Laser, Neutron, MassDriver, ParticleCollisionEvent, Turret};
+  public GunType Type;
   Transform mountingPoint = null;
   [SerializeField] Transform laserBoltPrefab = null;
   [SerializeField] float fireRate = .4f;

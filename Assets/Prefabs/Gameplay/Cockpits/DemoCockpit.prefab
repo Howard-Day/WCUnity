@@ -1408,7 +1408,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1549576197640091499}
-  - component: {fileID: 7845706679510946579}
   m_Layer: 8
   m_Name: NavTargetCommsDisplay
   m_TagString: Untagged
@@ -1436,18 +1435,6 @@ RectTransform:
   m_AnchoredPosition: {x: 2.138, y: -0.785}
   m_SizeDelta: {x: 308.6, y: 64}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &7845706679510946579
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2505779772561787852}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c7f1b44582a12454b8ea4599fd2d12f1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &2572040245551833010
 GameObject:
   m_ObjectHideFlags: 0
@@ -1475,14 +1462,14 @@ RectTransform:
   m_GameObject: {fileID: 2572040245551833010}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.005, y: 0.005, z: 1}
   m_Children: []
-  m_Father: {fileID: 2386023881106231475}
+  m_Father: {fileID: 1844781057152870526}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 28.600023, y: -30.4}
+  m_AnchoredPosition: {x: 0.14299965, y: -0.15199852}
   m_SizeDelta: {x: 320, y: 64}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3826567084773996259
@@ -2449,7 +2436,7 @@ GameObject:
   - component: {fileID: 821054855148943578}
   - component: {fileID: 113007619101867422}
   m_Layer: 8
-  m_Name: New Sprite
+  m_Name: ShipBase
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2462,16 +2449,16 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5144265519732667877}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 200, y: 200, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 2386023881106231475}
-  m_RootOrder: 2
+  m_Father: {fileID: 1844781057152870526}
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0.7, y: -132.4}
+  m_AnchoredPosition: {x: 0.0034999251, y: -0.66200256}
   m_SizeDelta: {x: 1, y: 1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!212 &113007619101867422
@@ -2985,8 +2972,11 @@ RectTransform:
   m_GameObject: {fileID: 5466561972093841794}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.005, y: 0.005, z: 0.01}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
+  - {fileID: 821054855148943578}
+  - {fileID: 7324592243715778460}
+  - {fileID: 8145528432017714883}
   - {fileID: 2386023881106231475}
   m_Father: {fileID: 114078765}
   m_RootOrder: 13
@@ -3008,6 +2998,35 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7f1b44582a12454b8ea4599fd2d12f1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentMode: 0
+  mode: {fileID: 7737086063126759704}
+  currentWeapon: {fileID: 1358673047820790238}
+  currentGun: {fileID: 124879286091616480}
+  damage: {fileID: 0}
+  shipBase: {fileID: 5144265519732667877}
+  ActiveWeapon: {fileID: 2100000, guid: 0b9aa0f4d7f08b847a262c2d2045ec94, type: 2}
+  Weapon: {fileID: 2100000, guid: eec0791869fac934ca4c38c20478efe3, type: 2}
+  DamagedComponent: {fileID: 2100000, guid: b06b2a9b74dd2eb419eb4a4ff72f64f1, type: 2}
+  WIcon:
+    Laser: {fileID: 6540900237792427198, guid: b5b2845130af8994e95054c59a757e88, type: 3}
+    Neutron: {fileID: 0}
+    MassDriver: {fileID: 0}
+    DF: {fileID: 0}
+    HS: {fileID: 0}
+    IR: {fileID: 0}
+    FF: {fileID: 0}
+    Mine: {fileID: 0}
+  DIcon:
+    IonDrive: {fileID: 0}
+    PowerPlant: {fileID: 0}
+    ShieldGen: {fileID: 0}
+    CompSys: {fileID: 0}
+    ComUnit: {fileID: 0}
+    Track: {fileID: 0}
+    AccelAbs: {fileID: 0}
+    EjectSys: {fileID: 0}
+    RepairSys: {fileID: 0}
+    Jets: {fileID: 0}
 --- !u!1 &5517306084593632097
 GameObject:
   m_ObjectHideFlags: 0
@@ -3815,14 +3834,14 @@ RectTransform:
   m_GameObject: {fileID: 7639524009779214627}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.005, y: 0.005, z: 1}
   m_Children: []
-  m_Father: {fileID: 2386023881106231475}
-  m_RootOrder: 0
+  m_Father: {fileID: 1844781057152870526}
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -12.1, y: -18.8}
+  m_AnchoredPosition: {x: -0.060500145, y: -0.09399986}
   m_SizeDelta: {x: 240, y: 64}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &8669714044231549173
@@ -4171,7 +4190,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1602188297309164500
 Transform:
   m_ObjectHideFlags: 0
@@ -4338,13 +4357,10 @@ RectTransform:
   m_GameObject: {fileID: 8572150433200929732}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children:
-  - {fileID: 8145528432017714883}
-  - {fileID: 7324592243715778460}
-  - {fileID: 821054855148943578}
+  m_LocalScale: {x: 0.005, y: 0.005, z: 1}
+  m_Children: []
   m_Father: {fileID: 1844781057152870526}
-  m_RootOrder: 0
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -4917,11 +4933,6 @@ PrefabInstance:
     - target: {fileID: 7989437017167104987, guid: 2097a4efc6d07894fad7c4356faa2704,
         type: 3}
       propertyPath: m_Materials.Array.data[0]
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 7989437017167104986, guid: 2097a4efc6d07894fad7c4356faa2704,
-        type: 3}
-      propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 2967868975163282982, guid: 2097a4efc6d07894fad7c4356faa2704,

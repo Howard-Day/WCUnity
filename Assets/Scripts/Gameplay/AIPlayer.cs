@@ -525,6 +525,7 @@ switch(ActiveAIState)
 
   case AIState.ENGAGE:
   {
+    float angleToTarget = AngleTo(AITarget);
     if(randApproach.magnitude == 0)
     {
       randApproach = Random.onUnitSphere*AITargetShip.shipRadius*2f;
@@ -536,7 +537,7 @@ switch(ActiveAIState)
       ActiveAIState = AIState.PATROL;
     }
 
-    if(Vector3.Distance(AITarget.position,transform.position) < engageDist*1.5f)
+    if(Vector3.Distance(AITarget.position,transform.position) < engageDist*1.5f && angleToTarget < 45)
     {
       ship.targetSpeed = ship.burnSpeed;
     }
@@ -575,7 +576,13 @@ switch(ActiveAIState)
       }
       if(distToTarget > engageDist) //Try and turn toward the target! 
       {
+        if(angleToTarget < 45)
+        {
         ship.targetSpeed = ship.burnSpeed;
+        }
+        else {
+          ship.targetSpeed = ship.topSpeed/2;
+        }
         impatience += Time.deltaTime;
       }
     }

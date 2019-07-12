@@ -170,7 +170,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 3
       scalar: 1
-      minScalar: 10
+      minScalar: 3
       maxCurve:
         serializedVersion: 2
         m_Curve:
@@ -743,7 +743,7 @@ ParticleSystem:
     m_TextureColorAffectsParticles: 1
     m_TextureAlphaAffectsParticles: 1
     m_TextureBilinearFiltering: 0
-    randomDirectionAmount: 0
+    randomDirectionAmount: 1
     sphericalDirectionAmount: 0
     randomPositionAmount: 0
     radius:
@@ -804,7 +804,7 @@ ParticleSystem:
           m_PostInfinity: 2
           m_RotationOrder: 4
     arc:
-      value: 360
+      value: 0
       mode: 0
       spread: 1
       speed:
@@ -4784,6 +4784,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e363dc771be93d45a8bc98433a7808a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  DampVel: 0.9
+  DampVel: 0.99
   initDir: {x: 0, y: 0, z: 0}
   initVel: 0

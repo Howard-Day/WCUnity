@@ -48,6 +48,20 @@ public class ShipSettings : MonoBehaviour
   [HideInInspector] public Vector4 _ArmorMax;
   [HideInInspector] public Vector2 _ShieldMax;
   [HideInInspector] public float Core;
+  public class DamageComponents
+    {
+        public float IonDrive = 0f;
+        public float PowerPlant = 0f;
+        public float ShieldGen = 0f;
+        public float CompSys = 0f;
+        public float ComUnit = 0f;
+        public float  Track = 0f;
+        public float AccelAbs = 0f;
+        public float EjectSys = 0f;
+        public float RepairSys = 0f;
+        public float Jets = 0f;
+    }
+  [HideInInspector] public DamageComponents componentDamage = new DamageComponents();
   [HideInInspector] public float _CoreStrength;
   [SerializeField] public float _Fuel;
   [HideInInspector] public int ShipID;
@@ -130,13 +144,46 @@ public class ShipSettings : MonoBehaviour
 
     }
   }
-
+  
+  bool hitInternal = false;
   void InternalDamage(){
     //Show that internal damage has taken place! 
+    hitInternal = true;
     Instantiate(InternalDamageVFX,transform.position,Quaternion.identity,transform);
+    if(lastHit == HitLoc.F) // damage the components that got hit from the front, randomly
+    {
+      componentDamage.ComUnit =+ Mathf.Clamp01(Random.Range(-3f,.5f));
+      componentDamage.Track =+ Mathf.Clamp01(Random.Range(-3f,.5f));
+      componentDamage.EjectSys =+ Mathf.Clamp01(Random.Range(-3f,.5f));
+    }
+    if(lastHit == HitLoc.B) // damage the components that got hit from the back, randomly
+    {
+      componentDamage.IonDrive =+ Mathf.Clamp01(Random.Range(-3f,.5f));
+      componentDamage.PowerPlant =+ Mathf.Clamp01(Random.Range(-3f,.5f));
+      componentDamage.Jets =+ Mathf.Clamp01(Random.Range(-3f,.5f));
+    }
+    if(lastHit == HitLoc.U || lastHit == HitLoc.D) // damage the components that got hit from the top/bottom
+    {
+      componentDamage.CompSys =+ Mathf.Clamp01(Random.Range(-3f,.5f));
+      componentDamage.AccelAbs =+ Mathf.Clamp01(Random.Range(-3f,.5f));
+      componentDamage.RepairSys =+ Mathf.Clamp01(Random.Range(-3f,.5f));
+      componentDamage.ShieldGen =+ Mathf.Clamp01(Random.Range(-3f,.5f));
+      componentDamage.EjectSys =+ Mathf.Clamp01(Random.Range(-3f,.5f));
+    }
+    
+    if(lastHit == HitLoc.R || lastHit == HitLoc.L) // damage the components that got hit from the top/bottom
+    {
+      componentDamage.AccelAbs =+ Mathf.Clamp01(Random.Range(-3f,.5f));
+      componentDamage.Jets =+ Mathf.Clamp01(Random.Range(-3f,.5f));
+    }    
+    hitInternal = false;
   }
+
+
+
+
    void ArmorDamage(Vector3 pos){
-    //Show that internal damage has taken place! 
+    //Show that armor damage has taken place! 
     GameObject Debris = Instantiate(DamageVFX,pos,Quaternion.identity,transform.parent);
     Debris.GetComponent<DampInitVelocity>().initDir = DeathDir;
     Debris.GetComponent<DampInitVelocity>().initVel = DeathVel;

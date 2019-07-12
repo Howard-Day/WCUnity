@@ -743,11 +743,11 @@ ParticleSystem:
     m_TextureColorAffectsParticles: 1
     m_TextureAlphaAffectsParticles: 1
     m_TextureBilinearFiltering: 0
-    randomDirectionAmount: 0
+    randomDirectionAmount: 1
     sphericalDirectionAmount: 0
     randomPositionAmount: 0
     radius:
-      value: 8
+      value: 4
       mode: 0
       spread: 0
       speed:
@@ -4824,6 +4824,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e363dc771be93d45a8bc98433a7808a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  DampVel: 0.999
+  DampVel: 0.99
   initDir: {x: 0, y: 0, z: 0}
   initVel: 0
