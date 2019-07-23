@@ -51,28 +51,28 @@ public class CockpitViewSwitcher : MonoBehaviour
         Shifter = gameObject.transform.parent.GetComponentInChildren<CockpitShift>();
         activeView = View.Main;
         shipMain = (ShipSettings)gameObject.GetComponentInParent<ShipSettings>();
-        CockpitBase.active = false;
-        RightBase.active = false;
-        LeftBase.active = false;
-        RearBase.active = false;
-        Billboard.active = false;
+        CockpitBase.SetActive(false);
+        RightBase.SetActive(false);
+        LeftBase.SetActive(false);
+        RearBase.SetActive(false);
+        Billboard.SetActive(false);
     }
     void DoChaseCam()
     {
         if(!Billboard.activeInHierarchy)
         {
-        HoverUI.active = true;
-        Billboard.active = true;
+        HoverUI.SetActive(true);
+        Billboard.SetActive(true);
         transform.localPosition = ChaseCamOffset;
         transform.localEulerAngles = new Vector3(ChaseAngle,0,0);
-        CockpitBase.active = false;
-        RightBase.active = false;
-        LeftBase.active = false;
-        RearBase.active = false;
+        CockpitBase.SetActive(true);
+        RightBase.SetActive(true);
+        LeftBase.SetActive(true);
+        RearBase.SetActive(true);
         }
         //print(shipMain.deltaRot);
         
-        float xShift =  shipMain.deltaRot.y;
+        float xShift =  -shipMain.deltaRot.y;
         float yShift =  shipMain.deltaRot.x;
         
         //print (xShift);
@@ -109,12 +109,12 @@ public class CockpitViewSwitcher : MonoBehaviour
         {
         transform.localPosition = MainPos;
         transform.localEulerAngles = MainRot;
-        CockpitBase.active = true;
-        RightBase.active = false;
-        LeftBase.active = false;
-        RearBase.active = false;
-        Billboard.active = false;
-        HoverUI.active = true;
+        CockpitBase.SetActive(true);
+        RightBase.SetActive(false);
+        LeftBase.SetActive(false);
+        RearBase.SetActive(false);
+        Billboard.SetActive(false);
+        HoverUI.SetActive(true);
         }
         Shifter.xShift =  1-shipMain.deltaRot.y;// .y;
         Shifter.yShift =  1-shipMain.deltaRot.x;//.x;
@@ -126,12 +126,12 @@ public class CockpitViewSwitcher : MonoBehaviour
         {
         transform.localPosition = RearView.localPosition;
         transform.localEulerAngles = RearView.transform.localEulerAngles;
-        CockpitBase.active = false;
-        RightBase.active = false;
-        LeftBase.active = false;
-        RearBase.active = true;
-        Billboard.active = false;
-        HoverUI.active = false;
+        CockpitBase.SetActive(false);
+        RightBase.SetActive(false);
+        LeftBase.SetActive(false);
+        RearBase.SetActive(true);
+        Billboard.SetActive(false);
+        HoverUI.SetActive(false);
         }
         Shifter.xShift =  1-shipMain.deltaRot.y;// .y;
         Shifter.yShift =  shipMain.deltaRot.x;//.x;
@@ -143,12 +143,12 @@ public class CockpitViewSwitcher : MonoBehaviour
         {
         transform.localPosition = RightView.localPosition;
         transform.localEulerAngles = RightView.transform.localEulerAngles;
-        CockpitBase.active = false;
-        RightBase.active = true;
-        LeftBase.active = false;
-        RearBase.active = false;
-        Billboard.active = false;
-        HoverUI.active = false;
+        CockpitBase.SetActive(false);
+        RightBase.SetActive(true);
+        LeftBase.SetActive(false);
+        RearBase.SetActive(false);
+        Billboard.SetActive(false);
+        HoverUI.SetActive(false);
         }
         Shifter.xShift =  1-shipMain.deltaRot.y;// .y;
         Shifter.yShift =  1-shipMain.deltaRot.z;//.x;
@@ -161,12 +161,12 @@ public class CockpitViewSwitcher : MonoBehaviour
                          
         transform.localPosition = LeftView.localPosition;
         transform.localEulerAngles = LeftView.transform.localEulerAngles;
-        CockpitBase.active = false;
-        RightBase.active = false;
-        LeftBase.active = true;
-        RearBase.active = false;
-        Billboard.active = false;
-        HoverUI.active = false;
+        CockpitBase.SetActive(false);
+        RightBase.SetActive(false);
+        LeftBase.SetActive(true);
+        RearBase.SetActive(false);
+        Billboard.SetActive(false);
+        HoverUI.SetActive(false);
         }
         Shifter.xShift =  shipMain.deltaRot.y;// .y;
         Shifter.yShift =  shipMain.deltaRot.z;//.x;

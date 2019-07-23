@@ -4,52 +4,52 @@ TextureImporter:
   internalIDToNameTable:
   - first:
       213: -503430619758237057
-    second: RadarBlips_01_0
+    second: FighterBlip01
   - first:
       213: -8528827238370335675
-    second: RadarBlips_01_1
+    second: FighterBlip02
   - first:
       213: 4717410854635469190
-    second: RadarBlips_01_2
+    second: FighterBlip03
   - first:
       213: -2614887387422303411
-    second: RadarBlips_01_3
+    second: FighterBlip04
   - first:
       213: -1038945245766541869
-    second: RadarBlips_01_4
+    second: CapBlip01
   - first:
       213: -3059317623234044126
-    second: RadarBlips_01_5
+    second: CapBlip02
   - first:
       213: -7807887920948202077
-    second: RadarBlips_01_6
+    second: CapBlip03
   - first:
       213: 1857051215728562473
-    second: RadarBlips_01_7
+    second: CapBlip04
   - first:
       213: 262023306993108805
-    second: RadarBlips_01_8
+    second: NavPoint
   - first:
       213: -2014150850600491242
-    second: RadarBlips_01_9
+    second: Objective01
   - first:
       213: 4273074877749174826
-    second: RadarBlips_01_10
+    second: Objective02
   - first:
       213: 7277899829362388269
-    second: RadarBlips_01_11
+    second: Obstacle01
   - first:
       213: -420250050583911138
-    second: RadarBlips_01_12
+    second: BaseBlip01
   - first:
       213: 7688708857953352038
-    second: RadarBlips_01_13
+    second: BaseBlip02
   - first:
       213: -1934838318466807190
-    second: RadarBlips_01_14
+    second: BaseBlip03
   - first:
       213: 5285104771516942283
-    second: RadarBlips_01_15
+    second: BaseBlip04
   externalObjects: {}
   serializedVersion: 10
   mipmaps:
@@ -93,7 +93,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 50
+  spritePixelsToUnits: 100
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 0
   alphaUsage: 1
@@ -158,15 +158,15 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: RadarBlips_01_0
+      name: FighterBlip01
       rect:
         serializedVersion: 2
-        x: 0
+        x: 1
         y: 24
-        width: 8
-        height: 8
+        width: 7
+        height: 7
       alignment: 9
-      pivot: {x: 0.5623052, y: 0.4376948}
+      pivot: {x: 0.49109903, y: 0.5029673}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -179,15 +179,15 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: RadarBlips_01_1
+      name: FighterBlip02
       rect:
         serializedVersion: 2
-        x: 8
+        x: 9
         y: 24
-        width: 8
-        height: 8
+        width: 7
+        height: 7
       alignment: 9
-      pivot: {x: 0.5674975, y: 0.4376948}
+      pivot: {x: 0.52002704, y: 0.50296754}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -200,15 +200,15 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: RadarBlips_01_2
+      name: FighterBlip03
       rect:
         serializedVersion: 2
-        x: 16
+        x: 18
         y: 24
-        width: 8
-        height: 8
+        width: 6
+        height: 7
       alignment: 9
-      pivot: {x: 0.4376948, y: 0.45327115}
+      pivot: {x: 0.4203879, y: 0.49110004}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -221,15 +221,15 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: RadarBlips_01_3
+      name: FighterBlip04
       rect:
         serializedVersion: 2
-        x: 24
-        y: 24
-        width: 8
-        height: 8
+        x: 25
+        y: 25
+        width: 5
+        height: 5
       alignment: 9
-      pivot: {x: 0.43769503, y: 0.4376948}
+      pivot: {x: 0.4875389, y: 0.479232}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -242,15 +242,15 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: RadarBlips_01_4
+      name: CapBlip01
       rect:
         serializedVersion: 2
         x: 0
-        y: 16
-        width: 8
-        height: 8
+        y: 15
+        width: 9
+        height: 9
       alignment: 9
-      pivot: {x: 0.5623052, y: 0.44288683}
+      pivot: {x: 0.5132687, y: 0.48442376}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -263,15 +263,15 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: RadarBlips_01_5
+      name: CapBlip02
       rect:
         serializedVersion: 2
-        x: 8
+        x: 9
         y: 16
-        width: 8
-        height: 8
+        width: 7
+        height: 7
       alignment: 9
-      pivot: {x: 0.56230533, y: 0.43250275}
+      pivot: {x: 0.47329766, y: 0.50370896}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -284,15 +284,15 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: RadarBlips_01_6
+      name: CapBlip03
       rect:
         serializedVersion: 2
-        x: 16
-        y: 16
-        width: 8
-        height: 8
+        x: 18
+        y: 17
+        width: 5
+        height: 5
       alignment: 9
-      pivot: {x: 0.44288683, y: 0.43250275}
+      pivot: {x: 0.51073074, y: 0.4657322}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -305,15 +305,15 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: RadarBlips_01_7
+      name: CapBlip04
       rect:
         serializedVersion: 2
-        x: 24
-        y: 16
-        width: 8
-        height: 8
+        x: 25
+        y: 17
+        width: 5
+        height: 5
       alignment: 9
-      pivot: {x: 0.44288707, y: 0.4376948}
+      pivot: {x: 0.5259613, y: 0.5124615}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -326,13 +326,13 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: RadarBlips_01_8
+      name: NavPoint
       rect:
         serializedVersion: 2
         x: 0
         y: 8
         width: 8
-        height: 8
+        height: 7
       alignment: 9
       pivot: {x: 0.5623052, y: 0.43769467}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -347,15 +347,15 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: RadarBlips_01_9
+      name: Objective01
       rect:
         serializedVersion: 2
-        x: 8
+        x: 9
         y: 8
-        width: 8
-        height: 8
+        width: 7
+        height: 7
       alignment: 9
-      pivot: {x: 0.54672897, y: 0.47403944}
+      pivot: {x: 0.4636552, y: 0.5096426}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -368,15 +368,15 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: RadarBlips_01_10
+      name: Objective02
       rect:
         serializedVersion: 2
-        x: 16
+        x: 17
         y: 8
-        width: 8
-        height: 8
+        width: 7
+        height: 7
       alignment: 9
-      pivot: {x: 0.4325025, y: 0.4532709}
+      pivot: {x: 0.50815934, y: 0.48219857}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -389,7 +389,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: RadarBlips_01_11
+      name: Obstacle01
       rect:
         serializedVersion: 2
         x: 24
@@ -397,7 +397,7 @@ TextureImporter:
         width: 8
         height: 8
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -410,7 +410,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: RadarBlips_01_12
+      name: BaseBlip01
       rect:
         serializedVersion: 2
         x: 0
@@ -431,7 +431,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: RadarBlips_01_13
+      name: BaseBlip02
       rect:
         serializedVersion: 2
         x: 8
@@ -452,7 +452,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: RadarBlips_01_14
+      name: BaseBlip03
       rect:
         serializedVersion: 2
         x: 16
@@ -473,7 +473,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: RadarBlips_01_15
+      name: BaseBlip04
       rect:
         serializedVersion: 2
         x: 24
@@ -481,7 +481,7 @@ TextureImporter:
         width: 8
         height: 8
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []

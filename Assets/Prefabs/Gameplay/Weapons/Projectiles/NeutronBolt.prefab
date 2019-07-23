@@ -97,7 +97,7 @@ MonoBehaviour:
   m_startPos: {x: 0, y: 0, z: 0}
   m_endPos: {x: 0, y: 0, z: 8}
   m_lineColor: {r: 1, g: 0.7812411, b: 0, a: 1}
-  m_lineWidth: 4
+  m_lineWidth: 3
   m_lightSaberFactor: 0
   MinimumFlipAngle: 1.5
 --- !u!114 &236246741698921918
@@ -113,12 +113,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 315
-  damage: 2
+  damage: 3
   range: 1200
   hitShield: {fileID: 400538386877157161, guid: 86510d0776ceb1c47b4efd13c49ff3c1,
     type: 3}
   hitHull: {fileID: 0}
   shootMask:
     serializedVersion: 2
-    m_Bits: 1024
+    m_Bits: 3072
   ProjID: 0

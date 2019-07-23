@@ -85,7 +85,7 @@ public class Radar : MonoBehaviour
         MakeBlips(GameObjTracker.NeutralShips, neutralNear,neutralFar);
         MakeBlips(GameObjTracker.Environmental, envNear,envFar);
         GameObjTracker.radarRefreshNeeded = false;
-        print("Radar Refresh is: "+ GameObjTracker.radarRefreshNeeded);
+        //print("Radar Refresh is: "+ GameObjTracker.radarRefreshNeeded);
 
     }
 

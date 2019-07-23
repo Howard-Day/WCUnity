@@ -69,6 +69,8 @@ MonoBehaviour:
   CollidesWith:
     serializedVersion: 2
     m_Bits: 3072
+  VDUImage: {fileID: 2033425799997004718, guid: bae67950433dbf946ac049c7736e3de7,
+    type: 3}
   turnRate: 75
   maxFuel: 2400
   fuelBurnRate: 2
@@ -102,6 +104,7 @@ MonoBehaviour:
   _ArmorMax: {x: 0, y: 0, z: 0, w: 0}
   _ShieldMax: {x: 0, y: 0}
   Core: 0
+  hitInAss: 0
   _CoreStrength: 0
   _Fuel: 0
   ShipID: 0
@@ -117,6 +120,8 @@ MonoBehaviour:
   isDead: 0
   isLocked: 0
   currentTarget: {fileID: 0}
+  currentLocked: 0
+  hitInternal: 0
   recover: 1
   BounceDir: {x: 0, y: 0, z: 0}
   BounceSpin: {x: 0, y: 0, z: 0}
@@ -124,6 +129,7 @@ MonoBehaviour:
   lastHit: 0
   oldRot: {x: 0, y: 0, z: 0, w: 0}
   deltaRot: {x: 0, y: 0, z: 0}
+  throttle: 0
 --- !u!114 &369351026039379756
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -154,12 +160,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9a786fafaafa36f45a2047a82a97b822, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  logDebug: 0
   WingmanTo: {fileID: 0}
   PatrolPoints: []
   ActiveAIState: 3
   AISkillLevel: 1
   AITarget: {fileID: 0}
   Tracker: {fileID: 0}
+  impatience: 0
   angleToThing: 0
 --- !u!114 &5695718655840442019
 MonoBehaviour:

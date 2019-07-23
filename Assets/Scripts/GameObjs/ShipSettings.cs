@@ -9,9 +9,10 @@ public class ShipSettings : MonoBehaviour
   
   [Header("Choose Team!")]
   [SerializeField] public TEAM AITeam = TEAM.CONFED;
-  [SerializeField] public bool isWingLead = false;  
-  
+  [SerializeField] public bool isWingLead = false;    
   [SerializeField] public LayerMask CollidesWith;
+  [Header("VDU Icon!")]
+  [SerializeField] public Sprite VDUImage;
   [Header("Movement Settings")]
   [SerializeField] public float turnRate = 50f;
   [SerializeField] public float maxFuel = 2500f;
@@ -48,6 +49,8 @@ public class ShipSettings : MonoBehaviour
   [HideInInspector] public Vector4 _ArmorMax;
   [HideInInspector] public Vector2 _ShieldMax;
   [HideInInspector] public float Core;
+
+  [HideInInspector] public bool hitInAss = false; //this is important information, for a lot of reasons.
   public class DamageComponents
     {
         public float IonDrive = 0f;
@@ -79,7 +82,7 @@ public class ShipSettings : MonoBehaviour
   [HideInInspector] public bool isDead = false;
   [HideInInspector] public bool isLocked = false;
   [HideInInspector] public ShipSettings currentTarget;
-
+  [HideInInspector] public bool currentLocked = false;
   void Start()
   {
     //assign a random ID
@@ -115,7 +118,7 @@ public class ShipSettings : MonoBehaviour
     }
     DoHealth();
     DoFuel();
-    AvoidObstacles(.75f,shipRadius*3f);
+    AvoidObstacles(.75f,shipRadius*4f);
     //Collision Detecting, but make sure the full collision is only being used if the ship is afterburning, simple manuvers won't do it as much.
     //if(isAfterburning)
     //{ DoBounce(.5f,shipRadius/2);}
@@ -145,38 +148,41 @@ public class ShipSettings : MonoBehaviour
     }
   }
   
-  bool hitInternal = false;
-  void InternalDamage(){
+  public bool hitInternal = false;
+  void InternalDamage(bool doComponentDamage){
     //Show that internal damage has taken place! 
-    hitInternal = true;
+    hitInternal = doComponentDamage;
+    //print("Internal Damage is " + doComponentDamage);
     Instantiate(InternalDamageVFX,transform.position,Quaternion.identity,transform);
-    if(lastHit == HitLoc.F) // damage the components that got hit from the front, randomly
+    if(hitInternal) //only do damage if intentional! 
     {
-      componentDamage.ComUnit =+ Mathf.Clamp01(Random.Range(-3f,.5f));
-      componentDamage.Track =+ Mathf.Clamp01(Random.Range(-3f,.5f));
-      componentDamage.EjectSys =+ Mathf.Clamp01(Random.Range(-3f,.5f));
+      if(lastHit == HitLoc.F) // damage the components that got hit from the front, randomly
+      {
+        componentDamage.ComUnit =+ Mathf.Clamp01(Random.Range(-3f,.5f));
+        componentDamage.Track =+ Mathf.Clamp01(Random.Range(-3f,.5f));
+        componentDamage.EjectSys =+ Mathf.Clamp01(Random.Range(-3f,.5f));
+      }
+      if(lastHit == HitLoc.B) // damage the components that got hit from the back, randomly
+      {
+        componentDamage.IonDrive =+ Mathf.Clamp01(Random.Range(-3f,.5f));
+        componentDamage.PowerPlant =+ Mathf.Clamp01(Random.Range(-3f,.5f));
+        componentDamage.Jets =+ Mathf.Clamp01(Random.Range(-3f,.5f));
+      }
+      if(lastHit == HitLoc.U || lastHit == HitLoc.D) // damage the components that got hit from the top/bottom
+      {
+        componentDamage.CompSys =+ Mathf.Clamp01(Random.Range(-3f,.5f));
+        componentDamage.AccelAbs =+ Mathf.Clamp01(Random.Range(-3f,.5f));
+        componentDamage.RepairSys =+ Mathf.Clamp01(Random.Range(-3f,.5f));
+        componentDamage.ShieldGen =+ Mathf.Clamp01(Random.Range(-3f,.5f));
+        componentDamage.EjectSys =+ Mathf.Clamp01(Random.Range(-3f,.5f));
+      }
+      
+      if(lastHit == HitLoc.R || lastHit == HitLoc.L) // damage the components that got hit from the top/bottom
+      {
+        componentDamage.AccelAbs =+ Mathf.Clamp01(Random.Range(-3f,.5f));
+        componentDamage.Jets =+ Mathf.Clamp01(Random.Range(-3f,.5f));
+      }    
     }
-    if(lastHit == HitLoc.B) // damage the components that got hit from the back, randomly
-    {
-      componentDamage.IonDrive =+ Mathf.Clamp01(Random.Range(-3f,.5f));
-      componentDamage.PowerPlant =+ Mathf.Clamp01(Random.Range(-3f,.5f));
-      componentDamage.Jets =+ Mathf.Clamp01(Random.Range(-3f,.5f));
-    }
-    if(lastHit == HitLoc.U || lastHit == HitLoc.D) // damage the components that got hit from the top/bottom
-    {
-      componentDamage.CompSys =+ Mathf.Clamp01(Random.Range(-3f,.5f));
-      componentDamage.AccelAbs =+ Mathf.Clamp01(Random.Range(-3f,.5f));
-      componentDamage.RepairSys =+ Mathf.Clamp01(Random.Range(-3f,.5f));
-      componentDamage.ShieldGen =+ Mathf.Clamp01(Random.Range(-3f,.5f));
-      componentDamage.EjectSys =+ Mathf.Clamp01(Random.Range(-3f,.5f));
-    }
-    
-    if(lastHit == HitLoc.R || lastHit == HitLoc.L) // damage the components that got hit from the top/bottom
-    {
-      componentDamage.AccelAbs =+ Mathf.Clamp01(Random.Range(-3f,.5f));
-      componentDamage.Jets =+ Mathf.Clamp01(Random.Range(-3f,.5f));
-    }    
-    hitInternal = false;
   }
 
 
@@ -241,8 +247,9 @@ public class ShipSettings : MonoBehaviour
           var weightDamage = ((speed+hitShip.speed)/speed)/4f;
           DoDamage(bounceColliders[ib].transform.position,(speed+hitShip.speed)*.01f*weightDamage); 
           hitShip.DoDamage(transform.position,(speed+hitShip.speed)*.01f*weightDamageThem);
-          print("RAM Detected:" + name +" has rammed " + hitShip.name + "at relative speeds of " + speed +" and " + hitShip.speed+
-          " and will be damaged " + (speed+hitShip.speed)*.05f*weightDamage + "to " + (speed+hitShip.speed)*.05f*weightDamageThem);
+          //print("RAM Detected:" + name +" has rammed " + hitShip.name + " at relative speeds of " + speed +" and " + hitShip.speed+
+          //" and will be damaged " + (speed+hitShip.speed)*.05f*weightDamage + "to " + (speed+hitShip.speed)*.05f*weightDamageThem);
+          InternalDamage(true); 
           hitShip.recover = 0f;
           hitShip.BouncePush = BouncePush;
           hitShip.BounceDir = BounceDir;
@@ -268,8 +275,8 @@ public class ShipSettings : MonoBehaviour
       yaw *= recover;
       roll *= recover;
       speed *= recover;
-      if (recover < .0125f)
-      {InternalDamage();          
+      if (recover < .025f)
+      {InternalDamage(false);          
       }
       transform.localRotation *= Quaternion.AngleAxis(broll_, Vector3.forward) * Quaternion.AngleAxis(byaw_, Vector3.up) * Quaternion.AngleAxis(bpitch_, invertYAxis ? Vector3.right : Vector3.left);
       transform.position += BounceDir * BouncePush * Time.deltaTime * (1-recover);
@@ -300,14 +307,14 @@ public class ShipSettings : MonoBehaviour
           {
             if(Armor.x > damage) //can the armor take the hit? 
             {  Armor.x -= damage;
-               ArmorDamage(hitLoc);
+               ArmorDamage(transform.position+damageAngle/2);
             }
             else  //armor takes what it can, passes the rest onto internal damage;
               {
                 damage -= Armor.x;
                 Armor.x = 0;
                 _CoreStrength -= damage;
-                InternalDamage();
+                InternalDamage(true);
               }
           }
           else if(Vector3.Angle(-transform.right, damageAngle) <= 45) // left armor hit!)
@@ -315,14 +322,14 @@ public class ShipSettings : MonoBehaviour
             lastHit = HitLoc.L;
             if(Armor.z > damage) //can the armor take the hit? 
             {  Armor.z -= damage;
-               ArmorDamage(hitLoc);
+               ArmorDamage(transform.position+damageAngle/2);
             }
             else  //armor takes what it can, passes the rest onto internal damage;
               {
                 damage -= Armor.z;
                 Armor.z = 0;
                 _CoreStrength -= damage;
-                InternalDamage();
+                InternalDamage(true);
               }
           }
           else if(Vector3.Angle(transform.right, damageAngle) <= 45) // right armor hit!)
@@ -330,14 +337,14 @@ public class ShipSettings : MonoBehaviour
             lastHit = HitLoc.R;
             if(Armor.w > damage) //can the armor take the hit? 
             {  Armor.w -= damage;
-               ArmorDamage(hitLoc);
+               ArmorDamage(transform.position+damageAngle/2);
             }
             else  //armor takes what it can, passes the rest onto internal damage;
               {
                 damage -= Armor.w;
                 Armor.w = 0;
                 _CoreStrength -= damage;
-                InternalDamage();
+                InternalDamage(true);
               }
           }
           else //HUH, no armor seems to have been hit. That's a dirty lie, so let's make them all suffer, plus a liiitle bit of core damage for fibbing.
@@ -347,6 +354,7 @@ public class ShipSettings : MonoBehaviour
             if(Vector3.Angle(-transform.up, damageAngle) <= 45)
               {lastHit = HitLoc.D;}
             Armor -= new Vector4(1,0,1,1)*damage/3;
+            InternalDamage(true);
             _CoreStrength -= damage/4;
           }
         }
@@ -354,6 +362,7 @@ public class ShipSettings : MonoBehaviour
       else //Hit from the back
       {
         lastHit = HitLoc.B;
+        hitInAss = true;
         //print("hit from the back!");
         if(Shield.y > damage)//if shields can take the hit, let them
         {  Shield.y -= damage;
@@ -369,14 +378,14 @@ public class ShipSettings : MonoBehaviour
           {
             if(Armor.y > damage) //can the armor take the hit? 
             {   Armor.y -= damage;
-                ArmorDamage(hitLoc);
+                ArmorDamage(transform.position+damageAngle/2);
             }
             else  //armor takes what it can, passes the rest onto internal damage;
               {
                 damage -= Armor.y;
                 Armor.y = 0;
                 _CoreStrength -= damage;
-                InternalDamage();
+                InternalDamage(true);
               }
           }
           else if(Vector3.Angle(-transform.right, damageAngle) <= 45) // left armor hit!)
@@ -384,14 +393,14 @@ public class ShipSettings : MonoBehaviour
             lastHit = HitLoc.L;
             if(Armor.z > damage) //can the armor take the hit? 
             {  Armor.z -= damage;
-               ArmorDamage(hitLoc);
+               ArmorDamage(transform.position+damageAngle/2);
             }
             else  //armor takes what it can, passes the rest onto internal damage;
               {
                 damage -= Armor.z;
                 Armor.z = 0;
                 _CoreStrength -= damage;
-                InternalDamage();
+                InternalDamage(true);
               }
           }
           else if(Vector3.Angle(transform.right, damageAngle) <= 45) // right armor hit!)
@@ -399,14 +408,14 @@ public class ShipSettings : MonoBehaviour
             lastHit = HitLoc.R;
             if(Armor.w > damage) //can the armor take the hit? 
             {  Armor.w -= damage;
-              ArmorDamage(hitLoc);
+              ArmorDamage(transform.position+damageAngle/2);
             }
             else  //armor takes what it can, passes the rest onto internal damage;
               {
                 damage -= Armor.w;
                 Armor.w = 0;
                 _CoreStrength -= damage;
-                InternalDamage();
+                InternalDamage(true);
               }
           }
           else //HUH, no armor seems to have been hit. That's a dirty lie, so let's make them all suffer, plus a liiitle bit of core damage for fibbing.
@@ -416,6 +425,8 @@ public class ShipSettings : MonoBehaviour
             if(Vector3.Angle(-transform.up, damageAngle) <= 45)
               {lastHit = HitLoc.D;}
             Armor -= new Vector4(0,1,1,1)*damage/3;
+            InternalDamage(true);
+          
             _CoreStrength -= damage/4;
           }
       }
@@ -579,7 +590,7 @@ public class ShipSettings : MonoBehaviour
     var roll_ = Mathf.Clamp(roll, -1f, 1f);
     yaw_ *= turnRate * Time.deltaTime;
     pitch_ *= turnRate * Time.deltaTime;
-    roll_ *= turnRate * 2f * Time.deltaTime;
+    roll_ *= turnRate  * Time.deltaTime;
     transform.localRotation *= Quaternion.AngleAxis(roll_, Vector3.forward) * Quaternion.AngleAxis(yaw_, Vector3.up) * Quaternion.AngleAxis(pitch_, invertYAxis ? Vector3.right : Vector3.left);
     
     var newRot = transform.localEulerAngles;
@@ -595,7 +606,7 @@ public class ShipSettings : MonoBehaviour
     oldRot = transform.localRotation;     
 
   }
-
+  public float throttle;
   void DoThrottle()
   {
     var targetSpeed_ = Mathf.Clamp(targetSpeed, 0f, burnSpeed);
@@ -611,7 +622,7 @@ public class ShipSettings : MonoBehaviour
       speed = Mathf.Lerp(speed, targetSpeed_, deceleration * Time.deltaTime);
     }
     
-    LagDir = Quaternion.Slerp(LagDir,transform.rotation,.05f*(lag+(burnSpeed/speed)*lag));
+    LagDir = Quaternion.Slerp(LagDir,transform.rotation,.15f*(lag+(burnSpeed/speed)*lag));
 
     transform.position += LagDir * Vector3.forward * speed * Time.deltaTime;
 
@@ -625,5 +636,6 @@ public class ShipSettings : MonoBehaviour
     {
       flare.FlareThrottle = speed/(topSpeed);
     }
+    throttle = speed/topSpeed;
   }
 }

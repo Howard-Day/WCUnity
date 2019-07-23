@@ -37,7 +37,7 @@ public class GameObjTracker : MonoBehaviour
                 Ships.Add(ship);
             }
         }
-        print("GameObj Tracker: "+ Ships.Count + " ships found!");
+        //print("GameObj Tracker: "+ Ships.Count + " ships found!");
     }
     public static void RegisterTeams()
     {
@@ -63,24 +63,29 @@ public class GameObjTracker : MonoBehaviour
             if (ship.AITeam == ShipSettings.TEAM.ENV)
                 Environmental.Add(ship);                
         }
-        print("GameObj Tracker: Found "+ ConfedShips.Count + " Confed Ships, "+ KilrathiShips.Count + " Kilrathi Ships, "+ NeutralShips.Count + " Neutral Ships, and "+ PirateShips.Count + " Pirate Ships!");
+        //print("GameObj Tracker: Found "+ ConfedShips.Count + " Confed Ships, "+ KilrathiShips.Count + " Kilrathi Ships, "+ NeutralShips.Count + " Neutral Ships, and "+ PirateShips.Count + " Pirate Ships!");
         radarRefreshNeeded = true;
-        print("Radar Refresh is: "+ radarRefreshNeeded);
+        //print("Radar Refresh is: "+ radarRefreshNeeded);
     }
 
     void SpawnExtraShips()
     {
         if(KilrathiShips.Count < 3)
         {
-            Instantiate(KilrathiSpawn[Random.RandomRange(0,1)], Random.onUnitSphere*1200f,Quaternion.identity);
+            int spawnIndex = Random.Range(0,2);
+            GameObject ship = Instantiate(KilrathiSpawn[spawnIndex], Random.onUnitSphere*1200f,Quaternion.identity);
+            ship.name = KilrathiSpawn[spawnIndex].name;
         }        
         if(ConfedShips.Count < 3)
         {
-            Instantiate(ConfedSpawn[Random.RandomRange(0,1)], Random.onUnitSphere*1200f,Quaternion.identity);
+            int spawnIndex = Random.Range(0,2);
+            GameObject ship = Instantiate(ConfedSpawn[Random.Range(0,1)], Random.onUnitSphere*1200f,Quaternion.identity);
+            ship.name = ConfedSpawn[spawnIndex].name;
         }
         if(Camera.main == null)
         {
-            Instantiate(PlayerSpawn, Random.onUnitSphere*200f,Quaternion.identity);
+            GameObject ship = Instantiate(PlayerSpawn, Random.onUnitSphere*200f,Quaternion.identity);
+            ship.name = PlayerSpawn.name;
         }
     }
     // Update is called once per frame

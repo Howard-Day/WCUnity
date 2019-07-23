@@ -5,6 +5,7 @@ using UnityEngine;
 [RequireComponent(typeof(ShipSettings))]
 public class AIPlayer : MonoBehaviour
 {
+  public bool logDebug = false;
   public enum AIState {PATROL, BREAK, SEARCH, WINGMAN, ENGAGE, HUNT, EVADE, PROTECT, REPOSITION, FLEE, DEATH };
   public enum AILevel {CHUMP, NOVICE, DEFAULT, SKILLED, ACE, MASTER};
   public ShipSettings WingmanTo;
@@ -28,14 +29,14 @@ public class AIPlayer : MonoBehaviour
   void SteerTo(Vector3 aimAt, float turnSpeed)
   {
     //kill any manual steering
-    ship.yaw = 0;//Mathf.SmoothStep(ship.yaw,0f,.1f);
-    ship.pitch = 0;//Mathf.SmoothStep(ship.pitch,0f,.1f);
+    ship.yaw = Mathf.Lerp(ship.yaw,0,.02f);//Mathf.SmoothStep(ship.yaw,0f,.1f);
+    ship.pitch =  Mathf.Lerp(ship.pitch,0,.025f);;//Mathf.SmoothStep(ship.pitch,0f,.1f);
     //smooth autosteer
     Vector3 targetDir = aimAt - transform.position;
     smoothDir = Vector3.SmoothDamp(smoothDir,targetDir,ref refDir, .25f);
     
     Quaternion newDir = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(smoothDir,transform.up), turnSpeed * 7.5f * Time.fixedUnscaledDeltaTime);
-    transform.rotation = QuaternionUtil.SmoothDamp(transform.rotation,newDir, ref refRot, .15f);
+    transform.rotation = QuaternionUtil.SmoothDamp(transform.rotation,newDir, ref refRot, .125f);
   }
 
   bool rolling = false;
@@ -61,9 +62,10 @@ void FireGuns(bool fire)
 {
   foreach (LaserCannon laserCannon in laserCannons)
   {
-    if(ship.recover >= 1) // Can the ship fire? 
+    if(ship.recover >= .99f && rechargeWait <= 0.01f) // Can the ship fire? 
     {
        laserCannon.fire = fire;
+       if(logDebug){print("aactually setting state to " + fire);}
       if(fire)//are we firing?
       { bloodThirst = 0f; //Ahh, our bloodthirst is sated
         ship.isFiring = true; //Make sure our broadcast flag is set! 
@@ -72,6 +74,11 @@ void FireGuns(bool fire)
       {
         ship.isFiring = false; //Make sure our broadcast flag is set! 
       }
+    }
+    if (rechargeWait >= 0.01f || ship.recover < .75f) //wait for recharge or return of control! 
+    {
+      laserCannon.fire = false;
+      ship.isFiring = false;
     }
   }
 }
@@ -152,12 +159,17 @@ void RollControl(float rollOn)
     else
       return null;
   }
+  public float DistanceTo(GameObject obj)
+  {
+    float dist = Vector3.Distance(obj.transform.position,transform.position);
+    return dist;
+  }
 
   float engageDist = 150f;
   float aimAccuracy = 30f;
   int aimUpdate = 60;
   float followDist;
-  float impatience;
+  public float impatience;
   float bloodThirst;
   Vector3 randPos = Vector3.zero;
   public float angleToThing;
@@ -170,15 +182,16 @@ void RollControl(float rollOn)
   void ChumpAI()
   {
      ship.targetSpeed = ship.topSpeed*.75f;
-  }  
+  } 
+
 void NoviceAI()
 {
-  AILeadAmt = 1f;
+  AILeadAmt = .25f;
   engageDist = 150f;
   aimAccuracy = 10f;
   aimUpdate = 60;
-  evadeLength = .1f;
-  evadeAmt = .25f;
+  evadeLength = .25f;
+  evadeAmt = 1f;
   if(followDist == 0){
     followDist = Random.Range(75f,125f);
     //print(name + " has a follow distance of " +followDist);
@@ -198,27 +211,33 @@ void NoviceAI()
       ActiveAIState = AIState.HUNT;
     }
   }
-  if(ship.Shield.y <= .05f && ship.lastHit == ShipSettings.HitLoc.B) //WE're being hit from behind, shields low, HOLY SHIT, EVADE!
+  if(ship.hitInAss && ship.Shield.y <= .5f && ship.lastHit == ShipSettings.HitLoc.B) //WE're being hit from behind, shields low, HOLY SHIT, EVADE!
   {
-    evadeTimer = 0f;
-    ship.lastHit = ShipSettings.HitLoc.NULL;
-    ActiveAIState = AIState.EVADE;
+    
+    ship.hitInAss = false;
+    if( AngleTo(AITarget.position) > 30)  //If our target is in front of us , just reposition, otherwise evade
+    { evadeTimer = 0f;
+      ActiveAIState = AIState.EVADE;
+    }
+    else{
+      ActiveAIState = AIState.REPOSITION;
+    }
   }
-  DoImpatience(1f, 2f);
+  DoImpatience(3f, 2f, 1f);
   DoAIStates();
   RollControl(Random.Range(-4000f,1f));
-  angleToThing = AngleTo(AITarget);
+  angleToThing = AngleTo(AITarget.position);
   ship.currentTarget = AITargetShip;
 }
 
 void DefaultAI()
 {
-  AILeadAmt = 1.5f;
-  engageDist = 125f;
+  AILeadAmt = .5f;
+  engageDist = 175;
   aimAccuracy = 6f;
   aimUpdate = 30;
-  evadeLength = .4f;
-  evadeAmt = 1f;
+  evadeLength = .5f;
+  evadeAmt = 1.5f;
   if(followDist == 0){
     followDist = Random.Range(65f,100f);
   }
@@ -237,25 +256,30 @@ void DefaultAI()
       ActiveAIState = AIState.HUNT;
     }
   }
-  if(ship.Shield.y <= .35f && ship.lastHit == ShipSettings.HitLoc.B) //WE're being hit from behind, shields low, HOLY SHIT, EVADE!
+  if(ship.hitInAss && ship.Shield.y <= .6f && ship.lastHit == ShipSettings.HitLoc.B) //WE're being hit from behind, shields low, HOLY SHIT, EVADE!
   {
-    evadeTimer = 0f;
-    ship.lastHit = ShipSettings.HitLoc.NULL;
-    ActiveAIState = AIState.EVADE;
+    ship.hitInAss = false;
+    if( AngleTo(AITarget.position) > 20)  //If our target is in front of us , just reposition, otherwise evade
+    { evadeTimer = 0f;
+      ActiveAIState = AIState.EVADE;
+    }
+    else{
+      ActiveAIState = AIState.REPOSITION;
+    }
   }
-  DoImpatience(.5f, 2f);
+  DoImpatience(2.5f, 1f,2f);
   DoAIStates();
-  RollControl(Random.Range(-1000f,1f));
-  angleToThing = AngleTo(AITarget);
+  RollControl(Random.Range(-2500f,1f));
+  angleToThing = AngleTo(AITarget.position);
   ship.currentTarget = AITargetShip;
 }
 void AceAI()
 {
-  AILeadAmt = 2f;
-  engageDist = 100;
+  AILeadAmt = 1f;
+  engageDist = 200;
   aimAccuracy = 4f;
-  aimUpdate = 10;
-  evadeLength = .1f;
+  aimUpdate = 5;
+  evadeLength = 1f;
   evadeAmt = 3f;
   if(followDist == 0){
     followDist = Random.Range(55f,80f);
@@ -275,41 +299,60 @@ void AceAI()
       ActiveAIState = AIState.HUNT;
     }
   }
-  if(ship.Shield.y <= .5f && ship.lastHit == ShipSettings.HitLoc.B) //WE're being hit from behind, shields low, HOLY SHIT, EVADE!
-  {
-    evadeTimer = 0f;
-    ship.lastHit = ShipSettings.HitLoc.NULL;
-    ActiveAIState = AIState.EVADE;
+  if(ship.hitInAss && ship.Shield.y <= .9f && ship.lastHit == ShipSettings.HitLoc.B) //WE're being hit from behind, shields low, HOLY SHIT, EVADE!
+  {    
+    ship.hitInAss = false;
+    if( AngleTo(AITarget.position) > 15)  //If our target is in front of us , just reposition, otherwise evade
+    { evadeTimer = 0f;
+      ActiveAIState = AIState.EVADE;
+    }
+    else{
+      ActiveAIState = AIState.REPOSITION;
+    }
   }
-  DoImpatience(.25f, 2f);
+  
+  DoImpatience(2f, .75f, 2.5f);
   DoAIStates();
-  RollControl(Random.Range(-500f,1f));
-  angleToThing = AngleTo(AITarget);
+  RollControl(Random.Range(-1500f,1f));
+  angleToThing = AngleTo(AITarget.position);
   ship.currentTarget = AITargetShip;
 }
 
 
+float rechargeWait = 0f;
 
-//Ai frustration
-public void DoImpatience(float maxImpatience, float howImpatient) 
+//Ai frustration and wait-for-gun recharge
+public void DoImpatience(float maxImpatience, float howImpatient, float waitTime) 
 {
   float distToTarget = Vector3.Distance(AITarget.position,transform.position);
   if(ship.capacitorLevel <=2f) //if the AI can't shoot full blasts, increase impatience
   {
+    impatience += Time.deltaTime*howImpatient*4;
+  }
+  if (distToTarget < 60 && ship.capacitorLevel >= ship.capacitorSize/4) //If we're close to oue close to our target, but CANT fire, increase Impatience, albiet at a slower rate 
+  {
     impatience += Time.deltaTime*howImpatient;
   }
-  if (distToTarget < 60 && ship.capacitorLevel >= 1) //If we're close to oue close to our target, but CANT fire, increase Impatience, albiet at a slower rate 
-  {
-    impatience += Time.deltaTime*howImpatient/2;
-  }
 
-  if (impatience >= maxImpatience) //had enough, break off to recharge guns
+  if (impatience >= maxImpatience && ship.capacitorLevel > ship.capacitorSize/3) //had enough, break off 
   {
     impatience = 0f; //We did something about it, calm down
     ActiveAIState = AIState.REPOSITION;
+  }  
+  if (impatience >= maxImpatience && ship.capacitorLevel <= ship.capacitorSize/3) //we need to wait for our guns to recharge. wait.
+  {
+    impatience = 0f; //We did something about it, calm down
+    rechargeWait = waitTime;
   }
   ///but we *also gradually calm down
-   impatience -= Time.deltaTime*2f;
+  if(impatience > 0)
+  {
+    impatience -= Time.deltaTime;
+  }
+  if (rechargeWait >= 0) //wait for recharge! 
+  {
+    rechargeWait -= Time.deltaTime;
+  }
 }
 //AI bloodthirstyness
 public void DoBloodThirsty(float maxThirsty)
@@ -319,7 +362,7 @@ public void DoBloodThirsty(float maxThirsty)
 
 Vector3 randDist = Vector3.zero;
 
-public Vector3 DoTargeting(float Accuracy, float Update)
+public Vector3 DoAiming(float Accuracy, float Update)
 {    
   if(GameObjTracker.frames % Update == 0)
   {
@@ -327,15 +370,20 @@ public Vector3 DoTargeting(float Accuracy, float Update)
     }
     return randDist;  
 }
-public float AngleTo(Transform target) //Handy thing -since the cockpits can have offset pitches to line up the reticles, we need to adust our forward angle if it's a player ship.
+public float AngleTo(Vector3 target) //Handy thing -since the cockpits can have offset pitches to line up the reticles, we need to adust our forward angle if it's a player ship.
 {
-  if(!target)
+  if(target == null)
     return 0f;
 
   Vector3 tempForward;
   tempForward = transform.forward;
+  /*Camera isPlayer = GetComponentInChildren<Camera>();
+  if (isPlayer != null)
+  {
+
+  }*/
   
-  return Vector3.Angle(tempForward, target.transform.position-transform.position);
+  return Vector3.Angle(tempForward, target-transform.position);
 }
 public Vector3 DoAim(float aimRand)
 {
@@ -343,7 +391,7 @@ public Vector3 DoAim(float aimRand)
 }
 Vector3 patrolPoint;
 Vector3 randApproach = Vector3.zero;
-Vector3 EvadeSteer;
+Vector3 EvadeSteer = Vector3.zero;
 bool hasWingLead = false;
 
 //Init Wingman System vars
@@ -353,10 +401,11 @@ public void InitWingman(ShipSettings wingman)
     {
       wingman = FindWingMan();
       if (wingman == null)//can't find anyone, bail
-      {print("No Wingleaders Available"); return; }
+      {//print("No Wingleaders Available"); 
+      return; }
       else //Make ourselves a slot to form up if we're just now finding a Wingleader
       {
-        print("Found Wingleader, setting up Params, Setting Formation Pos");
+        //print("Found Wingleader, setting up Params, Setting Formation Pos");
         formationPos = ((Random.Range(-.5f,.5f)*wingman.transform.up)+(Random.Range(-1f,1f)*wingman.transform.right))*ship.shipRadius*8;
         wingman.numWingmen++;
         hasWingLead = true;
@@ -365,7 +414,7 @@ public void InitWingman(ShipSettings wingman)
     }
     else // If we already know who our wingleader is, assume the current relational position is the desired formation position
     {
-        print("Wingleader exists on Init, setting up Params, Taking Existing Formation Pos");
+        //print("Wingleader exists on Init, setting up Params, Taking Existing Formation Pos");
         Vector3 initLoc = wingman.transform.position-transform.position;
         formationPos = initLoc;
         wingman.numWingmen++;
@@ -382,7 +431,7 @@ public void InitWingman(ShipSettings wingman)
     {
       if(friendly == null) //SOMEONE MUSTA DIED
       {
-        print("Someone Died");
+       // print("Someone Died");
         GameObjTracker.RegisterAllShips();
         GameObjTracker.RegisterTeams();
       }
@@ -390,7 +439,7 @@ public void InitWingman(ShipSettings wingman)
       //AND isn't ourselves, AND doesn't already have 4 wingmen.
       if(friendly != null && friendly.isWingLead && friendly.AITeam == ship.AITeam && friendly != ship && friendly.numWingmen <= 4)
       {
-        print("Found a Wingleader in the scene! His name is:" + friendly.name);
+        //print("Found a Wingleader in the scene! His name is:" + friendly.name);
         Transform friendlyTrans = (Transform)friendly.gameObject.GetComponent<Transform>();
         float shipDist = Vector3.Distance(friendlyTrans.position, transform.position);
         //if there are multiple, find the closest wingleader.
@@ -399,7 +448,7 @@ public void InitWingman(ShipSettings wingman)
           distance = shipDist;
           wingMan = friendly;
           hasWingLead = true;
-          print("Wingleader " + wingMan.name + " is the closest, and current");
+          //print("Wingleader " + wingMan.name + " is the closest, and current");
         }
       }
     }
@@ -438,15 +487,15 @@ switch(ActiveAIState)
     else
     {
       patrolPoint = PatrolPoints[nextPatrolPoint];
-      print("Reached patrol point " + nextPatrolPoint + " going to the next!");
+      print(gameObject.name + " Reached patrol point " + nextPatrolPoint + " going to the next!");
       nextPatrolPoint++;
     }
     if(nextPatrolPoint > PatrolPoints.Count-1) //Cycle the patrol point list
-    { print("Loooping patrol points!");
+    { print(gameObject.name + " is Loooping patrol points!");
       nextPatrolPoint = 0;
     }
    //AITarget is already the closest known enemy - let's use that! 
-   if (AITarget != null && Vector3.Distance(AITarget.position,transform.position) <= engageDist*1.5f)
+   if (AITarget != null && DistanceTo(AITarget.gameObject) <= engageDist*1.5f)
    {//If we're withing the engage envelope, let's go check it out! 
      ActiveAIState = AIState.ENGAGE;
    }
@@ -460,7 +509,7 @@ switch(ActiveAIState)
     {
       AITargetShip = WingmanTo.currentTarget;
     }
-    ActiveAIState = AIState.HUNT;
+    ActiveAIState = AIState.REPOSITION;
   }
   break;
 
@@ -525,7 +574,7 @@ switch(ActiveAIState)
 
   case AIState.ENGAGE:
   {
-    float angleToTarget = AngleTo(AITarget);
+    float angleToTarget = AngleTo(AITarget.position);
     if(randApproach.magnitude == 0)
     {
       randApproach = Random.onUnitSphere*AITargetShip.shipRadius*2f;
@@ -537,7 +586,7 @@ switch(ActiveAIState)
       ActiveAIState = AIState.PATROL;
     }
 
-    if(Vector3.Distance(AITarget.position,transform.position) < engageDist*1.5f && angleToTarget < 45)
+    if(Vector3.Distance(AITarget.position,transform.position) < engageDist*1.5f)
     {
       ship.targetSpeed = ship.burnSpeed;
     }
@@ -557,14 +606,14 @@ switch(ActiveAIState)
     } 
     if(randApproach.magnitude == 0)
     {
-      randApproach = Random.onUnitSphere*AITargetShip.shipRadius*4f;
+      randApproach = Random.onUnitSphere*AITargetShip.shipRadius*aimAccuracy/2;
     }  
-    float angleToTarget = AngleTo(AITarget);
+    float angleToTarget = AngleTo(AITarget.position);
     Vector3 dirToTarget = AITarget.transform.position-transform.position;
     float distToTarget = Vector3.Distance(AITarget.position,transform.position);
 
     //Closest Target is infront of us
-    if(angleToTarget < 120 )
+    if(angleToTarget < 90 )
     {
       if(distToTarget > followDist)
       {
@@ -576,14 +625,15 @@ switch(ActiveAIState)
       }
       if(distToTarget > engageDist) //Try and turn toward the target! 
       {
-        if(angleToTarget < 45)
+        if(angleToTarget < 60)
         {
         ship.targetSpeed = ship.burnSpeed;
+        
         }
         else {
-          ship.targetSpeed = ship.topSpeed/2;
+          ship.targetSpeed = ship.topSpeed;
         }
-        impatience += Time.deltaTime;
+        
       }
     }
     else 
@@ -591,27 +641,47 @@ switch(ActiveAIState)
       ActiveAIState = AIState.REPOSITION;
     }
     float nearDodgeBlend = 1-Mathf.Clamp01((distToTarget+15)/30);
-    //print("Ship " +name + " is near dog blending with a value of " + nearDodgeBlend +" from a distance to target of " + distToTarget);
-    Vector3 shootAt = AITarget.forward*AITargetShip.shipRadius*2f*AILeadAmt+DoTargeting(aimAccuracy,aimUpdate);
+    Vector3 shootAt = AITarget.forward*AITargetShip.shipRadius*AILeadAmt*2*AITargetShip.throttle+DoAiming(aimAccuracy,aimUpdate);
 
     Vector3 huntDir = AITarget.position+Vector3.Lerp(shootAt,randApproach,nearDodgeBlend);
-    Debug.DrawLine(transform.position,huntDir,Color.red,.05f);
+    Debug.DrawLine(transform.position,shootAt+AITarget.position,Color.red,.01f);
+    Debug.DrawLine(transform.position,transform.position+transform.forward*25,Color.yellow,.01f);
+
+
     SteerTo(huntDir, ship.turnRate);
-    
-    if (angleToTarget < aimAccuracy)
+    float angleToShoot = AngleTo(huntDir);
+
+    if (angleToShoot < aimAccuracy*2)
     {
+       if(logDebug){print("attempting to fire");}
        AITargetShip.isLocked = true;
        FireGuns(true);
     }
+
     else
     {
-       AITargetShip.isLocked = false;
-       FireGuns(false);
-    }
-    if (distToTarget > engageDist)
-      {
-        FireGuns(false);
+      if (distToTarget < engageDist/5) //we're close, take the chance! 
+      { 
+        if(AngleTo(AITarget.position) < aimAccuracy*2)
+        {
+        rechargeWait = 0;
+        AITargetShip.isLocked = true;
+        if(logDebug){print("attempting to fire");}
+        FireGuns(true);
+        }
+        else{
+          AITargetShip.isLocked = false;
+          FireGuns(false);
+        }
+        
       }
+    }
+
+    if (distToTarget > engageDist*2)
+    {
+      AITargetShip.isLocked = false;
+      FireGuns(false);
+    }
 
   }
   break;
@@ -623,8 +693,9 @@ switch(ActiveAIState)
     if(evadeTimer == 0) //We're starting to evade
     {//Punch it, Chewie! 
       FireGuns(false);
+
       ship.targetSpeed = ship.burnSpeed;
-      if(EvadeSteer == null)// have we chosen where to steer? 
+      if(EvadeSteer == Vector3.zero)// have we chosen where to steer? 
       {
         EvadeSteer = new Vector3(Random.Range(-1f,1f),Random.Range(-1f,1f),Random.Range(-1f,1f));
       }
@@ -634,13 +705,14 @@ switch(ActiveAIState)
     {
       EvadeSteer = new Vector3(Random.Range(-2f,2f),Random.Range(-2f,2f),Random.Range(-2f,2f));
     }
-    ship.pitch = EvadeSteer.x*evadeAmt;
-    ship.yaw = EvadeSteer.y*evadeAmt;
-    ship.roll = EvadeSteer.z*evadeAmt;
+    ship.pitch = Mathf.Lerp(ship.pitch, EvadeSteer.x*evadeAmt,.001f);
+    ship.yaw = Mathf.Lerp(ship.yaw, EvadeSteer.y*evadeAmt,.001f);
+    ship.roll = Mathf.Lerp(ship.roll, EvadeSteer.z*evadeAmt,.001f);
     //count down the time to return to normal combat. 
     evadeTimer += Time.deltaTime;
     if (evadeTimer >= evadeLength)
     {
+      EvadeSteer = Vector3.zero;
       ActiveAIState = AIState.HUNT;
     }
   }
@@ -652,7 +724,7 @@ switch(ActiveAIState)
     {
       ActiveAIState = AIState.PATROL;
     }
-    float angleToTarget = AngleTo(AITarget);
+    float angleToTarget = AngleTo(AITarget.position);
     Vector3 dirToTarget = AITarget.transform.position-transform.position;
     float distToTarget = Vector3.Distance(AITarget.position,transform.position);
     FireGuns(false);

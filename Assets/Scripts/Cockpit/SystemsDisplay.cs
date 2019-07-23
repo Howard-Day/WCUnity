@@ -84,7 +84,7 @@ public class SystemsDisplay : MonoBehaviour
             localPos.z = 0f;
             localPos *= .15f;            
             localPos += shipBase.transform.position;
-            print(localPos);
+            //print(localPos);
             if(gun.Type == LaserCannon.GunType.Laser)
             {
                 GameObject gunIcon = (GameObject)Instantiate(WIcon.Laser,localPos,Quaternion.identity,shipBase.transform);

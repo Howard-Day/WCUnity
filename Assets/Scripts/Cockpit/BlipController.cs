@@ -22,10 +22,11 @@ public class BlipController : MonoBehaviour
     {
         blipSprite = (Image)gameObject.AddComponent<Image>();
         blipSprite.material = radarRoot.blipMat;
-        transform.localScale = Vector3.one*.0009f;
+        transform.localScale = Vector3.one*.00075f;
         
     }    
-
+    int blink = 0;
+    int locked = 0;
     // Update is called once per frame
     void Update()
     {
@@ -47,6 +48,8 @@ public class BlipController : MonoBehaviour
         //y = //Mathf.Clamp01(y);
               
         float normalizedDist = Mathf.Clamp01((clipDist.x+blipDist)/clipDist.y);
+        blipSprite.color = Color.Lerp(Near,Far,normalizedDist);
+        //blipSprite.sprite = radarRoot.fighterBlips[0];
         if(ship.shipRadius >= 40)//Big contact! 
         { //use the last 3 sprites as normalized distance falloffs
             blipSprite.sprite = radarRoot.capitalBlips[Mathf.CeilToInt(normalizedDist*3)];
@@ -54,8 +57,40 @@ public class BlipController : MonoBehaviour
         else//Fighter contact! 
         { //use the last 3 sprites as normalized distance falloffs
             blipSprite.sprite = radarRoot.fighterBlips[Mathf.CeilToInt(normalizedDist*3)];
-        }               
-        blipSprite.color = Color.Lerp(Near,Far,normalizedDist);
+            //unless the target is the current target!
+            if(ship == shipMain.currentTarget)
+            {
+                if (GameObjTracker.frames % 5 == 0)
+                {
+                    if(blink == 0)
+                    {   blink = 1;
+                        blipSprite.color = Near;
+                        blipSprite.enabled = true;
+                    }
+                    else
+                    {
+                     blink = 0;
+                     blipSprite.enabled = false;
+                    }
+                    if(shipMain.currentLocked)
+                    {
+                         locked = 1;
+                    }
+                    else
+                    {
+                        locked = 0;
+                    }
+                }
+
+                blipSprite.sprite = radarRoot.fighterBlips[Mathf.CeilToInt(normalizedDist*3)];
+                if (locked > 0 )
+                {
+                    blipSprite.sprite = radarRoot.fighterBlips[0];
+                }
+            }
+        }              
+        
+
         blipSprite.transform.localEulerAngles = Vector3.zero;
         
         Vector3 losePos = new Vector3(x*radarRoot.radarMapXScale,y*radarRoot.radarMapYScale, -.0005f);
@@ -65,6 +100,7 @@ public class BlipController : MonoBehaviour
         newLocalPosition.x = (Mathf.Round(losePos.x * pixelsPerUnit) / pixelsPerUnit);
         newLocalPosition.y = (Mathf.Round(losePos.y * pixelsPerUnit) / pixelsPerUnit);
         newLocalPosition.z = losePos.z;
+
 
         blipSprite.transform.localPosition = newLocalPosition;
     }
