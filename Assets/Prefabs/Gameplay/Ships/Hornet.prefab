@@ -118,6 +118,7 @@ MonoBehaviour:
   speed: 0
   numWingmen: 0
   isDead: 0
+  isBeingShot: 0
   isLocked: 0
   currentTarget: {fileID: 0}
   currentLocked: 0

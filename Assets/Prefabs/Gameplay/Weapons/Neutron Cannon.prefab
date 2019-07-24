@@ -65,7 +65,7 @@ PrefabInstance:
     - target: {fileID: 8183780097333578742, guid: 25aa2b8dc2c23ac468e2c4e8bd236172,
         type: 3}
       propertyPath: m_Name
-      value: Neutron Cannon Variant
+      value: Neutron Cannon
       objectReference: {fileID: 0}
     - target: {fileID: 4227018905819228824, guid: 25aa2b8dc2c23ac468e2c4e8bd236172,
         type: 3}
@@ -76,7 +76,7 @@ PrefabInstance:
     - target: {fileID: 4227018905819228824, guid: 25aa2b8dc2c23ac468e2c4e8bd236172,
         type: 3}
       propertyPath: fireRate
-      value: 0.5
+      value: 0.35
       objectReference: {fileID: 0}
     - target: {fileID: 4227018905819228824, guid: 25aa2b8dc2c23ac468e2c4e8bd236172,
         type: 3}

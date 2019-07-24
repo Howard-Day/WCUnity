@@ -51,7 +51,7 @@ public class CockpitViewSwitcher : MonoBehaviour
         Shifter = gameObject.transform.parent.GetComponentInChildren<CockpitShift>();
         activeView = View.Main;
         shipMain = (ShipSettings)gameObject.GetComponentInParent<ShipSettings>();
-        CockpitBase.SetActive(false);
+        CockpitBase.SetActive(true);
         RightBase.SetActive(false);
         LeftBase.SetActive(false);
         RearBase.SetActive(false);
@@ -65,10 +65,10 @@ public class CockpitViewSwitcher : MonoBehaviour
         Billboard.SetActive(true);
         transform.localPosition = ChaseCamOffset;
         transform.localEulerAngles = new Vector3(ChaseAngle,0,0);
-        CockpitBase.SetActive(true);
-        RightBase.SetActive(true);
-        LeftBase.SetActive(true);
-        RearBase.SetActive(true);
+        CockpitBase.SetActive(false);
+        RightBase.SetActive(false);
+        LeftBase.SetActive(false);
+        RearBase.SetActive(false);
         }
         //print(shipMain.deltaRot);
         

@@ -64,7 +64,7 @@ public class TargetComsNav : MonoBehaviour
             if(currentTarget != null) //We have a target! 
             {
                 float tarDist = Vector3.Distance(shipMain.transform.position, currentTarget.transform.position);
-                tarDist = Mathf.FloorToInt(tarDist);
+                tarDist = Mathf.FloorToInt(tarDist*10)/10f;
                 TargetName.text = "Target: " + currentTarget.gameObject.name;
                 TargetDist.text = "Range: " + tarDist +"m";
 

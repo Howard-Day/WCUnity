@@ -30,7 +30,7 @@ public class Lock : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(shipMain.isLocked){
+        if(shipMain.isBeingShot){
             Blink(locked, 15);
         }
         else

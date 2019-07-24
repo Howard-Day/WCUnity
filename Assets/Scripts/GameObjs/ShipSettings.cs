@@ -80,6 +80,7 @@ public class ShipSettings : MonoBehaviour
   
   [HideInInspector] public int numWingmen = 0;
   [HideInInspector] public bool isDead = false;
+  [HideInInspector] public bool isBeingShot = false;
   [HideInInspector] public bool isLocked = false;
   [HideInInspector] public ShipSettings currentTarget;
   [HideInInspector] public bool currentLocked = false;
@@ -159,6 +160,7 @@ public class ShipSettings : MonoBehaviour
       if(lastHit == HitLoc.F) // damage the components that got hit from the front, randomly
       {
         componentDamage.ComUnit =+ Mathf.Clamp01(Random.Range(-3f,.5f));
+        componentDamage.CompSys =+ Mathf.Clamp01(Random.Range(-3f,.5f));
         componentDamage.Track =+ Mathf.Clamp01(Random.Range(-3f,.5f));
         componentDamage.EjectSys =+ Mathf.Clamp01(Random.Range(-3f,.5f));
       }
@@ -167,6 +169,7 @@ public class ShipSettings : MonoBehaviour
         componentDamage.IonDrive =+ Mathf.Clamp01(Random.Range(-3f,.5f));
         componentDamage.PowerPlant =+ Mathf.Clamp01(Random.Range(-3f,.5f));
         componentDamage.Jets =+ Mathf.Clamp01(Random.Range(-3f,.5f));
+        componentDamage.CompSys =+ Mathf.Clamp01(Random.Range(-3f,.5f));
       }
       if(lastHit == HitLoc.U || lastHit == HitLoc.D) // damage the components that got hit from the top/bottom
       {

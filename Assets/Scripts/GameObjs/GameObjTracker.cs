@@ -72,13 +72,13 @@ public class GameObjTracker : MonoBehaviour
     {
         if(KilrathiShips.Count < 3)
         {
-            int spawnIndex = Random.Range(0,2);
+            int spawnIndex = Random.Range(0,KilrathiSpawn.Length);
             GameObject ship = Instantiate(KilrathiSpawn[spawnIndex], Random.onUnitSphere*1200f,Quaternion.identity);
             ship.name = KilrathiSpawn[spawnIndex].name;
         }        
         if(ConfedShips.Count < 3)
         {
-            int spawnIndex = Random.Range(0,2);
+            int spawnIndex = Random.Range(0,ConfedSpawn.Length);
             GameObject ship = Instantiate(ConfedSpawn[Random.Range(0,1)], Random.onUnitSphere*1200f,Quaternion.identity);
             ship.name = ConfedSpawn[spawnIndex].name;
         }

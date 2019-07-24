@@ -33,10 +33,10 @@ public class AIPlayer : MonoBehaviour
     ship.pitch =  Mathf.Lerp(ship.pitch,0,.025f);;//Mathf.SmoothStep(ship.pitch,0f,.1f);
     //smooth autosteer
     Vector3 targetDir = aimAt - transform.position;
-    smoothDir = Vector3.SmoothDamp(smoothDir,targetDir,ref refDir, .25f);
+    smoothDir = Vector3.SmoothDamp(smoothDir,targetDir,ref refDir, .1f);
     
     Quaternion newDir = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(smoothDir,transform.up), turnSpeed * 7.5f * Time.fixedUnscaledDeltaTime);
-    transform.rotation = QuaternionUtil.SmoothDamp(transform.rotation,newDir, ref refRot, .125f);
+    transform.rotation = QuaternionUtil.SmoothDamp(transform.rotation,newDir, ref refRot, .1f);
   }
 
   bool rolling = false;
@@ -65,7 +65,7 @@ void FireGuns(bool fire)
     if(ship.recover >= .99f && rechargeWait <= 0.01f) // Can the ship fire? 
     {
        laserCannon.fire = fire;
-       if(logDebug){print("aactually setting state to " + fire);}
+      // if(logDebug){print("aactually setting state to " + fire);}
       if(fire)//are we firing?
       { bloodThirst = 0f; //Ahh, our bloodthirst is sated
         ship.isFiring = true; //Make sure our broadcast flag is set! 
@@ -333,7 +333,10 @@ public void DoImpatience(float maxImpatience, float howImpatient, float waitTime
   {
     impatience += Time.deltaTime*howImpatient;
   }
-
+  if (distToTarget < engageDist/2 && angleToThing < 10f && ship.capacitorLevel/ship.capacitorSize >= .666f)
+  {
+    impatience += Time.deltaTime*howImpatient*2;
+  }
   if (impatience >= maxImpatience && ship.capacitorLevel > ship.capacitorSize/3) //had enough, break off 
   {
     impatience = 0f; //We did something about it, calm down
@@ -606,7 +609,7 @@ switch(ActiveAIState)
     } 
     if(randApproach.magnitude == 0)
     {
-      randApproach = Random.onUnitSphere*AITargetShip.shipRadius*aimAccuracy/2;
+      randApproach = Random.onUnitSphere*AITargetShip.shipRadius*aimAccuracy;
     }  
     float angleToTarget = AngleTo(AITarget.position);
     Vector3 dirToTarget = AITarget.transform.position-transform.position;
@@ -640,21 +643,22 @@ switch(ActiveAIState)
     {//OH NOES, WE BEIN HUNTED SON
       ActiveAIState = AIState.REPOSITION;
     }
-    float nearDodgeBlend = 1-Mathf.Clamp01((distToTarget+15)/30);
+    float nearDodgeBlend = 1-Mathf.Clamp01((distToTarget)/40);
+    if(logDebug){print(nearDodgeBlend + " near dodge blending!");}
     Vector3 shootAt = AITarget.forward*AITargetShip.shipRadius*AILeadAmt*2*AITargetShip.throttle+DoAiming(aimAccuracy,aimUpdate);
 
-    Vector3 huntDir = AITarget.position+Vector3.Lerp(shootAt,randApproach,nearDodgeBlend);
+    Vector3 huntDir = AITarget.position;//+Vector3.Lerp(shootAt,randApproach,nearDodgeBlend);
     Debug.DrawLine(transform.position,shootAt+AITarget.position,Color.red,.01f);
     Debug.DrawLine(transform.position,transform.position+transform.forward*25,Color.yellow,.01f);
 
 
-    SteerTo(huntDir, ship.turnRate);
+    SteerTo(huntDir, ship.turnRate*2);
     float angleToShoot = AngleTo(huntDir);
 
     if (angleToShoot < aimAccuracy*2)
     {
-       if(logDebug){print("attempting to fire");}
-       AITargetShip.isLocked = true;
+       //if(logDebug){print("attempting to fire");}
+       AITargetShip.isBeingShot = true;
        FireGuns(true);
     }
 
@@ -665,22 +669,26 @@ switch(ActiveAIState)
         if(AngleTo(AITarget.position) < aimAccuracy*2)
         {
         rechargeWait = 0;
-        AITargetShip.isLocked = true;
-        if(logDebug){print("attempting to fire");}
+        AITargetShip.isBeingShot = true;
+        //if(logDebug){print("attempting to fire");}
         FireGuns(true);
         }
         else{
-          AITargetShip.isLocked = false;
+          AITargetShip.isBeingShot = false;
           FireGuns(false);
         }
         
       }
     }
 
-    if (distToTarget > engageDist*2)
+    if (distToTarget > engageDist*2 || AngleTo(AITarget.position) > 45)
     {
-      AITargetShip.isLocked = false;
+      AITargetShip.isBeingShot = false;
       FireGuns(false);
+    }
+    if (distToTarget > engageDist*1.5f)
+    {
+      ActiveAIState = AIState.ENGAGE;
     }
 
   }

@@ -5,6 +5,7 @@ using UnityEngine;
 public class CockpitDamage : MonoBehaviour
 {
     public GameObject DamageVFX;
+    public GameObject DamagedScreens;
     public GameObject ShatterVFX;
     public GameObject[] SmallMasks;
     public GameObject[] LargeMasks;
@@ -80,16 +81,17 @@ public class CockpitDamage : MonoBehaviour
             SpawnDamage(ShieldDamageZone,SmallMasks[Random.Range(0,SmallMasks.Length-1)],new Vector2(.2f,.95f), 0f,DamageVFX);
         }     
 
-        if(shipMain.componentDamage.CompSys >= .5f)
+        if(shipMain.componentDamage.CompSys >= .25f)
         {
             SpawnDamage(VDUDamageZone2,LargeMasks[Random.Range(0,LargeMasks.Length-1)],new Vector2(.2f,.95f), 0f,DamageVFX);
         }     
 
-        if(shipMain.componentDamage.Track >= .5f)
+        if(shipMain.componentDamage.Track >= .25f)
         {
             SpawnDamage(VDUDamageZone1,LargeMasks[Random.Range(0,LargeMasks.Length-1)],new Vector2(.2f,.95f), 0f,DamageVFX);
         }   
         shipMain.hitInternal = false;  
+        
     }
     // Update is called once per frame
     void Update()
@@ -99,5 +101,7 @@ public class CockpitDamage : MonoBehaviour
             //print("COCKPIT DAMAGE DETECTED In Zone " + shipMain.lastHit);
             DoDamage();
         }
+
+        DamagedScreens.GetComponent<MeshRenderer>().sharedMaterial.SetFloat("_DmgAmt", Mathf.Max(1-(shipMain._CoreStrength/shipMain.Core),shipMain.componentDamage.CompSys) );
     }
 }

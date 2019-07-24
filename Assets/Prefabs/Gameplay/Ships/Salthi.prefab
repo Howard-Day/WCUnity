@@ -27,7 +27,7 @@ Transform:
   m_GameObject: {fileID: 2289861989968530047}
   m_LocalRotation: {x: 0.25600818, y: 0.45109892, z: -0.13683935, w: 0.8439459}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 12, y: 12, z: 18}
+  m_LocalScale: {x: 12, y: 12, z: 12}
   m_Children: []
   m_Father: {fileID: 2289861991765167615}
   m_RootOrder: 0
@@ -151,21 +151,21 @@ MonoBehaviour:
     type: 3}
   turnRate: 85
   maxFuel: 1200
-  fuelBurnRate: 2.25
+  fuelBurnRate: 2.5
   invertYAxis: 0
   topSpeed: 48
-  burnSpeed: 150
-  acceleration: 4
+  burnSpeed: 136
+  acceleration: 3
   deceleration: 2
-  lag: 1
+  lag: 1.5
   AutoAvoids:
     serializedVersion: 2
     m_Bits: 3072
-  capacitorSize: 10
+  capacitorSize: 5
   rechargeRate: 6
   Armor: {x: 3, y: 2, z: 1.5, w: 1.5}
-  Shield: {x: 3, y: 3}
-  shieldRechargeRate: 4.75
+  Shield: {x: 3.5, y: 3.5}
+  shieldRechargeRate: 4
   DeathVFX:
   - {fileID: 7789471376337144576, guid: 00b8cbe808eda81448b2786984607fcd, type: 3}
   - {fileID: 4645451869083989364, guid: 492d5ef359e20bd41b86cb9433069e9d, type: 3}
@@ -196,6 +196,7 @@ MonoBehaviour:
   speed: 0
   numWingmen: 0
   isDead: 0
+  isBeingShot: 0
   isLocked: 0
   currentTarget: {fileID: 0}
   currentLocked: 0
@@ -221,9 +222,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _pitch: 0
-  _yaw: 0
+  _yaw: 1
   _roll: 0
-  _targetthrottle: 1
+  _targetthrottle: 0
   fireGuns: 0
   afterBurn: 0
 --- !u!114 &2289861991765167609
@@ -294,7 +295,7 @@ PrefabInstance:
     - target: {fileID: 1288848702199815780, guid: c4226626b13314140b9ead9c39de066a,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -4.5
+      value: -3.5
       objectReference: {fileID: 0}
     - target: {fileID: 1288848702199815780, guid: c4226626b13314140b9ead9c39de066a,
         type: 3}
@@ -369,7 +370,7 @@ PrefabInstance:
     - target: {fileID: 1288848702199815780, guid: c4226626b13314140b9ead9c39de066a,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 4.5
+      value: 3.5
       objectReference: {fileID: 0}
     - target: {fileID: 1288848702199815780, guid: c4226626b13314140b9ead9c39de066a,
         type: 3}
@@ -449,7 +450,7 @@ PrefabInstance:
     - target: {fileID: 7989437017167104985, guid: 2097a4efc6d07894fad7c4356faa2704,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -8
+      value: -10
       objectReference: {fileID: 0}
     - target: {fileID: 7989437017167104985, guid: 2097a4efc6d07894fad7c4356faa2704,
         type: 3}
@@ -501,10 +502,10 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 0}
-    - target: {fileID: 7989437017167104986, guid: 2097a4efc6d07894fad7c4356faa2704,
+    - target: {fileID: 7989437017167104996, guid: 2097a4efc6d07894fad7c4356faa2704,
         type: 3}
-      propertyPath: m_Mesh
-      value: 
+      propertyPath: m_lineWidth
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 2967868975163282982, guid: 2097a4efc6d07894fad7c4356faa2704,
         type: 3}
