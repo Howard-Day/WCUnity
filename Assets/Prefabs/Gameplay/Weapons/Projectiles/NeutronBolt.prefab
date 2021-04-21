@@ -56,6 +56,8 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -80,6 +82,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!114 &3189708683096768518
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -95,7 +98,7 @@ MonoBehaviour:
   m_templateMaterial: {fileID: 2100000, guid: 475e0bd807903bc419164f452e6d640b, type: 2}
   m_doNotOverwriteTemplateMaterialProperties: 0
   m_startPos: {x: 0, y: 0, z: 0}
-  m_endPos: {x: 0, y: 0, z: 8}
+  m_endPos: {x: 0, y: 0, z: 10}
   m_lineColor: {r: 1, g: 0.7812411, b: 0, a: 1}
   m_lineWidth: 3
   m_lightSaberFactor: 0

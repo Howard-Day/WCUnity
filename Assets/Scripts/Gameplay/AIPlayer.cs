@@ -33,10 +33,10 @@ public class AIPlayer : MonoBehaviour
     ship.pitch =  Mathf.Lerp(ship.pitch,0,.025f);;//Mathf.SmoothStep(ship.pitch,0f,.1f);
     //smooth autosteer
     Vector3 targetDir = aimAt - transform.position;
-    smoothDir = Vector3.SmoothDamp(smoothDir,targetDir,ref refDir, .1f);
+    smoothDir = Vector3.SmoothDamp(smoothDir,targetDir,ref refDir, .2f);
     
-    Quaternion newDir = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(smoothDir,transform.up), turnSpeed * 7.5f * Time.fixedUnscaledDeltaTime);
-    transform.rotation = QuaternionUtil.SmoothDamp(transform.rotation,newDir, ref refRot, .1f);
+    Quaternion newDir = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(smoothDir,transform.up), turnSpeed * 15f * Time.fixedUnscaledDeltaTime);
+    transform.rotation = QuaternionUtil.SmoothDamp(transform.rotation,newDir, ref refRot, .2f);
   }
 
   bool rolling = false;
@@ -186,7 +186,7 @@ void RollControl(float rollOn)
 
 void NoviceAI()
 {
-  AILeadAmt = .25f;
+  AILeadAmt = 1f;
   engageDist = 150f;
   aimAccuracy = 10f;
   aimUpdate = 60;
@@ -232,7 +232,7 @@ void NoviceAI()
 
 void DefaultAI()
 {
-  AILeadAmt = .5f;
+  AILeadAmt = 1.25f;
   engageDist = 175;
   aimAccuracy = 6f;
   aimUpdate = 30;
@@ -275,7 +275,7 @@ void DefaultAI()
 }
 void AceAI()
 {
-  AILeadAmt = 1f;
+  AILeadAmt = 1.5f;
   engageDist = 200;
   aimAccuracy = 4f;
   aimUpdate = 5;
@@ -310,7 +310,14 @@ void AceAI()
       ActiveAIState = AIState.REPOSITION;
     }
   }
-  
+  if(ActiveAIState == AIState.HUNT || ActiveAIState == AIState.REPOSITION )
+  {
+    AITargetShip.isLocked = true;
+  }
+  else
+  {
+    AITargetShip.isLocked = false;
+  }
   DoImpatience(2f, .75f, 2.5f);
   DoAIStates();
   RollControl(Random.Range(-1500f,1f));
@@ -643,16 +650,21 @@ switch(ActiveAIState)
     {//OH NOES, WE BEIN HUNTED SON
       ActiveAIState = AIState.REPOSITION;
     }
-    float nearDodgeBlend = 1-Mathf.Clamp01((distToTarget)/40);
+    float nearDodgeBlend = 1-Mathf.Clamp01((distToTarget)/50);
     if(logDebug){print(nearDodgeBlend + " near dodge blending!");}
-    Vector3 shootAt = AITarget.forward*AITargetShip.shipRadius*AILeadAmt*2*AITargetShip.throttle+DoAiming(aimAccuracy,aimUpdate);
+    Vector3 shootAt = AITarget.forward*AITargetShip.shipRadius*AILeadAmt*6f*(AITargetShip.speed/100)+DoAiming(aimAccuracy/2,aimUpdate);
 
-    Vector3 huntDir = AITarget.position;//+Vector3.Lerp(shootAt,randApproach,nearDodgeBlend);
+    if(AISkillLevel == AILevel.ACE)
+    {
+      shootAt *= Mathf.Clamp01(distToTarget/engageDist)*2;
+    }
+
+    Vector3 huntDir = AITarget.position+Vector3.Lerp(shootAt,randApproach,nearDodgeBlend);
     Debug.DrawLine(transform.position,shootAt+AITarget.position,Color.red,.01f);
     Debug.DrawLine(transform.position,transform.position+transform.forward*25,Color.yellow,.01f);
 
 
-    SteerTo(huntDir, ship.turnRate*2);
+    SteerTo(huntDir, ship.turnRate);
     float angleToShoot = AngleTo(huntDir);
 
     if (angleToShoot < aimAccuracy*2)
@@ -664,9 +676,9 @@ switch(ActiveAIState)
 
     else
     {
-      if (distToTarget < engageDist/5) //we're close, take the chance! 
+      if (distToTarget < engageDist/6) //we're close, take the chance! 
       { 
-        if(AngleTo(AITarget.position) < aimAccuracy*2)
+        if(AngleTo(AITarget.position) < aimAccuracy*3)
         {
         rechargeWait = 0;
         AITargetShip.isBeingShot = true;

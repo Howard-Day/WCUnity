@@ -65,7 +65,7 @@ public class ShieldDisplay : MonoBehaviour
         }
         else{ RearLight.isOn = false;}
         
-        if(shipMain._CoreStrength < shipMain.Core)
+        if(shipMain._CoreStrength < shipMain.CoreMax)
         {
             Blink(CoreLight, 10);
             if(FrontShield.normalizedValue < .5f || RearShield.normalizedValue < .5f)

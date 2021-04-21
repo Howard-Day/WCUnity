@@ -4,6 +4,7 @@ Shader "Unlit/ScreenDamageDistort"
 {
     Properties {
         _MainTex ("Texture", 2D) = "white" {}
+        _StaticColor ("Static Color", Color) = (1,1,1,1)
         _DmgAmt ("Damage Amount", Range(0, 1)) = 0
         _SpeedU ("Speed U", Range(0, 1)) = 0
         _SpeedV ("Speed V", Range(0, 1)) = 0
@@ -37,7 +38,7 @@ Shader "Unlit/ScreenDamageDistort"
             half _SpeedV;
             half _OffsetU;
             half _OffsetV;
- 
+            fixed4 _StaticColor;
             v2f vert(appdata_base v) {
                 v2f o;
                 o.pos = UnityObjectToClipPos(v.vertex);
@@ -47,8 +48,9 @@ Shader "Unlit/ScreenDamageDistort"
             }
  
             half4 frag(v2f i) : COLOR {
-                _OffsetU *=.02*saturate(_DmgAmt*3);
-                _OffsetV *=.02*saturate(_DmgAmt*3);
+                _DmgAmt *= 4;
+                _OffsetU *=.05*saturate(_DmgAmt*3);
+                _OffsetV *=.15*saturate(_DmgAmt*3);
                 _SpeedU *= 50;
                 _SpeedV *= 50;
                 half uv2X = i.uv.x/20+_Time.x*20;
@@ -59,11 +61,13 @@ Shader "Unlit/ScreenDamageDistort"
                 fixed4 col2 = tex2D(_MainTex, fixed2(uv2X,uv2Y) );
                 col2.b = saturate(col2.b-.25)*1.25;
                 fixed4 col = tex2D(_MainTex, i.uv*(1-col2.g));
-                i.grabPos.x += ((col.r*_OffsetU)-_OffsetU/2)*col2.b;//sin((_Time.y + i.grabPos.y) * _Intensity)/500;
+                i.grabPos.x += ((col2.g*_OffsetU)-_OffsetU/2)*col2.b;//sin((_Time.y + i.grabPos.y) * _Intensity)/500;
                 i.grabPos.y += ((col.g*_OffsetV)-_OffsetV/2)*col2.b;
                 fixed4 color = tex2Dproj(_GrabTexture, UNITY_PROJ_COORD(i.grabPos));
-                color.rgb += (col.r-.75)*_DmgAmt+(col2.r-.5)*_DmgAmt;
-                col.b = saturate( ((col.b)*200)-(_DmgAmt)*200 );
+                //color.rgb *= saturate((col.r*12)*(1-_DmgAmt));
+                color.rgb += ((col.g-.5)*_DmgAmt+(col2.r-.5)*_DmgAmt)*_StaticColor.rgb;
+                color.rgb *= lerp(1,_StaticColor.rgb,_DmgAmt/4);
+                col.b = saturate( ((col.b)*200)-(_DmgAmt)*300 );
                 color.a = col.b;
                 //color.rgb = col2.b;
                 return color;

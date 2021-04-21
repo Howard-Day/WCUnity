@@ -32,6 +32,9 @@ TextureImporter:
   - first:
       213: -4973505997022854714
     second: TRGT_Salthi
+  - first:
+      213: 3007919691619370033
+    second: SYS_Dralthi
   externalObjects: {}
   serializedVersion: 10
   mipmaps:
@@ -345,6 +348,27 @@ TextureImporter:
       bones: []
       spriteID: 70a3a5c8699aa73438bd75f8a73e0cf8
       internalID: -4973505997022854714
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SYS_Dralthi
+      rect:
+        serializedVersion: 2
+        x: 895
+        y: 791
+        width: 129
+        height: 121
+      alignment: 9
+      pivot: {x: 0.4978633, y: 0.5597378}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 553fe9f89b35dd64daf1c30cd772a188
+      internalID: 3007919691619370033
       vertices: []
       indices: 
       edges: []

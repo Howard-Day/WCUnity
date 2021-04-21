@@ -54,6 +54,8 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -78,6 +80,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &2289861991765167612
 GameObject:
   m_ObjectHideFlags: 0
@@ -128,7 +131,7 @@ SphereCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 6
+  m_Radius: 8
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &2289861991765167608
 MonoBehaviour:
@@ -181,7 +184,7 @@ MonoBehaviour:
   shipRadius: 0
   _ArmorMax: {x: 0, y: 0, z: 0, w: 0}
   _ShieldMax: {x: 0, y: 0}
-  Core: 0
+  CoreMax: 0
   hitInAss: 0
   _CoreStrength: 0
   _Fuel: 0
@@ -287,10 +290,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 2289861991765167615}
     m_Modifications:
-    - target: {fileID: 1288848702199815781, guid: c4226626b13314140b9ead9c39de066a,
+    - target: {fileID: 1288848702199815780, guid: c4226626b13314140b9ead9c39de066a,
         type: 3}
-      propertyPath: m_Name
-      value: Photon Blaster
+      propertyPath: m_RootOrder
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 1288848702199815780, guid: c4226626b13314140b9ead9c39de066a,
         type: 3}
@@ -309,6 +312,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1288848702199815780, guid: c4226626b13314140b9ead9c39de066a,
         type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.999962
+      objectReference: {fileID: 0}
+    - target: {fileID: 1288848702199815780, guid: c4226626b13314140b9ead9c39de066a,
+        type: 3}
       propertyPath: m_LocalRotation.x
       value: 0
       objectReference: {fileID: 0}
@@ -321,16 +329,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalRotation.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1288848702199815780, guid: c4226626b13314140b9ead9c39de066a,
-        type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 0.999962
-      objectReference: {fileID: 0}
-    - target: {fileID: 1288848702199815780, guid: c4226626b13314140b9ead9c39de066a,
-        type: 3}
-      propertyPath: m_RootOrder
-      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 1288848702199815780, guid: c4226626b13314140b9ead9c39de066a,
         type: 3}
@@ -347,6 +345,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1288848702199815781, guid: c4226626b13314140b9ead9c39de066a,
+        type: 3}
+      propertyPath: m_Name
+      value: Photon Blaster
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c4226626b13314140b9ead9c39de066a, type: 3}
 --- !u!4 &216686168421211944 stripped
@@ -362,10 +365,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 2289861991765167615}
     m_Modifications:
-    - target: {fileID: 1288848702199815781, guid: c4226626b13314140b9ead9c39de066a,
+    - target: {fileID: 1288848702199815780, guid: c4226626b13314140b9ead9c39de066a,
         type: 3}
-      propertyPath: m_Name
-      value: Photon Blaster
+      propertyPath: m_RootOrder
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 1288848702199815780, guid: c4226626b13314140b9ead9c39de066a,
         type: 3}
@@ -384,6 +387,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1288848702199815780, guid: c4226626b13314140b9ead9c39de066a,
         type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.999962
+      objectReference: {fileID: 0}
+    - target: {fileID: 1288848702199815780, guid: c4226626b13314140b9ead9c39de066a,
+        type: 3}
       propertyPath: m_LocalRotation.x
       value: 0
       objectReference: {fileID: 0}
@@ -396,16 +404,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalRotation.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1288848702199815780, guid: c4226626b13314140b9ead9c39de066a,
-        type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 0.999962
-      objectReference: {fileID: 0}
-    - target: {fileID: 1288848702199815780, guid: c4226626b13314140b9ead9c39de066a,
-        type: 3}
-      propertyPath: m_RootOrder
-      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 1288848702199815780, guid: c4226626b13314140b9ead9c39de066a,
         type: 3}
@@ -422,6 +420,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1288848702199815781, guid: c4226626b13314140b9ead9c39de066a,
+        type: 3}
+      propertyPath: m_Name
+      value: Photon Blaster
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c4226626b13314140b9ead9c39de066a, type: 3}
 --- !u!4 &544092639078229689 stripped
@@ -437,6 +440,16 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 2289861991765167615}
     m_Modifications:
+    - target: {fileID: 2967868975163282982, guid: 2097a4efc6d07894fad7c4356faa2704,
+        type: 3}
+      propertyPath: FullThrottle
+      value: 
+      objectReference: {fileID: 2800000, guid: 05454442705c0e846bbca93b57828394, type: 3}
+    - target: {fileID: 7989437017167104985, guid: 2097a4efc6d07894fad7c4356faa2704,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7989437017167104985, guid: 2097a4efc6d07894fad7c4356faa2704,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -454,6 +467,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7989437017167104985, guid: 2097a4efc6d07894fad7c4356faa2704,
         type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7989437017167104985, guid: 2097a4efc6d07894fad7c4356faa2704,
+        type: 3}
       propertyPath: m_LocalRotation.x
       value: -0
       objectReference: {fileID: 0}
@@ -466,16 +484,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalRotation.z
       value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7989437017167104985, guid: 2097a4efc6d07894fad7c4356faa2704,
-        type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7989437017167104985, guid: 2097a4efc6d07894fad7c4356faa2704,
-        type: 3}
-      propertyPath: m_RootOrder
-      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7989437017167104985, guid: 2097a4efc6d07894fad7c4356faa2704,
         type: 3}
@@ -492,11 +500,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 7989437017167104997, guid: 2097a4efc6d07894fad7c4356faa2704,
-        type: 3}
-      propertyPath: m_Name
-      value: EngineFlare
-      objectReference: {fileID: 0}
     - target: {fileID: 7989437017167104987, guid: 2097a4efc6d07894fad7c4356faa2704,
         type: 3}
       propertyPath: m_Materials.Array.data[0]
@@ -507,11 +510,11 @@ PrefabInstance:
       propertyPath: m_lineWidth
       value: 4
       objectReference: {fileID: 0}
-    - target: {fileID: 2967868975163282982, guid: 2097a4efc6d07894fad7c4356faa2704,
+    - target: {fileID: 7989437017167104997, guid: 2097a4efc6d07894fad7c4356faa2704,
         type: 3}
-      propertyPath: FullThrottle
-      value: 
-      objectReference: {fileID: 2800000, guid: 05454442705c0e846bbca93b57828394, type: 3}
+      propertyPath: m_Name
+      value: EngineFlare
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2097a4efc6d07894fad7c4356faa2704, type: 3}
 --- !u!4 &979894190675649358 stripped

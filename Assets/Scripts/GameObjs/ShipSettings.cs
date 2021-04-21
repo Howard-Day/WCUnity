@@ -48,7 +48,7 @@ public class ShipSettings : MonoBehaviour
   EngineFlare[] engineFlares;
   [HideInInspector] public Vector4 _ArmorMax;
   [HideInInspector] public Vector2 _ShieldMax;
-  [HideInInspector] public float Core;
+  [HideInInspector] public float CoreMax;
 
   [HideInInspector] public bool hitInAss = false; //this is important information, for a lot of reasons.
   public class DamageComponents
@@ -105,7 +105,7 @@ public class ShipSettings : MonoBehaviour
     _ArmorMax = Armor; //Give us something to compare to later on
     _ShieldMax = Shield; //same
     _CoreStrength = (Armor.x+Armor.y+Armor.z+Armor.w+(Shield.x+Shield.y)/2)/3; //Generalized fomula for the unarmored mechanical core of the ship
-    Core = _CoreStrength;
+    CoreMax = _CoreStrength;
   }
 
   // late update to give human or AI player scripts a chance to set values first
@@ -125,6 +125,20 @@ public class ShipSettings : MonoBehaviour
     //{ DoBounce(.5f,shipRadius/2);}
     //else
     DoBounce(.5f,shipRadius/16f);
+    TargetManage();
+
+  }
+
+  void TargetManage()
+  {
+    if (currentTarget.isLocked)
+    {
+      currentLocked = true;
+    }
+    else
+    {
+      currentLocked = false;
+    }
   }
 
   void DoFuel()
@@ -134,11 +148,11 @@ public class ShipSettings : MonoBehaviour
     { 
       if(!isAfterburning)
       {//Do normal fuel drain based on throttle
-        _Fuel -= normalizedThrottle*Time.deltaTime*2f;
+        _Fuel -= normalizedThrottle*Time.deltaTime*4f;
       }
       else// Now we're burning fuel to GO VERY FAST
       {
-        _Fuel -= fuelBurnRate*Time.deltaTime*2f;
+        _Fuel -= fuelBurnRate*Time.deltaTime*5f;
       }
     }
     else //Fuck, basically just a max coasting speed. Good fucking luck, cowboy
@@ -252,7 +266,7 @@ public class ShipSettings : MonoBehaviour
           hitShip.DoDamage(transform.position,(speed+hitShip.speed)*.01f*weightDamageThem);
           //print("RAM Detected:" + name +" has rammed " + hitShip.name + " at relative speeds of " + speed +" and " + hitShip.speed+
           //" and will be damaged " + (speed+hitShip.speed)*.05f*weightDamage + "to " + (speed+hitShip.speed)*.05f*weightDamageThem);
-          InternalDamage(true); 
+          InternalDamage(false); 
           hitShip.recover = 0f;
           hitShip.BouncePush = BouncePush;
           hitShip.BounceDir = BounceDir;
@@ -452,7 +466,7 @@ public class ShipSettings : MonoBehaviour
     if(Shield.y < _ShieldMax.y)
       Shield.y += shieldRechargeRate*Time.deltaTime/20;
     //Should do component damage here when the corestrength is low. Ignore for now
-    if(_CoreStrength < Core*.666f)
+    if(_CoreStrength < CoreMax*.666f)
     {
       if(!Trail)
       {

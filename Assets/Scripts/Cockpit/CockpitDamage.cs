@@ -5,7 +5,6 @@ using UnityEngine;
 public class CockpitDamage : MonoBehaviour
 {
     public GameObject DamageVFX;
-    public GameObject DamagedScreens;
     public GameObject ShatterVFX;
     public GameObject[] SmallMasks;
     public GameObject[] LargeMasks;
@@ -21,7 +20,11 @@ public class CockpitDamage : MonoBehaviour
     public Transform VDUDamageZone2;
     public Transform RadarDamageZone;
     public Transform ShieldDamageZone;
-    
+    public GameObject DamagedScreenCore;
+    public GameObject DamagedScreenComp;
+    public GameObject DamagedScreenRadar;
+    public GameObject DamagedScreenVDU1;
+    public GameObject DamagedScreenVDU2;
     ShipSettings shipMain;
 
     Vector3 flattenVec = new Vector3(1,.5f,0);
@@ -102,6 +105,10 @@ public class CockpitDamage : MonoBehaviour
             DoDamage();
         }
 
-        DamagedScreens.GetComponent<MeshRenderer>().sharedMaterial.SetFloat("_DmgAmt", Mathf.Max(1-(shipMain._CoreStrength/shipMain.Core),shipMain.componentDamage.CompSys) );
+        DamagedScreenCore.GetComponent<MeshRenderer>().material.SetFloat("_DmgAmt", 1-(shipMain._CoreStrength/shipMain.CoreMax));
+        DamagedScreenComp.GetComponent<MeshRenderer>().material.SetFloat("_DmgAmt", Mathf.Max((1-(shipMain._CoreStrength/shipMain.CoreMax))/2,shipMain.componentDamage.CompSys));
+        DamagedScreenRadar.GetComponent<MeshRenderer>().material.SetFloat("_DmgAmt", Mathf.Max((1-(shipMain._CoreStrength/shipMain.CoreMax))/2,shipMain.componentDamage.Track));
+        DamagedScreenVDU1.GetComponent<MeshRenderer>().material.SetFloat("_DmgAmt", Mathf.Max((1-(shipMain._CoreStrength/shipMain.CoreMax))/2,shipMain.componentDamage.CompSys));
+        DamagedScreenVDU2.GetComponent<MeshRenderer>().material.SetFloat("_DmgAmt", Mathf.Max((1-(shipMain._CoreStrength/shipMain.CoreMax))/4,shipMain.componentDamage.CompSys/2,shipMain.componentDamage.Track/2,shipMain.componentDamage.ComUnit));
     }
 }

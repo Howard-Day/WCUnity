@@ -7,6 +7,61 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 236246741698921918, guid: adcaf87f2ba126246a6a9e28511b5b38,
+        type: 3}
+      propertyPath: range
+      value: 4000
+      objectReference: {fileID: 0}
+    - target: {fileID: 236246741698921918, guid: adcaf87f2ba126246a6a9e28511b5b38,
+        type: 3}
+      propertyPath: speed
+      value: 275
+      objectReference: {fileID: 0}
+    - target: {fileID: 236246741698921918, guid: adcaf87f2ba126246a6a9e28511b5b38,
+        type: 3}
+      propertyPath: damage
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 236246741698921918, guid: adcaf87f2ba126246a6a9e28511b5b38,
+        type: 3}
+      propertyPath: shootMask.m_Bits
+      value: 3072
+      objectReference: {fileID: 0}
+    - target: {fileID: 3189708683096768518, guid: adcaf87f2ba126246a6a9e28511b5b38,
+        type: 3}
+      propertyPath: m_endPos.z
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 3189708683096768518, guid: adcaf87f2ba126246a6a9e28511b5b38,
+        type: 3}
+      propertyPath: m_lineWidth
+      value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3189708683096768518, guid: adcaf87f2ba126246a6a9e28511b5b38,
+        type: 3}
+      propertyPath: m_templateMaterial
+      value: 
+      objectReference: {fileID: 2100000, guid: e27a687edd2bd674b83d55687fbedc4a, type: 2}
+    - target: {fileID: 3189708683096768519, guid: adcaf87f2ba126246a6a9e28511b5b38,
+        type: 3}
+      propertyPath: m_Name
+      value: PhotonBlast
+      objectReference: {fileID: 0}
+    - target: {fileID: 3189708683096768568, guid: adcaf87f2ba126246a6a9e28511b5b38,
+        type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 3189708683096768569, guid: adcaf87f2ba126246a6a9e28511b5b38,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 3189708683096768571, guid: adcaf87f2ba126246a6a9e28511b5b38,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3189708683096768571, guid: adcaf87f2ba126246a6a9e28511b5b38,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -21,6 +76,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalPosition.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3189708683096768571, guid: adcaf87f2ba126246a6a9e28511b5b38,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3189708683096768571, guid: adcaf87f2ba126246a6a9e28511b5b38,
         type: 3}
@@ -39,16 +99,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3189708683096768571, guid: adcaf87f2ba126246a6a9e28511b5b38,
         type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3189708683096768571, guid: adcaf87f2ba126246a6a9e28511b5b38,
-        type: 3}
-      propertyPath: m_RootOrder
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3189708683096768571, guid: adcaf87f2ba126246a6a9e28511b5b38,
-        type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 0
       objectReference: {fileID: 0}
@@ -61,56 +111,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3189708683096768519, guid: adcaf87f2ba126246a6a9e28511b5b38,
-        type: 3}
-      propertyPath: m_Name
-      value: PhotonBlast
-      objectReference: {fileID: 0}
-    - target: {fileID: 3189708683096768568, guid: adcaf87f2ba126246a6a9e28511b5b38,
-        type: 3}
-      propertyPath: m_Mesh
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 3189708683096768569, guid: adcaf87f2ba126246a6a9e28511b5b38,
-        type: 3}
-      propertyPath: m_Materials.Array.data[0]
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 3189708683096768518, guid: adcaf87f2ba126246a6a9e28511b5b38,
-        type: 3}
-      propertyPath: m_templateMaterial
-      value: 
-      objectReference: {fileID: 2100000, guid: e27a687edd2bd674b83d55687fbedc4a, type: 2}
-    - target: {fileID: 3189708683096768518, guid: adcaf87f2ba126246a6a9e28511b5b38,
-        type: 3}
-      propertyPath: m_lineWidth
-      value: 1.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 3189708683096768518, guid: adcaf87f2ba126246a6a9e28511b5b38,
-        type: 3}
-      propertyPath: m_endPos.z
-      value: 7
-      objectReference: {fileID: 0}
-    - target: {fileID: 236246741698921918, guid: adcaf87f2ba126246a6a9e28511b5b38,
-        type: 3}
-      propertyPath: speed
-      value: 275
-      objectReference: {fileID: 0}
-    - target: {fileID: 236246741698921918, guid: adcaf87f2ba126246a6a9e28511b5b38,
-        type: 3}
-      propertyPath: damage
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 236246741698921918, guid: adcaf87f2ba126246a6a9e28511b5b38,
-        type: 3}
-      propertyPath: range
-      value: 4000
-      objectReference: {fileID: 0}
-    - target: {fileID: 236246741698921918, guid: adcaf87f2ba126246a6a9e28511b5b38,
-        type: 3}
-      propertyPath: shootMask.m_Bits
-      value: 3072
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: adcaf87f2ba126246a6a9e28511b5b38, type: 3}

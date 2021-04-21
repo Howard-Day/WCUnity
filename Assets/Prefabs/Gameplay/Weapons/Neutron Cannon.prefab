@@ -83,5 +83,10 @@ PrefabInstance:
       propertyPath: powerDrain
       value: 3.5
       objectReference: {fileID: 0}
+    - target: {fileID: 4227018905819228824, guid: 25aa2b8dc2c23ac468e2c4e8bd236172,
+        type: 3}
+      propertyPath: gunRange
+      value: 250
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 25aa2b8dc2c23ac468e2c4e8bd236172, type: 3}

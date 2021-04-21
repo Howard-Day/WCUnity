@@ -12,6 +12,8 @@ public class TargetComsNav : MonoBehaviour
     public VDUMode Mode;
     [Header("Target Display Settings")]
     public Text TargetText;
+    public Color TextColor;
+    public Color TextColorLocked;
     public Text TargetName;
     public Text TargetDist;
     public Sprite GenericVDU;
@@ -28,6 +30,8 @@ public class TargetComsNav : MonoBehaviour
     ShipSettings shipMain;
 
     ShipSettings currentTarget = null;
+
+    Color textColor;
     
     // Start is called before the first frame update
     void Start()
@@ -37,6 +41,7 @@ public class TargetComsNav : MonoBehaviour
         DamagedRight.SetActive(false);
         DamagedLeft.SetActive(false);
         DamagedFront.SetActive(false);
+        textColor = TargetText.color;
     }
     void DoTarget()
     {
@@ -107,6 +112,24 @@ public class TargetComsNav : MonoBehaviour
                 {
                     ShieldBack.GetComponent<SpriteRenderer>().sprite = shieldSprites[SRear];
                     ShieldBack.SetActive(true);
+                }
+                if (currentTarget.isLocked)
+                {
+                    TargetText.text = "LOCKED TARGET";
+                    TargetText.color = TextColorLocked;
+                }
+                else
+                {
+                    TargetText.text = "AUTO TARGETING";
+                    TargetText.color = TextColor;
+                }
+                if(tarDist > shipMain.GetComponentInChildren<LaserCannon>().gunRange)
+                {
+                    TargetDist.color = TextColorLocked; 
+                }
+                else
+                {
+                     TargetDist.color = TextColor;
                 }
 
             }

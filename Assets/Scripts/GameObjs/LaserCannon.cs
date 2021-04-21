@@ -10,7 +10,7 @@ public class LaserCannon : MonoBehaviour
   [SerializeField] Transform laserBoltPrefab = null;
   [SerializeField] float fireRate = .4f;
   [SerializeField] float powerDrain = 2.1f;
-  
+  public float gunRange;
   float cooldown = 0f;
   ShipSettings MainShip;
 
