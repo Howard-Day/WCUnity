@@ -10,8 +10,8 @@ public class RandomInt : MonoBehaviour
     public int maxAmt;
     public int frameskip;
 
-    int lastGenInt;
-    int NumberGen (int min, int max, int skip)
+    int? lastGenInt;
+    int? NumberGen (int min, int max, int skip)
     {
         if(GameObjTracker.frames % skip == 0)
         {
@@ -30,6 +30,6 @@ public class RandomInt : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-       RandInt.text = NumberGen(minAmt,maxAmt,frameskip).ToString("D"+leadingDigits); 
+       RandInt.text = NumberGen(minAmt,maxAmt,frameskip).Value.ToString("D"+leadingDigits); 
     }
 }

@@ -62,6 +62,8 @@ public class SystemsDisplay : MonoBehaviour
         gunIcons = new List<GameObject>();
         
     }
+    bool wRegSuccess = false;
+
     public void RegisterWeapons()
     {
         if(gunIcons.Count > 0)
@@ -75,6 +77,11 @@ public class SystemsDisplay : MonoBehaviour
         foreach (LaserCannon gun in guns)
         {
             Vector3 localPos = gun.gameObject.transform.localPosition/shipMain.shipRadius;
+            if (localPos.magnitude >= Mathf.Infinity)
+            {
+                wRegSuccess = false;
+                return;
+            }
             bool xFlip = false;
             localPos.y = localPos.z;
             if (localPos.x > 0)
@@ -93,6 +100,10 @@ public class SystemsDisplay : MonoBehaviour
                 gunIcons.Add(gunIcon);
             }
         }
+        if (gunIcons.Count > 0)
+        {
+            wRegSuccess = true;
+        }
     }
     
     // Update is called once per frame
@@ -102,7 +113,7 @@ public class SystemsDisplay : MonoBehaviour
     {
         case MFDMode.Weapon:
         {
-            if(gunIcons.Count == 0)
+            if(gunIcons.Count == 0 || !wRegSuccess)
             {
                 RegisterWeapons();      
             }

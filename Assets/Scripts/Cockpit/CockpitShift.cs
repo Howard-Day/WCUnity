@@ -45,8 +45,11 @@ public class CockpitShift : MonoBehaviour
         PrePixelLocked = new Vector3(SmoothShift.x*MaxXShift,SmoothShift.y*MaxYShift, CockpitRoot.localPosition.z);
 
         if (temp_shake_intensity > 0){
-            SmoothShake = Vector3.SmoothDamp(SmoothShake,new Vector3(Random.insideUnitSphere.x,Random.insideUnitSphere.y,0) * temp_shake_intensity,ref smoothRef,.035f); 
+            SmoothShake = Vector3.SmoothDamp(SmoothShake,new Vector3(Random.insideUnitSphere.x,Random.insideUnitSphere.y,0) * temp_shake_intensity,ref smoothRef,.125f); 
             PrePixelLocked += SmoothShake;
+            PrePixelLocked.x = Mathf.Clamp(PrePixelLocked.x, -1f, 1f);
+            PrePixelLocked.y = Mathf.Clamp(PrePixelLocked.y, -1f, 1f);
+
             temp_shake_intensity -= shake_decay;
         }
         if(shipMain.isAfterburning)
@@ -64,7 +67,7 @@ public class CockpitShift : MonoBehaviour
 		}
 	}*/
 	void AfterburnShake(){
-		temp_shake_intensity = .05f;
+		temp_shake_intensity = .1f;
         shake_decay = 0.01f;
 	}
 }

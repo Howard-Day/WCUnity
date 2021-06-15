@@ -30,7 +30,7 @@ public class RandomSliders : MonoBehaviour
         if(GameObjTracker.frames % frameSkip ==0)
         {
             int chooseRand = Random.Range(0,Sliders.Length);
-            SlidersTarget[chooseRand] = Random.RandomRange(0,SlidersMax[chooseRand]);
+            SlidersTarget[chooseRand] = Random.Range(0,SlidersMax[chooseRand]);
         }
         for(int i = 0; i < Sliders.Length; i++)
         {

@@ -164,6 +164,7 @@ MonoBehaviour:
   AutoAvoids:
     serializedVersion: 2
     m_Bits: 3072
+  deltaSmooth: 0.05
   capacitorSize: 5
   rechargeRate: 6
   Armor: {x: 3, y: 2, z: 1.5, w: 1.5}
@@ -171,8 +172,6 @@ MonoBehaviour:
   shieldRechargeRate: 4
   DeathVFX:
   - {fileID: 7789471376337144576, guid: 00b8cbe808eda81448b2786984607fcd, type: 3}
-  - {fileID: 4645451869083989364, guid: 492d5ef359e20bd41b86cb9433069e9d, type: 3}
-  - {fileID: 4645451869083989364, guid: 889974a88f8e43d48b60c07bb3acd59b, type: 3}
   DeathTrailVFX: {fileID: 3707795204099303826, guid: d2bce69b83d3773418e13260152f0018,
     type: 3}
   InternalDamageVFX: {fileID: 3380178483321881586, guid: cb28e2723bc0af54385c269e47a6f747,
@@ -210,7 +209,7 @@ MonoBehaviour:
   BouncePush: 0
   lastHit: 0
   oldRot: {x: 0, y: 0, z: 0, w: 0}
-  deltaRot: {x: 0, y: 0, z: 0}
+  rotDelta: {x: 0, y: 0, z: 0}
   throttle: 0
 --- !u!114 &2844008454367371773
 MonoBehaviour:
@@ -249,8 +248,10 @@ MonoBehaviour:
   AISkillLevel: 1
   AITarget: {fileID: 0}
   Tracker: {fileID: 0}
+  doDebugOrient: 0
+  debugOrient: {fileID: 0}
   impatience: 0
-  angleToThing: 0
+  angleToTarget: 0
 --- !u!114 &2289861991765167614
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -6,6 +6,7 @@ Shader "Pixel Art/Indexing" {
         _Color ("Color", COLOR) = (1,1,1,1)
         _LUTTex ("Texture", 2D) = "white" {} 
         _LUTSize ("LUT Size", float) = 16
+        _LUTBlend ("LUT Blend", Range(0,1) ) = 1
     }
     
     SubShader {
@@ -23,6 +24,7 @@ Shader "Pixel Art/Indexing" {
                 uniform float4 _MainTex_ST;
                 uniform sampler2D _LUTTex;
               	uniform float _LUTSize;
+                uniform float _LUTBlend;
               	float4 _Color;
                 struct a2v  {
                     float4 vertex : POSITION;
@@ -87,6 +89,8 @@ Shader "Pixel Art/Indexing" {
                     //source.rgb *= (_Color.rgb/2)+.5;
                     source.rgb = saturate(source.rgb);
                     c.rgb = sampleAs3DTexture(_LUTTex, scale*source+offset,_LUTSize);
+                    c.rgb = lerp(source.rgb,c.rgb, _LUTBlend);
+
                     c.a = 1;
                     return c;
                     

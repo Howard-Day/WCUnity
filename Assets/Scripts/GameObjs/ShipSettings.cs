@@ -24,7 +24,10 @@ public class ShipSettings : MonoBehaviour
   [SerializeField] float deceleration = 1f;
   [SerializeField] float lag = 1f;
   [SerializeField] public LayerMask AutoAvoids;
-  [Header("Weapon Settings")]
+  [Header("Rotation Delta")]
+  [SerializeField] public float deltaSmooth = .2f;
+
+    [Header("Weapon Settings")]
   [SerializeField] public float capacitorSize = 50f;
   [SerializeField] float rechargeRate = 1f;
   
@@ -108,37 +111,40 @@ public class ShipSettings : MonoBehaviour
     CoreMax = _CoreStrength;
   }
 
-  // late update to give human or AI player scripts a chance to set values first
-  void LateUpdate()
-  {
-    if(!isDead)
+    // late update to give human or AI player scripts a chance to set values first
+    void LateUpdate()
     {
-    Steer();
-    DoThrottle();
-    Power();
-    }
-    DoHealth();
-    DoFuel();
-    AvoidObstacles(.75f,shipRadius*4f);
-    //Collision Detecting, but make sure the full collision is only being used if the ship is afterburning, simple manuvers won't do it as much.
-    //if(isAfterburning)
-    //{ DoBounce(.5f,shipRadius/2);}
-    //else
-    DoBounce(.5f,shipRadius/16f);
-    TargetManage();
+        if (!isDead)
+        {
+            Steer();
+            DoThrottle();
+            Power();
+        }
+        DoHealth();
+        DoFuel();
+        AvoidObstacles(1f, shipRadius * 3f);
+        //Collision Detecting, but make sure the full collision is only being used if the ship is afterburning, simple manuvers won't do it as much.
+        //if(isAfterburning)
+        //{ DoBounce(.5f,shipRadius/2);}
+        //else
+        DoBounce(.5f, shipRadius / 32f);
+        TargetManage();
 
-  }
+    }
 
-  void TargetManage()
-  {
-    if (currentTarget.isLocked)
+    void TargetManage()
     {
-      currentLocked = true;
-    }
-    else
-    {
-      currentLocked = false;
-    }
+        if (currentTarget != null)
+        { 
+            if (currentTarget.isLocked)
+            {
+                currentLocked = true;
+            }
+            else
+            {
+                currentLocked = false;
+            }
+        }
   }
 
   void DoFuel()
@@ -231,10 +237,20 @@ public class ShipSettings : MonoBehaviour
           //magPush = Mathf.SmoothStep(magPush,0,.5f);
           //HEAVE AWAY, BOIS
           transform.position -= avoidDir * urgency * magPush * Time.deltaTime;
+
+                if (Vector3.Dot(transform.up, avoidDir) > 0)
+                { 
+                    pitch -= magPush / 16f; 
+                }
+                else 
+                {
+                    pitch += magPush / 16f;
+                }
+
           //if(magPush > 0)
-            //print(name +" is pushing away from "+ hitColliders[i].name +"with an intensity of " + magPush);
-          
-        }
+          //print(name +" is pushing away from "+ hitColliders[i].name +"with an intensity of " + magPush);
+
+            }
         i++;
     }
     
@@ -569,36 +585,40 @@ public class ShipSettings : MonoBehaviour
     }
   }
 
-  Vector3 oldRotForward;
-  Vector3 oldRotRight;
-  Vector3 oldRotUp;
-  [HideInInspector] public Quaternion oldRot;
-  [HideInInspector] public Vector3 deltaRot;
+    public static float GetSignedAngle(Quaternion A, Quaternion B, Vector3 axis)
+    {
+        float angle = 0f;
+        Vector3 angleAxis = Vector3.zero;
+        (A * Quaternion.Inverse(B)).ToAngleAxis(out angle, out angleAxis);
+        if (Vector3.Angle(axis, angleAxis) > 90f)
+        {
+            angle = -angle;
+        }
+        return Mathf.DeltaAngle(0f, angle);
+    }
 
-  Quaternion LagDir;
+    [HideInInspector] public Quaternion oldRot;
+    [HideInInspector] public Vector3 rotDelta;
+    Quaternion LagDir;
 
-  public static float GetSignedAngle(Quaternion A, Quaternion B, Vector3 axis) {
-     float angle = 0f;
-     Vector3 angleAxis = Vector3.zero;
-     (B*Quaternion.Inverse(A)).ToAngleAxis(out angle, out angleAxis);
-     if(Vector3.Angle(axis, angleAxis) > 90f) {
-         angle = -angle;
-     }
-     return Mathf.DeltaAngle(0f, angle);
-     
- }
 
- public static float SignedAngleFromRotation(Quaternion A,Quaternion B , Vector3 refAxis )
-   {
-     var forwardA = A * refAxis;
-     var forwardB = B * refAxis;
-     float angleA = Mathf.Atan2(forwardA.x, forwardA.z) * Mathf.Rad2Deg;
-		 float angleB = Mathf.Atan2(forwardB.x, forwardB.z) * Mathf.Rad2Deg;
-     float signedAngle = Mathf.DeltaAngle( angleA, angleB );
+    Pose lastTrans;
+    void DeltaRot()
+    {
+        Quaternion qLocal = Quaternion.Inverse(transform.rotation) * lastTrans.rotation;
 
-     return signedAngle;
+        float newPitchDelta = (qLocal * Vector3.forward).y / Time.deltaTime;
+        float newYawDelta = (qLocal * Vector3.right).z / Time.deltaTime;
+        float newRollDelta = (qLocal * Vector3.up).x / Time.deltaTime;
 
-   }
+        Vector3 rotDeltaRough = new Vector3(-newPitchDelta, -newYawDelta, newRollDelta);
+
+        rotDelta = Vector3.Lerp(rotDelta, rotDeltaRough, deltaSmooth); 
+
+        lastTrans.position = transform.position;
+        lastTrans.rotation = transform.rotation;
+    }
+
 
   void Steer() //Autopilot!
   {
@@ -609,20 +629,11 @@ public class ShipSettings : MonoBehaviour
     pitch_ *= turnRate * Time.deltaTime;
     roll_ *= turnRate  * Time.deltaTime;
     transform.localRotation *= Quaternion.AngleAxis(roll_, Vector3.forward) * Quaternion.AngleAxis(yaw_, Vector3.up) * Quaternion.AngleAxis(pitch_, invertYAxis ? Vector3.right : Vector3.left);
-    
-    var newRot = transform.localEulerAngles;
 
-    var anglex = Mathf.DeltaAngle(newRot.x, oldRot.eulerAngles.x);
-    var angley = Mathf.DeltaAngle(newRot.y, oldRot.eulerAngles.y);
-    var anglez = Mathf.DeltaAngle(newRot.z, oldRot.eulerAngles.z);
+        DeltaRot();
+    }
 
 
-    deltaRot = new Vector3(anglex,angley,anglez);
-    //print(anglex);
-    
-    oldRot = transform.localRotation;     
-
-  }
   public float throttle;
   void DoThrottle()
   {

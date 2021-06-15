@@ -8,7 +8,8 @@ public class CockpitViewSwitcher : MonoBehaviour
     GameObject Billboard;
     CockpitShift Shifter;
     public bool RandomSwitch = false; 
-    public bool ChaseSwitch = false; 
+    public bool ChaseSwitch = false;
+    public float DelaySwitchTime = 3f;
     public enum View {Main, Right, Left, Rear, Chase};//, Cinematic, Missile};
     public View activeView = View.Main;
     public Vector3 ChaseCamOffset;
@@ -72,8 +73,8 @@ public class CockpitViewSwitcher : MonoBehaviour
         }
         //print(shipMain.deltaRot);
         
-        float xShift =  -shipMain.deltaRot.y;
-        float yShift =  shipMain.deltaRot.x;
+        float xShift =  -shipMain.rotDelta.y;
+        float yShift =  shipMain.rotDelta.x;
         
         //print (xShift);
         TargetShift = new Vector2(Mathf.Clamp(xShift,-1f,1f),-Mathf.Clamp(yShift,-1f,1f));
@@ -82,10 +83,10 @@ public class CockpitViewSwitcher : MonoBehaviour
         
         if(shipMain.speed > shipMain.topSpeed)
         {
-            SmoothShift += new Vector2(Random.Range(-1f,1f),Random.Range(-1f,1f))*.025f;
+            //SmoothShift += new Vector2(Random.Range(-1f,1f),Random.Range(-1f,1f))*.025f;
         }
 
-        float zShift =  shipMain.deltaRot.z;
+        float zShift =  shipMain.rotDelta.z;
         float TargetSpin = Mathf.Clamp(zShift,-1f,1f);
         SmoothSpin = Mathf.SmoothDamp(SmoothSpin,TargetSpin,ref refSpin,ShiftSmoothness);
 
@@ -116,8 +117,8 @@ public class CockpitViewSwitcher : MonoBehaviour
         Billboard.SetActive(false);
         HoverUI.SetActive(true);
         }
-        Shifter.xShift =  1-shipMain.deltaRot.y;// .y;
-        Shifter.yShift =  1-shipMain.deltaRot.x;//.x;
+        Shifter.xShift =  1-shipMain.rotDelta.y;// .y;
+        Shifter.yShift =  1-shipMain.rotDelta.x;//.x;
     }
 
     void DoRearCam()
@@ -133,8 +134,8 @@ public class CockpitViewSwitcher : MonoBehaviour
         Billboard.SetActive(false);
         HoverUI.SetActive(false);
         }
-        Shifter.xShift =  1-shipMain.deltaRot.y;// .y;
-        Shifter.yShift =  shipMain.deltaRot.x;//.x;
+        Shifter.xShift =  1-shipMain.rotDelta.y;// .y;
+        Shifter.yShift =  shipMain.rotDelta.x;//.x;
 
     }
     void DoRightCam()
@@ -150,8 +151,8 @@ public class CockpitViewSwitcher : MonoBehaviour
         Billboard.SetActive(false);
         HoverUI.SetActive(false);
         }
-        Shifter.xShift =  1-shipMain.deltaRot.y;// .y;
-        Shifter.yShift =  1-shipMain.deltaRot.z;//.x;
+        Shifter.xShift =  1-shipMain.rotDelta.y;// .y;
+        Shifter.yShift =  1-shipMain.rotDelta.z;//.x;
     }
 
     void DoLeftCam()
@@ -168,55 +169,66 @@ public class CockpitViewSwitcher : MonoBehaviour
         Billboard.SetActive(false);
         HoverUI.SetActive(false);
         }
-        Shifter.xShift =  shipMain.deltaRot.y;// .y;
-        Shifter.yShift =  shipMain.deltaRot.z;//.x;
+        Shifter.xShift =  shipMain.rotDelta.y;// .y;
+        Shifter.yShift =  shipMain.rotDelta.z;//.x;
     }
     // Update is called once per frame
-void LateUpdate()
-{
-    if(RandomSwitch)
-    {     
-        if(GameObjTracker.frames % Random.Range(240,360) == 0)
-        {
-            activeView = (View)Random.Range(0, System.Enum.GetValues(typeof(View)).Length);
-        }
-    }
-    if(ChaseSwitch)
+
+
+    float switchTime;
+    void LateUpdate()
     {
-        if(GameObjTracker.frames % Random.Range(480,360) == 0)
-        {
-            if (activeView == View.Main)
-            {activeView = View.Chase;}
-            else{ activeView =View.Main;}
+        switchTime += Time.deltaTime;
+
+        if(RandomSwitch)
+        {     
+            if(GameObjTracker.frames % Random.Range(240,360) == 0)
+            {
+                activeView = (View)Random.Range(0, System.Enum.GetValues(typeof(View)).Length);
+            }
         }
+        if(ChaseSwitch)
+        {
+            if(GameObjTracker.frames % Random.Range(480,360) == 0 && switchTime > DelaySwitchTime)
+            {
+                if (activeView == View.Main)
+                {
+                    activeView = View.Chase;
+                }
+                else
+                { 
+                    activeView =View.Main;
+                }
+                switchTime = 0f;
+            }
+        }
+        switch (activeView)
+        {
+            case View.Main:
+            {
+                DoMainCam();
+            }
+            break;
+            case View.Chase:
+            {
+                DoChaseCam();
+            }
+            break;
+            case View.Rear:
+            {
+                DoRearCam();
+            }
+            break;
+            case View.Right:
+            {
+                DoRightCam();
+            }
+            break;
+            case View.Left:
+            {
+                DoLeftCam();
+            }
+            break;
+        }
+      }
     }
-    switch (activeView)
-    {
-        case View.Main:
-        {
-            DoMainCam();
-        }
-        break;
-        case View.Chase:
-        {
-            DoChaseCam();
-        }
-        break;
-        case View.Rear:
-        {
-            DoRearCam();
-        }
-        break;
-        case View.Right:
-        {
-            DoRightCam();
-        }
-        break;
-        case View.Left:
-        {
-            DoLeftCam();
-        }
-        break;
-    }
-  }
-}

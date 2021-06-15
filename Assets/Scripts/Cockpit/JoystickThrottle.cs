@@ -50,8 +50,8 @@ public class JoystickThrottle : MonoBehaviour
     void DoJoystick()
     {
         
-        float xShift =  shipMain.deltaRot.x;
-        float yShift =  shipMain.deltaRot.y;
+        float xShift =  shipMain.rotDelta.y;
+        float yShift =  shipMain.rotDelta.x;
         
         //print (xShift);
         TargetShift = new Vector2(Mathf.Clamp(xShift,-1f,1f),-Mathf.Clamp(yShift,-1f,1f));
@@ -78,7 +78,7 @@ public class JoystickThrottle : MonoBehaviour
     }
     void DoFeet()
     {
-        float zShift =  shipMain.deltaRot.z;
+        float zShift =  -shipMain.rotDelta.z;
         float TargetSpin = Mathf.Clamp(zShift,-1f,1f);
         SmoothSpin = Mathf.SmoothDamp(SmoothSpin,TargetSpin,ref refSpin,ShiftSmoothness);
         refSteerZ = (SmoothSpin+1)/2;

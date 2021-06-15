@@ -24,21 +24,34 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2289861991765167608, guid: 4cb3a1366b7e311418b2f13dcbd2c1f1,
         type: 3}
+      propertyPath: deltaSmooth
+      value: 0.05
+      objectReference: {fileID: 0}
+    - target: {fileID: 2289861991765167608, guid: 4cb3a1366b7e311418b2f13dcbd2c1f1,
+        type: 3}
+      propertyPath: rotDeltaMax
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2289861991765167608, guid: 4cb3a1366b7e311418b2f13dcbd2c1f1,
+        type: 3}
+      propertyPath: rotDeltaDamp
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2289861991765167608, guid: 4cb3a1366b7e311418b2f13dcbd2c1f1,
+        type: 3}
       propertyPath: DeathVFX.Array.size
-      value: 3
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2289861991765167608, guid: 4cb3a1366b7e311418b2f13dcbd2c1f1,
         type: 3}
       propertyPath: DeathVFX.Array.data[1]
       value: 
-      objectReference: {fileID: 4645451869083989364, guid: 492d5ef359e20bd41b86cb9433069e9d,
-        type: 3}
+      objectReference: {fileID: 0}
     - target: {fileID: 2289861991765167608, guid: 4cb3a1366b7e311418b2f13dcbd2c1f1,
         type: 3}
       propertyPath: DeathVFX.Array.data[2]
       value: 
-      objectReference: {fileID: 4645451869083989364, guid: 889974a88f8e43d48b60c07bb3acd59b,
-        type: 3}
+      objectReference: {fileID: 0}
     - target: {fileID: 2289861991765167609, guid: 4cb3a1366b7e311418b2f13dcbd2c1f1,
         type: 3}
       propertyPath: m_Enabled

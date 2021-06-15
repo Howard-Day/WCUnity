@@ -17,8 +17,8 @@ public class SetSpeed : MonoBehaviour
     {
         shipMain = (ShipSettings)gameObject.GetComponentInParent<ShipSettings>();
     }
-    int lastGenInt;
-    int NumberGen (int min, int max, int skip)
+    int? lastGenInt;
+    int? NumberGen (int min, int max, int skip)
     {
         if(GameObjTracker.frames % skip == 0)
         {
@@ -46,7 +46,7 @@ public class SetSpeed : MonoBehaviour
        int speedDisp = Mathf.FloorToInt(setSpeed*10);
        if(randompreText)
        {
-           Speed.text = NumberGen(minAmt,maxAmt,frameskip).ToString("D2")+speedDisp.ToString(); 
+           Speed.text = NumberGen(minAmt,maxAmt,frameskip).Value.ToString("D2")+speedDisp.ToString(); 
        }
        else
        {
@@ -54,3 +54,4 @@ public class SetSpeed : MonoBehaviour
        }
     }
 }
+ 
