@@ -116,8 +116,8 @@ ParticleSystem:
     startLifetime:
       serializedVersion: 2
       minMaxState: 3
-      scalar: 2.5
-      minScalar: 2
+      scalar: 2
+      minScalar: 1.5
       maxCurve:
         serializedVersion: 2
         m_Curve:
@@ -4839,9 +4839,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   RandomTextures:
-  - {fileID: 2800000, guid: 4c669993b51bcb241b4d27e0983eab17, type: 3}
-  - {fileID: 2800000, guid: db6fd908015fabb4290a968ffeb4976b, type: 3}
-  - {fileID: 2800000, guid: fa3f02a489ccd9744a90664169b493d6, type: 3}
+  - {fileID: 2800000, guid: 8bf9ec795aaaddd4bafd7627cad7d8bf, type: 3}
+  - {fileID: 2800000, guid: a12692bd429bc8c44b86362ad6bfb361, type: 3}
+  - {fileID: 2800000, guid: de2e14fa9eb07034b8d0fc89d625b3f8, type: 3}
+  - {fileID: 2800000, guid: 879a68800d2d1834baf37da3caf3a83d, type: 3}
+  - {fileID: 2800000, guid: 2e5071f2aa038234db5d8385a992b428, type: 3}
+  - {fileID: 2800000, guid: e70190636c82e004e97603cd5f9d46de, type: 3}
+  - {fileID: 2800000, guid: f1922ce6a67855b408beb06fe0f7022a, type: 3}
+  - {fileID: 2800000, guid: 8bf9ec795aaaddd4bafd7627cad7d8bf, type: 3}
+  - {fileID: 2800000, guid: 8bf9ec795aaaddd4bafd7627cad7d8bf, type: 3}
 --- !u!1 &2564357714421902046
 GameObject:
   m_ObjectHideFlags: 0

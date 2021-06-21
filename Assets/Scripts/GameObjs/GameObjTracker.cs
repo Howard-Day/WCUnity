@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class GameObjTracker : MonoBehaviour
@@ -12,6 +11,7 @@ public class GameObjTracker : MonoBehaviour
     static public List<ShipSettings> PirateShips;
     static public List<ShipSettings> Environmental;
     static public bool radarRefreshNeeded = false;
+    static public bool bracketRefreshNeeded = false;
     public GameObject[] KilrathiSpawn;
     public GameObject[] ConfedSpawn;
     public GameObject PlayerSpawn;
@@ -65,6 +65,7 @@ public class GameObjTracker : MonoBehaviour
         }
         //print("GameObj Tracker: Found "+ ConfedShips.Count + " Confed Ships, "+ KilrathiShips.Count + " Kilrathi Ships, "+ NeutralShips.Count + " Neutral Ships, and "+ PirateShips.Count + " Pirate Ships!");
         radarRefreshNeeded = true;
+        bracketRefreshNeeded = true;
         //print("Radar Refresh is: "+ radarRefreshNeeded);
     }
 

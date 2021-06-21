@@ -2,6 +2,7 @@
 
 public class SnapToPixelGrid : MonoBehaviour 
 {
+    [ExecuteInEditMode]
     [SerializeField]
     private int pixelsPerUnit = 50;
 

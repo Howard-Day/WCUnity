@@ -68,9 +68,10 @@
 					return o;
 				}
 				
-				fixed4 frag (v2f i) : SV_Target
+				fixed4 frag(v2f i) : SV_Target
 				{
 					fixed4 col = RetroAA(_MainTex, i.texcoord, _MainTex_TexelSize);
+					//fixed4 col = Tex2D();
 					col.rgb += _Color.rgb;
 					clip(col.a - 16 / 255.0);
 					UNITY_APPLY_FOG(i.fogCoord, col);

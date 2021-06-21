@@ -7,7 +7,7 @@ using UnityEngine.Assertions.Must;
 public class AIPlayer : MonoBehaviour
 {
   public bool logDebug = false;
-  public enum AIState {PATROL, BREAK, SEARCH, WINGMAN, ENGAGE, HUNT, EVADE, PROTECT, REPOSITION, FLEE, DEATH };
+  public enum AIState {PATROL, BREAK, SEARCH, WINGMAN, ENGAGE, HUNT, EVADE, PROTECT, REPOSITION, FLEE, DEATH, VICTORY };
   public enum AILevel {CHUMP, NOVICE, DEFAULT, SKILLED, ACE, MASTER};
   public ShipSettings WingmanTo;
   public List<Vector3> PatrolPoints;
@@ -853,6 +853,21 @@ switch(ActiveAIState)
 
   }
   break;
+
+            case AIState.VICTORY:
+                {
+                    if (AISkillLevel != AILevel.CHUMP || AISkillLevel != AILevel.NOVICE)
+                    {
+                        FireGuns(false);
+                    }
+
+
+
+
+                }
+                break;
+
+
 
   default:
   {

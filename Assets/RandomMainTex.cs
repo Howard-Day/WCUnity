@@ -9,14 +9,15 @@ public class RandomMainTex : MonoBehaviour
     void Start()
     {
         MeshRenderer r = gameObject.GetComponent<MeshRenderer>();
-        if (r == null)
-        {
-            ParticleSystemRenderer p = gameObject.GetComponent<ParticleSystemRenderer>();
-            p.material.mainTexture = RandomTextures[Random.Range(0, RandomTextures.Length - 1)];
-        }
-        else
-        {
+        if (r != null)
+        {         
             r.material.mainTexture = RandomTextures[Random.Range(0, RandomTextures.Length - 1)];
+        }
+
+        ParticleSystemRenderer p = gameObject.GetComponent<ParticleSystemRenderer>();
+        if (p != null)
+        {
+            p.material.mainTexture = RandomTextures[Random.Range(0, RandomTextures.Length - 1)];
         }
     }
 

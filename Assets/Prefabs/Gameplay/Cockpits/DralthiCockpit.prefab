@@ -2552,7 +2552,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 70644b1fd86b68f418293974940edf32, type: 3}
+  m_Sprite: {fileID: 21300000, guid: e8ad57951f0b03f4191074879d520fd4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -5305,6 +5305,7 @@ MonoBehaviour:
   HitUp: {fileID: 4413684596295952070}
   HitDown: {fileID: 2780594785869934782}
   HitBack: {fileID: 3835662605718966699}
+  RadarBlips: []
 --- !u!1 &3851733709107372875
 GameObject:
   m_ObjectHideFlags: 0
@@ -5317,6 +5318,7 @@ GameObject:
   - component: {fileID: 5433547521954554}
   - component: {fileID: 4872796058078709178}
   - component: {fileID: 167730949975955867}
+  - component: {fileID: 1698210396}
   m_Layer: 8
   m_Name: HoverUI
   m_TagString: Untagged
@@ -5366,7 +5368,7 @@ Canvas:
   m_SortingBucketNormalizedSize: 0
   m_AdditionalShaderChannelsFlag: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 1
+  m_SortingOrder: -250
   m_TargetDisplay: 0
 --- !u!114 &4872796058078709178
 MonoBehaviour:
@@ -5390,7 +5392,7 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
-  m_PresetInfoIsWorld: 0
+  m_PresetInfoIsWorld: 1
 --- !u!114 &167730949975955867
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5408,6 +5410,27 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!114 &1698210396
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3851733709107372875}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67868eff4adb40c4a9500c0f025aa022, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  srcRadar: {fileID: 2732729829259069053}
+  hudCamera: {fileID: 2187516062442110015}
+  defaultBracket: {fileID: 21300000, guid: 0f1b3540f1cb55f4585ceb98cdfbf197, type: 3}
+  targetBracket: {fileID: 21300000, guid: 4256eeafe99bd5a4d82559f653149237, type: 3}
+  lockedBracket: {fileID: 21300000, guid: 178b77d22f76f1540939d8499b31b0db, type: 3}
+  bracketMat: {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  nearFarClip: {x: 25, y: 1500}
+  angleClip: 65
+  HUDBrackets: []
 --- !u!1 &3913850037584852888
 GameObject:
   m_ObjectHideFlags: 0
@@ -7844,7 +7867,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   xDrift: 0.2
   yDrift: 0.1
-  zDrift: 15
+  zDrift: 25
   rollReticle: {fileID: 1365113668428961829}
 --- !u!1 &6082856487103205549
 GameObject:

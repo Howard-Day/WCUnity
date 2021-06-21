@@ -36,10 +36,10 @@ public class Radar : MonoBehaviour
     public Toggle HitUp;
     public Toggle HitDown;
     public Toggle HitBack;
+    [HideInInspector]
+    public List <BlipController> RadarBlips;
+    GameObject BlipRoot;
 
-    List <BlipController> RadarBlips;
-    GameObject BlipRoot; 
-    
     // Start is called before the first frame update
     void Start()
     {   //Find our Ship Root! 
@@ -52,6 +52,7 @@ public class Radar : MonoBehaviour
         BlipRoot.transform.localScale = Vector3.one;
         RegisterBlips();      
     }
+
     //radarRefreshNeeded
     public void RegisterBlips()
     {
