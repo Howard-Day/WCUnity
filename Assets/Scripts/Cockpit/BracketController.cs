@@ -36,6 +36,9 @@ public class BracketController : MonoBehaviour
 
        // mainCamera = (Camera)GameObject.FindGameObjectWithTag("MainCamera").GetComponent("Camera");
         bracketRect = gameObject.GetComponent<RectTransform>();
+        bracketRect.anchorMin = Vector2.zero;
+        bracketRect.anchorMax = Vector2.one;
+        bracketRect.anchoredPosition = Vector2.one/2;
         screenRes.y = Screen.height;
         screenRes.x = Screen.width;
     }
@@ -74,6 +77,7 @@ public class BracketController : MonoBehaviour
         if (shipMain.AITeam == ShipSettings.TEAM.KILRATHI)
         {
             bracketSprite.type = Image.Type.Tiled;
+            
         }
         bracketSprite.pixelsPerUnitMultiplier = 50;
         angleTo = Vector3.Angle(hudCamera.transform.forward, ship.transform.position - hudCamera.transform.position);
@@ -156,7 +160,7 @@ public class BracketController : MonoBehaviour
         Vector2 posSize = new Vector2((max.x-min.x), (max.y-min.y));        
         RectTransform rectTrans = gameObject.transform as RectTransform;
         rectTrans.localPosition = GetScreenPosition(hudCamera,ship.gameObject.transform.position, 1.8f,new Vector2(640,400) );
-        rectTrans.sizeDelta = Vector2.Min(Vector2.Max(Vector2.one*.08f, posSize*.75f), Vector2.one);    
+        rectTrans.sizeDelta = Vector2.Min(Vector2.Max(Vector2.one*.085f, posSize*.75f), Vector2.one);    
 
     }
 }
