@@ -110,7 +110,8 @@ public class AIPlayer : MonoBehaviour
     ship = GetComponent<ShipSettings>(); 
     laserCannons = GetComponentsInChildren<LaserCannon>();    
     ForceRegister();
-  }
+    InitGuns();
+    }
 
 void ForceRegister()
 {
@@ -119,13 +120,38 @@ void ForceRegister()
   GameObjTracker.RegisterTeams();
 }
 
-void FireGuns(bool fire)
+int countFireIndex = 1;
+int lastFireIndex = 0;
+int fireIndex = 0;
+
+    void InitGuns()
+    {
+        foreach (LaserCannon laserCannon in laserCannons)
+        {
+            //Init gun index
+            if (laserCannon.index == 0)
+            {
+                laserCannon.index = countFireIndex;
+                countFireIndex++;
+            }
+            //update total gun index count
+            else
+            {
+                fireIndex = countFireIndex;
+            }
+        }
+
+    }
+
+    void FireGuns(bool fire)
 {
   foreach (LaserCannon laserCannon in laserCannons)
-  {
-    if(ship.recover >= .99f && rechargeWait <= 0.01f) // Can the ship fire? 
+  {  
+
+    if(ship.recover >= .99f && rechargeWait <= 0.01f && laserCannon.index != lastFireIndex) // Can the ship fire? Is this gun *not* the last to fire? 
     {
        laserCannon.fire = fire;
+       lastFireIndex = laserCannon.index;
       // if(logDebug){print("aactually setting state to " + fire);}
       if(fire)//are we firing?
       { bloodThirst = 0f; //Ahh, our bloodthirst is sated
@@ -144,7 +170,7 @@ void FireGuns(bool fire)
   }
 }
 
-float barrelRef = 0f;
+    float barrelRef = 0f;
 
 void DoABarrelRoll(float direction, float length)
 {
@@ -878,11 +904,6 @@ switch(ActiveAIState)
 
 }
 
-  //  public GameObject DEBUGSTEER;
-
-  /// <summary>
-  /// Update is called every frame, if the MonoBehaviour is enabled.
-  /// </summary>
   void Update()
   {
         //ship.targetSpeed = .1f;

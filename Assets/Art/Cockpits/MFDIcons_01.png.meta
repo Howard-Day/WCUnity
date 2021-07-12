@@ -35,6 +35,9 @@ TextureImporter:
   - first:
       213: 3007919691619370033
     second: SYS_Dralthi
+  - first:
+      213: -1922495045691203107
+    second: TRGT_Krant
   externalObjects: {}
   serializedVersion: 11
   mipmaps:
@@ -374,6 +377,27 @@ TextureImporter:
       bones: []
       spriteID: 553fe9f89b35dd64daf1c30cd772a188
       internalID: 3007919691619370033
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TRGT_Krant
+      rect:
+        serializedVersion: 2
+        x: 280
+        y: 913
+        width: 92
+        height: 111
+      alignment: 9
+      pivot: {x: 0.5, y: 0.4954955}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dd1a02711fce155e0800000000000000
+      internalID: -1922495045691203107
       vertices: []
       indices: 
       edges: []

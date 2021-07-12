@@ -1530,7 +1530,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   RandomSwitch: 0
-  ChaseSwitch: 1
+  ChaseSwitch: 0
   DelaySwitchTime: 3
   activeView: 0
   ChaseCamOffset: {x: 0, y: 18, z: -35}

@@ -87,7 +87,7 @@ public class BracketController : MonoBehaviour
         if (ship == shipMain.currentTarget)
         {
             bracketSprite.sprite = HUDRoot.targetBracket;
-            if (GameObjTracker.frames % 5 == 0)
+            if (GameObjTracker.frames % 15 == 0)
             {
                 if(blink == 0)
                 {   blink = 1;

@@ -2,18 +2,20 @@
 
 public class LaserCannon : MonoBehaviour
 {
-  [HideInInspector] public bool fire = false;
-  [HideInInspector] public int GunId = 0;
-  public enum GunType {Laser, Neutron, MassDriver, ParticleCollisionEvent, Turret};
-  public GunType Type;
-  Transform mountingPoint = null;
-  [SerializeField] Transform laserBoltPrefab = null;
-  [SerializeField] float fireRate = .4f;
-  [SerializeField] float powerDrain = 2.1f;
-  public float gunRange;
-  float cooldown = 0f;
-  ShipSettings MainShip;
+    public int index;
+    [HideInInspector] public bool fire = false;
+    [HideInInspector] public int GunId = 0;
+    public enum GunType {Laser, Neutron, MassDriver, ParticleCollisionEvent, Turret};
+    public GunType Type;
+    Transform mountingPoint = null;
+    [SerializeField] Transform laserBoltPrefab = null;
+    [SerializeField] float fireRate = .4f;
+    [SerializeField] float powerDrain = 2.1f;
+    public float gunRange;
+    float cooldown = 0f;
+    ShipSettings MainShip;
 
+    
   /// <summary>
   /// Start is called on the frame when a script is enabled just before
   /// any of the Update methods is called the first time.

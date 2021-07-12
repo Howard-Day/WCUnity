@@ -28,7 +28,7 @@ public class Reticle : MonoBehaviour
         transform.localPosition = initPos + shiftOffset;
         if (rollReticle)
         {
-            Vector3 rollOffset = new Vector3(0,0,zDrift * clampedDrift.y);
+            Vector3 rollOffset = new Vector3(0,0, -zDrift * clampedDrift.z);
             rollReticle.transform.localRotation = Quaternion.Euler(rollOffset);
         }
 
