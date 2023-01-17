@@ -57,7 +57,7 @@ namespace AmplifyShaderEditor
 			EditorGUILayout.EndHorizontal();
 		}
 
-		public void BuildColorMask( ref string ShaderBody, bool customBlendAvailable )
+		public void BuildColorMask( ref string ShaderBody, bool customBlendAvailable, bool forceDefaultWrite = false )
 		{
 			int count = 0;
 			string colorMask = string.Empty;
@@ -73,6 +73,11 @@ namespace AmplifyShaderEditor
 			if( ( count != m_colorMask.Length && customBlendAvailable ) || m_inlineMask.Active )
 			{
 				MasterNode.AddRenderState( ref ShaderBody, "ColorMask", m_inlineMask.GetValueOrProperty( ( ( count == 0 ) ? "0" : colorMask ) ) );
+			}
+
+			if( count == m_colorMask.Length && forceDefaultWrite )
+			{
+				MasterNode.AddRenderState( ref ShaderBody , "ColorMask" , colorMask  );
 			}
 		}
 
@@ -103,5 +108,12 @@ namespace AmplifyShaderEditor
 			m_middleToggleColorMask = null;
 			m_rightToggleColorMask = null;
 		}
+
+		public void HideInlineButton()
+		{
+			m_inlineMask.HideInlineButton();
+		}
+
+		public bool[] ColorMask { get { return m_colorMask; } }
 	}
 }

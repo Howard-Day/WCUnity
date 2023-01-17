@@ -11,6 +11,7 @@ namespace AmplifyShaderEditor
         {
             base.CommonInit( uniqueId );
             AddInputPort( WirePortDataType.OBJECT, false, Constants.EmptyPortValue );
+			m_inputPorts[ 0 ].SetFreeForAll();
             AddOutputPort( WirePortDataType.OBJECT, Constants.EmptyPortValue );
 			m_previewShaderGUID = "74e4d859fbdb2c0468de3612145f4929";
 		}

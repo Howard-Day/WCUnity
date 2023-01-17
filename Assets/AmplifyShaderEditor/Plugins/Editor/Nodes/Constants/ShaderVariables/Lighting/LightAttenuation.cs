@@ -21,6 +21,14 @@ namespace AmplifyShaderEditor
 			"multi_compile _ _SHADOWS_SOFT"
 		};
 
+#if UNITY_2021_1_OR_NEWER
+		private readonly string[] URP12PragmaMultiCompiles =
+		{
+			"multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN",
+			"multi_compile _ _ADDITIONAL_LIGHT_SHADOWS",
+			"multi_compile _ _SHADOWS_SOFT"
+		};
+#endif
 		//private readonly string[] LightweightVertexInstructions =
 		//{
 		//	/*local vertex position*/"VertexPositionInputs ase_vertexInput = GetVertexPositionInputs ({0});",
@@ -32,7 +40,8 @@ namespace AmplifyShaderEditor
 		private readonly string[] LightweightFragmentInstructions =
 		{
 			/*shadow coords*/"Light ase_lightAtten_mainLight = GetMainLight( {0} );",
-			"ase_lightAtten = ase_lightAtten_mainLight.distanceAttenuation * ase_lightAtten_mainLight.shadowAttenuation;"
+			//"ase_lightAtten = ase_lightAtten_mainLight.distanceAttenuation * ase_lightAtten_mainLight.shadowAttenuation;"
+			"ase_lightAtten = {0}.distanceAttenuation * {0}.shadowAttenuation;"
 		};
 
 		protected override void CommonInit( int uniqueId )
@@ -67,10 +76,19 @@ namespace AmplifyShaderEditor
 							return ASEAttenVarName;
 
 						// Pragmas
-						for( int i = 0; i < LightweightPragmaMultiCompiles.Length; i++ )
-							dataCollector.AddToPragmas( UniqueId, LightweightPragmaMultiCompiles[ i ] );
-
-						string shadowCoords = dataCollector.TemplateDataCollectorInstance.GetShadowCoords( UniqueId/*, false, dataCollector.PortCategory*/ );
+#if UNITY_2021_1_OR_NEWER
+						if( ASEPackageManagerHelper.CurrentLWVersion >= ASESRPVersions.ASE_SRP_12_0_0 )
+						{
+							for( int i = 0 ; i < URP12PragmaMultiCompiles.Length ; i++ )
+								dataCollector.AddToPragmas( UniqueId , URP12PragmaMultiCompiles[ i ] );
+						}
+						else
+#endif
+						{
+							for( int i = 0 ; i < LightweightPragmaMultiCompiles.Length ; i++ )
+								dataCollector.AddToPragmas( UniqueId , LightweightPragmaMultiCompiles[ i ] );
+						}
+						//string shadowCoords = dataCollector.TemplateDataCollectorInstance.GetShadowCoords( UniqueId/*, false, dataCollector.PortCategory*/ );
 						//return shadowCoords;
 						// Vertex Instructions
 						//TemplateVertexData shadowCoordsData = dataCollector.TemplateDataCollectorInstance.RequestNewInterpolator( WirePortDataType.FLOAT4, false );
@@ -88,8 +106,9 @@ namespace AmplifyShaderEditor
 						//string fragmentShadowCoords = fragmentInterpName + "." + shadowCoordsData.VarNameWithSwizzle;
 
 						dataCollector.AddLocalVariable( UniqueId, LightweightLightAttenDecl );
-						dataCollector.AddLocalVariable( UniqueId, string.Format( LightweightFragmentInstructions[ 0 ], shadowCoords ) );
-						dataCollector.AddLocalVariable( UniqueId, LightweightFragmentInstructions[ 1 ] );
+						string mainLight = dataCollector.TemplateDataCollectorInstance.GetURPMainLight( UniqueId );
+						//dataCollector.AddLocalVariable( UniqueId, string.Format( LightweightFragmentInstructions[ 0 ], shadowCoords ) );
+						dataCollector.AddLocalVariable( UniqueId, string.Format( LightweightFragmentInstructions[ 1 ], mainLight) );
 						return ASEAttenVarName;
 					}
 					else

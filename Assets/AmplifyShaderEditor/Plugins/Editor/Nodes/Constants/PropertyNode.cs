@@ -1756,9 +1756,9 @@ namespace AmplifyShaderEditor
 
 		public virtual void ReleaseRansomedProperty()
 		{
-			if( m_variableMode == VariableMode.Fetch && m_autoGlobalName )
+			if( m_variableMode == VariableMode.Fetch/* && m_autoGlobalName */)
 			{
-				//Fooling setter to have a different alue 
+				//Fooling setter to have a different value 
 				m_variableMode = VariableMode.Create;
 				CurrentVariableMode = VariableMode.Fetch;
 			}

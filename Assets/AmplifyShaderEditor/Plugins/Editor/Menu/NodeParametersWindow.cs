@@ -227,6 +227,9 @@ namespace AmplifyShaderEditor
 				SerializedProperty temo = serializedObject.FindProperty( "m_description" );
 				EditorGUILayout.PropertyField( temo, new GUIContent( "    Description" ) );
 
+				SerializedProperty url = serializedObject.FindProperty( "m_url" );
+				EditorGUILayout.PropertyField( url , new GUIContent( "Custom URL" ) );
+
 				SerializedProperty cat = serializedObject.FindProperty( "m_nodeCategory" );
 				SerializedProperty ppos = serializedObject.FindProperty( "m_previewPosition" );
 				

@@ -728,7 +728,7 @@ namespace AmplifyShaderEditor
 				}
 
 				string scaleValue = isScaledNormal ? m_normalPort.GeneratePortInstructions( ref dataCollector ) : "1.0";
-				result = GeneratorUtils.GenerateUnpackNormalStr( ref dataCollector, CurrentPrecisionType, UniqueId, OutputId, result, isScaledNormal, scaleValue );
+				result = GeneratorUtils.GenerateUnpackNormalStr( ref dataCollector, CurrentPrecisionType, UniqueId, OutputId, result, isScaledNormal, scaleValue, UnpackInputMode.Tangent );
 				if( isScaledNormal && ( !dataCollector.IsTemplate || !dataCollector.IsSRP ) )
 				{
 					dataCollector.AddToIncludes( UniqueId, Constants.UnityStandardUtilsLibFuncs );

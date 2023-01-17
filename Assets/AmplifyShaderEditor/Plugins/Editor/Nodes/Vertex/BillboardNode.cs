@@ -19,6 +19,9 @@ namespace AmplifyShaderEditor
 		[SerializeField]
 		private bool m_rotationIndependent = false;
 
+		[SerializeField]
+		private bool m_affectNormalTangent = true;
+
 		private UpperLeftWidgetHelper m_upperLeftWidget = new UpperLeftWidgetHelper();
 
 		protected override void CommonInit( int uniqueId )
@@ -71,6 +74,7 @@ namespace AmplifyShaderEditor
 					 SetAdditonalTitleText( string.Format( Constants.SubTitleTypeFormatStr, m_billboardType ) );
 				 }
 				 m_rotationIndependent = EditorGUILayoutToggle( BillboardOpHelper.BillboardRotIndStr, m_rotationIndependent );
+				 m_affectNormalTangent = EditorGUILayoutToggle( BillboardOpHelper.BillboardAffectNormalTangentStr , m_affectNormalTangent );
 			 } );
 			EditorGUILayout.HelpBox( WarningMessage, MessageType.Warning );
 		}
@@ -88,6 +92,8 @@ namespace AmplifyShaderEditor
 			m_outputPorts[ 0 ].SetLocalValue( "0", dataCollector.PortCategory );
 			string vertexPosValue = dataCollector.IsTemplate ? dataCollector.TemplateDataCollectorInstance.GetVertexPosition( WirePortDataType.OBJECT, CurrentPrecisionType ) : "v.vertex";
 			string vertexNormalValue = dataCollector.IsTemplate ? dataCollector.TemplateDataCollectorInstance.GetVertexNormal( CurrentPrecisionType ) : "v.normal";
+			string vertexTangentValue = dataCollector.IsTemplate ? dataCollector.TemplateDataCollectorInstance.GetVertexTangent( WirePortDataType.FLOAT4, CurrentPrecisionType ) : "v.tangent";
+
 			bool vertexIsFloat3 = false;
 			if( dataCollector.IsTemplate )
 			{
@@ -98,7 +104,7 @@ namespace AmplifyShaderEditor
 				}
 			}
 
-			BillboardOpHelper.FillDataCollector( ref dataCollector, m_billboardType, m_rotationIndependent, vertexPosValue, vertexNormalValue, vertexIsFloat3 );
+			BillboardOpHelper.FillDataCollector( ref dataCollector, m_billboardType, m_rotationIndependent, vertexPosValue, vertexNormalValue, vertexTangentValue, vertexIsFloat3, m_affectNormalTangent );
 
 			return "0";
 		}
@@ -109,6 +115,10 @@ namespace AmplifyShaderEditor
 			m_billboardType = (BillboardType)Enum.Parse( typeof( BillboardType ), GetCurrentParam( ref nodeParams ) );
 			SetAdditonalTitleText( string.Format( Constants.SubTitleTypeFormatStr , m_billboardType ) );
 			m_rotationIndependent = Convert.ToBoolean( GetCurrentParam( ref nodeParams ) );
+			if( UIUtils.CurrentShaderVersion() > 18918 )
+			{
+				m_affectNormalTangent = Convert.ToBoolean( GetCurrentParam( ref nodeParams ) );
+			}
 		}
 
 		public override void WriteToString( ref string nodeInfo, ref string connectionsInfo )
@@ -116,6 +126,7 @@ namespace AmplifyShaderEditor
 			base.WriteToString( ref nodeInfo, ref connectionsInfo );
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_billboardType );
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_rotationIndependent );
+			IOUtils.AddFieldValueToString( ref nodeInfo , m_affectNormalTangent );
 			SetAdditonalTitleText( string.Format( Constants.SubTitleTypeFormatStr, m_billboardType ) );
 		}
 

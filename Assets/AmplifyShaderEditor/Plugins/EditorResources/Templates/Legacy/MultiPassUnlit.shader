@@ -27,7 +27,9 @@ Shader /*ase_name*/ "Hidden/Templates/Legacy/Multi Pass Unlit" /*end*/
 			#pragma vertex vert
 			#pragma fragment frag
 			#pragma multi_compile_fwdbase
+			#ifndef UNITY_PASS_FORWARDBASE
 			#define UNITY_PASS_FORWARDBASE
+			#endif
 			#include "UnityCG.cginc"
 			/*ase_pragma*/
 			/*ase_globals*/
@@ -96,7 +98,9 @@ Shader /*ase_name*/ "Hidden/Templates/Legacy/Multi Pass Unlit" /*end*/
 			#pragma vertex vert
 			#pragma fragment frag
 			#pragma multi_compile_fwdadd_fullshadows
+			#ifndef UNITY_PASS_FORWARDADD
 			#define UNITY_PASS_FORWARDADD
+			#endif
 			#include "UnityCG.cginc"
 			/*ase_pragma*/
 			/*ase_globals*/
@@ -165,7 +169,9 @@ Shader /*ase_name*/ "Hidden/Templates/Legacy/Multi Pass Unlit" /*end*/
 			#pragma vertex vert
 			#pragma fragment frag
 			#pragma multi_compile_prepassfinal
+			#ifndef UNITY_PASS_DEFERRED
 			#define UNITY_PASS_DEFERRED
+			#endif
 			#include "UnityCG.cginc"
 			/*ase_pragma*/
 			/*ase_globals*/
@@ -232,7 +238,9 @@ Shader /*ase_name*/ "Hidden/Templates/Legacy/Multi Pass Unlit" /*end*/
 			#pragma vertex vert
 			#pragma fragment frag
 			#pragma multi_compile_shadowcaster
+			#ifndef UNITY_PASS_SHADOWCASTER
 			#define UNITY_PASS_SHADOWCASTER
+			#endif
 			#include "UnityCG.cginc"
 			/*ase_pragma*/
 			/*ase_globals*/

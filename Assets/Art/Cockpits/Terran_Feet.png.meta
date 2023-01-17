@@ -72,6 +72,7 @@ TextureImporter:
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
   vTOnly: 0
+  ignoreMasterTextureLimit: 0
   grayScaleToAlpha: 0
   generateCubemap: 6
   cubemapConvolution: 0
@@ -508,6 +509,23 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
+    nameFileIdTable:
+      Terran_Feet_4: 6831405092817855550
+      Terran_Feet_14: -7491896043766917662
+      Terran_Feet_2: -8346510948878170421
+      Terran_Feet_8: -6720753131690416220
+      Terran_Feet_7: -3048739206604610994
+      Terran_Feet_15: -8881607130088108612
+      Terran_Feet_13: 722340673082893585
+      Terran_Feet_12: 3627582578200537546
+      Terran_Feet_1: 7358562343846975900
+      Terran_Feet_10: 8709053697597965291
+      Terran_Feet_11: -6493371383780483489
+      Terran_Feet_5: -4432888781613008756
+      Terran_Feet_0: -8462538335608839056
+      Terran_Feet_3: 5398154521776787038
+      Terran_Feet_9: 7415535810092339512
+      Terran_Feet_6: -7591138250796423653
   spritePackingTag: 
   pSDRemoveMatte: 0
   pSDShowRemoveMatteOption: 0

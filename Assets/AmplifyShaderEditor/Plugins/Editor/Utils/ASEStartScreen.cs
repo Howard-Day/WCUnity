@@ -25,7 +25,8 @@ namespace AmplifyShaderEditor
 		private static readonly string BuiltInGUID = "e00e6f90ab8233e46a41c5e33917c642";
 		private static readonly string UniversalGUID = "a9d68dd8913f05d4d9ce75e7b40c6044";
 		private static readonly string HighDefinitionGUID = "d1c0b77896049554fa4b635531caf741";
-		private static readonly string OLDHighDefinitionGUID = "dff05fea7446d7b4e9029bfab77455d2";
+		private static readonly string OLDV6HighDefinitionGUID = "dff05fea7446d7b4e9029bfab77455d2";
+		private static readonly string OLDHighDefinitionV7To9GUID = "3b3215ff0faf7774bbd57fd5b4eccaa2";
 		private static readonly string LightWeightGUID = "6ecbfd0a046659943a69328c98ff0442";
 		private static readonly string OLDLightWeightGUID = "f7c4e22642de60d448f4e4809190f7b1";
 
@@ -50,7 +51,7 @@ namespace AmplifyShaderEditor
 
 		private static readonly GUIContent SamplesTitle = new GUIContent( "Shader Samples", "Import samples according to you project rendering pipeline" );
 		private static readonly GUIContent ResourcesTitle = new GUIContent( "Learning Resources", "Check the online wiki for various topics about how to use ASE with node examples and explanations" );
-		private static readonly GUIContent CommunityTitle = new GUIContent( "Community", "Need help? Reach us through our discord server or the offitial support Unity forum" );
+		private static readonly GUIContent CommunityTitle = new GUIContent( "Community", "Need help? Reach us through our discord server or the official support Unity forum" );
 		private static readonly GUIContent UpdateTitle = new GUIContent( "Latest Update", "Check the lastest additions, improvements and bug fixes done to ASE" );
 		private static readonly GUIContent ASETitle = new GUIContent( "Amplify Shader Editor", "Are you using the latest version? Now you know" );
 
@@ -74,7 +75,8 @@ namespace AmplifyShaderEditor
 		Texture webIcon = null;
 
 		GUIContent HDRPbutton = null;
-		GUIContent HDRPOLDbutton = null;
+		GUIContent HDRPOLDV6button = null;
+		GUIContent HDRPOLDV7ToV9button = null;
 		GUIContent URPbutton = null;
 		GUIContent LWRPbutton = null;
 		GUIContent LWRPOLDbutton = null;
@@ -142,7 +144,8 @@ namespace AmplifyShaderEditor
 			{
 				packageIcon = EditorGUIUtility.IconContent( "BuildSettings.Editor.Small" ).image;
 				HDRPbutton = new GUIContent( " HDRP Samples", packageIcon );
-				HDRPOLDbutton = new GUIContent( " HDRP Samples 6.X.X", packageIcon );
+				HDRPOLDV6button = new GUIContent( " HDRP Samples 6.X.X", packageIcon );
+				HDRPOLDV7ToV9button = new GUIContent( " HDRP Samples 7 to 9" , packageIcon );
 				URPbutton = new GUIContent( " URP Samples", packageIcon );
 				LWRPbutton = new GUIContent( " LWRP Samples 6.X.X", packageIcon );
 				LWRPOLDbutton = new GUIContent( " LWRP Samples 3.X.X", packageIcon );
@@ -278,9 +281,13 @@ namespace AmplifyShaderEditor
 					EditorGUILayout.EndHorizontal();
 					if( m_showHDRP )
 					{
-						if( GUILayout.Button( HDRPOLDbutton, m_minibuttonStyle ) )
-							ImportSample( HDRPOLDbutton.text, OLDHighDefinitionGUID );
+						if( GUILayout.Button( HDRPOLDV7ToV9button , m_minibuttonStyle ) )
+							ImportSample( HDRPOLDV7ToV9button.text , OLDHighDefinitionV7To9GUID );
+
+						if( GUILayout.Button( HDRPOLDV6button, m_minibuttonStyle ) )
+							ImportSample( HDRPOLDV6button.text, OLDV6HighDefinitionGUID );
 					}
+
 					EditorGUILayout.BeginHorizontal();
 					if( GUILayout.Button( URPbutton, m_buttonLeftStyle ) )
 						ImportSample( URPbutton.text, UniversalGUID );

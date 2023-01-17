@@ -6,7 +6,7 @@
 using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
-
+using System.IO;
 namespace AmplifyShaderEditor
 {
 	public sealed class DebugConsoleWindow : EditorWindow
@@ -23,7 +23,7 @@ namespace AmplifyShaderEditor
 
 		private int m_minURLNode = 0;
 		private int m_maxURLNode = -1;
-
+		private string m_root = string.Empty;
 #if ASE_CONSOLE_WINDOW
 		public readonly static bool DeveloperMode = true;
 		public static bool UseShaderPanelsInfo = true;
@@ -56,7 +56,12 @@ namespace AmplifyShaderEditor
 			}
 			return null;
 		}
-
+		private void OnEnable()
+		{
+			m_root = Application.dataPath + "/../NodesInfo/";
+			if( !Directory.Exists( m_root ) )
+				Directory.CreateDirectory( m_root );
+		}
 		void OnGUI()
 		{
 			m_availableArea = new Rect( WindowPosX, WindowPosY, position.width - 2 * WindowPosX, position.height - 2 * WindowPosY );
@@ -98,7 +103,7 @@ namespace AmplifyShaderEditor
 
 			if ( GUILayout.Button( "Nodes Screen Shots" ) )
 			{
-				window.CurrentNodeExporterUtils.ActivateAutoScreenShot( Application.dataPath + "/../NodesInfo/Shots/",0,-1 );
+				window.CurrentNodeExporterUtils.ActivateAutoScreenShot( m_root+"Shots/" ,0,-1 );
 			}
 
 			GUILayout.BeginHorizontal();
@@ -109,7 +114,12 @@ namespace AmplifyShaderEditor
 			m_minURLNode = EditorGUILayout.IntField( m_minURLNode );
 			m_maxURLNode = EditorGUILayout.IntField( m_maxURLNode );
 			GUILayout.EndHorizontal();
+			EditorGUILayout.Separator();
 
+			if( GUILayout.Button( "Nodes CSV Export" ) )
+			{
+				window.CurrentNodeExporterUtils.GenerateNodesCSV( m_root );
+			}
 			EditorGUILayout.Separator();
 
 			if( GUILayout.Button( "Nodes Undo Test" ) )
@@ -121,8 +131,8 @@ namespace AmplifyShaderEditor
 
 			if ( GUILayout.Button( "Nodes Info" ) )
 			{
-				window.CurrentPaletteWindow.DumpAvailableNodes( false, Application.dataPath + "/../NodesInfo/" );
-				window.CurrentPaletteWindow.DumpAvailableNodes( true, Application.dataPath + "/../NodesInfo/" );
+				window.CurrentPaletteWindow.DumpAvailableNodes( false,  m_root );
+				window.CurrentPaletteWindow.DumpAvailableNodes( true, m_root );
 			}
 
 			EditorGUILayout.Separator();

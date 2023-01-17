@@ -96,6 +96,7 @@ namespace AmplifyShaderEditor
 			{
 				AddInputPort( WirePortDataType.FLOAT, false, InputPortNameStr + i );
 				m_inputPorts[ i ].Visible = ( i < 2 );
+				m_inputPorts[ i ].SetFreeForAll();
 			}
 			AddOutputPort( WirePortDataType.FLOAT, " " );
 

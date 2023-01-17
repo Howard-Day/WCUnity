@@ -48,6 +48,7 @@ namespace AmplifyShaderEditor
 		ASE_SRP_7_5_2 =		070502,
 		ASE_SRP_7_5_3 =		070503,
 		ASE_SRP_7_6_0 =		070600,
+		ASE_SRP_7_7_1 =		070701,
 		ASE_SRP_8_2_0 =		080200,
 		ASE_SRP_8_3_1 =		080301,
 		ASE_SRP_9_0_0 =		090000,
@@ -58,7 +59,16 @@ namespace AmplifyShaderEditor
 		ASE_SRP_10_3_2 =	100302,
 		ASE_SRP_10_4_0 =	100400,
 		ASE_SRP_10_5_0 =	100500,
+		ASE_SRP_10_5_1 =	100501,
+		ASE_SRP_10_6_0 =	100600,
+		ASE_SRP_10_7_0 =	100700,
+		ASE_SRP_10_8_0 =	100800,
+		ASE_SRP_10_8_1 =	100801,
 		ASE_SRP_11_0_0 =	110000,
+		ASE_SRP_12_0_0 =	120000,
+		ASE_SRP_12_1_0 =	120100,
+		ASE_SRP_12_1_1 =	120101,
+		ASE_SRP_12_1_2 =	120102,
 		ASE_SRP_RECENT =	999999
 	}
 
@@ -85,7 +95,7 @@ namespace AmplifyShaderEditor
 	[Serializable]
 	public static class ASEPackageManagerHelper
 	{
-		private static string LightweightNewVersionDetected =	"A new Lighweight RP version was detected and new templates are being imported.\n" +
+		private static string URPNewVersionDetected =	"A new Universal RP version was detected and new templates are being imported.\n" +
 																"Please hit the Update button on your ASE canvas to recompile your shader under the newest version.";
 
 		private static string HDNewVersionDetected =	"A new HD RP version was detected and new templates are being imported.\n" +
@@ -140,8 +150,8 @@ namespace AmplifyShaderEditor
 		private static ASESRPVersions m_currentHDVersion = ASESRPVersions.ASE_SRP_RECENT;
 		private static ASESRPVersions m_currentLWVersion = ASESRPVersions.ASE_SRP_RECENT;
 
-		private static int m_urpTemplateVersion = 19;
-		private static int m_hdrpTemplateVersion = 15;
+		private static int m_urpTemplateVersion = 26;
+		private static int m_hdrpTemplateVersion = 20;
 
 		private static Dictionary<string, ASESRPVersions> m_srpVersionConverter = new Dictionary<string, ASESRPVersions>()
 		{
@@ -207,6 +217,8 @@ namespace AmplifyShaderEditor
 			{"7.5.3-preview",       ASESRPVersions.ASE_SRP_7_5_3},
 			{"7.6.0",               ASESRPVersions.ASE_SRP_7_6_0},
 			{"7.6.0-preview",       ASESRPVersions.ASE_SRP_7_6_0},
+			{"7.7.1",               ASESRPVersions.ASE_SRP_7_7_1},
+			{"7.7.1-preview",       ASESRPVersions.ASE_SRP_7_7_1},
 			{"8.2.0",				ASESRPVersions.ASE_SRP_8_2_0},
 			{"8.2.0-preview",		ASESRPVersions.ASE_SRP_8_2_0},
 			{"8.3.1",               ASESRPVersions.ASE_SRP_8_3_1},
@@ -228,10 +240,17 @@ namespace AmplifyShaderEditor
 			{"10.3.2",              ASESRPVersions.ASE_SRP_10_3_2},
 			{"10.4.0",              ASESRPVersions.ASE_SRP_10_4_0},
 			{"10.5.0",              ASESRPVersions.ASE_SRP_10_5_0},
+			{"10.5.1",              ASESRPVersions.ASE_SRP_10_5_1},
+			{"10.6.0",              ASESRPVersions.ASE_SRP_10_6_0},
+			{"10.7.0",              ASESRPVersions.ASE_SRP_10_7_0},
+			{"10.8.0",              ASESRPVersions.ASE_SRP_10_8_0},
+			{"10.8.1",              ASESRPVersions.ASE_SRP_10_8_1},
 			{"11.0.0",              ASESRPVersions.ASE_SRP_11_0_0},
+			{"12.0.0",              ASESRPVersions.ASE_SRP_12_0_0},
+			{"12.1.0",              ASESRPVersions.ASE_SRP_12_1_0},
+			{"12.1.1",              ASESRPVersions.ASE_SRP_12_1_1},
+			{"12.1.2",              ASESRPVersions.ASE_SRP_12_1_2}
 		};
-
-
 
 		private static Dictionary<ASESRPVersions, string> m_srpToASEPackageLW = new Dictionary<ASESRPVersions, string>()
 		{
@@ -271,17 +290,27 @@ namespace AmplifyShaderEditor
 			{ASESRPVersions.ASE_SRP_7_5_2,  "f54faaaf4faf8784183ede7f87dfeb23"},
 			{ASESRPVersions.ASE_SRP_7_5_3,  "f54faaaf4faf8784183ede7f87dfeb23"},
 			{ASESRPVersions.ASE_SRP_7_6_0,  "f54faaaf4faf8784183ede7f87dfeb23"},
+			{ASESRPVersions.ASE_SRP_7_7_1,  "f54faaaf4faf8784183ede7f87dfeb23"},
 			{ASESRPVersions.ASE_SRP_8_2_0,	"f54faaaf4faf8784183ede7f87dfeb23"},
 			{ASESRPVersions.ASE_SRP_8_3_1,  "f54faaaf4faf8784183ede7f87dfeb23"},
 			{ASESRPVersions.ASE_SRP_9_0_0,	"f54faaaf4faf8784183ede7f87dfeb23"},
-			{ASESRPVersions.ASE_SRP_10_0_0,	"57fcea0ed8b5eb347923c4c21fa31b57"},
-			{ASESRPVersions.ASE_SRP_10_1_0,	"57fcea0ed8b5eb347923c4c21fa31b57"},
-			{ASESRPVersions.ASE_SRP_10_2_2, "57fcea0ed8b5eb347923c4c21fa31b57"},
-			{ASESRPVersions.ASE_SRP_10_3_1, "57fcea0ed8b5eb347923c4c21fa31b57"},
-			{ASESRPVersions.ASE_SRP_10_3_2, "57fcea0ed8b5eb347923c4c21fa31b57"},
-			{ASESRPVersions.ASE_SRP_10_4_0, "57fcea0ed8b5eb347923c4c21fa31b57"},
-			{ASESRPVersions.ASE_SRP_10_5_0, "57fcea0ed8b5eb347923c4c21fa31b57"},
-			{ASESRPVersions.ASE_SRP_11_0_0, "57fcea0ed8b5eb347923c4c21fa31b57"},
+			{ASESRPVersions.ASE_SRP_10_0_0,	"b460b52e6c1feae45b70b7ddc2c45bd6"},
+			{ASESRPVersions.ASE_SRP_10_1_0,	"b460b52e6c1feae45b70b7ddc2c45bd6"},
+			{ASESRPVersions.ASE_SRP_10_2_2, "b460b52e6c1feae45b70b7ddc2c45bd6"},
+			{ASESRPVersions.ASE_SRP_10_3_1, "b460b52e6c1feae45b70b7ddc2c45bd6"},
+			{ASESRPVersions.ASE_SRP_10_3_2, "b460b52e6c1feae45b70b7ddc2c45bd6"},
+			{ASESRPVersions.ASE_SRP_10_4_0, "b460b52e6c1feae45b70b7ddc2c45bd6"},
+			{ASESRPVersions.ASE_SRP_10_5_0, "b460b52e6c1feae45b70b7ddc2c45bd6"},
+			{ASESRPVersions.ASE_SRP_10_5_1, "b460b52e6c1feae45b70b7ddc2c45bd6"},
+			{ASESRPVersions.ASE_SRP_10_6_0, "b460b52e6c1feae45b70b7ddc2c45bd6"},
+			{ASESRPVersions.ASE_SRP_10_7_0, "b460b52e6c1feae45b70b7ddc2c45bd6"},
+			{ASESRPVersions.ASE_SRP_10_8_0, "b460b52e6c1feae45b70b7ddc2c45bd6"},
+			{ASESRPVersions.ASE_SRP_10_8_1, "b460b52e6c1feae45b70b7ddc2c45bd6"},
+			{ASESRPVersions.ASE_SRP_11_0_0, "b460b52e6c1feae45b70b7ddc2c45bd6"},
+			{ASESRPVersions.ASE_SRP_12_0_0, "57fcea0ed8b5eb347923c4c21fa31b57"},
+			{ASESRPVersions.ASE_SRP_12_1_0, "57fcea0ed8b5eb347923c4c21fa31b57"},
+			{ASESRPVersions.ASE_SRP_12_1_1, "57fcea0ed8b5eb347923c4c21fa31b57"},
+			{ASESRPVersions.ASE_SRP_12_1_2, "57fcea0ed8b5eb347923c4c21fa31b57"},
 			{ASESRPVersions.ASE_SRP_RECENT,	"57fcea0ed8b5eb347923c4c21fa31b57"}
 		};
 
@@ -312,28 +341,38 @@ namespace AmplifyShaderEditor
 			{ASESRPVersions.ASE_SRP_7_1_5,	"e137dba02f4d0f542ab09dcedea27314"},
 			{ASESRPVersions.ASE_SRP_7_1_6,	"e137dba02f4d0f542ab09dcedea27314"},
 			{ASESRPVersions.ASE_SRP_7_1_7,	"e137dba02f4d0f542ab09dcedea27314"},
-			{ASESRPVersions.ASE_SRP_7_1_8,  "3aeabe705b70b154ea99893f91351100"},
-			{ASESRPVersions.ASE_SRP_7_2_0,  "3aeabe705b70b154ea99893f91351100"},
-			{ASESRPVersions.ASE_SRP_7_2_1,  "3aeabe705b70b154ea99893f91351100"},
-			{ASESRPVersions.ASE_SRP_7_3_1,  "3aeabe705b70b154ea99893f91351100"},
-			{ASESRPVersions.ASE_SRP_7_4_1,  "3aeabe705b70b154ea99893f91351100"},
-			{ASESRPVersions.ASE_SRP_7_4_2,  "3aeabe705b70b154ea99893f91351100"},
-			{ASESRPVersions.ASE_SRP_7_4_3,  "3aeabe705b70b154ea99893f91351100"},
+			{ASESRPVersions.ASE_SRP_7_1_8,  "38b4bfd7c725505409f8f4d944961db4"},
+			{ASESRPVersions.ASE_SRP_7_2_0,  "38b4bfd7c725505409f8f4d944961db4"},
+			{ASESRPVersions.ASE_SRP_7_2_1,  "38b4bfd7c725505409f8f4d944961db4"},
+			{ASESRPVersions.ASE_SRP_7_3_1,  "38b4bfd7c725505409f8f4d944961db4"},
+			{ASESRPVersions.ASE_SRP_7_4_1,  "38b4bfd7c725505409f8f4d944961db4"},
+			{ASESRPVersions.ASE_SRP_7_4_2,  "38b4bfd7c725505409f8f4d944961db4"},
+			{ASESRPVersions.ASE_SRP_7_4_3,  "38b4bfd7c725505409f8f4d944961db4"},
 			{ASESRPVersions.ASE_SRP_7_5_1,  "3aeabe705b70b154ea99893f91351100"},
 			{ASESRPVersions.ASE_SRP_7_5_2,  "3aeabe705b70b154ea99893f91351100"},
 			{ASESRPVersions.ASE_SRP_7_5_3,  "3aeabe705b70b154ea99893f91351100"},
 			{ASESRPVersions.ASE_SRP_7_6_0,  "3aeabe705b70b154ea99893f91351100"},
+			{ASESRPVersions.ASE_SRP_7_7_1,  "3aeabe705b70b154ea99893f91351100"},
 			{ASESRPVersions.ASE_SRP_8_2_0,  "3aeabe705b70b154ea99893f91351100"},
 			{ASESRPVersions.ASE_SRP_8_3_1,  "3aeabe705b70b154ea99893f91351100"},
 			{ASESRPVersions.ASE_SRP_9_0_0,  "3aeabe705b70b154ea99893f91351100"},
-			{ASESRPVersions.ASE_SRP_10_0_0, "9a5e61a8b3421b944863d0946e32da0a"},
-			{ASESRPVersions.ASE_SRP_10_1_0, "9a5e61a8b3421b944863d0946e32da0a"},
-			{ASESRPVersions.ASE_SRP_10_2_2, "9a5e61a8b3421b944863d0946e32da0a"},
-			{ASESRPVersions.ASE_SRP_10_3_1, "9a5e61a8b3421b944863d0946e32da0a"},
-			{ASESRPVersions.ASE_SRP_10_3_2, "9a5e61a8b3421b944863d0946e32da0a"},
-			{ASESRPVersions.ASE_SRP_10_4_0, "9a5e61a8b3421b944863d0946e32da0a"},
-			{ASESRPVersions.ASE_SRP_10_5_0, "9a5e61a8b3421b944863d0946e32da0a"},
-			{ASESRPVersions.ASE_SRP_11_0_0, "9a5e61a8b3421b944863d0946e32da0a"},
+			{ASESRPVersions.ASE_SRP_10_0_0, "2243c8b4e1ab6914995699133f67ab5a"},
+			{ASESRPVersions.ASE_SRP_10_1_0, "2243c8b4e1ab6914995699133f67ab5a"},
+			{ASESRPVersions.ASE_SRP_10_2_2, "2243c8b4e1ab6914995699133f67ab5a"},
+			{ASESRPVersions.ASE_SRP_10_3_1, "2243c8b4e1ab6914995699133f67ab5a"},
+			{ASESRPVersions.ASE_SRP_10_3_2, "2243c8b4e1ab6914995699133f67ab5a"},
+			{ASESRPVersions.ASE_SRP_10_4_0, "2243c8b4e1ab6914995699133f67ab5a"},
+			{ASESRPVersions.ASE_SRP_10_5_0, "2243c8b4e1ab6914995699133f67ab5a"},
+			{ASESRPVersions.ASE_SRP_10_5_1, "2243c8b4e1ab6914995699133f67ab5a"},
+			{ASESRPVersions.ASE_SRP_10_6_0, "2243c8b4e1ab6914995699133f67ab5a"},
+			{ASESRPVersions.ASE_SRP_10_7_0, "2243c8b4e1ab6914995699133f67ab5a"},
+			{ASESRPVersions.ASE_SRP_10_8_0, "2243c8b4e1ab6914995699133f67ab5a"},
+			{ASESRPVersions.ASE_SRP_10_8_1, "2243c8b4e1ab6914995699133f67ab5a"},
+			{ASESRPVersions.ASE_SRP_11_0_0, "2243c8b4e1ab6914995699133f67ab5a"},
+			{ASESRPVersions.ASE_SRP_12_0_0, "9a5e61a8b3421b944863d0946e32da0a"},
+			{ASESRPVersions.ASE_SRP_12_1_0, "9a5e61a8b3421b944863d0946e32da0a"},
+			{ASESRPVersions.ASE_SRP_12_1_1, "9a5e61a8b3421b944863d0946e32da0a"},
+			{ASESRPVersions.ASE_SRP_12_1_2, "9a5e61a8b3421b944863d0946e32da0a"},
 			{ASESRPVersions.ASE_SRP_RECENT, "9a5e61a8b3421b944863d0946e32da0a"}
 
 		};
@@ -569,7 +608,7 @@ namespace AmplifyShaderEditor
 								)
 							{
 								if( foundNewVersion )
-									Debug.Log( LightweightNewVersionDetected );
+									Debug.Log( URPNewVersionDetected );
 
 								m_importingPackage = ASEImportState.Lightweight;
 								string guid = m_srpToASEPackageLW.ContainsKey( m_currentLWVersion ) ? m_srpToASEPackageLW[ m_currentLWVersion ] : m_srpToASEPackageLW[ ASESRPVersions.ASE_SRP_RECENT ];
@@ -606,7 +645,7 @@ namespace AmplifyShaderEditor
 								)
 							{
 								if( foundNewVersion )
-									Debug.Log( LightweightNewVersionDetected );
+									Debug.Log( URPNewVersionDetected );
 
 								m_importingPackage = ASEImportState.Lightweight;
 								string guid = m_srpToASEPackageLW.ContainsKey( m_currentLWVersion ) ? m_srpToASEPackageLW[ m_currentLWVersion ] : m_srpToASEPackageLW[ ASESRPVersions.ASE_SRP_RECENT ];
@@ -690,6 +729,10 @@ namespace AmplifyShaderEditor
 		}
 		public static ASESRPVersions CurrentHDVersion { get { return m_currentHDVersion; } }
 		public static ASESRPVersions CurrentLWVersion { get { return m_currentLWVersion; } }
+
+		public static bool FoundHDVersion { get { return m_hdPackageInfo != null; } }
+		public static bool FoundLWVersion { get { return m_lwPackageInfo != null; } }
+
 		public static bool CheckImporter { get { return m_importingPackage != ASEImportState.None; } }
 		public static bool IsProcessing { get { return m_requireUpdateList && m_importingPackage == ASEImportState.None; } }
 	}

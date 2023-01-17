@@ -97,7 +97,9 @@ namespace AmplifyShaderEditor
 		psp2,
 		n3ds,
 		wiiu,
+		@switch,
 		vulkan,
+		nomrt,
 		all
 	}
 
@@ -1495,6 +1497,9 @@ namespace AmplifyShaderEditor
 				sortedPorts.Add( m_inputPorts[ i ].OrderId, m_inputPorts[ i ] );
 			}
 
+			//This must be set before node code generation since it will be used by Outline node
+			m_currentDataCollector.SurfaceCustomShadowCaster = CustomShadowCaster;
+
 			bool normalIsConnected = m_normalPort.IsConnected;
 			m_tessOpHelper.Reset();
 			if( m_inputPorts[ m_inputPorts.Count - 1 ].IsConnected )
@@ -1810,6 +1815,7 @@ namespace AmplifyShaderEditor
 			}
 
 			m_customShadowCaster = CustomShadowCaster;
+			
 			//if( !m_renderingOptionsOpHelper.UseDefaultShadowCaster && 
 			//	( ( m_castShadows && ( m_alphaToCoverage || m_inlineAlphaToCoverage.Active ) ) ||
 			//	( m_castShadows && hasOpacity ) ||
@@ -1958,7 +1964,8 @@ namespace AmplifyShaderEditor
 					}
 
 					// Build Color Mask
-					m_colorMaskHelper.BuildColorMask( ref ShaderBody, m_customBlendAvailable );
+					bool forceDefault = m_outlineHelper.ActiveColorMask;
+					m_colorMaskHelper.BuildColorMask( ref ShaderBody, m_customBlendAvailable, forceDefault );
 
 					//ShaderBody += "\t\tZWrite " + _zWriteMode + '\n';
 					//ShaderBody += "\t\tZTest " + _zTestMode + '\n';

@@ -370,6 +370,19 @@ namespace AmplifyShaderEditor
 					uniforms += "\t\tuniform " + UIUtils.PrecisionWirePortToCgType( PrecisionType.Float, WirePortDataType.FLOAT ) + " " + TessUniformName + ";\n";
 				}
 				break;
+				case 2:
+				if( !m_hasCustomFunction )
+				{
+					uniforms += "\t\tuniform " + UIUtils.PrecisionWirePortToCgType( PrecisionType.Float , WirePortDataType.FLOAT ) + " " + EdgeLengthTessUniformName + ";\n";
+				}
+				break;
+				case 3:
+				if( !m_hasCustomFunction )
+				{
+					uniforms += "\t\tuniform " + UIUtils.PrecisionWirePortToCgType( PrecisionType.Float , WirePortDataType.FLOAT ) + " " + EdgeLengthTessUniformName + ";\n";
+					uniforms += "\t\tuniform " + UIUtils.PrecisionWirePortToCgType( PrecisionType.Float , WirePortDataType.FLOAT ) + " " + EdgeLengthTessMaxDispUniformName + ";\n";
+				}
+				break;
 			}
 
 			if( m_phongEnabled )

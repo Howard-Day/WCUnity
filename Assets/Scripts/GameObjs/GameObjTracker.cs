@@ -15,6 +15,11 @@ public class GameObjTracker : MonoBehaviour
     public GameObject[] KilrathiSpawn;
     public GameObject[] ConfedSpawn;
     public GameObject PlayerSpawn;
+    public static int confedKills = 0;
+    public static int kilrathiKills = 0;
+    public static int playerKills = 0;
+    public static int friendlyKills = 0;
+
     // Start is called before the first frame update
     [HideInInspector] public static int frames;
     static public GameObject Tracker;
@@ -39,6 +44,24 @@ public class GameObjTracker : MonoBehaviour
         }
         //print("GameObj Tracker: "+ Ships.Count + " ships found!");
     }
+
+    public static ShipSettings GetShipByID(int checkID)
+    {
+        ShipSettings result;
+        foreach (ShipSettings ship in Ships)
+        {
+            if (ship.ShipID == checkID)
+            {
+                result = ship;
+            }
+        }
+        if (result != null)
+            return result;
+        else
+            return 9999999999999;
+
+    }
+
     public static void RegisterTeams()
     {
         if (Ships.Count == 0)

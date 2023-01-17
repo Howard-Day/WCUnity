@@ -465,6 +465,7 @@ namespace AmplifyShaderEditor
 		
 		public static readonly string TemplateShaderNameBeginTag = "/*ase_name*/";
 		public static readonly string TemplateStencilTag = "/*ase_stencil*/\n";
+		public static readonly string TemplateRenderPlatformsTag = "/*ase_render_platforms*/";
 		public static readonly string TemplateAllModulesTag = "/*ase_all_modules*/\n";
 		public static readonly string TemplateMPSubShaderTag = "\\bSubShader\\b\\s*{";
 		//public static readonly string TemplateMPPassTag = "^\\s*Pass\b\\s*{";//"\\bPass\\b\\s*{";

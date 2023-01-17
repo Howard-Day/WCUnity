@@ -52,7 +52,19 @@ namespace AmplifyShaderEditor
 							int count = nodes.Count;
 							for( int nodeIdx = 0; nodeIdx < count; nodeIdx++ )
 							{
-								nodes[ nodeIdx ].OptionsDefineContainer.AddDefine( "#define "+m_options.ActionsPerOption[ optionId ][ i ].ActionData, false );
+								string defineValue = string.Empty;
+								bool isPragma = false;
+								if( m_options.ActionsPerOption[ optionId ][ i ].ActionData.StartsWith( "pragma" ) )
+								{
+									defineValue = "#" + m_options.ActionsPerOption[ optionId ][ i ].ActionData;
+									isPragma = true;
+								}
+								else
+								{
+									defineValue = "#define " + m_options.ActionsPerOption[ optionId ][ i ].ActionData;
+								}
+
+								nodes[ nodeIdx ].OptionsDefineContainer.AddDirective( defineValue ,false, isPragma );
 							}
 							//dataCollector.AddToDefines( -1, m_options.ActionsPerOption[ optionId ][ i ].ActionData );
 						}
@@ -63,7 +75,7 @@ namespace AmplifyShaderEditor
 							int count = nodes.Count;
 							for( int nodeIdx = 0; nodeIdx < count; nodeIdx++ )
 							{
-								nodes[ nodeIdx ].OptionsDefineContainer.AddDefine( "#undef " + m_options.ActionsPerOption[ optionId ][ i ].ActionData, false );
+								nodes[ nodeIdx ].OptionsDefineContainer.AddDirective( "#undef " + m_options.ActionsPerOption[ optionId ][ i ].ActionData, false );
 							}
 							//dataCollector.AddToDefines( -1, m_options.ActionsPerOption[ optionId ][ i ].ActionData, false );
 						}
@@ -113,12 +125,24 @@ namespace AmplifyShaderEditor
 						{
 							case AseOptionsActionType.SetDefine:
 							{
-								owner.OptionsDefineContainer.AddDefine( "#define " + m_options.ActionsPerOption[ optionId ][ i ].ActionData, true );
+								string defineValue = string.Empty;
+								bool isPragma = false;
+								if( m_options.ActionsPerOption[ optionId ][ i ].ActionData.StartsWith( "pragma" ) )
+								{
+									defineValue = "#" + m_options.ActionsPerOption[ optionId ][ i ].ActionData;
+									isPragma = true;
+								}
+								else
+								{
+									defineValue = "#define " + m_options.ActionsPerOption[ optionId ][ i ].ActionData;
+								}
+
+								owner.OptionsDefineContainer.AddDirective( defineValue ,true,  isPragma );
 							}
 							break;
 							case AseOptionsActionType.SetUndefine:
 							{
-								owner.OptionsDefineContainer.AddDefine( "#undef " + m_options.ActionsPerOption[ optionId ][ i ].ActionData, true );
+								owner.OptionsDefineContainer.AddDirective( "#undef " + m_options.ActionsPerOption[ optionId ][ i ].ActionData, true );
 							}
 							break;
 							case AseOptionsActionType.SetShaderProperty:

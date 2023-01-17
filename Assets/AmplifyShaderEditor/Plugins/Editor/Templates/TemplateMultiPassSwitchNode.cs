@@ -14,7 +14,7 @@ namespace AmplifyShaderEditor
 	{
 		public int SubShaderIdx;
 		public int PassIdx;
-		public InputSwitchMPHelper( int subShaderIdx, int passIdx )
+		public InputSwitchMPHelper( int subShaderIdx , int passIdx )
 		{
 			SubShaderIdx = subShaderIdx;
 			PassIdx = passIdx;
@@ -22,7 +22,7 @@ namespace AmplifyShaderEditor
 	}
 
 	[Serializable]
-	[NodeAttributes( "Template Multi-Pass Switch", "Logical Operators", "Relays, in compile time, the correct input port according to current analyzed sub-shader/pass." )]
+	[NodeAttributes( "Template Multi-Pass Switch" , "Logical Operators" , "Relays, in compile time, the correct input port according to current analyzed sub-shader/pass." )]
 	public sealed class TemplateMultiPassSwitchNode : TemplateNodeParent
 	{
 		private const string InputLabelStr = "SubShader {0} Pass {1}";
@@ -39,15 +39,15 @@ namespace AmplifyShaderEditor
 			base.CommonInit( uniqueId );
 		}
 
-		public override void OnInputPortConnected( int portId, int otherNodeId, int otherPortId, bool activateNode = true )
+		public override void OnInputPortConnected( int portId , int otherNodeId , int otherPortId , bool activateNode = true )
 		{
-			base.OnInputPortConnected( portId, otherNodeId, otherPortId, activateNode );
+			base.OnInputPortConnected( portId , otherNodeId , otherPortId , activateNode );
 			UpdateConnections();
 		}
 
-		public override void OnConnectedOutputNodeChanges( int inputPortId, int otherNodeId, int otherPortId, string name, WirePortDataType type )
+		public override void OnConnectedOutputNodeChanges( int inputPortId , int otherNodeId , int otherPortId , string name , WirePortDataType type )
 		{
-			base.OnConnectedOutputNodeChanges( inputPortId, otherNodeId, otherPortId, name, type );
+			base.OnConnectedOutputNodeChanges( inputPortId , otherNodeId , otherPortId , name , type );
 			UpdateConnections();
 		}
 
@@ -62,7 +62,7 @@ namespace AmplifyShaderEditor
 			WirePortDataType mainType = WirePortDataType.FLOAT;
 
 			int highest = UIUtils.GetPriority( mainType );
-			for( int i = 0; i < m_inputPorts.Count; i++ )
+			for( int i = 0 ; i < m_inputPorts.Count ; i++ )
 			{
 				if( m_inputPorts[ i ].IsConnected )
 				{
@@ -75,12 +75,12 @@ namespace AmplifyShaderEditor
 				}
 			}
 
-			for( int i = 0; i < m_inputPorts.Count; i++ )
+			for( int i = 0 ; i < m_inputPorts.Count ; i++ )
 			{
-				m_inputPorts[ i ].ChangeType( mainType, false );
+				m_inputPorts[ i ].ChangeType( mainType , false );
 			}
 
-			m_outputPorts[ 0 ].ChangeType( mainType, false );
+			m_outputPorts[ 0 ].ChangeType( mainType , false );
 		}
 
 		public override void Draw( DrawInfo drawInfo )
@@ -111,15 +111,15 @@ namespace AmplifyShaderEditor
 				{
 					int index = 0;
 					int subShaderCount = m_templateMPData.SubShaders.Count;
-					for( int subShaderIdx = 0; subShaderIdx < subShaderCount; subShaderIdx++ )
+					for( int subShaderIdx = 0 ; subShaderIdx < subShaderCount ; subShaderIdx++ )
 					{
 						int passCount = m_templateMPData.SubShaders[ subShaderIdx ].Passes.Count;
-						for( int passIdx = 0; passIdx < passCount; passIdx++ )
+						for( int passIdx = 0 ; passIdx < passCount ; passIdx++ )
 						{
 							if( m_templateMPData.SubShaders[ subShaderIdx ].Passes[ passIdx ].HasValidFunctionBody )
 							{
-								m_inputPorts[ index ].Name = string.Format( InputLabelStr, subShaderIdx, passIdx );
-								m_inputHelper.Add( new InputSwitchMPHelper( subShaderIdx, passIdx ) );
+								m_inputPorts[ index ].Name = string.Format( InputLabelStr , subShaderIdx , passIdx );
+								m_inputHelper.Add( new InputSwitchMPHelper( subShaderIdx , passIdx ) );
 								index += 1;
 							}
 						}
@@ -128,7 +128,7 @@ namespace AmplifyShaderEditor
 			}
 			else
 			{
-				m_inputPorts[0].Name = "In";
+				m_inputPorts[ 0 ].Name = "In";
 			}
 		}
 
@@ -140,12 +140,12 @@ namespace AmplifyShaderEditor
 				if( m_templateMPData != null )
 				{
 					int subShaderCount = m_templateMPData.SubShaders.Count;
-					for( int subShaderIdx = 0; subShaderIdx < subShaderCount; subShaderIdx++ )
+					for( int subShaderIdx = 0 ; subShaderIdx < subShaderCount ; subShaderIdx++ )
 					{
 						int passCount = m_templateMPData.SubShaders[ subShaderIdx ].Passes.Count;
-						for( int passIdx = 0; passIdx < passCount; passIdx++ )
+						for( int passIdx = 0 ; passIdx < passCount ; passIdx++ )
 						{
-							if( m_templateMPData.SubShaders[ subShaderIdx ].Passes[passIdx].HasValidFunctionBody )
+							if( m_templateMPData.SubShaders[ subShaderIdx ].Passes[ passIdx ].HasValidFunctionBody )
 								inputCountHelper += 1;
 						}
 					}
@@ -168,15 +168,15 @@ namespace AmplifyShaderEditor
 				if( m_templateMPData != null )
 				{
 					int subShaderCount = m_templateMPData.SubShaders.Count;
-					for( int subShaderIdx = 0; subShaderIdx < subShaderCount; subShaderIdx++ )
+					for( int subShaderIdx = 0 ; subShaderIdx < subShaderCount ; subShaderIdx++ )
 					{
 						int passCount = m_templateMPData.SubShaders[ subShaderIdx ].Passes.Count;
-						for( int passIdx = 0; passIdx < passCount; passIdx++ )
+						for( int passIdx = 0 ; passIdx < passCount ; passIdx++ )
 						{
 							if( m_templateMPData.SubShaders[ subShaderIdx ].Passes[ passIdx ].HasValidFunctionBody )
 							{
-								AddInputPort( WirePortDataType.FLOAT, false, string.Format( InputLabelStr, subShaderIdx, passIdx ) );
-								m_inputHelper.Add( new InputSwitchMPHelper( subShaderIdx, passIdx ) );
+								AddInputPort( WirePortDataType.FLOAT , false , string.Format( InputLabelStr , subShaderIdx , passIdx ) );
+								m_inputHelper.Add( new InputSwitchMPHelper( subShaderIdx , passIdx ) );
 								m_inputCountHelper += 1;
 							}
 						}
@@ -185,29 +185,29 @@ namespace AmplifyShaderEditor
 			}
 			else
 			{
-				AddInputPort( WirePortDataType.FLOAT, false, "In" );
+				AddInputPort( WirePortDataType.FLOAT , false , "In" );
 				m_inputCountHelper += 1;
 			}
 		}
 
-		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
+		public override string GenerateShaderForOutput( int outputId , ref MasterNodeDataCollector dataCollector , bool ignoreLocalvar )
 		{
 			if( dataCollector.MasterNodeCategory != AvailableShaderTypes.Template )
 			{
-				UIUtils.ShowMessage( "Template Multi-Pass Switch Data node is only intended for templates use only" );
+				UIUtils.ShowMessage( "Template Multi-Pass Switch Data node is only intended for templates use only" , MessageSeverity.Error );
 				return m_outputPorts[ 0 ].ErrorValue;
 			}
-			
+
 			int currSubShaderIdx = dataCollector.TemplateDataCollectorInstance.MultipassSubshaderIdx;
 			int currPassIdx = dataCollector.TemplateDataCollectorInstance.MultipassPassIdx;
 
 			int inputHelperCount = m_inputHelper.Count;
-			for( int i = 0; i< inputHelperCount; i++ )
+			for( int i = 0 ; i < inputHelperCount ; i++ )
 			{
-				if(m_inputHelper[i].SubShaderIdx == currSubShaderIdx && m_inputHelper[ i ].PassIdx == currPassIdx )
+				if( m_inputHelper[ i ].SubShaderIdx == currSubShaderIdx && m_inputHelper[ i ].PassIdx == currPassIdx )
 					return m_inputPorts[ i ].GeneratePortInstructions( ref dataCollector );
 			}
-			
+
 			UIUtils.ShowMessage( "Invalid subshader or pass on Template Multi-Pass Switch Data" );
 			return m_outputPorts[ 0 ].ErrorValue;
 		}
@@ -215,6 +215,7 @@ namespace AmplifyShaderEditor
 		public override void OnMasterNodeReplaced( MasterNode newMasterNode )
 		{
 			base.OnMasterNodeReplaced( newMasterNode );
+			m_autoWrapProperties = false;
 			if( newMasterNode.CurrentMasterNodeCategory == AvailableShaderTypes.Template )
 			{
 				FetchMultiPassTemplate( newMasterNode );
@@ -239,16 +240,16 @@ namespace AmplifyShaderEditor
 			base.ReadFromString( ref nodeParams );
 			m_inputCountHelper = Convert.ToInt32( GetCurrentParam( ref nodeParams ) );
 			// Need to add ports here so read internal data is correct
-			for( int i = 0; i < m_inputCountHelper; i++ )
+			for( int i = 0 ; i < m_inputCountHelper ; i++ )
 			{
-				AddInputPort( WirePortDataType.FLOAT, false, Constants.EmptyPortValue );
+				AddInputPort( WirePortDataType.FLOAT , false , Constants.EmptyPortValue );
 			}
 		}
 
-		public override void WriteToString( ref string nodeInfo, ref string connectionsInfo )
+		public override void WriteToString( ref string nodeInfo , ref string connectionsInfo )
 		{
-			base.WriteToString( ref nodeInfo, ref connectionsInfo );
-			IOUtils.AddFieldValueToString( ref nodeInfo, m_inputCountHelper );
+			base.WriteToString( ref nodeInfo , ref connectionsInfo );
+			IOUtils.AddFieldValueToString( ref nodeInfo , m_inputCountHelper );
 		}
 
 		public override void Destroy()
@@ -277,7 +278,7 @@ namespace AmplifyShaderEditor
 				}
 			}
 
-			
+
 			if( m_multiPassMode )
 			{
 				if( m_templateMPData != null )
@@ -291,15 +292,15 @@ namespace AmplifyShaderEditor
 						m_inputHelper.Clear();
 						int index = 0;
 						int subShaderCount = m_templateMPData.SubShaders.Count;
-						for( int subShaderIdx = 0; subShaderIdx < subShaderCount; subShaderIdx++ )
+						for( int subShaderIdx = 0 ; subShaderIdx < subShaderCount ; subShaderIdx++ )
 						{
 							int passCount = m_templateMPData.SubShaders[ subShaderIdx ].Passes.Count;
-							for( int passIdx = 0; passIdx < passCount; passIdx++ )
+							for( int passIdx = 0 ; passIdx < passCount ; passIdx++ )
 							{
 								if( m_templateMPData.SubShaders[ subShaderIdx ].Passes[ passIdx ].HasValidFunctionBody )
 								{
-									m_inputPorts[ index ].Name = string.Format( InputLabelStr, subShaderIdx, passIdx );
-									m_inputHelper.Add( new InputSwitchMPHelper( subShaderIdx, passIdx ));
+									m_inputPorts[ index ].Name = string.Format( InputLabelStr , subShaderIdx , passIdx );
+									m_inputHelper.Add( new InputSwitchMPHelper( subShaderIdx , passIdx ) );
 									index += 1;
 								}
 							}
@@ -316,12 +317,12 @@ namespace AmplifyShaderEditor
 			{
 				if( create )
 				{
-					AddInputPort( WirePortDataType.FLOAT, false, "In" );
+					AddInputPort( WirePortDataType.FLOAT , false , "In" );
 				}
 				else
 				{
 					m_inputPorts[ 0 ].Name = "In";
-				}	 
+				}
 			}
 		}
 	}

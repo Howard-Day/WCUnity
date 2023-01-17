@@ -136,7 +136,8 @@ namespace AmplifyShaderEditor
 			else if ( drawInfo.CurrentEventType == EventType.Repaint )
 			{
 				bool guiEnabled = GUI.enabled;
-				GUI.enabled = m_currentParameterType != PropertyType.Global;
+				//redundant ternary conditional but this makes easier to read that only when m_showCuffer is on that we need to take PropertyType.Property into account
+				GUI.enabled = ( m_showCBuffer ) ? m_currentParameterType != PropertyType.Global && m_currentParameterType != PropertyType.Property : m_currentParameterType != PropertyType.Global;
 
 				bool currMode = m_materialMode && m_currentParameterType != PropertyType.Constant;
 				Matrix4x4 value = currMode ? m_materialValue : m_defaultValue;

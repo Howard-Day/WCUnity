@@ -193,7 +193,7 @@ namespace AmplifyShaderEditor
 					break;
 				}
 			}
-			else if( UIUtils.CurrentShaderVersion() < 15600 )
+			else /*if( UIUtils.CurrentShaderVersion() < 15600 )*/
 			{
 				CheckSpecialTag();
 			}

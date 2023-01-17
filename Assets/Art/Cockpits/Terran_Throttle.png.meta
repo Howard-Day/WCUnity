@@ -120,6 +120,7 @@ TextureImporter:
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
   vTOnly: 0
+  ignoreMasterTextureLimit: 0
   grayScaleToAlpha: 0
   generateCubemap: 6
   cubemapConvolution: 0
@@ -892,6 +893,39 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
+    nameFileIdTable:
+      Terran_Throttle_5: -1164300289819983421
+      Terran_Throttle_22: -8498266606633413283
+      Terran_Throttle_26: 7932921539706674630
+      Terran_Throttle_3: -8144222909375528648
+      Terran_Throttle_7: 2355856851767934321
+      Terran_Throttle_21: 4675986154546631530
+      Terran_Throttle_29: 7622412105290166150
+      Terran_Throttle_0: -6480868016896297258
+      Terran_Throttle_12: -7995424330018908426
+      Terran_Throttle_19: 7435917901422630002
+      Terran_Throttle_6: -6857498836935602564
+      Terran_Throttle_9: 363083045749594717
+      Terran_Throttle_31: -4266551828175092170
+      Terran_Throttle_15: -5098272082900940081
+      Terran_Throttle_18: -7642039669382459218
+      Terran_Throttle_11: -183665182276045823
+      Terran_Throttle_14: -3061140765604815529
+      Terran_Throttle_1: -1385882757676690646
+      Terran_Throttle_17: -3201068319882237954
+      Terran_Throttle_24: 7561061043516672840
+      Terran_Throttle_20: -6499711699388209952
+      Terran_Throttle_10: -5323667181759138468
+      Terran_Throttle_2: -4516752914329077820
+      Terran_Throttle_13: 6272903051587477820
+      Terran_Throttle_23: -5065110417879766683
+      Terran_Throttle_16: 2244663697222914397
+      Terran_Throttle_27: 7901292020612830496
+      Terran_Throttle_8: 3303091898099302177
+      Terran_Throttle_30: -6195897290200928479
+      Terran_Throttle_4: -3093745381982154266
+      Terran_Throttle_28: 215154841206993206
+      Terran_Throttle_25: -7940109029441494385
   spritePackingTag: 
   pSDRemoveMatte: 0
   pSDShowRemoveMatteOption: 0

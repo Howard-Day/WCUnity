@@ -45,6 +45,10 @@ namespace AmplifyShaderEditor
 		public static readonly string PrefDisablePreviews = "ASEActivatePreviews" + Application.productName;
 		public static bool GlobalDisablePreviews = false;
 
+		private static readonly GUIContent ForceTemplateMinShaderModel = new GUIContent( "Force Template Min. Shader Model" , "If active, when loading a shader its shader model will be replaced by the one specified in template if what is loaded is below the one set over the template." );
+		public static readonly string PrefForceTemplateMinShaderModel = "ASEForceTemplateMinShaderModel" + Application.productName;
+		public static bool GlobalForceTemplateMinShaderModel = true;
+
 		private static bool PrefsLoaded = false;
 
 #if UNITY_2019_1_OR_NEWER
@@ -136,6 +140,16 @@ namespace AmplifyShaderEditor
 				}
 			}
 
+
+			{
+				EditorGUI.BeginChangeCheck();
+				GlobalForceTemplateMinShaderModel = EditorGUILayout.Toggle( ForceTemplateMinShaderModel , GlobalForceTemplateMinShaderModel );
+				if( EditorGUI.EndChangeCheck() )
+				{
+					EditorPrefs.SetBool( PrefForceTemplateMinShaderModel , GlobalForceTemplateMinShaderModel );
+				}
+			}
+
 #if UNITY_2019_4_OR_NEWER
 			EditorGUI.BeginChangeCheck();
 			GlobalShowAsyncMsg = EditorGUILayout.Toggle( ShowAsyncMsg, GlobalShowAsyncMsg);
@@ -167,6 +181,10 @@ namespace AmplifyShaderEditor
 				EditorPrefs.DeleteKey( PrefDisablePreviews );
 				GlobalDisablePreviews = false;
 
+				EditorPrefs.DeleteKey( PrefForceTemplateMinShaderModel );
+				GlobalForceTemplateMinShaderModel = true;
+				
+
 #if UNITY_2019_4_OR_NEWER
 				EditorPrefs.DeleteKey( PrefShowAsyncMsg );
 				GlobalShowAsyncMsg = true;
@@ -184,6 +202,7 @@ namespace AmplifyShaderEditor
 			GlobalClearLog = EditorPrefs.GetBool( PrefClearLog, true );
 			GlobalUpdateOnSceneSave = EditorPrefs.GetBool( PrefUpdateOnSceneSave , true );
 			GlobalDisablePreviews = EditorPrefs.GetBool( PrefDisablePreviews , false );
+			GlobalForceTemplateMinShaderModel = EditorPrefs.GetBool( PrefForceTemplateMinShaderModel , true );
 #if UNITY_2019_4_OR_NEWER
 			GlobalShowAsyncMsg = EditorPrefs.GetBool( PrefShowAsyncMsg, true );
 #endif

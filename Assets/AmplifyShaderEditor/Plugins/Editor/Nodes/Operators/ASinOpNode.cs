@@ -6,7 +6,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "ASin", "Trigonometry Operators", "Arcsine of scalars and vectors" )]
+	[NodeAttributes( "ASin", "Trigonometry Operators", "Arcsine of scalars and vectors", tags: "arcsine" )]
 	public sealed class ASinOpNode : SingleInputOp
 	{
 		protected override void CommonInit( int uniqueId )

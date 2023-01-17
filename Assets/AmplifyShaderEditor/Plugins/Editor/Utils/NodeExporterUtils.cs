@@ -1,6 +1,11 @@
 using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
+using System;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.IO;
 
 namespace AmplifyShaderEditor
 {
@@ -125,6 +130,51 @@ namespace AmplifyShaderEditor
 			m_undoState = DebugUndoNodeState.CreateNode;
 		}
 
+		private Type[] GetTypesInNamespace( Assembly assembly , string nameSpace )
+		{
+			return assembly.GetTypes().Where( t => String.Equals( t.Namespace , nameSpace , StringComparison.Ordinal ) ).ToArray();
+		}
+
+		public void GenerateNodesCSV( string path )
+		{
+			path += "AvailableNodesCSV.txt";
+			StringBuilder result = new StringBuilder();
+			result.AppendLine( "Nodes" );
+			result.AppendLine( "Name,Updated" );
+			try
+			{
+				//IEnumerable<System.Type> availableTypes = AppDomain.CurrentDomain.GetAssemblies().ToList().SelectMany( type => type.GetTypes() );
+				var mainAssembly = Assembly.GetExecutingAssembly();
+				Type[] availableTypes = GetTypesInNamespace( mainAssembly , "AmplifyShaderEditor" );
+				foreach( System.Type type in availableTypes )
+				{
+					foreach( NodeAttributes attribute in Attribute.GetCustomAttributes( type ).OfType<NodeAttributes>() )
+					{
+						if( attribute.Available && !attribute.Deprecated )
+						{
+							result.AppendLine( attribute.Name + ", false" );
+						}
+					}
+				}
+			}
+			catch( ReflectionTypeLoadException exception )
+			{
+				Debug.LogException( exception );
+			}
+
+			result.AppendLine();
+			result.AppendLine( "Shader Functions" );
+			result.AppendLine( "Name,Updated" );
+			string[] guids = AssetDatabase.FindAssets( "t:AmplifyShaderFunction" );
+			for( int i = 0 ; i < guids.Length ; i++ )
+			{
+				AmplifyShaderFunction sf = AssetDatabase.LoadAssetAtPath<AmplifyShaderFunction>( AssetDatabase.GUIDToAssetPath( guids[ i ] ) );
+				result.AppendLine( sf.FunctionName + ",false" );
+			}
+
+			IOUtils.SaveTextfileToDisk( result.ToString() , path , false );
+			Debug.Log( "Available nodes CSV saved to: " + path );
+		}
 
 		public void Update()
 		{

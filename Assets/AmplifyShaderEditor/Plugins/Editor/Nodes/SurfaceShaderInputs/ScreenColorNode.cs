@@ -9,7 +9,7 @@ namespace AmplifyShaderEditor
 {
 
 	[Serializable]
-	[NodeAttributes( "Grab Screen Color", "Camera And Screen", "Grabed pixel color value from screen" )]
+	[NodeAttributes( "Grab Screen Color" , "Camera And Screen" , "Grabed pixel color value from screen" )]
 	public sealed class ScreenColorNode : PropertyNode
 	{
 #if UNITY_5_6_OR_NEWER
@@ -22,7 +22,7 @@ namespace AmplifyShaderEditor
 			"#endif"
 		};
 #endif
-		private readonly Color ReferenceHeaderColor = new Color( 0.6f, 3.0f, 1.25f, 1.0f );
+		private readonly Color ReferenceHeaderColor = new Color( 0.6f , 3.0f , 1.25f , 1.0f );
 
 		private const string SamplerType = "tex2D";
 		private const string GrabTextureDefault = "_GrabTexture";
@@ -54,12 +54,33 @@ namespace AmplifyShaderEditor
 		[SerializeField]
 		private bool m_exposure = false;
 
+		[SerializeField]
+		private bool m_isURP2D = false;
+
 		//SRP specific code
 		private const string OpaqueTextureDefine = "REQUIRE_OPAQUE_TEXTURE 1";
 		private const string FetchVarName = "fetchOpaqueVal";
 
 		//private string LWFetchOpaqueTexture = "SAMPLE_TEXTURE2D( _CameraOpaqueTexture, sampler_CameraOpaqueTexture, {0})";
+
 		private string LWFetchOpaqueTexture = "float4( SHADERGRAPH_SAMPLE_SCENE_COLOR( {0} ), 1.0 )";
+
+#if UNITY_2021_1_OR_NEWER
+		private const string URP2DHelpBox = "For the Grab Screen Color to properly work a proper setup is required:" +
+											"\n- On the 2D Asset Renderer the \"Foremost Sorting Layer\" must be set to the last layer which is going to be caught by the Grab Screen Color" +
+											"\n- The \"Sorting Layer\" of the sprite itself which will be using the shader with the Grab Screen Color must be set to one which is above the one specified on the previous step";
+
+		private readonly string[] URP2DDeclaration = {  "TEXTURE2D_X( _CameraSortingLayerTexture );",
+														"SAMPLER( sampler_CameraSortingLayerTexture );" };
+		private readonly string URP2DFunctionHeader = "float4( ASESample2DSortingLayer({0}), 1.0 )";
+		private readonly string[] URP2DFunctionBody =
+		{
+			"float3 ASESample2DSortingLayer( float2 uv )\n" +
+			"{\n"+
+			"\treturn SAMPLE_TEXTURE2D_X(_CameraSortingLayerTexture, sampler_CameraSortingLayerTexture, UnityStereoTransformScreenSpaceTex(uv)).rgb;\n"+
+			"}\n"
+		};
+#endif
 #if UNITY_2018_3_OR_NEWER
 		private const string HDSampleSceneColorHeader5 = "ASEHDSampleSceneColor({0}, {1}, {2})";
 		private readonly string[] HDSampleSceneColorFunc5 =
@@ -327,6 +348,17 @@ namespace AmplifyShaderEditor
 				m_exposure = EditorGUILayoutToggle( "Exposure", m_exposure );
 			}
 #endif
+
+#if UNITY_2021_1_OR_NEWER
+			if( ( ContainerGraph.IsLWRP || ContainerGraph.ParentWindow.IsShaderFunctionWindow ) && ASEPackageManagerHelper.CurrentHDVersion >= ASESRPVersions.ASE_SRP_11_0_0 )
+			{
+				m_isURP2D = EditorGUILayoutToggle( "2D Renderer" , m_isURP2D);
+				if( m_isURP2D )
+				{
+					EditorGUILayout.HelpBox( URP2DHelpBox , MessageType.Info );
+				}
+			}
+#endif
 		}
 
 		private void UpdatePort()
@@ -395,7 +427,20 @@ namespace AmplifyShaderEditor
 				string uvCoords = GetUVCoords( ref dataCollector, ignoreLocalVar, false );
 				if( dataCollector.TemplateDataCollectorInstance.IsLWRP )
 				{
-					dataCollector.AddLocalVariable( UniqueId, CurrentPrecisionType, WirePortDataType.FLOAT4, valueName, string.Format( LWFetchOpaqueTexture, uvCoords ) );
+
+#if UNITY_2021_1_OR_NEWER
+					if( m_isURP2D )
+					{
+						dataCollector.AddToUniforms( UniqueId , URP2DDeclaration[ 0 ] );
+						dataCollector.AddToUniforms( UniqueId , URP2DDeclaration[ 1 ] );
+						dataCollector.AddFunction( URP2DFunctionBody[ 0 ] , URP2DFunctionBody , false );
+						dataCollector.AddLocalVariable( UniqueId , CurrentPrecisionType , WirePortDataType.FLOAT4 , valueName , string.Format( URP2DFunctionHeader , uvCoords ) );
+					}
+					else
+#endif
+					{
+						dataCollector.AddLocalVariable( UniqueId , CurrentPrecisionType , WirePortDataType.FLOAT4 , valueName , string.Format( LWFetchOpaqueTexture , uvCoords ) );
+					}
 				}
 				else
 				{
@@ -599,6 +644,11 @@ namespace AmplifyShaderEditor
 				m_exposure = Convert.ToBoolean( GetCurrentParam( ref nodeParams ) );
 			}
 
+			if( UIUtils.CurrentShaderVersion() > 18923 )
+			{
+				m_isURP2D = Convert.ToBoolean( GetCurrentParam( ref nodeParams ) );
+			}
+
 			if( !m_isNodeBeingCopied && m_referenceType == TexReferenceType.Object )
 			{
 				ContainerGraph.ScreenColorNodes.UpdateDataOnNode( UniqueId, DataToArray );
@@ -613,6 +663,7 @@ namespace AmplifyShaderEditor
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_useCustomGrab );
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_normalize );
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_exposure );
+			IOUtils.AddFieldValueToString( ref nodeInfo , m_isURP2D );
 		}
 
 		public override void RefreshExternalReferences()

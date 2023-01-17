@@ -40,7 +40,7 @@ namespace AmplifyShaderEditor
                         }
                     }
                 }break;
-                case EventType.DragExited:DragAndDrop.PrepareStartDrag();break;
+                //case EventType.DragExited:DragAndDrop.PrepareStartDrag();break;
             }
         }
     }

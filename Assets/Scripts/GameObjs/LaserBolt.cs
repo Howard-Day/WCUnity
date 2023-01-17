@@ -35,7 +35,7 @@ public class LaserBolt : MonoBehaviour
       ShipSettings shipHit = Hit.transform.gameObject.GetComponent<ShipSettings>();
       if (shipHit.ShipID != ProjID)
       {
-        shipHit.DoDamage(Hit.point, damage);
+        shipHit.DoDamage(Hit.point, damage, ProjID);
         Instantiate(hitShield,Hit.point, Quaternion.identity,gameObject.transform.parent);
         Destroy(gameObject);
       }

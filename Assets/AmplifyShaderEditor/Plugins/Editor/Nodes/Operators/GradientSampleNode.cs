@@ -101,19 +101,42 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		public override void OnNodeLogicUpdate( DrawInfo drawInfo )
+		public override void OnInputPortConnected( int portId , int otherNodeId , int otherPortId , bool activateNode = true )
 		{
-			base.OnNodeLogicUpdate( drawInfo );
-
-			if( m_gradPort.IsConnected )
-			{
+			if( portId == 0 )
 				m_gradientNode = RecursiveBackCheck( m_gradPort.GetOutputNode( 0 ) );
-			}
-			else
+
+			base.OnInputPortConnected( portId , otherNodeId , otherPortId , activateNode );
+		}
+
+		public override void OnInputPortDisconnected( int portId )
+		{
+			if( portId == 0 )
 			{
 				m_gradientNode = null;
 			}
+
+			base.OnInputPortDisconnected( portId );
 		}
+
+
+		//public override void OnNodeLogicUpdate( DrawInfo drawInfo )
+		//{
+		//	base.OnNodeLogicUpdate( drawInfo );
+
+		//	if( m_gradPort.IsConnected )
+		//	{
+		//		if( m_gradientNode == null )
+		//		{
+		//			m_gradientNode = RecursiveBackCheck( m_gradPort.GetOutputNode( 0 ) );
+		//			PreviewIsDirty = true;
+		//		}
+		//	}
+		//	else
+		//	{
+		//		m_gradientNode = null;
+		//	}
+		//}
 
 		GradientNode RecursiveBackCheck( ParentNode node )
 		{
@@ -161,6 +184,7 @@ namespace AmplifyShaderEditor
 			string gradient = "(Gradient)0";
 			if( m_inputPorts[ 0 ].IsConnected && m_gradientNode != null )
 				gradient = m_inputPorts[ 0 ].GeneratePortInstructions( ref dataCollector );
+
 			string time = m_inputPorts[ 1 ].GeneratePortInstructions( ref dataCollector );
 
 			string functionResult =	dataCollector.AddFunctions( m_functionHeader, m_functionBody, gradient, time );

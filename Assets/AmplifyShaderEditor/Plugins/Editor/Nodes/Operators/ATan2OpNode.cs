@@ -4,7 +4,7 @@
 namespace AmplifyShaderEditor
 {
 	[System.Serializable]
-	[NodeAttributes( "ATan2", "Trigonometry Operators", "Arctangent of y/x" )]
+	[NodeAttributes( "ATan2", "Trigonometry Operators", "Arctangent of y/x",tags: "arctangent2" )]
 	public sealed class ATan2OpNode : DynamicTypeNode
 	{
 		protected override void CommonInit( int uniqueId )

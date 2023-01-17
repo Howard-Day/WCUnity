@@ -494,7 +494,7 @@ namespace AmplifyShaderEditor
 			string value = string.Format( "tex2D{0}({1}, {2})", ( isVertex ? "lod" : string.Empty ), textures[ outputId ].name, GetUVCoords( ref dataCollector, ignoreLocalvar, uvPropertyName ) );
 			if( m_autoNormal && m_textureTypes[ outputId ] == ProceduralOutputType.Normal )
 			{
-				value = GeneratorUtils.GenerateUnpackNormalStr( ref dataCollector, CurrentPrecisionType, UniqueId, OutputId, value, false, "1.0" );
+				value = GeneratorUtils.GenerateUnpackNormalStr( ref dataCollector, CurrentPrecisionType, UniqueId, OutputId, value, false, "1.0" , UnpackInputMode.Tangent );
 			}
 
 			dataCollector.AddPropertyNode( this );
@@ -1147,7 +1147,7 @@ namespace AmplifyShaderEditor
 			string value = string.Format( "tex2D{0}({1}, {2})", ( isVertex ? "lod" : string.Empty ), propertyName, GetUVCoords( ref dataCollector, ignoreLocalvar, uvPropertyName ) );
 			if( m_autoNormal && m_textureTypes[ outputId ] == ASEProceduralOutputType.Normal )
 			{
-				value = GeneratorUtils.GenerateUnpackNormalStr( ref dataCollector, CurrentPrecisionType, UniqueId, OutputId, value, false, "1.0" );
+				value = GeneratorUtils.GenerateUnpackNormalStr( ref dataCollector, CurrentPrecisionType, UniqueId, OutputId, value, false, "1.0",UnpackInputMode.Tangent );
 			}
 
 			dataCollector.AddPropertyNode( this );

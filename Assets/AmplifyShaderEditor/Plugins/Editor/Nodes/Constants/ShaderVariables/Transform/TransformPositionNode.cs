@@ -57,7 +57,8 @@ namespace AmplifyShaderEditor
 		///////////////////////////////////////////////////////////
 		private const string AseObjectToClipPosVarName = "objectToClip";
 		private const string AseObjectToClipPosFormat = "UnityObjectToClipPos({0})";
-		private const string AseSRPObjectToClipPosFormat = "TransformWorldToHClip(TransformObjectToWorld({0}))";
+		//private const string AseSRPObjectToClipPosFormat = "TransformWorldToHClip(TransformObjectToWorld({0}))";
+		private const string AseSRPObjectToClipPosFormat = "TransformObjectToHClip({0})";
 
 		private const string AseWorldToClipPosVarName = "worldToClip";
 		private const string AseWorldToClipPosFormat = "mul(UNITY_MATRIX_VP, float4({0}, 1.0))";

@@ -1364,6 +1364,7 @@ namespace AmplifyShaderEditor
 			}
 			else
 			{
+				m_outputPorts[ 0 ].SetLocalValue( triplanarVarName , dataCollector.PortCategory );
 				return GetOutputVectorItem( 0, outputId, triplanarVarName );
 			}
 		}

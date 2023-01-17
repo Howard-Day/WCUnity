@@ -765,6 +765,7 @@ namespace AmplifyShaderEditor
 			{WirePortDataType.SAMPLERCUBE,  "samplerCUBE"},
 			{WirePortDataType.SAMPLER2DARRAY,  "sampler2DArray"},
 			{WirePortDataType.UINT,         "uint"},
+			{WirePortDataType.UINT4,         "uint4"},
 			{WirePortDataType.SAMPLERSTATE, "SamplerState"}
 		};
 
@@ -852,6 +853,9 @@ namespace AmplifyShaderEditor
 				IOUtils.AllOpenedWindows.Clear();
 			}
 
+#if UNITY_2018_3_OR_NEWER
+			IOUtils.ClearLoadedAssemblies();
+#endif
 			Initialized = false;
 
 			if( m_dummyPreviewRT != null )
@@ -1363,6 +1367,9 @@ namespace AmplifyShaderEditor
 				return m_wirePortToCgType[ type ];
 
 			if( type == WirePortDataType.UINT )
+				return m_wirePortToCgType[ type ];
+
+			if( type == WirePortDataType.UINT4 )
 				return m_wirePortToCgType[ type ];
 
 			return string.Format( m_precisionWirePortToCgType[ type ] , m_precisionTypeToCg[ precisionType ] );
@@ -2620,6 +2627,11 @@ namespace AmplifyShaderEditor
 
 		public static string GetUniqueUniformName( string name )
 		{
+			if( CurrentWindow.DuplicatePrevBufferInstance.IsUniformNameAvailable( name ) )
+			{
+				return name;
+			}
+
 			int num = 0;
 			Regex reg = new Regex( @"([0-9]+)$" );
 			Match match = reg.Match( name );

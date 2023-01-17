@@ -11,7 +11,7 @@ using UnityEditor;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Global Array", "Constants And Properties", "The node returns a value from a global array, which you can configure by entering the name of the array in the node's settings.", null, KeyCode.None, true, false, null, null, "Johann van Berkel" )]
+	[NodeAttributes( "Global Array" , "Constants And Properties" , "The node returns a value from a global array, which you can configure by entering the name of the array in the node's settings." , null , KeyCode.None , true , false , null , null , "Johann van Berkel" )]
 	public sealed class GlobalArrayNode : ParentNode
 	{
 		private const string DefaultArrayName = "MyGlobalArray";
@@ -22,8 +22,8 @@ namespace AmplifyShaderEditor
 		private const string IsJaggedStr = "Is Jagged";
 		private const string AutoRegisterStr = "Auto-Register";
 
-		private readonly string[] AvailableTypesLabel = { "Float", "Color", "Vector4", "Matrix4x4" };
-		private readonly WirePortDataType[] AvailableTypesValues = { WirePortDataType.FLOAT, WirePortDataType.COLOR, WirePortDataType.FLOAT4, WirePortDataType.FLOAT4x4 };
+		private readonly string[] AvailableTypesLabel = { "Float" , "Color" , "Vector4" , "Matrix4x4" };
+		private readonly WirePortDataType[] AvailableTypesValues = { WirePortDataType.FLOAT , WirePortDataType.COLOR , WirePortDataType.FLOAT4 , WirePortDataType.FLOAT4x4 };
 
 		[SerializeField]
 		private string m_name = DefaultArrayName;
@@ -53,7 +53,7 @@ namespace AmplifyShaderEditor
 		private bool m_autoRegister = false;
 
 		//////////////////////////////////////////////////////////////////
-		private readonly Color ReferenceHeaderColor = new Color( 0.6f, 3.0f, 1.25f, 1.0f );
+		private readonly Color ReferenceHeaderColor = new Color( 0.6f , 3.0f , 1.25f , 1.0f );
 
 		[SerializeField]
 		private TexReferenceType m_referenceType = TexReferenceType.Object;
@@ -72,15 +72,16 @@ namespace AmplifyShaderEditor
 		{
 			base.CommonInit( uniqueId );
 
-			AddInputPort( WirePortDataType.INT, false, "Index", -1, MasterNodePortCategory.Fragment, 0 );
-			AddInputPort( WirePortDataType.INT, false, "Index Y", -1, MasterNodePortCategory.Fragment, 2 );
-			AddInputPort( WirePortDataType.INT, false, "Array Length", -1, MasterNodePortCategory.Fragment, 1 );
-			AddInputPort( WirePortDataType.INT, false, "Array Length Y", -1, MasterNodePortCategory.Fragment, 3 );
+			AddInputPort( WirePortDataType.INT , false , "Index" , -1 , MasterNodePortCategory.Fragment , 0 );
+			AddInputPort( WirePortDataType.INT , false , "Index Y" , -1 , MasterNodePortCategory.Fragment , 2 );
+			AddInputPort( WirePortDataType.INT , false , "Array Length" , -1 , MasterNodePortCategory.Fragment , 1 );
+			AddInputPort( WirePortDataType.INT , false , "Array Length Y" , -1 , MasterNodePortCategory.Fragment , 3 );
 
-			AddOutputPort( WirePortDataType.FLOAT, "Out" );
+			AddOutputPort( WirePortDataType.FLOAT , "Out" );
 
 			m_textLabelWidth = 95;
-			SetAdditonalTitleText( string.Format( Constants.SubTitleValueFormatStr, m_name ) );
+			m_autoWrapProperties = true;
+			SetAdditonalTitleText( string.Format( Constants.SubTitleValueFormatStr , m_name ) );
 			UpdatePorts();
 		}
 
@@ -104,8 +105,8 @@ namespace AmplifyShaderEditor
 			InputPort arrayLengthPortY = GetInputPortByUniqueId( 3 );
 			if( m_referenceType == TexReferenceType.Object )
 			{
-				m_headerColorModifier =  Color.white;
-				SetAdditonalTitleText( string.Format( Constants.SubTitleValueFormatStr, m_name ) );
+				m_headerColorModifier = Color.white;
+				SetAdditonalTitleText( string.Format( Constants.SubTitleValueFormatStr , m_name ) );
 				arrayLengthPortX.Visible = true;
 				if( m_isJagged )
 				{
@@ -130,7 +131,7 @@ namespace AmplifyShaderEditor
 
 				if( m_referenceNode != null )
 				{
-					SetAdditonalTitleText( string.Format( Constants.SubTitleValueFormatStr, m_referenceNode.DataToArray ) );
+					SetAdditonalTitleText( string.Format( Constants.SubTitleValueFormatStr , m_referenceNode.DataToArray ) );
 					arrayLengthPortX.Visible = false;
 					arrayLengthPortY.Visible = false;
 					if( m_referenceNode.IsJagged )
@@ -151,22 +152,22 @@ namespace AmplifyShaderEditor
 		void DrawObjectProperties()
 		{
 			EditorGUI.BeginChangeCheck();
-			m_name = EditorGUILayoutStringField( "Name", m_name );
+			m_name = EditorGUILayoutStringField( "Name" , m_name );
 			if( EditorGUI.EndChangeCheck() )
 			{
 				m_updated = true;
 				m_name = UIUtils.RemoveInvalidCharacters( m_name );
 				if( string.IsNullOrEmpty( m_name ) )
 					m_name = DefaultArrayName;
-				UIUtils.UpdateGlobalArrayDataNode( UniqueId, m_name );
-				SetAdditonalTitleText( string.Format( Constants.SubTitleValueFormatStr, m_name ) );
+				UIUtils.UpdateGlobalArrayDataNode( UniqueId , m_name );
+				SetAdditonalTitleText( string.Format( Constants.SubTitleValueFormatStr , m_name ) );
 			}
 
 
-			m_autoRegister = EditorGUILayoutToggle( AutoRegisterStr, m_autoRegister );
+			m_autoRegister = EditorGUILayoutToggle( AutoRegisterStr , m_autoRegister );
 
 			EditorGUI.BeginChangeCheck();
-			m_isJagged = EditorGUILayoutToggle( IsJaggedStr, m_isJagged );
+			m_isJagged = EditorGUILayoutToggle( IsJaggedStr , m_isJagged );
 			if( EditorGUI.EndChangeCheck() )
 			{
 				m_updated = true;
@@ -177,10 +178,10 @@ namespace AmplifyShaderEditor
 			if( !indexXPort.IsConnected )
 			{
 				EditorGUI.BeginChangeCheck();
-				m_indexX = EditorGUILayoutIntField( indexXPort.Name, m_indexX );
+				m_indexX = EditorGUILayoutIntField( indexXPort.Name , m_indexX );
 				if( EditorGUI.EndChangeCheck() )
 				{
-					m_indexX = Mathf.Clamp( m_indexX, 0, ( m_arrayLengthX - 1 ) );
+					m_indexX = Mathf.Clamp( m_indexX , 0 , ( ArrayLengthX - 1 ) );
 				}
 			}
 
@@ -190,10 +191,10 @@ namespace AmplifyShaderEditor
 				if( !indexYPort.IsConnected )
 				{
 					EditorGUI.BeginChangeCheck();
-					m_indexY = EditorGUILayoutIntField( indexYPort.Name, m_indexY );
+					m_indexY = EditorGUILayoutIntField( indexYPort.Name , m_indexY );
 					if( EditorGUI.EndChangeCheck() )
 					{
-						m_indexY = Mathf.Clamp( m_indexY, 0, ( m_arrayLengthY - 1 ) );
+						m_indexY = Mathf.Clamp( m_indexY , 0 , ( ArrayLengthY - 1 ) );
 					}
 				}
 			}
@@ -202,10 +203,10 @@ namespace AmplifyShaderEditor
 			if( !arrayLengthXPort.IsConnected )
 			{
 				EditorGUI.BeginChangeCheck();
-				m_arrayLengthX = EditorGUILayoutIntField( arrayLengthXPort.Name, m_arrayLengthX );
+				m_arrayLengthX = EditorGUILayoutIntField( arrayLengthXPort.Name , m_arrayLengthX );
 				if( EditorGUI.EndChangeCheck() )
 				{
-					m_arrayLengthX = Mathf.Max( 1, m_arrayLengthX );
+					m_arrayLengthX = Mathf.Max( 1 , m_arrayLengthX );
 				}
 			}
 
@@ -215,22 +216,22 @@ namespace AmplifyShaderEditor
 				if( !arrayLengthYPort.IsConnected )
 				{
 					EditorGUI.BeginChangeCheck();
-					m_arrayLengthY = EditorGUILayoutIntField( arrayLengthYPort.Name, m_arrayLengthY );
+					m_arrayLengthY = EditorGUILayoutIntField( arrayLengthYPort.Name , m_arrayLengthY );
 					if( EditorGUI.EndChangeCheck() )
 					{
-						m_arrayLengthY = Mathf.Max( 1, m_arrayLengthY );
+						m_arrayLengthY = Mathf.Max( 1 , m_arrayLengthY );
 					}
 				}
 			}
 
 			EditorGUI.BeginChangeCheck();
-			m_type = EditorGUILayoutPopup( TypeStr, m_type, AvailableTypesLabel );
+			m_type = EditorGUILayoutPopup( TypeStr , m_type , AvailableTypesLabel );
 			if( EditorGUI.EndChangeCheck() )
 			{
-				m_outputPorts[ 0 ].ChangeType( (WirePortDataType)AvailableTypesValues[ m_type ], false );
+				m_outputPorts[ 0 ].ChangeType( (WirePortDataType)AvailableTypesValues[ m_type ] , false );
 			}
 
-			m_autoRangeCheck = EditorGUILayoutToggle( AutoRangeCheckStr, m_autoRangeCheck );
+			m_autoRangeCheck = EditorGUILayoutToggle( AutoRangeCheckStr , m_autoRangeCheck );
 		}
 
 		public override void OnNodeLayout( DrawInfo drawInfo )
@@ -247,7 +248,7 @@ namespace AmplifyShaderEditor
 						m_referenceNodeId = -1;
 					}
 				}
-				if( m_referenceNode != null && m_referenceNode.Updated)
+				if( m_referenceNode != null && m_referenceNode.Updated )
 				{
 					UpdatePorts();
 				}
@@ -270,7 +271,7 @@ namespace AmplifyShaderEditor
 				GUI.enabled = false;
 			}
 			EditorGUI.BeginChangeCheck();
-			m_referenceArrayId = EditorGUILayoutPopup( Constants.AvailableReferenceStr, m_referenceArrayId, arr );
+			m_referenceArrayId = EditorGUILayoutPopup( Constants.AvailableReferenceStr , m_referenceArrayId , arr );
 			if( EditorGUI.EndChangeCheck() )
 			{
 				m_referenceNode = UIUtils.GetGlobalArrayNode( m_referenceArrayId );
@@ -287,10 +288,10 @@ namespace AmplifyShaderEditor
 			if( !indexXPort.IsConnected )
 			{
 				EditorGUI.BeginChangeCheck();
-				m_indexX = EditorGUILayoutIntField( indexXPort.Name, m_indexX );
+				m_indexX = EditorGUILayoutIntField( indexXPort.Name , m_indexX );
 				if( EditorGUI.EndChangeCheck() )
 				{
-					m_indexX = Mathf.Clamp( m_indexX, 0, ( m_arrayLengthX - 1 ) );
+					m_indexX = Mathf.Clamp( m_indexX , 0 , ( ArrayLengthX - 1 ) );
 				}
 			}
 
@@ -300,10 +301,10 @@ namespace AmplifyShaderEditor
 				if( !indexYPort.IsConnected )
 				{
 					EditorGUI.BeginChangeCheck();
-					m_indexY = EditorGUILayoutIntField( indexYPort.Name, m_indexY );
+					m_indexY = EditorGUILayoutIntField( indexYPort.Name , m_indexY );
 					if( EditorGUI.EndChangeCheck() )
 					{
-						m_indexY = Mathf.Clamp( m_indexY, 0, ( m_arrayLengthY - 1 ) );
+						m_indexY = Mathf.Clamp( m_indexY , 0 , ( ArrayLengthY - 1 ) );
 					}
 				}
 			}
@@ -312,7 +313,7 @@ namespace AmplifyShaderEditor
 		public override void DrawProperties()
 		{
 			EditorGUI.BeginChangeCheck();
-			m_referenceType = (TexReferenceType)EditorGUILayoutPopup( Constants.ReferenceTypeStr, (int)m_referenceType, Constants.ReferenceArrayLabels );
+			m_referenceType = (TexReferenceType)EditorGUILayoutPopup( Constants.ReferenceTypeStr , (int)m_referenceType , Constants.ReferenceArrayLabels );
 			if( EditorGUI.EndChangeCheck() )
 			{
 				UpdatePorts();
@@ -324,15 +325,15 @@ namespace AmplifyShaderEditor
 				DrawInstancedProperties();
 		}
 
-		public string GetArrayValue( string indexX, string indexY = null )
+		public string GetArrayValue( string indexX , string indexY = null )
 		{
 			if( m_isJagged )
-				return string.Format( JaggedArrayFormatStr, m_name, indexX, indexY );
+				return string.Format( JaggedArrayFormatStr , m_name , indexX , indexY );
 
-			return string.Format( ArrayFormatStr, m_name, indexX );
+			return string.Format( ArrayFormatStr , m_name , indexX );
 		}
 
-		public string GenerateInstancedShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
+		public string GenerateInstancedShaderForOutput( int outputId , ref MasterNodeDataCollector dataCollector , bool ignoreLocalvar )
 		{
 			string result = string.Empty;
 			if( m_referenceNode != null )
@@ -343,7 +344,7 @@ namespace AmplifyShaderEditor
 					InputPort indexYPort = GetInputPortByUniqueId( 2 );
 					string arrayIndexX = indexXPort.IsConnected ? indexXPort.GeneratePortInstructions( ref dataCollector ) : m_indexX.ToString();
 					string arrayIndexY = indexYPort.IsConnected ? indexYPort.GeneratePortInstructions( ref dataCollector ) : m_indexY.ToString();
-					result = m_referenceNode.GetArrayValue( arrayIndexX, arrayIndexY );
+					result = m_referenceNode.GetArrayValue( arrayIndexX , arrayIndexY );
 				}
 				else
 				{
@@ -351,19 +352,19 @@ namespace AmplifyShaderEditor
 					result = m_referenceNode.GetArrayValue( arrayIndexX );
 				}
 			}
-			m_outputPorts[ 0 ].SetLocalValue( result, dataCollector.PortCategory );
+			m_outputPorts[ 0 ].SetLocalValue( result , dataCollector.PortCategory );
 			return result;
 		}
 
-		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
+		public override string GenerateShaderForOutput( int outputId , ref MasterNodeDataCollector dataCollector , bool ignoreLocalvar )
 		{
 			if( m_outputPorts[ 0 ].IsLocalValue( dataCollector.PortCategory ) )
 				return m_outputPorts[ 0 ].LocalValue( dataCollector.PortCategory );
 
 			if( m_referenceType == TexReferenceType.Instance )
-				return GenerateInstancedShaderForOutput( outputId, ref dataCollector, ignoreLocalvar );
+				return GenerateInstancedShaderForOutput( outputId , ref dataCollector , ignoreLocalvar );
 
-			string dataType = UIUtils.PrecisionWirePortToCgType( CurrentPrecisionType, AvailableTypesValues[ m_type ] );
+			string dataType = UIUtils.PrecisionWirePortToCgType( CurrentPrecisionType , AvailableTypesValues[ m_type ] );
 
 			InputPort indexXPort = GetInputPortByUniqueId( 0 );
 			InputPort arrayLengthXPort = GetInputPortByUniqueId( 1 );
@@ -375,35 +376,35 @@ namespace AmplifyShaderEditor
 				InputPort arrayLengthYPort = GetInputPortByUniqueId( 3 );
 
 				string arrayIndexX = indexXPort.IsConnected ? indexXPort.GeneratePortInstructions( ref dataCollector ) : m_indexX.ToString();
-				string arrayLengthX = arrayLengthXPort.IsConnected ? arrayLengthXPort.GeneratePortInstructions( ref dataCollector ) : m_arrayLengthX.ToString();
+				string arrayLengthX = arrayLengthXPort.IsConnected ? arrayLengthXPort.GeneratePortInstructions( ref dataCollector ) : ArrayLengthX.ToString();
 
 				string arrayIndexY = indexYPort.IsConnected ? indexYPort.GeneratePortInstructions( ref dataCollector ) : m_indexY.ToString();
-				string arrayLengthY = arrayLengthYPort.IsConnected ? arrayLengthYPort.GeneratePortInstructions( ref dataCollector ) : m_arrayLengthY.ToString();
+				string arrayLengthY = arrayLengthYPort.IsConnected ? arrayLengthYPort.GeneratePortInstructions( ref dataCollector ) : ArrayLengthY.ToString();
 
-				dataCollector.AddToUniforms( UniqueId, dataType, string.Format( JaggedArrayFormatStr, m_name, arrayLengthX, arrayLengthY ) );
+				dataCollector.AddToUniforms( UniqueId , dataType , string.Format( JaggedArrayFormatStr , m_name , arrayLengthX , arrayLengthY ) );
 				if( m_autoRangeCheck )
 				{
-					arrayIndexX = string.Format( "clamp({0},0,({1} - 1))", arrayIndexX, arrayLengthX );
-					arrayIndexY = string.Format( "clamp({0},0,({1} - 1))", arrayIndexY, arrayLengthY );
+					arrayIndexX = string.Format( "clamp({0},0,({1} - 1))" , arrayIndexX , arrayLengthX );
+					arrayIndexY = string.Format( "clamp({0},0,({1} - 1))" , arrayIndexY , arrayLengthY );
 				}
-				result = string.Format( JaggedArrayFormatStr, m_name, arrayIndexX, arrayIndexY );
+				result = string.Format( JaggedArrayFormatStr , m_name , arrayIndexX , arrayIndexY );
 			}
 			else
 			{
 
 				string arrayIndex = indexXPort.IsConnected ? indexXPort.GeneratePortInstructions( ref dataCollector ) : m_indexX.ToString();
-				string arrayLength = arrayLengthXPort.IsConnected ? arrayLengthXPort.GeneratePortInstructions( ref dataCollector ) : m_arrayLengthX.ToString();
+				string arrayLength = arrayLengthXPort.IsConnected ? arrayLengthXPort.GeneratePortInstructions( ref dataCollector ) : ArrayLengthX.ToString();
 
 
-				dataCollector.AddToUniforms( UniqueId, dataType, string.Format( ArrayFormatStr, m_name, arrayLength ) );
+				dataCollector.AddToUniforms( UniqueId , dataType , string.Format( ArrayFormatStr , m_name , arrayLength ) );
 
 				if( m_autoRangeCheck )
-					arrayIndex = string.Format( "clamp({0},0,({1} - 1))", arrayIndex, arrayLength );
+					arrayIndex = string.Format( "clamp({0},0,({1} - 1))" , arrayIndex , arrayLength );
 
-				result = string.Format( ArrayFormatStr, m_name, arrayIndex );
+				result = string.Format( ArrayFormatStr , m_name , arrayIndex );
 			}
 
-			m_outputPorts[ 0 ].SetLocalValue( result, dataCollector.PortCategory );
+			m_outputPorts[ 0 ].SetLocalValue( result , dataCollector.PortCategory );
 			return m_outputPorts[ 0 ].LocalValue( dataCollector.PortCategory );
 		}
 
@@ -411,32 +412,32 @@ namespace AmplifyShaderEditor
 		{
 			if( m_referenceType == TexReferenceType.Object && m_autoRegister && m_connStatus != NodeConnectionStatus.Connected )
 			{
-				string dataType = UIUtils.PrecisionWirePortToCgType( CurrentPrecisionType, AvailableTypesValues[ m_type ] );
+				string dataType = UIUtils.PrecisionWirePortToCgType( CurrentPrecisionType , AvailableTypesValues[ m_type ] );
 				if( m_isJagged )
 				{
-					dataCollector.AddToUniforms( UniqueId, dataType, string.Format( JaggedArrayFormatStr, m_name, m_arrayLengthX, m_arrayLengthY ) );
+					dataCollector.AddToUniforms( UniqueId , dataType , string.Format( JaggedArrayFormatStr , m_name , ArrayLengthX , ArrayLengthY ) );
 				}
 				else
 				{
-					dataCollector.AddToUniforms( UniqueId, dataType, string.Format( ArrayFormatStr, m_name, m_arrayLengthX ) );
+					dataCollector.AddToUniforms( UniqueId , dataType , string.Format( ArrayFormatStr , m_name , ArrayLengthX ) );
 				}
 			}
 		}
 
-		public override void WriteToString( ref string nodeInfo, ref string connectionsInfo )
+		public override void WriteToString( ref string nodeInfo , ref string connectionsInfo )
 		{
-			base.WriteToString( ref nodeInfo, ref connectionsInfo );
-			IOUtils.AddFieldValueToString( ref nodeInfo, m_name );
-			IOUtils.AddFieldValueToString( ref nodeInfo, m_indexX );
-			IOUtils.AddFieldValueToString( ref nodeInfo, m_arrayLengthX );
-			IOUtils.AddFieldValueToString( ref nodeInfo, m_type );
-			IOUtils.AddFieldValueToString( ref nodeInfo, m_autoRangeCheck );
-			IOUtils.AddFieldValueToString( ref nodeInfo, m_isJagged );
-			IOUtils.AddFieldValueToString( ref nodeInfo, m_indexY );
-			IOUtils.AddFieldValueToString( ref nodeInfo, m_arrayLengthY );
-			IOUtils.AddFieldValueToString( ref nodeInfo, m_autoRegister );
-			IOUtils.AddFieldValueToString( ref nodeInfo, m_referenceType );
-			IOUtils.AddFieldValueToString( ref nodeInfo, m_referenceNodeId );
+			base.WriteToString( ref nodeInfo , ref connectionsInfo );
+			IOUtils.AddFieldValueToString( ref nodeInfo , m_name );
+			IOUtils.AddFieldValueToString( ref nodeInfo , m_indexX );
+			IOUtils.AddFieldValueToString( ref nodeInfo , m_arrayLengthX );
+			IOUtils.AddFieldValueToString( ref nodeInfo , m_type );
+			IOUtils.AddFieldValueToString( ref nodeInfo , m_autoRangeCheck );
+			IOUtils.AddFieldValueToString( ref nodeInfo , m_isJagged );
+			IOUtils.AddFieldValueToString( ref nodeInfo , m_indexY );
+			IOUtils.AddFieldValueToString( ref nodeInfo , m_arrayLengthY );
+			IOUtils.AddFieldValueToString( ref nodeInfo , m_autoRegister );
+			IOUtils.AddFieldValueToString( ref nodeInfo , m_referenceType );
+			IOUtils.AddFieldValueToString( ref nodeInfo , m_referenceNodeId );
 		}
 
 		public override void ReadFromString( ref string[] nodeParams )
@@ -453,10 +454,10 @@ namespace AmplifyShaderEditor
 				m_indexY = Convert.ToInt32( GetCurrentParam( ref nodeParams ) );
 				m_arrayLengthY = Convert.ToInt32( GetCurrentParam( ref nodeParams ) );
 				m_autoRegister = Convert.ToBoolean( GetCurrentParam( ref nodeParams ) );
-				m_referenceType = (TexReferenceType)Enum.Parse( typeof( TexReferenceType ), GetCurrentParam( ref nodeParams ) );
+				m_referenceType = (TexReferenceType)Enum.Parse( typeof( TexReferenceType ) , GetCurrentParam( ref nodeParams ) );
 				m_referenceNodeId = Convert.ToInt32( GetCurrentParam( ref nodeParams ) );
 			}
-			SetAdditonalTitleText( string.Format( Constants.SubTitleValueFormatStr, m_name ) );
+			SetAdditonalTitleText( string.Format( Constants.SubTitleValueFormatStr , m_name ) );
 			UpdatePorts();
 		}
 
@@ -477,6 +478,8 @@ namespace AmplifyShaderEditor
 				}
 			}
 		}
+		public int ArrayLengthX { get { return ( m_referenceNode != null ) ? m_referenceNode.ArrayLengthX : m_arrayLengthX; } }
+		public int ArrayLengthY { get { return ( m_referenceNode != null ) ? m_referenceNode.ArrayLengthY : m_arrayLengthY; } }
 
 		public bool AutoRegister { get { return m_autoRegister; } }
 		public bool IsJagged { get { return m_isJagged; } }

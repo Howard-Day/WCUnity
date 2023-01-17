@@ -104,6 +104,14 @@ public class AmplifyShaderFunction : ScriptableObject
 		set { m_hidden = value; }
 	}
 
+	[SerializeField]
+	private string m_url = string.Empty;
+	public string URL
+	{
+		get { return m_url; }
+		set { m_url = value; }
+	}
+
 	public void UpdateDirectivesList()
 	{
 		m_additionalDirectives.CleanNullDirectives();

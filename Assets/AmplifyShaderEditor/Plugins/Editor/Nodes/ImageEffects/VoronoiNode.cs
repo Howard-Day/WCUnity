@@ -505,12 +505,12 @@ namespace AmplifyShaderEditor
 
 				string smoothnessName = "0";
 				//need to add a local value to send to function since its an inout and sending a numeric value to it generates a compilation error
-				string smoothIdName = "voronoiSmoothId" + outputId;
+				string smoothIdName = "voronoiSmoothId" + OutputId;
 				dataCollector.AddLocalVariable( UniqueId , CurrentPrecisionType , WirePortDataType.FLOAT2 , smoothIdName , "0" );
 
 				if( m_calculateSmoothValue )
 				{
-					smoothnessName = "voronoiSmooth" + outputId;
+					smoothnessName = "voronoiSmooth" + OutputId;
 					string smoothnessValue = m_inputPorts[ 3 ].GeneratePortInstructions( ref dataCollector );
 					dataCollector.AddLocalVariable( UniqueId, CurrentPrecisionType, WirePortDataType.FLOAT, smoothnessName, smoothnessValue );
 				}

@@ -1,4 +1,304 @@
 Release Notes:
+* Warning: 
+    * Some rendering platform tags changed across sub-SRP versions and we decided to update our templates to the latest ones.
+      On SRP 10 and above there's no issue as all versions are updated but on version 7, only the latest 7.6 version recognizes the new tags.
+      All other older SRP 7 versions as well as all SRP 8 versions don't recognize the new tags.
+      Over this new ASE version we added the Rendering Platforms menu over the Master Node properties window on SRP templates so if on your current SRP version p.e this warning appear
+        * Unrecognized renderer for #pragma only_renderers: xboxseries
+      You only need to go to the Rendering Platforms menu and deselect that specific tag.
+
+v1.8.9 rev 35:
+* Fixes:
+    * Fixed incorrect templates being imported on latest SRP 10 versions
+    * Fixed info message over 'HeightMap Texture Blend' node
+    * Prevented URL fetch on non-attributes nodes which resulted on null-pointer exception
+
+v1.8.9 rev 34:
+* New Template:
+    * URP 12 2D Custom Lit
+
+* Improvements:
+    * Updated HDRP 12 Fabric template
+
+* Fixes:
+    * Alpha clip is also activated when only Alpha Clip Threshold Shadow is used on URP PBR (all versions)
+        * Users were forced to connect something to Alpha Clip Threshold to activate it
+
+v1.8.9 rev 33:
+* Fixes:
+    * Forced forward render path on URP 12 Unlit so it can be properly rendered independently of selected render path
+    * Fixed issue with Shadow Matte option on HDRP 10/11/12 Unlit
+
+v1.8.9 rev 32:
+* Fixes:
+    * URP 12 PBR template
+        * Fixed incorrect interpolator setup on Meta pass
+    * HDRP 12 Lit template
+        * Fixed incorrect interpolator setup over Scene Picking pass
+        * Vertex function on Meta Pass now correctly uses Unity internal functions
+        * Motion Vector pass now taking UNITY_REVERSED_Z correctly into account
+        * Removed UnityPerMaterial constant buffer declaration from FullScreenDebug pass
+    * HDRP 12 Unlit template
+        * Fixed incorrect interpolator setup over Scene Picking pass
+
+v1.8.9 rev 31:
+* Fixes:
+    * Removed duplicate pragma from HDRP Lit FullScreenDebug pass
+
+v1.8.9 rev 29/30:
+* Improvements:
+    * Updated HDRP Lit, Unlit and Decal templates source code and lib usage according to latest v12
+        * No new features were added at this point, only updated existing ones
+    * Tweaked how template options are applied after shader is read into ASE to avoid incorrect results when they modify same data
+
+* Fixes:
+    * Fixed issues on URP PBR 12
+        * Transmission and Translucency options now disable GBuffer pass on URP Lit 12
+            * Removed Translucency, Transmission and Refraction code from GBuffer pass as well
+        * Moved ZWrite and ZTest tags from Forward pass to subshader so it can affect all common passes
+    * Fixed issues on URP Unlit 12
+        * Removed incorrect Cull set over Depth Normals pass on URP Unlit 12
+
+v1.8.9 rev 28:
+* Fixes:
+    * Fixed issue on Editor Viz mode over URP PBR 12 template
+
+v1.8.9 rev 27:
+* New Shader Function:
+    * Normal Reconstruct Z
+        * Gets the correct Z value for generated normal maps using a given X and Y value from input
+
+* Fixes:
+    * Minor fix on Depth Normals pass over URP PBR 12
+    * Fixed vertex tangent registry issue on multiple passes over URP Decals template
+    * Fixed world position and world normal retrieval on URP Decals template
+    * Fixed issue on incorrect URP template being imported on SRP v10.7.0
+
+* Improvements:
+    * Added new Anisotropic Filtering setup on 'Sampler State' node
+        * Only available on Unity 2021.2 and above
+    * Added Color Mask option into 'Outline' node 
+
+v1.8.9 rev 26:
+* Improvements:
+    * Unity URP 12 new inspectors now selectable on Custom Editor dropdown over master node properties
+
+v1.8.9 rev 25:
+* Improvements:
+    * Added new 'Force Template Min. Shader Model' preferences option 
+        * Active by default
+        * If active, when loading a shader its shader model will be replaced by the one specified in template if what is loaded is below the one set over the template
+        * To disable this behavior please toggle off Preferences > Amplify Shader Editor > Force Template Min. Shader Model
+    * New Unity URP 12 inpectors now selectable on Custom Editor dropdown
+
+v1.8.9 rev 24:
+* New Template:
+    * Decals URP
+
+* Improvements:
+    * Updated all URP templates to version 12
+        * URP 11 shaders will have its Custom Inspector updated to URP 12 inspectors
+    * Registered SRP 12.x.x versions into ASE Package Manager
+    * Added new template ChangeTagValue option action to change subshader/pass tags from template options (API)
+    * 'Light Attenuation' node now generates URP 12 specific code when used on that version
+
+* Fixes:
+    * Values to all string variables on Save Bundle Asset are set to a default value to prevent warnings
+    * File Asset mode on 'Custom Expression' node now takes hlsl files dropped from the packages folder correctly into account
+
+v1.8.9 rev 23:
+* Fixes:
+    * Removed incorrect white space on the 'Sticky Note' node file
+    * Fixed issue on 'Texture Sampler' node registering incorrect UV coordinate size when using custom uv node
+    * Fixed issue on having only UNITY_VERTEX_INPUT_INSTANCE_ID not being correctly registered on templates when ase_vdata is empty
+    * File mode on 'Custom Expression' node no longer needs a valid text asset to generate a function call
+        * This can be used to call internal functions over a template based shader
+    * Added pipe (|) as an invalid property name character
+
+
+v1.8.9 rev 22:
+* Fixes:
+    * Fixed issue with variable redefinition when on a specific outline usage over surface shaders
+
+v1.8.9 rev 21:
+* Fixes:
+    * Fixed issues on Flow shader function
+    * Fixed issue on reading/using custom tags(API)
+    * Fixed issue on shader lod tag not being correctly removed if no lod is configured
+
+* Improvements:
+    * Minor improvement on Safe Power option over 'Power' node
+    * Added shader LOD tag into URP Unlit, HDRP Lit and Unlit templates
+
+v1.8.9 rev 20:
+* Fixes:
+    * Fixed internal HDRP and URP template version controller not being bumped on previous build
+
+v1.8.9 rev 19:
+* Fixes:
+    * Fixed issue on 'Material Quality' node not adapting correctly to connected input ports
+    * Fixed multiple depth related issues on HD Lit over SRP 10/11
+    * 'Indirect Diffuse' node now takes baked GI into account over URP
+
+* Improvements:
+    * Vertex tangents now also taken into account over billboard code
+    * Added new Affect Normal/Tangent option over Billboards
+        * When turned off only vertex position is changed by billboard code
+
+v1.8.9 rev 18:
+* New Shader Function:
+    * Dielectric Specular
+        * Returns a Dielectric Specular F0 value for a physically based material with a similar behavior and options from Unity HDRP Dielectric Specular node
+
+* Fixes:
+    * Fixed both URP Lit and Unlit templates not taking punctual light shadows into account over shadowcaster pass
+    * Fixed issue with internal drag and drop tool error on Unity 2021.2 
+    * URP 2D Lit is now compatible with SRP v12
+
+* Improvements:
+    * Modified Sprite Mask port type to Float4 on URP 10/11 2D Lit
+    * Added Tangent port on URP 10/11 2D Unlit
+    * Changed 2D Lit and Unlit custom inspectors to use our custom inspector and be compatible across all versions
+        * SG doesn't use any custom inspector on these templates over v10 and 11 and then uses a generic new one over v12
+
+v1.8.9 rev 17:
+* Fixes:
+    * Fixed issue on 'Relay' node not accepting texture object connection types after other type is connected to it
+    * Fixed issue with somethings attempting to open incorrect asset when hitting the Material Inspector's 'Edit...' button
+    * Fixed issue with UV usage over 3D textures on 'Texture Sampler' node when channel id is above 4
+    * Fixed issue on surface shader with extra interpolators being generated if asking the data collector different uv sizes from same set
+    * Fixed issue on attempting to register duplicate node types when gathering them from both main assembly and asmdefs
+
+* Improvements:
+    * 'Function Switch' nodes now support texture object connection types
+
+v1.8.9 rev 16:
+* New Shader Function:
+    * HDRP Decal UVs
+        * Returns the transformed uvs with Decal Projector tiling and offset taken into account.
+
+* Improvements:
+    * Added option to 'Instance Id' node to toggle between Unity native instance variable or SV_InstanceId
+    * Updated HDRP samples to latest templates
+        * Legacy samples moved to new 'HDRP Samples 7xx - 9xx (Legacy)' package
+
+v1.8.9 rev 15:
+* New Shader Function:
+    * URP Tangent To World Normal
+        * Converts a normal vector in tangent space into world space
+            * Generates a more precise but less performant result than the default template behavior
+
+* Improvements:
+    * Forced ASE symbol check with InitializeOnLoad so custom nodes ( using that symbol ) can be taken into account when opening an ASE canvas for the first time
+    * Added custom url setup for shader functions, if a custom url is set it will be called when user hits F1 over the SF 
+        * Default node url will be created and used if no custom one is set
+    * ASE now takes asmdefs in project into account when registering valid node types
+
+* Fixes:
+    * Fixed compilation error when manually declaring _CameraDepthTexture over SRP templates
+    * Fixed issue with duplicate variable names on 'Voronoi' node
+    * Fixed issue on template Dest Factor inline value not being correctly reset when option is applied
+    * File Mode on 'Custom Expression' node now generates relative paths
+    * Fixed incorrect usage of Depth Texture macros on older Unity versions
+    * Fixed issue on 'Position From Transform' node
+    * Fixed issue with EV100 Intensity Unit on 'HD Emission' node over HDRP 10.6 and above
+
+v1.8.9 rev 14:
+* New Shader Function:
+    * Custom Screen Position
+        * Compute screen position from a custom vertex position or offset
+
+* Fixes:
+    * 'Clip Planes' node now working on HDRP
+    * Fixed compilation error on 'Substance Sampler' node
+    * Fixed issues on multiple template specific nodes when switching shader types, popping correct error messages, enabling and disabling node properties
+    * Fixed issue on shader functions when clicked opening on a new tab when already opened on one
+    * Reconstruct World Position From Depth shader function now correctly takes URP 7.x.x into account
+    * Fixed issue with float to string generation on 'Float' node
+    * Fixed incorrect _ST generation on tex1D type
+
+* Improvements:
+    * Updated default Tiling to (1,1) on Procedural Sample shader function
+    * Added tags on all trigonometric nodes to match SG counterparts on search
+    * Added stencil buffer config on subshader level across all versions of URP PBR and Unlit templates
+    * Improved object to clip transform on 'Transform Position' node
+        * Now uses a single native SRP function to perform the transform
+    * Added option to add Matrix var types into UnityPerMaterial constant buffer
+        * Select CBuffer on Type dropdown
+            * Only appears on SRP shader types
+
+v1.8.9 rev 13:
+* New Shader Function:
+    * Lambert Light
+
+* Fixes:
+    * Fixed previews being affected by projects color space over Unity latest version
+    * Fixed compilation errors on HDRP 10 Hair Template
+    * Fixed issue on preview not being correctly updated when gradient is changed on 'Gradient' node
+    * Fixed issue on 'Gradient Sample' node not taking connected gradient into account when refreshing preview
+    * Fixed issue with unnecessarily incrementing property name when copy-paste nodes between graphs
+    * Fixed unnecessary code duplication on Procedural Sample SF
+    * Fixed issue with 'Outline' node not generating error messages when incorrectly used
+    * Fixed issue on double clicking on shader or material not opening ASE canvas on latest Unity versions
+    * Reconstruct World Pos from Depth SF now properly works on URP 7.6.0
+    * Fixed issue on internally generated non-normalized normal, tangent and bitangent vectors on surface shaders when scaling applied
+        * Affected nodes like 'Triplanar Sample' node
+
+* Improvements:
+    * Face variable nodes now also work on vertex ports at the expense of additional instructions
+        * A warning is generated to make the user aware of it
+    * Added new Type option into 'Unpack Scale Normal' node
+        * Sets the coordinate space of the normal set as input
+
+v1.8.9 rev 12:
+* Fixes:
+    * Fixed issue on incorrectly writing render platform info on shader meta even if none is present over its template
+
+* Improvements:
+    * Moved Render Platform declaration on URP templates to SubShader level so it can be properly used by latest Render Platform feature on templates
+
+v1.8.9 rev 11:
+* Fixes:
+    * Fixed missing link id over fragment Normal port on URP 10
+
+* Improvements:
+    * Added new NaN prevention checkbox over 'HeighMap Texture Blend' node
+    * Added support to Rendering Platform selection on templates API
+        * Not all templates have it implemented
+    * Added both switch and nomrt tags into Rendering Platforms list
+
+v1.8.9 rev 10:
+* New Nodes:
+    * Bone Blend Weights
+        * Only compatible with Unity 2019.1 or above and template type shaders
+    * Bone Blend Indices
+        * Only compatible with Unity 2019.1 or above and template type shaders
+
+* Fixes:
+    * Fixed issue on some port results not being correctly written on GBuffer pass over URP v.11
+    * Fixed yet another issue with ransomned property names
+    * Fixed redefinition error on 'Triplanar Sample'node
+    * Fixed undeclared standard surface Tessellation properties for both Edge Length and Edge Length with Cull
+    * Fixed warning on duplicates directives being set over options template type shaders
+    * Fixed truncation warning on Legacy Refraction over URP/PBR
+    * Fixed error on 'Global Array' node where index clamping was being done always with local value even on Reference setup
+    * Fixed multiple redefinition warnings on MultiPassUnlit template
+    * Fixed issue with obsolete Decal custom inspector on HDRP 10 being used on HDRP 11
+    * Fixed issue on incorrect naming when creating shaders/shader functions on local packages
+    * Had to revert node previews render texture format to its original one 
+        * Time based previews weren't working correctly due to lack of precision over new format
+
+* Improvements:
+    * Face type nodes now also using SRP core macros when on URP
+        * These macros use either VFACE or SV_IsFrontFace according to graphics API
+        * For Builtin pipeline custom Face macros were created similar to SRP ones
+
+v1.8.9 rev 09:
+* Fixes:
+    * Limiting new XBox and Playstation Render Platform tags to Unity 2019.4 and above
+        * They throw an unrecognized renderer warning on older versions
+    * Created new HDRP package for versions 7 prior to 7.5.1 to apply correct legacy render platform tags over those
+
 v1.8.9 rev 08:
 * New Community Sample:
     * URP Reflection Probe by Dawie
@@ -74,7 +374,7 @@ v1.8.9 rev 02:
     * 'HD Emission' node is now imported with main package 
         * Adding failsafe and error message to when used outside an HDRP shader
     * Adding File mode into 'Custom Expression' node
-        * User can drag and drop a .cginc/.hsls file into the new Source field and will automatically include it on shader as an #include
+        * User can drag and drop a .cginc/.hlsl file into the new Source field and will automatically include it on shader as an #include
         * Function call uses value set on Name
             * Can also automatically add precision suffix into call via the Precision Suffix toggle
                 * Behavior similar to Shader Graph

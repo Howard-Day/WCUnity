@@ -17,6 +17,7 @@ namespace AmplifyShaderEditor
 		private const string UAxisStr = "U axis";
 		private const string VAxisStr = "V axis";
 		private const string FilterModeStr = "Filter Mode";
+		private const string AnisotropicFilteringStr = "Aniso. Filtering";
 		private const string MessageMacrosOFF = "Sampling Macros option is turned OFF, this node will not generate any sampler state";
 		private const string MessageTextureObject = "Only Texture Objects that are actually being sampled within the shader generate valid sampler states.\n\nPlease make sure the referenced Texture Object is being sampled otherwise the shader will fail to compile.";
 		private const string MessageUnitSuppport = "Unity support for sampler states in versions below Unity 2018.1 is limited.\n\nNotably, only vertex/frag shaders support it and not surfaces shaders and sampler states can only be reused and not created if the version is below 2017.1";
@@ -32,6 +33,19 @@ namespace AmplifyShaderEditor
 
 		[SerializeField]
 		protected FilterMode m_filterMode = FilterMode.Bilinear;
+
+
+		public enum AnisoModes
+		{
+			None,
+			X2,
+			X4,
+			X8,
+			X16
+		}
+
+		[SerializeField]
+		protected AnisoModes m_anisoMode = AnisoModes.None;
 
 		[SerializeField]
 		private int m_referenceSamplerId = -1;
@@ -184,6 +198,10 @@ namespace AmplifyShaderEditor
 			}
 
 			m_filterMode = (FilterMode)EditorGUILayoutEnumPopup( FilterModeStr, m_filterMode );
+
+#if UNITY_2021_2_OR_NEWER
+			m_anisoMode = (AnisoModes)EditorGUILayoutEnumPopup( AnisotropicFilteringStr , m_anisoMode );
+#endif
 			EditorGUI.EndDisabledGroup();
 
 			if( !UIUtils.CurrentWindow.OutsideGraph.SamplingMacros )
@@ -197,15 +215,18 @@ namespace AmplifyShaderEditor
 #endif
 		}
 
-		public override void Draw( DrawInfo drawInfo )
+		public override void OnNodeLogicUpdate( DrawInfo drawInfo )
 		{
-			base.Draw( drawInfo );
-
+			base.OnNodeLogicUpdate( drawInfo );
 			if( !UIUtils.CurrentWindow.OutsideGraph.SamplingMacros && ContainerGraph.CurrentShaderFunction == null )
 				m_showErrorMessage = true;
 			else
 				m_showErrorMessage = false;
+		}
 
+		public override void Draw( DrawInfo drawInfo )
+		{
+			base.Draw( drawInfo );
 			EditorGUI.BeginChangeCheck();
 			{
 				List<string> arr = new List<string>( UIUtils.TexturePropertyNodeArr() );
@@ -317,6 +338,18 @@ namespace AmplifyShaderEditor
 				}
 				break;
 			}
+#if UNITY_2021_2_OR_NEWER
+			switch( m_anisoMode )
+			{
+				default:
+				case AnisoModes.None:break;
+				case AnisoModes.X2:	result += "_aniso2";break;
+				case AnisoModes.X4: result += "_aniso4"; break;
+				case AnisoModes.X8: result += "_aniso8"; break;
+				case AnisoModes.X16: result += "_aniso16"; break;
+			}
+#endif
+
 			return result;
 		}
 
@@ -363,6 +396,10 @@ namespace AmplifyShaderEditor
 			m_wrapModeV = (TextureWrapMode)Convert.ToInt32( GetCurrentParam( ref nodeParams ) );
 			m_filterMode = (FilterMode)Convert.ToInt32( GetCurrentParam( ref nodeParams ) );
 			m_referenceNodeId = Convert.ToInt32( GetCurrentParam( ref nodeParams ) );
+			if( UIUtils.CurrentShaderVersion() > 18926 )
+			{
+				m_anisoMode = (AnisoModes)Enum.Parse( typeof( AnisoModes ) , GetCurrentParam( ref nodeParams ) );
+			}
 		}
 
 		public override void WriteToString( ref string nodeInfo, ref string connectionsInfo )
@@ -373,6 +410,7 @@ namespace AmplifyShaderEditor
 			IOUtils.AddFieldValueToString( ref nodeInfo, (int)m_wrapModeV );
 			IOUtils.AddFieldValueToString( ref nodeInfo, (int)m_filterMode );
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_referenceNodeId );
+			IOUtils.AddFieldValueToString( ref nodeInfo , m_anisoMode );
 		}
 	}
 }

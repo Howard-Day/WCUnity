@@ -9,6 +9,17 @@ namespace AmplifyShaderEditor
 
 	public struct Constants
 	{
+		public readonly static string[] FaceMacros =
+		{
+			"#if defined(SHADER_API_GLCORE) || defined(SHADER_API_GLES) || defined(SHADER_API_GLES3) || defined(SHADER_API_D3D9)",
+			"#define FRONT_FACE_SEMANTIC VFACE",
+			"#define FRONT_FACE_TYPE float",
+			"#else",
+			"#define FRONT_FACE_SEMANTIC SV_IsFrontFace",
+			"#define FRONT_FACE_TYPE bool",
+			"#endif"
+		};
+
 		/*public readonly static string[] CustomASEStandardArgsMacros =
 		{
 			"#if defined(SHADER_API_D3D11) || defined(SHADER_API_XBOXONE) || defined(UNITY_COMPILER_HLSLCC)//ASE Args Macros",
@@ -74,7 +85,7 @@ namespace AmplifyShaderEditor
 			"#define ASE_TEXTURE2D_ARRAY_PARAMS(textureName) textureName, sampler##textureName\n"
 		};*/
 
-		public readonly static RenderTextureFormat PreviewFormat = RenderTextureFormat.ARGBHalf;
+		public readonly static RenderTextureFormat PreviewFormat = RenderTextureFormat.ARGBFloat;
 		public readonly static int PreviewSize = 128;
 
 		public readonly static List<string> UnityNativeInspectors = new List<string>
@@ -88,6 +99,10 @@ namespace AmplifyShaderEditor
 			"UnityEditor.Experimental.Rendering.HDPipeline.HDLitGUI",
 			"Rendering.HighDefinition.DecalGUI",
 			"Rendering.HighDefinition.LitShaderGraphGUI",
+			"Rendering.HighDefinition.DecalShaderGraphGUI",
+			"UnityEditor.ShaderGraphUnlitGUI",
+			"UnityEditor.ShaderGraphLitGUI",
+			"UnityEditor.Rendering.Universal.DecalShaderGraphGUI"
 		};
 
 		public readonly static Dictionary<string, string> CustomInspectorHD7To10 = new Dictionary<string, string>
@@ -97,6 +112,22 @@ namespace AmplifyShaderEditor
 			{ "UnityEditor.Rendering.HighDefinition.HDLitGUI","Rendering.HighDefinition.LitShaderGraphGUI"},
 			{ "UnityEditor.Experimental.Rendering.HDPipeline.HDLitGUI","Rendering.HighDefinition.LitShaderGraphGUI"},
 		};
+
+
+		public readonly static Dictionary<string , string> CustomInspectorURP10To12 = new Dictionary<string , string>
+		{
+			{ "UnityEditor.ShaderGraph.PBRMasterGUI","UnityEditor.ShaderGraphLitGUI"},
+		};
+
+		public readonly static Dictionary<string , string> CustomInspectorHDLegacyTo11 = new Dictionary<string , string>
+		{
+			{ "UnityEditor.Rendering.HighDefinition.DecalGUI","Rendering.HighDefinition.DecalShaderGraphGUI"},
+			{ "Rendering.HighDefinition.DecalGUI","Rendering.HighDefinition.DecalShaderGraphGUI"},
+			{ "UnityEditor.Rendering.HighDefinition.FabricGUI","Rendering.HighDefinition.LightingShaderGraphGUI"},
+			{ "UnityEditor.Rendering.HighDefinition.HDLitGUI","Rendering.HighDefinition.LitShaderGraphGUI"},
+			{ "UnityEditor.Experimental.Rendering.HDPipeline.HDLitGUI","Rendering.HighDefinition.LitShaderGraphGUI"},
+		};
+
 
 		public readonly static string CustomASEStandardSamplerParams = "#define ASE_TEXTURE_PARAMS(textureName) textureName\n";
 		public readonly static string[] CustomASESRPTextureArrayMacros = 
@@ -556,7 +587,7 @@ namespace AmplifyShaderEditor
 		public readonly static string NoStringValue = "None";
 		public readonly static string EmptyPortValue = "  ";
 
-		public readonly static string[] OverallInvalidChars = { "\r", "\n", "\\", " ", ".", ">", ",", "<", "\'", "\"", ";", ":", "[", "{", "]", "}", "=", "+", "`", "~", "/", "?", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "-" };
+		public readonly static string[] OverallInvalidChars = { "\r", "\n", "\\", " ", ".", ">", ",", "<", "\'", "\"", ";", ":", "[", "{", "]", "}","|", "=", "+", "`", "~", "/", "?", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "-" };
 		public readonly static string[] ShaderInvalidChars = { "\r", "\n", "\\", "\'", "\"", };
 		public readonly static string[] EnumInvalidChars = { "\r", "\n", "\\", ".", ">", ",", "<", "\'", "\"", ";", ":", "[", "{", "]", "}", "=", "+", "`", "~", "/", "?", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "-" };
 		public readonly static string[] AttrInvalidChars = { "\r", "\n", "\\", ">", "<", "\'", "\"", ";", ":", "[", "{", "]", "}", "=", "+", "`", "~", "/", "?", "!", "@", "#", "$", "%", "^", "&", "*" };

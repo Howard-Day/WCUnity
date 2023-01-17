@@ -47,7 +47,10 @@ namespace AmplifyShaderEditor
 		SV_PrimitiveID,
 		SV_InstanceID,
 		INTERNALTESSPOS,
-		INSTANCEID_SEMANTIC
+		INSTANCEID_SEMANTIC,
+		BLENDWEIGHTS,
+		BLENDINDICES
+
 	}
 
 	public enum TemplateInfoOnSematics
@@ -78,7 +81,9 @@ namespace AmplifyShaderEditor
 		OTHER,
 		VFACE,
 		SHADOWCOORDS,
-		VERTEXID
+		VERTEXID,
+		BLENDWEIGHTS,
+		BLENDINDICES
 	}
 
 	public enum TemplateShaderPropertiesIdx
@@ -553,6 +558,7 @@ namespace AmplifyShaderEditor
 			{WirePortDataType.COLOR,4 },
 			{WirePortDataType.INT,1 },
 			{WirePortDataType.UINT,1 },
+			{WirePortDataType.UINT4,4 },
 			{WirePortDataType.SAMPLER1D,0 },
 			{WirePortDataType.SAMPLER2D,0 },
 			{WirePortDataType.SAMPLER3D,0 },
@@ -578,6 +584,7 @@ namespace AmplifyShaderEditor
 			{TemplateSemantics.TANGENT			,"ase_tangent"},
 			{TemplateSemantics.VFACE			,"ase_vface"},
 			{TemplateSemantics.SV_VertexID		,"ase_vertexId"},
+			{TemplateSemantics.SV_InstanceID    ,"ase_instanceId"},
 			{TemplateSemantics.SV_PrimitiveID   ,"ase_primitiveId"},
 			{TemplateSemantics.INTERNALTESSPOS  ,"ase_internalTessPos"},
 			{TemplateSemantics.TEXCOORD0		,"ase_tex_coord0"},
@@ -886,6 +893,10 @@ namespace AmplifyShaderEditor
 		public static string CoreCommonLib = "CoreRP/ShaderLibrary/Common.hlsl";
 		public static string CoreColorLib = "CoreRP/ShaderLibrary/Color.hlsl";
 #endif
+
+		public static string PragmaOnlyRendersPattern = @"#pragma\s+only_renderers\s+([\w .]*)";
+		public static string PragmaExcludeRendersPattern = @"#pragma\s+exclude_renderers\s+([\w .]*)";
+		public static string PragmaRendererElement = @"(\w+)";
 
 		public static string FetchSubShaderBody = @"(SubShader.*)\/\*ase_lod\*\/";
 		public static string TemplateCustomUI = @"\/\*CustomNodeUI:(\w*)\*\/";
@@ -1920,6 +1931,11 @@ namespace AmplifyShaderEditor
 
 			if( vertexData.Contains( Constants.InstanceIdMacro ) )
 			{
+				if( vertexDataList == null )
+				{
+					vertexDataList = new List<TemplateVertexData>();
+					vertexDataDict = new Dictionary<TemplateSemantics , TemplateVertexData>();
+				}
 				TemplateVertexData templateVertexData = new TemplateVertexData( TemplateSemantics.SV_InstanceID, WirePortDataType.UINT, Constants.InstanceIdVariable );
 				templateVertexData.DataInfo = TemplateInfoOnSematics.INSTANCE_ID;
 				templateVertexData.Available = true;
@@ -2482,6 +2498,59 @@ namespace AmplifyShaderEditor
 			}
 
 			return string.Empty;
+		}
+
+		public static void FillRenderingPlatform( TemplateRenderPlatformHelper renderPlatforms , string shaderBody )
+		{
+			int tagIndex = shaderBody.IndexOf( TemplatesManager.TemplateRenderPlatformsTag );
+			if(  tagIndex > -1 )
+			{
+				renderPlatforms.InitByTag( tagIndex );
+			}
+			else
+			{
+				//Excluded
+				Match excludePlatformsMatch = Regex.Match( shaderBody , PragmaExcludeRendersPattern );
+				if( excludePlatformsMatch.Success )
+				{
+					renderPlatforms.InitByExcludeRenders( excludePlatformsMatch.Index, excludePlatformsMatch.Value );
+					MatchCollection platformElements = Regex.Matches( excludePlatformsMatch.Groups[ 1 ].Value , PragmaRendererElement );
+					try
+					{
+						for( int i = 0 ; i < platformElements.Count ; i++ )
+						{
+							if( platformElements[ i ].Success )
+								renderPlatforms.SetupPlatform( platformElements[ i ].Groups[ 1 ].Value , false );
+						}
+					}
+					catch( Exception e )
+					{
+						Debug.LogException( e );
+					}
+				}
+				else //Only Renders
+				{
+					Match onlyRendersPlatformsMatch = Regex.Match( shaderBody , PragmaOnlyRendersPattern );
+					if( onlyRendersPlatformsMatch.Success )
+					{
+						renderPlatforms.InitByOnlyRenders( onlyRendersPlatformsMatch.Index, onlyRendersPlatformsMatch.Value );
+						MatchCollection platformElements = Regex.Matches( onlyRendersPlatformsMatch.Groups[ 1 ].Value , PragmaRendererElement );
+						try
+						{
+							for( int i = 0 ; i < platformElements.Count ; i++ )
+							{
+								if( platformElements[ i ].Success )
+									renderPlatforms.SetupPlatform( platformElements[ i ].Groups[ 1 ].Value, true );
+							}
+						}
+						catch( Exception e )
+						{
+							Debug.LogException( e );
+						}
+					}
+				}
+
+			}
 		}
 	}
 }

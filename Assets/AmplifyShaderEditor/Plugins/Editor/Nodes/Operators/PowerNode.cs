@@ -10,7 +10,7 @@ namespace AmplifyShaderEditor
 	[NodeAttributes( "Power", "Math Operators", "Base to the Exp-th power of scalars and vectors", null, KeyCode.E )]
 	public sealed class PowerNode : ParentNode
 	{
-		public const string SafePowerStr = "max( {0} , 0.0001 )";
+		public const string SafePowerStr = "abs( {0} )";//"max( {0} , 0.0001 )";
 		public const string SafePowerLabel = "Safe Power";
 
 		[SerializeField]

@@ -51,6 +51,9 @@ internal class ASEMaterialInspector : ShaderGUI
 
 
 	// Reflection Fields
+
+	private FieldInfo m_previewDirDefault = null;
+
 	private Type m_modelInspectorType = null;
 	private MethodInfo m_renderMeshMethod = null;
 	private Type m_previewGUIType = null;
@@ -445,6 +448,11 @@ internal class ASEMaterialInspector : ShaderGUI
 				m_selectedField = typeof( MaterialEditor ).GetField( "m_SelectedMesh", BindingFlags.Instance | BindingFlags.NonPublic );
 			}
 
+			if( m_previewDirDefault == null )
+			{
+				m_previewDirDefault = typeof( MaterialEditor ).GetField( "m_PreviewDir" , BindingFlags.Instance | BindingFlags.NonPublic );
+			}
+
 			m_selectedMesh = (int)m_selectedField.GetValue( materialEditor );
 
 			if( m_selectedMesh != 0 )
@@ -455,6 +463,13 @@ internal class ASEMaterialInspector : ShaderGUI
 					EditorPrefs.SetString( PreviewModelPref, "" );
 				}
 			}
+		}
+
+		if( GUILayout.Button( "R" ,GUILayout.MaxWidth(17), GUILayout.MaxHeight( 13 ) ) )
+		{
+			m_previewDir = new Vector2( 0 , 0 );
+			if( m_previewDirDefault != null )
+				m_previewDirDefault.SetValue( materialEditor , m_previewDir );
 		}
 	}
 	

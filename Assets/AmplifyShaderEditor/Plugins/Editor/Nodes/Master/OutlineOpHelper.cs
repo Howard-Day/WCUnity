@@ -115,6 +115,8 @@ namespace AmplifyShaderEditor
 
 		private const string BillboardInstructionFormat = "\t{0};";
 
+		private readonly char[] m_colorMaskChar = { 'R' , 'G' , 'B' , 'A' };
+
 		[SerializeField]
 		private Color m_outlineColor;
 
@@ -130,6 +132,7 @@ namespace AmplifyShaderEditor
 		[SerializeField]
 		private bool m_noFog = true;
 
+		private bool[] m_colorMask = { true , true , true , true };
 		private CullMode m_cullMode = CullMode.Front;
 		private int m_zTestMode = 0;
 		private int m_zWriteMode = 0;
@@ -301,6 +304,26 @@ namespace AmplifyShaderEditor
 				body.Add( "ZTest " + ZBufferOpHelper.ZTestModeValues[ m_zTestMode ] );
 
 			body.Add( "Cull " + m_cullMode );
+			
+			//Color Mask
+			{
+				int count = 0;
+				string colorMask = string.Empty;
+				for( int i = 0 ; i < m_colorMask.Length ; i++ )
+				{
+					if( m_colorMask[ i ] )
+					{
+						count++;
+						colorMask += m_colorMaskChar[ i ];
+					}
+				}
+
+				if( count != m_colorMask.Length )
+				{
+					body.Add( "ColorMask " + ( ( count == 0 ) ? "0" : colorMask ) );
+				}
+			}
+
 			body.Add( "CGPROGRAM" );
 			if( tessOpHelper.EnableTesselation )
 			{
@@ -608,6 +631,33 @@ namespace AmplifyShaderEditor
 		public int ZWriteMode { get { return m_zWriteMode; } set { m_zWriteMode = value; } }
 		public int ZTestMode { get { return m_zTestMode; } set { m_zTestMode = value; } }
 		public CullMode OutlineCullMode { get { return m_cullMode; } set { m_cullMode = value; } }
+		public bool[] ColorMask
+		{
+			get { return m_colorMask; }
+			set
+			{
+				if( value.Length == m_colorMask.Length )
+				{
+					for( int i = 0 ; i < m_colorMask.Length ; i++ )
+					{
+						m_colorMask[i] = value[i];
+					}
+				}
+			}
+		}
+
+		public bool ActiveColorMask
+		{
+			get
+			{
+				for( int i = 0 ; i < m_colorMask.Length ; i++ )
+				{
+					if( !m_colorMask[ i ] )
+						return true;
+				}
+				return false;
+			}
+		}
 		public string Inputs { get { return m_inputs; } set { m_inputs = value; } }
 		public string Uniforms { get { return m_uniforms; } set { m_uniforms = value; } }
 		public string InstancedProperties { get { return m_instancedProperties; } set { m_instancedProperties = value; } }

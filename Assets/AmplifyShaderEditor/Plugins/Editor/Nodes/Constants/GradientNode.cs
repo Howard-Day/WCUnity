@@ -40,7 +40,14 @@ namespace AmplifyShaderEditor
 		public override void DrawProperties()
 		{
 			base.DrawProperties();
-			m_gradient = EditorGUILayoutEx.GradientField( "Gradient", m_gradient );
+			EditorGUI.BeginChangeCheck();
+			{
+				m_gradient = EditorGUILayoutEx.GradientField( "Gradient" , m_gradient );
+			}
+			if( EditorGUI.EndChangeCheck() )
+			{
+				PreviewIsDirty = true;
+			}
 		}
 
 		public override void Draw( DrawInfo drawInfo )
@@ -50,7 +57,14 @@ namespace AmplifyShaderEditor
 			if( !m_isVisible )
 				return;
 
-			m_gradient = EditorGUIEx.GradientField( m_remainingBox, m_gradient );
+			EditorGUI.BeginChangeCheck();
+			{
+				m_gradient = EditorGUIEx.GradientField( m_remainingBox , m_gradient );
+			}
+			if( EditorGUI.EndChangeCheck() )
+			{
+				PreviewIsDirty = true;
+			}
 		}
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )

@@ -680,7 +680,7 @@ namespace AmplifyShaderEditor
 			set
 			{
 				m_sourceFactorRGB = value;
-				m_sourceFactorRGBInline.IntValue = (int)m_sourceFactorRGB;
+				m_sourceFactorRGBInline.IntValue = (int)value;
 				m_sourceFactorRGBInline.Active = false;
 			}
 
@@ -692,6 +692,7 @@ namespace AmplifyShaderEditor
 			{
 				m_destFactorRGB = value;
 				m_destFactorRGBInline.IntValue = (int)value;
+				m_destFactorRGBInline.Active = false;
 			}
 		}
 

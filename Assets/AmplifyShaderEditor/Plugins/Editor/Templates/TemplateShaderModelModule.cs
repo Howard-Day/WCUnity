@@ -43,16 +43,31 @@ namespace AmplifyShaderEditor
 			m_shaderModelIdx = other.CurrentShaderModelIdx;
 		}
 
-		public override void ReadFromString( ref uint index, ref string[] nodeParams )
+		public void ReadFromString( TemplateModulesData modulesData , ref uint index, ref string[] nodeParams )
 		{
 			bool validDataOnMeta = m_validData;
 			if( UIUtils.CurrentShaderVersion() > TemplatesManager.MPShaderVersion )
 			{
 				validDataOnMeta = Convert.ToBoolean( nodeParams[ index++ ] );
 			}
-			
+
 			if( validDataOnMeta )
+			{
 				m_shaderModelIdx = Convert.ToInt32( nodeParams[ index++ ] );
+				int templateModule = TemplateHelperFunctions.ShaderModelToArrayIdx[ modulesData.ShaderModel.Value ];
+				if( templateModule > m_shaderModelIdx )
+				{
+					if( Preferences.GlobalForceTemplateMinShaderModel )
+					{
+						m_shaderModelIdx = templateModule;
+						UIUtils.ShowMessage("Changing shader model to minimum set by template: " + modulesData.ShaderModel.Value+"\n"+
+											"To disable this behavior please toggle off\n" +
+											"Preferences > Amplify Shader Editor > Force Template Min. Shader Model" , MessageSeverity.Warning );
+						
+					}
+				}
+
+			}
 		}
 
 		public override void WriteToString( ref string nodeInfo )

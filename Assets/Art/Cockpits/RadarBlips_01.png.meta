@@ -51,7 +51,7 @@ TextureImporter:
       213: 5285104771516942283
     second: BaseBlip04
   externalObjects: {}
-  serializedVersion: 10
+  serializedVersion: 11
   mipmaps:
     mipMapMode: 0
     enableMipMap: 0
@@ -71,6 +71,8 @@ TextureImporter:
   isReadable: 0
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMasterTextureLimit: 0
   grayScaleToAlpha: 0
   generateCubemap: 6
   cubemapConvolution: 0
@@ -80,11 +82,11 @@ TextureImporter:
   textureSettings:
     serializedVersion: 2
     filterMode: 0
-    aniso: -1
-    mipBias: -100
+    aniso: 1
+    mipBias: 0
     wrapU: 1
     wrapV: 1
-    wrapW: -1
+    wrapW: 0
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
@@ -102,9 +104,13 @@ TextureImporter:
   textureType: 8
   textureShape: 1
   singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
   maxTextureSizeSet: 0
   compressionQualitySet: 0
   textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 1
   platformSettings:
   - serializedVersion: 3
     buildTarget: DefaultTexturePlatform
@@ -503,6 +509,23 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
+    nameFileIdTable:
+      FighterBlip03: 4717410854635469190
+      BaseBlip04: 5285104771516942283
+      FighterBlip02: -8528827238370335675
+      BaseBlip02: 7688708857953352038
+      CapBlip03: -7807887920948202077
+      CapBlip01: -1038945245766541869
+      Objective01: -2014150850600491242
+      Objective02: 4273074877749174826
+      Obstacle01: 7277899829362388269
+      CapBlip02: -3059317623234044126
+      CapBlip04: 1857051215728562473
+      FighterBlip04: -2614887387422303411
+      BaseBlip01: -420250050583911138
+      BaseBlip03: -1934838318466807190
+      FighterBlip01: -503430619758237057
+      NavPoint: 262023306993108805
   spritePackingTag: 
   pSDRemoveMatte: 0
   pSDShowRemoveMatteOption: 0

@@ -6,7 +6,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Cos", "Trigonometry Operators", "Cosine of scalars and vectors" )]
+	[NodeAttributes( "Cos", "Trigonometry Operators", "Cosine of scalars and vectors" ,tags: "cosine")]
 	public sealed class CosOpNode : SingleInputOp
 	{
 		protected override void CommonInit( int uniqueId )

@@ -114,7 +114,8 @@ namespace AmplifyShaderEditor
 		StencilZFail,
 		RenderType,
 		RenderQueue,
-		DisableBatching
+		DisableBatching,
+		ChangeTagValue
 	}
 
 	public enum AseOptionsSetup
@@ -1144,6 +1145,17 @@ namespace AmplifyShaderEditor
 								{
 									if( arr.Length > 1 )
 										actionItem.ActionData = arr[ 1 ];
+								}
+								break;
+								case PropertyActionsEnum.ChangeTagValue:
+								{
+									if( arr.Length > 2 )
+									{
+										//Tag Name
+										actionItem.ActionData = arr[ 1 ];
+										//Tag Value
+										actionItem.ActionBuffer = arr[ 2 ];
+									}
 								}
 								break;
 							}

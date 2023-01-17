@@ -8,7 +8,7 @@ using System.Collections.Generic;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Template Local Var Data", "Surface Data", "Select and use available local variable data from the template" )]
+	[NodeAttributes( "Template Local Var Data" , "Surface Data" , "Select and use available local variable data from the template" )]
 	public sealed class TemplateLocalVarsNode : TemplateNodeParent
 	{
 		private List<TemplateLocalVarData> m_localVarsData = null;
@@ -37,7 +37,7 @@ namespace AmplifyShaderEditor
 				m_currentDataIdx = 0;
 				int count = m_localVarsData.Count;
 				m_dataLabels = new string[ count ];
-				for( int i = 0; i < count; i++ )
+				for( int i = 0 ; i < count ; i++ )
 				{
 					m_dataLabels[ i ] = m_localVarsData[ i ].LocalVarName;
 					if( m_localVarsData[ i ].LocalVarName.Equals( m_dataName ) )
@@ -59,18 +59,18 @@ namespace AmplifyShaderEditor
 			{
 				if( m_localVarsData.Count == 0 )
 				{
-					for( int i = 0; i < 4; i++ )
-						m_containerGraph.DeleteConnection( false, UniqueId, i, false, true );
+					for( int i = 0 ; i < 4 ; i++ )
+						m_containerGraph.DeleteConnection( false , UniqueId , i , false , true );
 
 					m_headerColor = UIUtils.GetColorFromCategory( "Default" );
 					m_content.text = "None";
 					m_additionalContent.text = string.Empty;
-					m_outputPorts[ 0 ].ChangeProperties( "None", WirePortDataType.OBJECT, false );
+					m_outputPorts[ 0 ].ChangeProperties( "None" , WirePortDataType.OBJECT , false );
 					ConfigurePorts();
 					return;
 				}
 
-				bool areCompatible = TemplateHelperFunctions.CheckIfCompatibles( m_outputPorts[ 0 ].DataType, m_localVarsData[ m_currentDataIdx ].DataType );
+				bool areCompatible = TemplateHelperFunctions.CheckIfCompatibles( m_outputPorts[ 0 ].DataType , m_localVarsData[ m_currentDataIdx ].DataType );
 				string category = m_localVarsData[ m_currentDataIdx ].Category == MasterNodePortCategory.Fragment ? "Surface Data" : "Vertex Data";
 				m_headerColor = UIUtils.GetColorFromCategory( category );
 				switch( m_localVarsData[ m_currentDataIdx ].DataType )
@@ -78,19 +78,19 @@ namespace AmplifyShaderEditor
 					default:
 					case WirePortDataType.INT:
 					case WirePortDataType.FLOAT:
-					m_outputPorts[ 0 ].ChangeProperties( Constants.EmptyPortValue, m_localVarsData[ m_currentDataIdx ].DataType, false );
+					m_outputPorts[ 0 ].ChangeProperties( Constants.EmptyPortValue , m_localVarsData[ m_currentDataIdx ].DataType , false );
 					break;
 					case WirePortDataType.FLOAT2:
-					m_outputPorts[ 0 ].ChangeProperties( "XY", m_localVarsData[ m_currentDataIdx ].DataType, false );
+					m_outputPorts[ 0 ].ChangeProperties( "XY" , m_localVarsData[ m_currentDataIdx ].DataType , false );
 					break;
 					case WirePortDataType.FLOAT3:
-					m_outputPorts[ 0 ].ChangeProperties( "XYZ", m_localVarsData[ m_currentDataIdx ].DataType, false );
+					m_outputPorts[ 0 ].ChangeProperties( "XYZ" , m_localVarsData[ m_currentDataIdx ].DataType , false );
 					break;
 					case WirePortDataType.FLOAT4:
-					m_outputPorts[ 0 ].ChangeProperties( "XYZW", m_localVarsData[ m_currentDataIdx ].DataType, false );
+					m_outputPorts[ 0 ].ChangeProperties( "XYZW" , m_localVarsData[ m_currentDataIdx ].DataType , false );
 					break;
 					case WirePortDataType.COLOR:
-					m_outputPorts[ 0 ].ChangeProperties( "RGBA", m_localVarsData[ m_currentDataIdx ].DataType, false );
+					m_outputPorts[ 0 ].ChangeProperties( "RGBA" , m_localVarsData[ m_currentDataIdx ].DataType , false );
 					break;
 				}
 
@@ -98,7 +98,7 @@ namespace AmplifyShaderEditor
 
 				if( !areCompatible )
 				{
-					m_containerGraph.DeleteConnection( false, UniqueId, 0, false, true );
+					m_containerGraph.DeleteConnection( false , UniqueId , 0 , false , true );
 				}
 
 				m_dataName = m_localVarsData[ m_currentDataIdx ].LocalVarName;
@@ -111,6 +111,11 @@ namespace AmplifyShaderEditor
 		public override void DrawProperties()
 		{
 			base.DrawProperties();
+			if( m_containerGraph.CurrentCanvasMode != NodeAvailability.TemplateShader )
+			{
+				return;
+			}
+
 			if( m_multiPassMode )
 			{
 				DrawMultipassProperties();
@@ -119,7 +124,7 @@ namespace AmplifyShaderEditor
 			if( m_currentDataIdx > -1 )
 			{
 				EditorGUI.BeginChangeCheck();
-				m_currentDataIdx = EditorGUILayoutPopup( DataLabelStr, m_currentDataIdx, m_dataLabels );
+				m_currentDataIdx = EditorGUILayoutPopup( DataLabelStr , m_currentDataIdx , m_dataLabels );
 				if( EditorGUI.EndChangeCheck() )
 				{
 					UpdateFromId();
@@ -169,7 +174,7 @@ namespace AmplifyShaderEditor
 			if( m_currentDataIdx > -1 )
 			{
 				EditorGUI.BeginChangeCheck();
-				m_currentDataIdx = m_upperLeftWidgetHelper.DrawWidget( this, m_currentDataIdx, m_dataLabels );
+				m_currentDataIdx = m_upperLeftWidgetHelper.DrawWidget( this , m_currentDataIdx , m_dataLabels );
 				if( EditorGUI.EndChangeCheck() )
 				{
 					UpdateFromId();
@@ -177,11 +182,17 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
+		public override string GenerateShaderForOutput( int outputId , ref MasterNodeDataCollector dataCollector , bool ignoreLocalvar )
 		{
+			if( dataCollector.MasterNodeCategory != AvailableShaderTypes.Template )
+			{
+				UIUtils.ShowMessage( "Template Local Vars node is only intended for templates use only" , MessageSeverity.Error );
+				return m_outputPorts[ 0 ].ErrorValue;
+			}
+
 			if( m_localVarsData[ m_currentDataIdx ].Category != dataCollector.PortCategory )
 			{
-				UIUtils.ShowMessage( UniqueId, string.Format( "Local Var {0} can only work on ports of type {1}", m_localVarsData[ m_currentDataIdx ].LocalVarName, m_localVarsData[ m_currentDataIdx ].Category ) );
+				UIUtils.ShowMessage( UniqueId , string.Format( "Local Var {0} can only work on ports of type {1}" , m_localVarsData[ m_currentDataIdx ].LocalVarName , m_localVarsData[ m_currentDataIdx ].Category ) );
 				return m_outputPorts[ 0 ].ErrorValue;
 			}
 
@@ -191,12 +202,12 @@ namespace AmplifyShaderEditor
 					dataCollector.TemplateDataCollectorInstance.MultipassPassIdx != PassIdx
 					)
 				{
-					UIUtils.ShowMessage( UniqueId, string.Format( "{0} is only intended for subshader {1} and pass {2}", m_dataLabels[ m_currentDataIdx ], SubShaderIdx, PassIdx ) );
+					UIUtils.ShowMessage( UniqueId , string.Format( "{0} is only intended for subshader {1} and pass {2}" , m_dataLabels[ m_currentDataIdx ] , SubShaderIdx , PassIdx ) );
 					return m_outputPorts[ outputId ].ErrorValue;
 				}
 			}
 
-			return GetOutputVectorItem( 0, outputId, m_dataName );
+			return GetOutputVectorItem( 0 , outputId , m_dataName );
 		}
 
 		public override void ReadFromString( ref string[] nodeParams )
@@ -206,10 +217,10 @@ namespace AmplifyShaderEditor
 			m_fetchDataId = true;
 		}
 
-		public override void WriteToString( ref string nodeInfo, ref string connectionsInfo )
+		public override void WriteToString( ref string nodeInfo , ref string connectionsInfo )
 		{
-			base.WriteToString( ref nodeInfo, ref connectionsInfo );
-			IOUtils.AddFieldValueToString( ref nodeInfo, m_dataName );
+			base.WriteToString( ref nodeInfo , ref connectionsInfo );
+			IOUtils.AddFieldValueToString( ref nodeInfo , m_dataName );
 		}
 
 		public override void OnMasterNodeReplaced( MasterNode newMasterNode )

@@ -329,7 +329,7 @@ namespace AmplifyShaderEditor
 
 				if( !m_availableTagsDict.ContainsKey( name ) )
 				{
-					CustomTagData tagData = new CustomTagData( data, m_availableTags.Count - 1 );
+					CustomTagData tagData = new CustomTagData( data, m_availableTags.Count );
 					m_availableTags.Add( tagData );
 					m_availableTagsDict.Add( name, tagData );
 				}
@@ -393,6 +393,13 @@ namespace AmplifyShaderEditor
 					IOUtils.AddFieldValueToString( ref nodeInfo, m_availableTags[ i ].ToString() );
 				}
 			}
+		}
+
+		public void ChangeTagValue( string name , string value )
+		{
+			CustomTagData tag = m_availableTags.Find( x => x.TagName.Equals( name ) );
+			if( tag != null )
+				tag.TagValue = value;
 		}
 
 		public string GenerateTags()

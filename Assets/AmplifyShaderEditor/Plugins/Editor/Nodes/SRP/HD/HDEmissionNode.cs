@@ -39,6 +39,7 @@ namespace AmplifyShaderEditor
 			"}\n",
 		};
 
+		public const string CommonLightingLib = "Packages/com.unity.render-pipelines.core/ShaderLibrary/CommonLighting.hlsl";
 		public const string EmissionHeaderLuminance = "ASEGetEmissionHDRColor{0}({1},{2},{3},GetInverseCurrentExposureMultiplier())";
 		public const string EmissionHeaderEV100 = "ASEGetEmissionHDRColor{0}({1},ConvertEvToLuminance({2}),{3},GetInverseCurrentExposureMultiplier())";
 
@@ -101,6 +102,9 @@ namespace AmplifyShaderEditor
 			if( m_outputPorts[ 0 ].IsLocalValue( dataCollector.PortCategory ) )
 				return m_outputPorts[ 0 ].LocalValue( dataCollector.PortCategory );
 
+#if UNITY_2020_3_OR_NEWER
+			dataCollector.AddToIncludes( UniqueId , CommonLightingLib );
+#endif
 			string colorValue = m_inputPorts[ 0 ].GeneratePortInstructions( ref dataCollector );
 			string intensityValue = m_inputPorts[ 1 ].GeneratePortInstructions( ref dataCollector );
 			string expositionWeightValue = m_inputPorts[ 2 ].GeneratePortInstructions( ref dataCollector );

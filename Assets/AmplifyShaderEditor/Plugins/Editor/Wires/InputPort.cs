@@ -739,6 +739,7 @@ namespace AmplifyShaderEditor
 					return (Mathf.Abs( m_previewInternalVec3.x ) < 0.001f &&
 							Mathf.Abs( m_previewInternalVec3.y ) < 0.001f &&
 							Mathf.Abs( m_previewInternalVec3.z ) < 0.001f );
+					case WirePortDataType.UINT4:
 					case WirePortDataType.FLOAT4:
 					return (Mathf.Abs( m_previewInternalVec4.x ) < 0.001f &&
 							Mathf.Abs( m_previewInternalVec4.y ) < 0.001f &&

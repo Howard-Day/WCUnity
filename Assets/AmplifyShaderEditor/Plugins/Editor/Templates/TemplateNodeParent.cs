@@ -11,8 +11,6 @@ namespace AmplifyShaderEditor
 	[Serializable]
 	public class TemplateNodeParent : ParentNode
 	{
-		
-
 		protected const string ErrorMessageStr = "This node can only be used inside a Template category!";
 		protected const string DataLabelStr = "Data";
 		protected const string SubShaderStr = "SubShader";
@@ -46,16 +44,17 @@ namespace AmplifyShaderEditor
 		protected override void CommonInit( int uniqueId )
 		{
 			base.CommonInit( uniqueId );
-			AddOutputPort( WirePortDataType.FLOAT, "Out" );
+			AddOutputPort( WirePortDataType.FLOAT , "Out" );
 			if( m_createAllOutputs )
 			{
-				AddOutputPort( WirePortDataType.FLOAT, "X" );
-				AddOutputPort( WirePortDataType.FLOAT, "Y" );
-				AddOutputPort( WirePortDataType.FLOAT, "Z" );
-				AddOutputPort( WirePortDataType.FLOAT, "W" );
+				AddOutputPort( WirePortDataType.FLOAT , "X" );
+				AddOutputPort( WirePortDataType.FLOAT , "Y" );
+				AddOutputPort( WirePortDataType.FLOAT , "Z" );
+				AddOutputPort( WirePortDataType.FLOAT , "W" );
 			}
 			m_textLabelWidth = 67;
 			m_hasLeftDropdown = true;
+			m_errorMessageTooltip = ErrorMessageStr;
 		}
 
 		public override void AfterCommonInit()
@@ -76,7 +75,7 @@ namespace AmplifyShaderEditor
 			{
 				default:
 				{
-					for( int i = 1; i < 5; i++ )
+					for( int i = 1 ; i < 5 ; i++ )
 					{
 						m_outputPorts[ i ].Visible = false;
 					}
@@ -84,7 +83,7 @@ namespace AmplifyShaderEditor
 				break;
 				case WirePortDataType.FLOAT2:
 				{
-					for( int i = 1; i < 5; i++ )
+					for( int i = 1 ; i < 5 ; i++ )
 					{
 						m_outputPorts[ i ].Visible = ( i < 3 );
 						if( m_outputPorts[ i ].Visible )
@@ -96,7 +95,7 @@ namespace AmplifyShaderEditor
 				break;
 				case WirePortDataType.FLOAT3:
 				{
-					for( int i = 1; i < 5; i++ )
+					for( int i = 1 ; i < 5 ; i++ )
 					{
 						m_outputPorts[ i ].Visible = ( i < 4 );
 						if( m_outputPorts[ i ].Visible )
@@ -108,7 +107,7 @@ namespace AmplifyShaderEditor
 				break;
 				case WirePortDataType.FLOAT4:
 				{
-					for( int i = 1; i < 5; i++ )
+					for( int i = 1 ; i < 5 ; i++ )
 					{
 						m_outputPorts[ i ].Visible = true;
 						m_outputPorts[ i ].Name = Constants.ChannelNamesVector[ i - 1 ];
@@ -117,7 +116,7 @@ namespace AmplifyShaderEditor
 				break;
 				case WirePortDataType.COLOR:
 				{
-					for( int i = 1; i < 5; i++ )
+					for( int i = 1 ; i < 5 ; i++ )
 					{
 						m_outputPorts[ i ].Visible = true;
 						m_outputPorts[ i ].Name = Constants.ChannelNamesColor[ i - 1 ];
@@ -134,7 +133,7 @@ namespace AmplifyShaderEditor
 		protected void DrawSubShaderUI()
 		{
 			EditorGUI.BeginChangeCheck();
-			m_subShaderIdx = EditorGUILayoutPopup( SubShaderStr, m_subShaderIdx, m_availableSubshaders );
+			m_subShaderIdx = EditorGUILayoutPopup( SubShaderStr , m_subShaderIdx , m_availableSubshaders );
 			if( EditorGUI.EndChangeCheck() )
 			{
 				//UpdateSubShaderAmount();
@@ -146,7 +145,7 @@ namespace AmplifyShaderEditor
 		protected void DrawPassUI()
 		{
 			EditorGUI.BeginChangeCheck();
-			m_passLocalArrayIdx = EditorGUILayoutPopup( PassStr, m_passLocalArrayIdx, m_availablePassesLabels );
+			m_passLocalArrayIdx = EditorGUILayoutPopup( PassStr , m_passLocalArrayIdx , m_availablePassesLabels );
 			if( EditorGUI.EndChangeCheck() )
 			{
 				m_passIdx = m_availablePassesValues[ m_passLocalArrayIdx ];
@@ -154,12 +153,12 @@ namespace AmplifyShaderEditor
 				OnPassChange();
 			}
 		}
-		
+
 		virtual protected void CheckWarningState()
 		{
 			if( m_containerGraph.CurrentCanvasMode != NodeAvailability.TemplateShader )
 			{
-				ShowTab( NodeMessageType.Error, ErrorMessageStr );
+				ShowTab( NodeMessageType.Error , ErrorMessageStr );
 			}
 			else
 			{
@@ -191,12 +190,12 @@ namespace AmplifyShaderEditor
 				if( m_availableSubshaders == null || subShaderCount != m_availableSubshaders.Length )
 				{
 					m_availableSubshaders = new string[ subShaderCount ];
-					for( int i = 0; i < subShaderCount; i++ )
+					for( int i = 0 ; i < subShaderCount ; i++ )
 					{
 						m_availableSubshaders[ i ] = i.ToString();
 					}
 				}
-				m_subShaderIdx = Mathf.Min( m_subShaderIdx, subShaderCount - 1 );
+				m_subShaderIdx = Mathf.Min( m_subShaderIdx , subShaderCount - 1 );
 				UpdatePassAmount();
 			}
 		}
@@ -214,13 +213,13 @@ namespace AmplifyShaderEditor
 			int minPassIdx = int.MaxValue;
 			int passCount = m_templateMPData.SubShaders[ m_subShaderIdx ].Passes.Count;
 			bool resetPassIdx = true;
-			for( int i = 0; i < passCount; i++ )
+			for( int i = 0 ; i < passCount ; i++ )
 			{
 				if( ValidatePass( i ) )
 				{
 					passLabels.Add( i.ToString() );
 					passValues.Add( i );
-					minPassIdx = Mathf.Min( minPassIdx, i );
+					minPassIdx = Mathf.Min( minPassIdx , i );
 					if( m_passIdx == i )
 						resetPassIdx = false;
 				}
@@ -233,9 +232,9 @@ namespace AmplifyShaderEditor
 			RefreshPassLocalArrayIdx();
 		}
 
-		void RefreshPassLocalArrayIdx( )
+		void RefreshPassLocalArrayIdx()
 		{
-			for( int i = 0; i < m_availablePassesValues.Length; i++ )
+			for( int i = 0 ; i < m_availablePassesValues.Length ; i++ )
 			{
 				if( m_availablePassesValues[ i ] == m_passIdx )
 				{
@@ -260,11 +259,27 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		public override void WriteToString( ref string nodeInfo, ref string connectionsInfo )
+		public override void WriteToString( ref string nodeInfo , ref string connectionsInfo )
 		{
-			base.WriteToString( ref nodeInfo, ref connectionsInfo );
-			IOUtils.AddFieldValueToString( ref nodeInfo, m_subShaderIdx );
-			IOUtils.AddFieldValueToString( ref nodeInfo, m_passIdx );
+			base.WriteToString( ref nodeInfo , ref connectionsInfo );
+			IOUtils.AddFieldValueToString( ref nodeInfo , m_subShaderIdx );
+			IOUtils.AddFieldValueToString( ref nodeInfo , m_passIdx );
+		}
+
+		public override void OnMasterNodeReplaced( MasterNode newMasterNode )
+		{
+			base.OnMasterNodeReplaced( newMasterNode );
+			if( newMasterNode.CurrentMasterNodeCategory == AvailableShaderTypes.SurfaceShader )
+			{
+				m_content.text = m_nodeAttribs.Name;
+				m_autoWrapProperties = false;
+			}
+			else
+			{
+				m_autoWrapProperties = true;
+			}
+			CheckWarningState();
+
 		}
 		public int SubShaderIdx { get { return m_subShaderIdx; } set { m_subShaderIdx = value; } }
 		public int PassIdx { get { return m_passIdx; } set { m_passIdx = value; } }

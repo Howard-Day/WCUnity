@@ -25,7 +25,7 @@ namespace AmplifyShaderEditor
 				return GetOutputVectorItem( 0, outputId, m_outputPorts[ 0 ].LocalValue( dataCollector.PortCategory ) );
 
 			string value = m_inputPorts[ 0 ].GeneratePortInstructions( ref dataCollector  );
-			string result = string.Format( "float4( {0},{1},{2},{3})", value + "[3][0]", value + "[3][1]", value + "[3][2]", value + "[3][3]" );
+			string result = string.Format( "float4( {0},{1},{2},{3})", value + "[0][3]", value + "[1][3]", value + "[2][3]", value + "[3][3]" );
 			RegisterLocalVariable( 0, result, ref dataCollector, "matrixToPos" + OutputId );
 
 			return GetOutputVectorItem( 0, outputId, m_outputPorts[ 0 ].LocalValue( dataCollector.PortCategory ) );

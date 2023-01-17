@@ -5,10 +5,13 @@ using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Collections.Generic;
+using System.Reflection;
+using System.Linq;
 using UnityEngine;
 using UnityEditor;
 using System.Threading;
 using UnityEditor.VersionControl;
+using System.Text.RegularExpressions;
 
 namespace AmplifyShaderEditor
 {
@@ -26,12 +29,12 @@ namespace AmplifyShaderEditor
 		public static readonly object locker = new object();
 		public void DoWork()
 		{
-			while ( IOUtils.ActiveThread )
+			while( IOUtils.ActiveThread )
 			{
-				if ( IOUtils.SaveInThreadFlag )
+				if( IOUtils.SaveInThreadFlag )
 				{
 					IOUtils.SaveInThreadFlag = false;
-					lock ( locker )
+					lock( locker )
 					{
 						IOUtils.SaveInThreadShaderBody = IOUtils.ShaderCopywriteMessage + IOUtils.SaveInThreadShaderBody;
 						// Add checksum 
@@ -45,7 +48,7 @@ namespace AmplifyShaderEditor
 							fileWriter.Write( IOUtils.SaveInThreadShaderBody );
 							Debug.Log( "Saving complete" );
 						}
-						catch ( Exception e )
+						catch( Exception e )
 						{
 							Debug.LogException( e );
 						}
@@ -62,7 +65,7 @@ namespace AmplifyShaderEditor
 
 	public static class IOUtils
 	{
-		public delegate void OnShaderAction( Shader shader, bool isTemplate, string type );
+		public delegate void OnShaderAction( Shader shader , bool isTemplate , string type );
 		public static OnShaderAction OnShaderSavedEvent;
 		public static OnShaderAction OnShaderTypeChangedEvent;
 
@@ -96,10 +99,10 @@ namespace AmplifyShaderEditor
 		public static readonly string SRPCBufferPropertiesEnd = "CBUFFER_END";
 
 
-		public static readonly string InstancedPropertiesBeginTabs		= "\t\t"+ InstancedPropertiesBegin + "\n";
-		public static readonly string InstancedPropertiesEndTabs		= "\t\t"+ InstancedPropertiesEnd + "\n";
-		public static readonly string InstancedPropertiesElementTabs	= "\t\t\t"+ InstancedPropertiesElement + "\n";
-		
+		public static readonly string InstancedPropertiesBeginTabs = "\t\t" + InstancedPropertiesBegin + "\n";
+		public static readonly string InstancedPropertiesEndTabs = "\t\t" + InstancedPropertiesEnd + "\n";
+		public static readonly string InstancedPropertiesElementTabs = "\t\t\t" + InstancedPropertiesElement + "\n";
+
 		public static readonly string MetaBegin = "defaultTextures:";
 		public static readonly string MetaEnd = "userData:";
 		public static readonly string ShaderBodyBegin = "/*ASEBEGIN";
@@ -190,7 +193,7 @@ namespace AmplifyShaderEditor
 		public static string ShowConsoleWindowGUID = "9a81d7df8e62c044a9d1cada0c8a2131";
 
 
-		public static Dictionary<string, string> NodeTypeReplacer = new Dictionary<string, string>()
+		public static Dictionary<string , string> NodeTypeReplacer = new Dictionary<string , string>()
 		{
 			{"AmplifyShaderEditor.RotateAboutAxis", "AmplifyShaderEditor.RotateAboutAxisNode"},
 			{"GlobalArrayNode", "AmplifyShaderEditor.GlobalArrayNode"},
@@ -218,7 +221,107 @@ namespace AmplifyShaderEditor
 
 		public static List<AmplifyShaderEditorWindow> AllOpenedWindows = new List<AmplifyShaderEditorWindow>();
 
-		public static void StartSaveThread( string shaderBody, string pathName )
+		public static Type[] GetTypesInNamespace( Assembly assembly , string nameSpace )
+		{
+			return assembly.GetTypes().Where( t => String.Equals( t.Namespace , nameSpace , StringComparison.Ordinal ) ).ToArray();
+		}
+
+#if UNITY_2018_3_OR_NEWER
+		public static List<Assembly> LoadedAssemblies;
+		public static Type[] GetAssemblyTypesArray()
+		{
+			Type[] availableTypes = null;
+			if( LoadedAssemblies == null )
+			{
+				LoadedAssemblies = new List<Assembly>();
+				try
+				{
+					UnityEditor.Compilation.Assembly[] assemblies = UnityEditor.Compilation.CompilationPipeline.GetAssemblies( UnityEditor.Compilation.AssembliesType.Editor );
+					for( int i = 0 ; i < assemblies.Length ; i++ )
+					{
+						if( !assemblies[ i ].name.StartsWith( "Unity" ) && !assemblies[ i ].name.Equals( "AmplifyShaderEditor" ) )
+						{
+							Assembly assembly = Assembly.Load( assemblies[ i ].name );
+							LoadedAssemblies.Add( assembly );
+							Type[] extraTypes = GetTypesInNamespace( assembly , "AmplifyShaderEditor" );
+							if( extraTypes.Length > 0 )
+							{
+								availableTypes = ( availableTypes == null ) ? extraTypes : availableTypes.Concat<Type>( extraTypes ).ToArray();
+							}
+						}
+					}
+				}
+				catch( Exception e )
+				{
+					Debug.LogException( e );
+				}
+			}
+			else
+			{
+				int count = LoadedAssemblies.Count;
+				for( int i = 0 ; i < count ; i++ )
+				{
+					Type[] extraTypes = GetTypesInNamespace( LoadedAssemblies[i] , "AmplifyShaderEditor" );
+					if( extraTypes.Length > 0 )
+					{
+						availableTypes = ( availableTypes == null ) ? extraTypes : availableTypes.Concat<Type>( extraTypes ).ToArray();
+					}
+				}
+			}
+
+			return availableTypes;
+		}
+
+		public static Type GetAssemblyType( string typeName )
+		{
+			if( LoadedAssemblies == null )
+			{
+				LoadedAssemblies = new List<Assembly>();
+				try
+				{
+					UnityEditor.Compilation.Assembly[] assemblies = UnityEditor.Compilation.CompilationPipeline.GetAssemblies( UnityEditor.Compilation.AssembliesType.Editor );
+					for( int i = 0 ; i < assemblies.Length ; i++ )
+					{
+						if( !assemblies[ i ].name.StartsWith( "Unity" ) && !assemblies[ i ].name.Equals( "AmplifyShaderEditor" ) )
+						{
+							Assembly assembly = Assembly.Load( assemblies[ i ].name );
+							LoadedAssemblies.Add( assembly );
+							Type type = assembly.GetType( typeName );
+							if( type != null )
+								return type;
+						}
+					}
+				}
+				catch( Exception e )
+				{
+					Debug.LogException( e );
+				}
+			}
+			else
+			{
+				int count = LoadedAssemblies.Count;
+				for( int i = 0 ; i < count ; i++ )
+				{
+					Type type = LoadedAssemblies[i].GetType( typeName );
+					if( type != null )
+						return type;
+				}
+			}
+
+			return null;
+		}
+
+		public static void ClearLoadedAssemblies()
+		{
+			if( LoadedAssemblies != null )
+			{
+				LoadedAssemblies.Clear();
+				LoadedAssemblies = null;
+			}
+		}
+#endif
+
+		public static void StartSaveThread( string shaderBody , string pathName )
 		{
 			if( Provider.enabled && Provider.isActive )
 			{
@@ -229,7 +332,7 @@ namespace AmplifyShaderEditor
 					//statusTask.Wait();
 					//if( Provider.CheckoutIsValid( statusTask.assetList[ 0 ] ) )
 					{
-						Task checkoutTask = Provider.Checkout( loadedAsset, CheckoutMode.Both );
+						Task checkoutTask = Provider.Checkout( loadedAsset , CheckoutMode.Both );
 						checkoutTask.Wait();
 					}
 				}
@@ -237,9 +340,9 @@ namespace AmplifyShaderEditor
 
 			if( UseSaveThread )
 			{
-				if ( !SaveInThreadFlag )
+				if( !SaveInThreadFlag )
 				{
-					if ( SaveInThreadMainThread == null )
+					if( SaveInThreadMainThread == null )
 					{
 						Worker worker = new Worker();
 						SaveInThreadMainThread = new Thread( worker.DoWork );
@@ -254,7 +357,7 @@ namespace AmplifyShaderEditor
 			}
 			else
 			{
-				SaveTextfileToDisk( shaderBody, pathName );
+				SaveTextfileToDisk( shaderBody , pathName );
 			}
 		}
 
@@ -262,20 +365,20 @@ namespace AmplifyShaderEditor
 		public static void SetAmplifyDefineSymbolOnBuildTargetGroup( BuildTargetGroup targetGroup )
 		{
 			string currData = PlayerSettings.GetScriptingDefineSymbolsForGroup( targetGroup );
-			if ( !currData.Contains( AmplifyShaderEditorDefineSymbol ) )
+			if( !currData.Contains( AmplifyShaderEditorDefineSymbol ) )
 			{
-				if ( string.IsNullOrEmpty( currData ) )
+				if( string.IsNullOrEmpty( currData ) )
 				{
-					PlayerSettings.SetScriptingDefineSymbolsForGroup( targetGroup, AmplifyShaderEditorDefineSymbol );
+					PlayerSettings.SetScriptingDefineSymbolsForGroup( targetGroup , AmplifyShaderEditorDefineSymbol );
 				}
 				else
 				{
-					if ( !currData[ currData.Length - 1 ].Equals( ';' ) )
+					if( !currData[ currData.Length - 1 ].Equals( ';' ) )
 					{
 						currData += ';';
 					}
 					currData += AmplifyShaderEditorDefineSymbol;
-					PlayerSettings.SetScriptingDefineSymbolsForGroup( targetGroup, currData );
+					PlayerSettings.SetScriptingDefineSymbolsForGroup( targetGroup , currData );
 				}
 			}
 		}
@@ -285,19 +388,22 @@ namespace AmplifyShaderEditor
 			string currData = PlayerSettings.GetScriptingDefineSymbolsForGroup( targetGroup );
 			if( currData.Contains( AmplifyShaderEditorDefineSymbol ) )
 			{
-				currData = currData.Replace( AmplifyShaderEditorDefineSymbol + ";", "" );
-				currData = currData.Replace( ";" + AmplifyShaderEditorDefineSymbol, "" );
-				currData = currData.Replace( AmplifyShaderEditorDefineSymbol, "" );
-				PlayerSettings.SetScriptingDefineSymbolsForGroup( targetGroup, currData );
+				currData = currData.Replace( AmplifyShaderEditorDefineSymbol + ";" , "" );
+				currData = currData.Replace( ";" + AmplifyShaderEditorDefineSymbol , "" );
+				currData = currData.Replace( AmplifyShaderEditorDefineSymbol , "" );
+				PlayerSettings.SetScriptingDefineSymbolsForGroup( targetGroup , currData );
 			}
 		}
 
+		//Adding this attribute so scripting defining symbol can be registered right away so custom nodes using ASE ( under that symbol ) can be caught 
+		// the first time ASE opens
+		[InitializeOnLoadMethod]
 		public static void Init()
 		{
-			if ( !Initialized )
+			if( !Initialized )
 			{
 				Initialized = true;
-				if( EditorPrefs.GetBool( Preferences.PrefDefineSymbol, true ) )
+				if( EditorPrefs.GetBool( Preferences.PrefDefineSymbol , true ) )
 					SetAmplifyDefineSymbolOnBuildTargetGroup( EditorUserBuildSettings.selectedBuildTargetGroup );
 				//Array BuildTargetGroupValues = Enum.GetValues( typeof(  BuildTargetGroup ));
 				//for ( int i = 0; i < BuildTargetGroupValues.Length; i++ )
@@ -318,7 +424,7 @@ namespace AmplifyShaderEditor
 
 		public static void DumpTemplateManagers()
 		{
-			for( int i = 0; i < AllOpenedWindows.Count; i++ )
+			for( int i = 0 ; i < AllOpenedWindows.Count ; i++ )
 			{
 				if( AllOpenedWindows[ i ].TemplatesManagerInstance != null )
 				{
@@ -331,7 +437,7 @@ namespace AmplifyShaderEditor
 		{
 			get
 			{
-				for( int i = 0; i < AllOpenedWindows.Count; i++ )
+				for( int i = 0 ; i < AllOpenedWindows.Count ; i++ )
 				{
 					if( AllOpenedWindows[ i ].TemplatesManagerInstance != null )
 					{
@@ -344,7 +450,7 @@ namespace AmplifyShaderEditor
 
 		public static void UpdateSFandRefreshWindows( AmplifyShaderFunction function )
 		{
-			for( int i = 0; i < AllOpenedWindows.Count; i++ )
+			for( int i = 0 ; i < AllOpenedWindows.Count ; i++ )
 			{
 				AllOpenedWindows[ i ].LateRefreshAvailableNodes();
 				if( AllOpenedWindows[ i ].IsShaderFunctionWindow )
@@ -360,15 +466,15 @@ namespace AmplifyShaderEditor
 		public static void UpdateIO()
 		{
 			int windowCount = AllOpenedWindows.Count;
-			if ( windowCount == 0 )
+			if( windowCount == 0 )
 			{
 				EditorApplication.update -= IOUtils.UpdateIO;
 				return;
 			}
 
-			for ( int i = 0; i < AllOpenedWindows.Count; i++ )
+			for( int i = 0 ; i < AllOpenedWindows.Count ; i++ )
 			{
-				if ( AllOpenedWindows[i] == EditorWindow.focusedWindow )
+				if( AllOpenedWindows[ i ] == EditorWindow.focusedWindow )
 				{
 					UIUtils.CurrentWindow = AllOpenedWindows[ i ];
 				}
@@ -376,36 +482,36 @@ namespace AmplifyShaderEditor
 				if( FunctionNodeChanged )
 					AllOpenedWindows[ i ].CheckFunctions = true;
 
-				if ( AllOpenedWindows[ i ] == null )
+				if( AllOpenedWindows[ i ] == null )
 				{
 					AllOpenedWindows.RemoveAt( i );
 					i--;
 				}
 			}
 
-			if ( FunctionNodeChanged )
+			if( FunctionNodeChanged )
 				FunctionNodeChanged = false;
 		}
 
 		public static void Destroy()
 		{
 			ActiveThread = false;
-			if ( SaveInThreadMainThread != null )
+			if( SaveInThreadMainThread != null )
 			{
 				SaveInThreadMainThread.Abort();
 				SaveInThreadMainThread = null;
 			}
 		}
 
-		public static void GetShaderName( out string shaderName, out string fullPathname, string defaultName, string customDatapath )
+		public static void GetShaderName( out string shaderName , out string fullPathname , string defaultName , string customDatapath )
 		{
 			string currDatapath = String.IsNullOrEmpty( customDatapath ) ? Application.dataPath : customDatapath;
-			fullPathname = EditorUtility.SaveFilePanelInProject( "Select Shader to save", defaultName, "shader", SaveShaderStr, currDatapath );
-			if ( !String.IsNullOrEmpty( fullPathname ) )
+			fullPathname = EditorUtility.SaveFilePanelInProject( "Select Shader to save" , defaultName , "shader" , SaveShaderStr , currDatapath );
+			if( !String.IsNullOrEmpty( fullPathname ) )
 			{
 				shaderName = fullPathname.Remove( fullPathname.Length - 7 ); // -7 remove .shader extension
 				string[] subStr = shaderName.Split( '/' );
-				if ( subStr.Length > 0 )
+				if( subStr.Length > 0 )
 				{
 					shaderName = subStr[ subStr.Length - 1 ]; // Remove pathname 
 				}
@@ -416,17 +522,17 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		public static void AddTypeToString( ref string myString, string typeName )
+		public static void AddTypeToString( ref string myString , string typeName )
 		{
 			myString += typeName;
 		}
 
-		public static void AddFieldToString( ref string myString, string fieldName, object fieldValue )
+		public static void AddFieldToString( ref string myString , string fieldName , object fieldValue )
 		{
 			myString += FIELD_SEPARATOR + fieldName + VALUE_SEPARATOR + fieldValue;
 		}
 
-		public static void AddFieldValueToString( ref string myString, object fieldValue )
+		public static void AddFieldValueToString( ref string myString , object fieldValue )
 		{
 			myString += FIELD_SEPARATOR + fieldValue.ToString();
 		}
@@ -440,15 +546,15 @@ namespace AmplifyShaderEditor
 		{
 			SHA1 sha1 = SHA1.Create();
 			byte[] buf = System.Text.Encoding.UTF8.GetBytes( buffer );
-			byte[] hash = sha1.ComputeHash( buf, 0, buf.Length );
-			string hashstr = BitConverter.ToString( hash ).Replace( "-", "" );
+			byte[] hash = sha1.ComputeHash( buf , 0 , buf.Length );
+			string hashstr = BitConverter.ToString( hash ).Replace( "-" , "" );
 			return hashstr;
 		}
 
-		public static void SaveTextfileToDisk( string shaderBody, string pathName, bool addAdditionalInfo = true )
+		public static void SaveTextfileToDisk( string shaderBody , string pathName , bool addAdditionalInfo = true )
 		{
 
-			if ( addAdditionalInfo )
+			if( addAdditionalInfo )
 			{
 				shaderBody = ShaderCopywriteMessage + shaderBody;
 				// Add checksum 
@@ -462,7 +568,7 @@ namespace AmplifyShaderEditor
 			{
 				fileWriter.Write( shaderBody );
 			}
-			catch ( Exception e )
+			catch( Exception e )
 			{
 				Debug.LogException( e );
 			}
@@ -483,38 +589,38 @@ namespace AmplifyShaderEditor
 		public static string LoadTextFileFromDisk( string pathName )
 		{
 			string result = string.Empty;
-            if ( !string.IsNullOrEmpty( pathName ) && File.Exists( pathName ) )
-            {
+			if( !string.IsNullOrEmpty( pathName ) && File.Exists( pathName ) )
+			{
 
-                StreamReader fileReader = null;
-                try
-                {
-                    fileReader = new StreamReader( pathName );
-                    result = fileReader.ReadToEnd();
-                }
-                catch ( Exception e )
-                {
-                    Debug.LogException( e );
-                }
-                finally
-                {
-                    if( fileReader != null)
-                        fileReader.Close();
-                }
-            }
+				StreamReader fileReader = null;
+				try
+				{
+					fileReader = new StreamReader( pathName );
+					result = fileReader.ReadToEnd();
+				}
+				catch( Exception e )
+				{
+					Debug.LogException( e );
+				}
+				finally
+				{
+					if( fileReader != null )
+						fileReader.Close();
+				}
+			}
 			return result;
 		}
 
 		public static bool IsASEShader( Shader shader )
 		{
 			string datapath = AssetDatabase.GetAssetPath( shader );
-			if ( UIUtils.IsUnityNativeShader( datapath ) )
+			if( UIUtils.IsUnityNativeShader( datapath ) )
 			{
 				return false;
 			}
 
 			string buffer = LoadTextFileFromDisk( datapath );
-			if ( String.IsNullOrEmpty( buffer ) || !IOUtils.HasValidShaderBody( ref buffer ) )
+			if( String.IsNullOrEmpty( buffer ) || !IOUtils.HasValidShaderBody( ref buffer ) )
 			{
 				return false;
 			}
@@ -524,7 +630,7 @@ namespace AmplifyShaderEditor
 		public static bool IsShaderFunction( string functionInfo )
 		{
 			string buffer = functionInfo;
-			if ( String.IsNullOrEmpty( buffer ) || !IOUtils.HasValidShaderBody( ref buffer ) )
+			if( String.IsNullOrEmpty( buffer ) || !IOUtils.HasValidShaderBody( ref buffer ) )
 			{
 				return false;
 			}
@@ -534,7 +640,7 @@ namespace AmplifyShaderEditor
 		public static bool HasValidShaderBody( ref string shaderBody )
 		{
 			int shaderBodyBeginId = shaderBody.IndexOf( ShaderBodyBegin );
-			if ( shaderBodyBeginId > -1 )
+			if( shaderBodyBeginId > -1 )
 			{
 				int shaderBodyEndId = shaderBody.IndexOf( ShaderBodyEnd );
 				return ( shaderBodyEndId > -1 && shaderBodyEndId > shaderBodyBeginId );
@@ -542,9 +648,9 @@ namespace AmplifyShaderEditor
 			return false;
 		}
 
-		public static int[] AllIndexesOf( this string str, string substr, bool ignoreCase = false )
+		public static int[] AllIndexesOf( this string str , string substr , bool ignoreCase = false )
 		{
-			if ( string.IsNullOrEmpty( str ) || string.IsNullOrEmpty( substr ) )
+			if( string.IsNullOrEmpty( str ) || string.IsNullOrEmpty( substr ) )
 			{
 				throw new ArgumentException( "String or substring is not specified." );
 			}
@@ -552,7 +658,7 @@ namespace AmplifyShaderEditor
 			List<int> indexes = new List<int>();
 			int index = 0;
 
-			while ( ( index = str.IndexOf( substr, index, ignoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal ) ) != -1 )
+			while( ( index = str.IndexOf( substr , index , ignoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal ) ) != -1 )
 			{
 				indexes.Add( index++ );
 			}
@@ -560,17 +666,17 @@ namespace AmplifyShaderEditor
 			return indexes.ToArray();
 		}
 
-		public static void AddFunctionHeader( ref string function, string header )
+		public static void AddFunctionHeader( ref string function , string header )
 		{
 			function += "\t\t" + header + "\n\t\t{\n";
 		}
 
-		public static void AddSingleLineFunction( ref string function, string header )
+		public static void AddSingleLineFunction( ref string function , string header )
 		{
 			function += "\t\t" + header;
 		}
 
-		public static void AddFunctionLine( ref string function, string line )
+		public static void AddFunctionLine( ref string function , string line )
 		{
 			function += "\t\t\t" + line + "\n";
 		}
@@ -580,33 +686,33 @@ namespace AmplifyShaderEditor
 			function += "\t\t}\n";
 		}
 
-		public static string CreateFullFunction( string header, params string[] functionLines )
+		public static string CreateFullFunction( string header , params string[] functionLines )
 		{
 			string result = string.Empty;
-			AddFunctionHeader( ref result, header );
-			for ( int i = 0; i > functionLines.Length; i++ )
+			AddFunctionHeader( ref result , header );
+			for( int i = 0 ; i > functionLines.Length ; i++ )
 			{
-				AddFunctionLine( ref result, functionLines[ i ] );
+				AddFunctionLine( ref result , functionLines[ i ] );
 			}
 			CloseFunctionBody( ref result );
 			return result;
 		}
 
-		public static string CreateCodeComments( bool forceForwardSlash, params string[] comments )
+		public static string CreateCodeComments( bool forceForwardSlash , params string[] comments )
 		{
 			string finalComment = string.Empty;
-			if ( comments.Length == 1 )
+			if( comments.Length == 1 )
 			{
 				finalComment = "//" + comments[ 0 ];
 			}
 			else
 			{
-				if ( forceForwardSlash )
+				if( forceForwardSlash )
 				{
-					for ( int i = 0; i < comments.Length; i++ )
+					for( int i = 0 ; i < comments.Length ; i++ )
 					{
 						finalComment += "//" + comments[ i ];
-						if ( i < comments.Length - 1 )
+						if( i < comments.Length - 1 )
 						{
 							finalComment += "\n\t\t\t";
 						}
@@ -615,12 +721,12 @@ namespace AmplifyShaderEditor
 				else
 				{
 					finalComment = "/*";
-					for ( int i = 0; i < comments.Length; i++ )
+					for( int i = 0 ; i < comments.Length ; i++ )
 					{
-						if ( i != 0 )
+						if( i != 0 )
 							finalComment += "\t\t\t";
 						finalComment += comments[ i ];
-						if ( i < comments.Length - 1 )
+						if( i < comments.Length - 1 )
 							finalComment += "\n";
 					}
 					finalComment += "*/";
@@ -629,13 +735,13 @@ namespace AmplifyShaderEditor
 			return finalComment;
 		}
 
-		public static string GetUVChannelDeclaration( string uvName, int channelId, int set )
+		public static string GetUVChannelDeclaration( string uvName , int channelId , int set )
 		{
 			string uvSetStr = ( set == 0 ) ? "uv" : "uv" + Constants.AvailableUVSetsStr[ set ];
 			return "float2 " + uvSetStr + uvName /*+ " : TEXCOORD" + channelId*/;
 		}
 
-		public static string GetUVChannelName( string uvName, int set )
+		public static string GetUVChannelName( string uvName , int set )
 		{
 			string uvSetStr = ( set == 0 ) ? "uv" : "uv" + Constants.AvailableUVSetsStr[ set ];
 			return uvSetStr + uvName;
@@ -647,9 +753,15 @@ namespace AmplifyShaderEditor
 			return uvSetStr;
 		}
 
+		//Floatify adds a .0 to the number as soon operarions with floats require that
+		// if  value % 1 != 0 it has decimal numbers
+		// The regex checks if number is something like 4e+07 which cannot be "floatified"
+		private const string CheckFloatifyPatt = "[eE][+-]";
 		public static string Floatify( float value )
 		{
-			return ( value % 1 ) != 0 ? value.ToString() : ( value.ToString() + FloatifyStr );
+			string finalValue = value.ToString();
+			return ( value % 1 ) != 0 ? finalValue :
+				( Regex.IsMatch( finalValue , CheckFloatifyPatt ) ? finalValue : finalValue + FloatifyStr );
 		}
 
 		public static string Vector2ToString( Vector2 data )
@@ -674,25 +786,25 @@ namespace AmplifyShaderEditor
 
 		public static string Matrix3x3ToString( Matrix4x4 matrix )
 		{
-			return matrix[ 0, 0 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 0, 1 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 0, 2 ].ToString() + IOUtils.VECTOR_SEPARATOR +
-					matrix[ 1, 0 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 1, 1 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 1, 2 ].ToString() + IOUtils.VECTOR_SEPARATOR +
-					matrix[ 2, 0 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 2, 1 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 2, 2 ].ToString();
+			return matrix[ 0 , 0 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 0 , 1 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 0 , 2 ].ToString() + IOUtils.VECTOR_SEPARATOR +
+					matrix[ 1 , 0 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 1 , 1 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 1 , 2 ].ToString() + IOUtils.VECTOR_SEPARATOR +
+					matrix[ 2 , 0 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 2 , 1 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 2 , 2 ].ToString();
 		}
 
 		public static string Matrix4x4ToString( Matrix4x4 matrix )
 		{
-			return	matrix[ 0, 0 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 0, 1 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 0, 2 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 0, 3 ].ToString() + IOUtils.VECTOR_SEPARATOR +
-					matrix[ 1, 0 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 1, 1 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 1, 2 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 1, 3 ].ToString() + IOUtils.VECTOR_SEPARATOR +
-					matrix[ 2, 0 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 2, 1 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 2, 2 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 2, 3 ].ToString() + IOUtils.VECTOR_SEPARATOR +
-					matrix[ 3, 0 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 3, 1 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 3, 2 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 3, 3 ].ToString();
+			return matrix[ 0 , 0 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 0 , 1 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 0 , 2 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 0 , 3 ].ToString() + IOUtils.VECTOR_SEPARATOR +
+					matrix[ 1 , 0 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 1 , 1 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 1 , 2 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 1 , 3 ].ToString() + IOUtils.VECTOR_SEPARATOR +
+					matrix[ 2 , 0 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 2 , 1 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 2 , 2 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 2 , 3 ].ToString() + IOUtils.VECTOR_SEPARATOR +
+					matrix[ 3 , 0 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 3 , 1 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 3 , 2 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 3 , 3 ].ToString();
 		}
 
 		public static Vector2 StringToVector2( string data )
 		{
 			string[] parsedData = data.Split( VECTOR_SEPARATOR );
-			if ( parsedData.Length >= 2 )
+			if( parsedData.Length >= 2 )
 			{
-				return new Vector2( Convert.ToSingle( parsedData[ 0 ] ),
+				return new Vector2( Convert.ToSingle( parsedData[ 0 ] ) ,
 									Convert.ToSingle( parsedData[ 1 ] ) );
 			}
 			return Vector2.zero;
@@ -701,10 +813,10 @@ namespace AmplifyShaderEditor
 		public static Vector3 StringToVector3( string data )
 		{
 			string[] parsedData = data.Split( VECTOR_SEPARATOR );
-			if ( parsedData.Length >= 3 )
+			if( parsedData.Length >= 3 )
 			{
-				return new Vector3( Convert.ToSingle( parsedData[ 0 ] ),
-									Convert.ToSingle( parsedData[ 1 ] ),
+				return new Vector3( Convert.ToSingle( parsedData[ 0 ] ) ,
+									Convert.ToSingle( parsedData[ 1 ] ) ,
 									Convert.ToSingle( parsedData[ 2 ] ) );
 			}
 			return Vector3.zero;
@@ -713,11 +825,11 @@ namespace AmplifyShaderEditor
 		public static Vector4 StringToVector4( string data )
 		{
 			string[] parsedData = data.Split( VECTOR_SEPARATOR );
-			if ( parsedData.Length >= 4 )
+			if( parsedData.Length >= 4 )
 			{
-				return new Vector4( Convert.ToSingle( parsedData[ 0 ] ),
-									Convert.ToSingle( parsedData[ 1 ] ),
-									Convert.ToSingle( parsedData[ 2 ] ),
+				return new Vector4( Convert.ToSingle( parsedData[ 0 ] ) ,
+									Convert.ToSingle( parsedData[ 1 ] ) ,
+									Convert.ToSingle( parsedData[ 2 ] ) ,
 									Convert.ToSingle( parsedData[ 3 ] ) );
 			}
 			return Vector4.zero;
@@ -726,11 +838,11 @@ namespace AmplifyShaderEditor
 		public static Color StringToColor( string data )
 		{
 			string[] parsedData = data.Split( VECTOR_SEPARATOR );
-			if ( parsedData.Length >= 4 )
+			if( parsedData.Length >= 4 )
 			{
-				return new Color( Convert.ToSingle( parsedData[ 0 ] ),
-									Convert.ToSingle( parsedData[ 1 ] ),
-									Convert.ToSingle( parsedData[ 2 ] ),
+				return new Color( Convert.ToSingle( parsedData[ 0 ] ) ,
+									Convert.ToSingle( parsedData[ 1 ] ) ,
+									Convert.ToSingle( parsedData[ 2 ] ) ,
 									Convert.ToSingle( parsedData[ 3 ] ) );
 			}
 			return Color.white;
@@ -739,20 +851,20 @@ namespace AmplifyShaderEditor
 		public static Matrix4x4 StringToMatrix3x3( string data )
 		{
 			string[] parsedData = data.Split( VECTOR_SEPARATOR );
-			if ( parsedData.Length == 9 )
+			if( parsedData.Length == 9 )
 			{
 				Matrix4x4 matrix = new Matrix4x4();
-				matrix[ 0, 0 ] = Convert.ToSingle( parsedData[ 0 ] );
-				matrix[ 0, 1 ] = Convert.ToSingle( parsedData[ 1 ] );
-				matrix[ 0, 2 ] = Convert.ToSingle( parsedData[ 2 ] );
+				matrix[ 0 , 0 ] = Convert.ToSingle( parsedData[ 0 ] );
+				matrix[ 0 , 1 ] = Convert.ToSingle( parsedData[ 1 ] );
+				matrix[ 0 , 2 ] = Convert.ToSingle( parsedData[ 2 ] );
 
-				matrix[ 1, 0 ] = Convert.ToSingle( parsedData[ 3 ] );
-				matrix[ 1, 1 ] = Convert.ToSingle( parsedData[ 4 ] );
-				matrix[ 1, 2 ] = Convert.ToSingle( parsedData[ 5 ] );
+				matrix[ 1 , 0 ] = Convert.ToSingle( parsedData[ 3 ] );
+				matrix[ 1 , 1 ] = Convert.ToSingle( parsedData[ 4 ] );
+				matrix[ 1 , 2 ] = Convert.ToSingle( parsedData[ 5 ] );
 
-				matrix[ 2, 0 ] = Convert.ToSingle( parsedData[ 6 ] );
-				matrix[ 2, 1 ] = Convert.ToSingle( parsedData[ 7 ] );
-				matrix[ 2, 2 ] = Convert.ToSingle( parsedData[ 8 ] );
+				matrix[ 2 , 0 ] = Convert.ToSingle( parsedData[ 6 ] );
+				matrix[ 2 , 1 ] = Convert.ToSingle( parsedData[ 7 ] );
+				matrix[ 2 , 2 ] = Convert.ToSingle( parsedData[ 8 ] );
 				return matrix;
 			}
 			return Matrix4x4.identity;
@@ -761,41 +873,41 @@ namespace AmplifyShaderEditor
 		public static Matrix4x4 StringToMatrix4x4( string data )
 		{
 			string[] parsedData = data.Split( VECTOR_SEPARATOR );
-			if ( parsedData.Length == 16 )
+			if( parsedData.Length == 16 )
 			{
 				Matrix4x4 matrix = new Matrix4x4();
-				matrix[ 0, 0 ] = Convert.ToSingle( parsedData[ 0 ] );
-				matrix[ 0, 1 ] = Convert.ToSingle( parsedData[ 1 ] );
-				matrix[ 0, 2 ] = Convert.ToSingle( parsedData[ 2 ] );
-				matrix[ 0, 3 ] = Convert.ToSingle( parsedData[ 3 ] );
+				matrix[ 0 , 0 ] = Convert.ToSingle( parsedData[ 0 ] );
+				matrix[ 0 , 1 ] = Convert.ToSingle( parsedData[ 1 ] );
+				matrix[ 0 , 2 ] = Convert.ToSingle( parsedData[ 2 ] );
+				matrix[ 0 , 3 ] = Convert.ToSingle( parsedData[ 3 ] );
 
-				matrix[ 1, 0 ] = Convert.ToSingle( parsedData[ 4 ] );
-				matrix[ 1, 1 ] = Convert.ToSingle( parsedData[ 5 ] );
-				matrix[ 1, 2 ] = Convert.ToSingle( parsedData[ 6 ] );
-				matrix[ 1, 3 ] = Convert.ToSingle( parsedData[ 7 ] );
+				matrix[ 1 , 0 ] = Convert.ToSingle( parsedData[ 4 ] );
+				matrix[ 1 , 1 ] = Convert.ToSingle( parsedData[ 5 ] );
+				matrix[ 1 , 2 ] = Convert.ToSingle( parsedData[ 6 ] );
+				matrix[ 1 , 3 ] = Convert.ToSingle( parsedData[ 7 ] );
 
-				matrix[ 2, 0 ] = Convert.ToSingle( parsedData[ 8 ] );
-				matrix[ 2, 1 ] = Convert.ToSingle( parsedData[ 9 ] );
-				matrix[ 2, 2 ] = Convert.ToSingle( parsedData[ 10 ] );
-				matrix[ 2, 3 ] = Convert.ToSingle( parsedData[ 11 ] );
+				matrix[ 2 , 0 ] = Convert.ToSingle( parsedData[ 8 ] );
+				matrix[ 2 , 1 ] = Convert.ToSingle( parsedData[ 9 ] );
+				matrix[ 2 , 2 ] = Convert.ToSingle( parsedData[ 10 ] );
+				matrix[ 2 , 3 ] = Convert.ToSingle( parsedData[ 11 ] );
 
-				matrix[ 3, 0 ] = Convert.ToSingle( parsedData[ 12 ] );
-				matrix[ 3, 1 ] = Convert.ToSingle( parsedData[ 13 ] );
-				matrix[ 3, 2 ] = Convert.ToSingle( parsedData[ 14 ] );
-				matrix[ 3, 3 ] = Convert.ToSingle( parsedData[ 15 ] );
+				matrix[ 3 , 0 ] = Convert.ToSingle( parsedData[ 12 ] );
+				matrix[ 3 , 1 ] = Convert.ToSingle( parsedData[ 13 ] );
+				matrix[ 3 , 2 ] = Convert.ToSingle( parsedData[ 14 ] );
+				matrix[ 3 , 3 ] = Convert.ToSingle( parsedData[ 15 ] );
 				return matrix;
 			}
 			return Matrix4x4.identity;
 		}
 
-		public static void SaveTextureToDisk( Texture2D tex, string pathname )
+		public static void SaveTextureToDisk( Texture2D tex , string pathname )
 		{
 			byte[] rawData = tex.GetRawTextureData();
-			Texture2D newTex = new Texture2D( tex.width, tex.height, tex.format,  tex.mipmapCount > 1, false );
+			Texture2D newTex = new Texture2D( tex.width , tex.height , tex.format , tex.mipmapCount > 1 , false );
 			newTex.LoadRawTextureData( rawData );
 			newTex.Apply();
 			byte[] pngData = newTex.EncodeToPNG();
-			File.WriteAllBytes( pathname, pngData );
+			File.WriteAllBytes( pathname , pngData );
 		}
 
 		//public static void SaveObjToList( string newObj )

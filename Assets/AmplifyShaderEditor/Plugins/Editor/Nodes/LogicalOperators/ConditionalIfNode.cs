@@ -9,7 +9,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "If", "Logical Operators", "Conditional comparison between A with B." )]
+	[NodeAttributes( "If", "Logical Operators", "Conditional comparison between A with B.",tags:"branch" )]
 	public sealed class ConditionalIfNode : ParentNode
 	{
 		private const string UseUnityBranchesStr = "Dynamic Branching";

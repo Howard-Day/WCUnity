@@ -46,7 +46,8 @@ namespace AmplifyShaderEditor
 		AllModules,
 		VControl,
 		ControlData,
-		DomainData
+		DomainData,
+		ModuleRenderPlatforms
 		//EndPass
 	}
 
@@ -60,6 +61,9 @@ namespace AmplifyShaderEditor
 	[Serializable]
 	public class TemplateModulesData
 	{
+		[SerializeField]
+		TemplateRenderPlatformHelper m_renderPlatformHelper;
+
 		[SerializeField]
 		private TemplateBlendData m_blendData = new TemplateBlendData();
 
@@ -149,6 +153,9 @@ namespace AmplifyShaderEditor
 
 		public void Destroy()
 		{
+			m_renderPlatformHelper.Destroy();
+			m_renderPlatformHelper = null;
+
 			m_blendData = null;
 			m_blendData1 = null;
 			m_blendData2 = null;
@@ -193,6 +200,16 @@ namespace AmplifyShaderEditor
 				return;
 
 			m_uniquePrefix = uniquePrefix;
+			
+			//RENDERING PLATFORMS
+			m_renderPlatformHelper = new TemplateRenderPlatformHelper();
+			TemplateHelperFunctions.FillRenderingPlatform( m_renderPlatformHelper , subBody );
+			if( m_renderPlatformHelper.IsValid )
+			{
+				m_renderPlatformHelper.Index = offsetIdx + m_renderPlatformHelper.Index;
+				idManager.RegisterId( m_renderPlatformHelper.Index , uniquePrefix + m_renderPlatformHelper.ID , m_renderPlatformHelper.ID );
+			}
+
 			//PRAGMAS AND INCLUDES
 			TemplateHelperFunctions.CreatePragmaIncludeList( subBody, m_includePragmaContainer );
 
@@ -761,7 +778,8 @@ namespace AmplifyShaderEditor
 						m_pragmaBeforeTag.IsValid ||
 						m_passTag.IsValid ||
 						m_inputsVertTag.IsValid ||
-						m_inputsFragTag.IsValid;
+						m_inputsFragTag.IsValid ||
+						m_renderPlatformHelper.IsValid;
 			}
 		}
 
@@ -795,6 +813,7 @@ namespace AmplifyShaderEditor
 		public string PassUniqueName { get { return m_passUniqueName; } }
 		public bool HasPassUniqueName { get { return !string.IsNullOrEmpty( m_passUniqueName ); } }
 		public TemplateIncludePragmaContainter IncludePragmaContainer { get { return m_includePragmaContainer; } }
+		public TemplateRenderPlatformHelper RenderPlatformHelper { get { return m_renderPlatformHelper; } }
 		public bool AllModulesMode { get { return m_allModulesMode; } }
 	}
 }

@@ -512,6 +512,38 @@ namespace AmplifyShaderEditor
 			return functionBody;
 		}
 
+		string GetFileAssetRelativePath()
+		{
+			Shader currentShader = m_containerGraph.ParentWindow.OutsideGraph.CurrentShader;
+			if( currentShader != null )
+			{
+				string fileAssePath = AssetDatabase.GetAssetPath( m_fileAsset );
+				if( fileAssePath.StartsWith( "Packages" ) )
+				{
+					return fileAssePath;
+				}
+				else if( fileAssePath.StartsWith( "Assets" ) )
+				{
+					string currentShaderPath = AssetDatabase.GetAssetPath( currentShader );
+
+					string path0 = Application.dataPath + fileAssePath.Substring( 6 );
+					string path1 = Application.dataPath + currentShaderPath.Substring( 6 );
+
+					Uri path0URI = new Uri( path0 , UriKind.Absolute );
+					Uri path1URI = new Uri( path1 , UriKind.Absolute );
+
+					return path1URI.MakeRelativeUri( path0URI ).ToString();
+				}
+				UIUtils.ShowMessage( UniqueId , "Invalid path found in Custom Expression File Asset: " + fileAssePath , MessageSeverity.Warning );
+			}
+			else
+			{
+				UIUtils.ShowMessage( UniqueId , "Invalid shader in Custom Expression" );
+			}
+
+			return string.Empty;
+		}
+
 		void DrawBaseProperties()
 		{
 			EditorGUI.BeginChangeCheck();
@@ -1128,104 +1160,103 @@ namespace AmplifyShaderEditor
 
 			if( m_fileAsset != null )
 			{
-				string path = AssetDatabase.GetAssetPath( m_fileAsset );
-				dataCollector.AddToIncludes( UniqueId , path );
+				string path = GetFileAssetRelativePath();
 
-				int dependenciesCount = m_dependencies.Count;
-				Dictionary<int , CustomExpressionNode> examinedNodes = new Dictionary<int , CustomExpressionNode>();
-				for( int i = 0 ; i < dependenciesCount ; i++ )
+				if( !string.IsNullOrEmpty( path ) )
+					dataCollector.AddToIncludes( UniqueId , path );
+			}
+
+			int dependenciesCount = m_dependencies.Count;
+			Dictionary<int , CustomExpressionNode> examinedNodes = new Dictionary<int , CustomExpressionNode>();
+			for( int i = 0 ; i < dependenciesCount ; i++ )
+			{
+				CustomExpressionNode node = m_containerGraph.GetNode( m_dependencies[ i ].DependencyNodeId ) as CustomExpressionNode;
+				if( node == null )
 				{
-					CustomExpressionNode node = m_containerGraph.GetNode( m_dependencies[ i ].DependencyNodeId ) as CustomExpressionNode;
-					if( node == null )
-					{
-						node = UIUtils.CurrentWindow.OutsideGraph.GetNode( m_dependencies[ i ].DependencyNodeId ) as CustomExpressionNode;
-					}
-
-					if( node != null )
-					{
-						node.CheckDependencies( ref dataCollector , ref examinedNodes );
-					}
+					node = UIUtils.CurrentWindow.OutsideGraph.GetNode( m_dependencies[ i ].DependencyNodeId ) as CustomExpressionNode;
 				}
 
-				examinedNodes.Clear();
-				examinedNodes = null;
-
-				string expressionName = UIUtils.RemoveInvalidCharacters( m_customExpressionName );
-				string localVarName = "local" + expressionName;
-
-				localVarName += OutputId;
-
-				int count = m_inputPorts.Count;
-
-				if( m_voidMode )
+				if( node != null )
 				{
-					string mainData = m_inputPorts[ 0 ].GeneratePortInstructions( ref dataCollector );
-					RegisterLocalVariable( 0 , string.Format( Constants.CodeWrapper , mainData ) , ref dataCollector , localVarName );
+					node.CheckDependencies( ref dataCollector , ref examinedNodes );
 				}
-				string precisionSuffix = string.Empty;
-				if( m_precisionSuffix )
+			}
+
+			examinedNodes.Clear();
+			examinedNodes = null;
+
+			string expressionName = UIUtils.RemoveInvalidCharacters( m_customExpressionName );
+			string localVarName = "local" + expressionName;
+
+			localVarName += OutputId;
+
+			int count = m_inputPorts.Count;
+
+			if( m_voidMode )
+			{
+				string mainData = m_inputPorts[ 0 ].GeneratePortInstructions( ref dataCollector );
+				RegisterLocalVariable( 0 , string.Format( Constants.CodeWrapper , mainData ) , ref dataCollector , localVarName );
+			}
+			string precisionSuffix = string.Empty;
+			if( m_precisionSuffix )
+			{
+				switch( CurrentPrecisionType )
 				{
-					switch( CurrentPrecisionType )
-					{
-						default:
-						case PrecisionType.Float: precisionSuffix = "_float"; break;
-						case PrecisionType.Half: precisionSuffix = "_half"; break;
-					}
+					default:
+					case PrecisionType.Float: precisionSuffix = "_float"; break;
+					case PrecisionType.Half: precisionSuffix = "_half"; break;
+				}
+			}
+
+			string functionCall = expressionName + precisionSuffix + "( ";
+			for( int i = m_firstAvailablePort ; i < count ; i++ )
+			{
+				if( UIUtils.CurrentWindow.OutsideGraph.SamplingMacros && !UIUtils.CurrentWindow.OutsideGraph.IsSRP )
+				{
+					// we don't know what kind of sampling the user will do so we add all of them
+					GeneratorUtils.AddCustomStandardSamplingMacros( ref dataCollector , m_inputPorts[ i ].DataType , MipType.Auto );
+					GeneratorUtils.AddCustomStandardSamplingMacros( ref dataCollector , m_inputPorts[ i ].DataType , MipType.MipLevel );
+					GeneratorUtils.AddCustomStandardSamplingMacros( ref dataCollector , m_inputPorts[ i ].DataType , MipType.MipBias );
+					GeneratorUtils.AddCustomStandardSamplingMacros( ref dataCollector , m_inputPorts[ i ].DataType , MipType.Derivative );
 				}
 
-				string functionCall = expressionName + precisionSuffix + "( ";
-				for( int i = m_firstAvailablePort ; i < count ; i++ )
+				string inputPortLocalVar = m_inputPorts[ i ].Name + OutputId;
+				int idx = i - m_firstAvailablePort;
+				if( m_inputPorts[ i ].DataType != WirePortDataType.OBJECT )
 				{
-					if( UIUtils.CurrentWindow.OutsideGraph.SamplingMacros && !UIUtils.CurrentWindow.OutsideGraph.IsSRP )
-					{
-						// we don't know what kind of sampling the user will do so we add all of them
-						GeneratorUtils.AddCustomStandardSamplingMacros( ref dataCollector , m_inputPorts[ i ].DataType , MipType.Auto );
-						GeneratorUtils.AddCustomStandardSamplingMacros( ref dataCollector , m_inputPorts[ i ].DataType , MipType.MipLevel );
-						GeneratorUtils.AddCustomStandardSamplingMacros( ref dataCollector , m_inputPorts[ i ].DataType , MipType.MipBias );
-						GeneratorUtils.AddCustomStandardSamplingMacros( ref dataCollector , m_inputPorts[ i ].DataType , MipType.Derivative );
-					}
-
-					string inputPortLocalVar = m_inputPorts[ i ].Name + OutputId;
-					int idx = i - m_firstAvailablePort;
-					if( m_inputPorts[ i ].DataType != WirePortDataType.OBJECT )
-					{
-						string result = m_inputPorts[ i ].GeneratePortInstructions( ref dataCollector );
-						dataCollector.AddLocalVariable( UniqueId , CurrentPrecisionType , m_inputPorts[ i ].DataType , inputPortLocalVar , result );
-					}
-					else
-					{
-						string result = ( m_inputPorts[ i ].IsConnected ) ? m_inputPorts[ i ].GeneratePortInstructions( ref dataCollector ) : m_inputPorts[ i ].InternalData.ToString();
-						string inputLocalVar = string.Format( Constants.CustomTypeLocalValueDecWithoutIdent , m_items[ idx ].CustomType , inputPortLocalVar , result );
-						dataCollector.AddLocalVariable( UniqueId , inputLocalVar );
-					}
-
-					if( m_items[ idx ].Qualifier != VariableQualifiers.In )
-					{
-						OutputPort currOutputPort = GetOutputPortByUniqueId( CreateOutputId( m_inputPorts[ i ].PortId ) );
-						currOutputPort.SetLocalValue( inputPortLocalVar , dataCollector.PortCategory );
-					}
-					functionCall += inputPortLocalVar;
-					if( i < ( count - 1 ) )
-					{
-						functionCall += " , ";
-					}
-				}
-				functionCall += " )";
-
-				if( m_voidMode )
-				{
-					dataCollector.AddLocalVariable( 0 , functionCall + ";" , true );
+					string result = m_inputPorts[ i ].GeneratePortInstructions( ref dataCollector );
+					dataCollector.AddLocalVariable( UniqueId , CurrentPrecisionType , m_inputPorts[ i ].DataType , inputPortLocalVar , result );
 				}
 				else
 				{
-					RegisterLocalVariable( 0 , functionCall , ref dataCollector , localVarName );
+					string result = ( m_inputPorts[ i ].IsConnected ) ? m_inputPorts[ i ].GeneratePortInstructions( ref dataCollector ) : m_inputPorts[ i ].InternalData.ToString();
+					string inputLocalVar = string.Format( Constants.CustomTypeLocalValueDecWithoutIdent , m_items[ idx ].CustomType , inputPortLocalVar , result );
+					dataCollector.AddLocalVariable( UniqueId , inputLocalVar );
 				}
 
-				return outputPort.LocalValue( dataCollector.PortCategory );
+				if( m_items[ idx ].Qualifier != VariableQualifiers.In )
+				{
+					OutputPort currOutputPort = GetOutputPortByUniqueId( CreateOutputId( m_inputPorts[ i ].PortId ) );
+					currOutputPort.SetLocalValue( inputPortLocalVar , dataCollector.PortCategory );
+				}
+				functionCall += inputPortLocalVar;
+				if( i < ( count - 1 ) )
+				{
+					functionCall += " , ";
+				}
+			}
+			functionCall += " )";
 
+			if( m_voidMode )
+			{
+				dataCollector.AddLocalVariable( 0 , functionCall + ";" , true );
+			}
+			else
+			{
+				RegisterLocalVariable( 0 , functionCall , ref dataCollector , localVarName );
 			}
 
-			return GenerateErrorValue( outputId );
+			return outputPort.LocalValue( dataCollector.PortCategory );
 		}
 
 		public override string GenerateShaderForOutput( int outputId , ref MasterNodeDataCollector dataCollector , bool ignoreLocalvar )
@@ -1695,7 +1726,7 @@ namespace AmplifyShaderEditor
 				IOUtils.AddFieldValueToString( ref nodeInfo , m_dependencies[ i ].DependencyNodeId );
 			}
 
-			m_fileGUID = ( m_fileAsset == null ) ? string.Empty :
+			m_fileGUID = ( m_fileAsset == null ) ?	string.Empty :
 													AssetDatabase.AssetPathToGUID( AssetDatabase.GetAssetPath( m_fileAsset ) );
 			IOUtils.AddFieldValueToString( ref nodeInfo , m_fileGUID );
 			IOUtils.AddFieldValueToString( ref nodeInfo , m_precisionSuffix );

@@ -1,0 +1,6 @@
+Base path: 'C:/Program Files/Unity/Hub/Editor/2021.3.11f1/Editor/Data', plugins path 'C:/Program Files/Unity/Hub/Editor/2021.3.11f1/Editor/Data/PlaybackEngines'
+Cmd: initializeCompiler
+
+Cmd: compileComputeKernel
+  insize=5009 file=Packages/com.unity.postprocessing/PostProcessing/Shaders/Builtins/Lut3DBaker.compute kernel=KGenLut3D_CustomTonemap cachingPP=1 ppOnly=0 stripLineD=0 buildPlatform=20 km=<TONEMAPPING_CUSTOM=1>,<UNITY_VERSION=202139> pKW=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_USE_DITHER_MASK_FOR_ALPHABLENDED_SHADOWS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING UNITY_ENABLE_DETAIL_NORMALMAP SHADER_API_DESKTOP UNITY_COLORSPACE_GAMMA UNITY_LIGHT_PROBE_PROXY_VOLUME UNITY_LIGHTMAP_FULL_HDR uKW=SHADER_STAGE_COMPUTE platform=gles3 flags=4096 reqs=16385 forceDXC=0 forceFXC=0 ok=1 outsize=10529
+

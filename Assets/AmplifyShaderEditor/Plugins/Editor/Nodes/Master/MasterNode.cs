@@ -267,18 +267,70 @@ namespace AmplifyShaderEditor
 					GenericMenu menu = new GenericMenu();
 					AddMenuItem( menu, Constants.DefaultCustomInspector );
 #if UNITY_2018_3_OR_NEWER
-					if( ASEPackageManagerHelper.CurrentHDVersion > ASESRPVersions.ASE_SRP_6_9_1 )
+					ASESRPVersions version = ASESRPVersions.ASE_SRP_RECENT;
+					bool foundHDRP = ASEPackageManagerHelper.FoundHDVersion;
+					bool foundURP = ASEPackageManagerHelper.FoundLWVersion;
+
+					if( foundHDRP && foundURP )
 					{
-						if( ASEPackageManagerHelper.CurrentHDVersion > ASESRPVersions.ASE_SRP_10_0_0 )
+						version = ( ASEPackageManagerHelper.CurrentHDVersion > ASEPackageManagerHelper.CurrentLWVersion ) ? ASEPackageManagerHelper.CurrentHDVersion : ASEPackageManagerHelper.CurrentLWVersion;
+					}
+					else if( foundHDRP )
+					{
+						version = ASEPackageManagerHelper.CurrentHDVersion;
+					}
+					else if( foundURP )
+					{
+						version = ASEPackageManagerHelper.CurrentLWVersion;
+					}
+
+					if( version > ASESRPVersions.ASE_SRP_6_9_1 )
+					{
+						if( foundHDRP )
 						{
-							AddMenuItem( menu, "Rendering.HighDefinition.LightingShaderGraphGUI" );
-							AddMenuItem( menu, "Rendering.HighDefinition.HDUnlitGUI" );
+							if( version >= ASESRPVersions.ASE_SRP_11_0_0 )
+							{
+								AddMenuItem( menu , "Rendering.HighDefinition.DecalShaderGraphGUI" );
+								AddMenuItem( menu , "Rendering.HighDefinition.LightingShaderGraphGUI" );
+								AddMenuItem( menu , "Rendering.HighDefinition.LitShaderGraphGUI" );
+								AddMenuItem( menu , "Rendering.HighDefinition.HDUnlitGUI" );
+							}
+							else
+							if( version >= ASESRPVersions.ASE_SRP_10_0_0 )
+							{
+								AddMenuItem( menu , "Rendering.HighDefinition.DecalGUI" );
+								AddMenuItem( menu , "Rendering.HighDefinition.LitShaderGraphGUI" );
+								AddMenuItem( menu , "Rendering.HighDefinition.LightingShaderGraphGUI" );
+								AddMenuItem( menu , "Rendering.HighDefinition.HDUnlitGUI" );
+							}
+							else if( version >= ASESRPVersions.ASE_SRP_12_0_0 )
+							{
+								AddMenuItem( menu , "Rendering.HighDefinition.DecalGUI" );
+								AddMenuItem( menu , "Rendering.HighDefinition.LitShaderGraphGUI" );
+								AddMenuItem( menu , "Rendering.HighDefinition.LightingShaderGraphGUI" );
+								AddMenuItem( menu , "Rendering.HighDefinition.HDUnlitGUI" );
+							}
+							else
+							{
+								AddMenuItem( menu , "UnityEditor.Rendering.HighDefinition.HDLitGUI" );
+							}
 						}
-						else
+
+						if( foundURP )
 						{
-							AddMenuItem( menu, "UnityEditor.Rendering.HighDefinition.HDLitGUI" );
+							if( version >= ASESRPVersions.ASE_SRP_12_0_0 )
+							{
+								AddMenuItem( menu , "UnityEditor.ShaderGraphLitGUI" );
+								AddMenuItem( menu , "UnityEditor.ShaderGraphUnlitGUI" );
+								AddMenuItem( menu , "UnityEditor.Rendering.Universal.DecalShaderGraphGUI" );
+								AddMenuItem( menu , "UnityEditor.ShaderGraphLitGUI" );
+							}
+							else
+							{
+								AddMenuItem( menu , "UnityEditor.ShaderGraph.PBRMasterGUI" );
+							}
 						}
-						AddMenuItem( menu, "UnityEditor.ShaderGraph.PBRMasterGUI" );
+						
 					}
 					else
 					{

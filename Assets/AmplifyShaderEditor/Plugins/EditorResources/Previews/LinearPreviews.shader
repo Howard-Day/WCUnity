@@ -14,6 +14,17 @@ Shader "Hidden/LinearMaterial"
 		ZWrite Off
 		ZTest Always
 
+		CGINCLUDE
+		uniform float4x4 unity_GUIClipTextureMatrix;
+		sampler2D _GUIClipTexture;
+		
+		sampler2D _MainTex;
+		uniform float4 _MainTex_ST;
+
+		uniform bool _ManualTex2SRGB;
+
+		ENDCG
+
 
 		Pass {
 			CGPROGRAM
@@ -23,12 +34,8 @@ Shader "Hidden/LinearMaterial"
 
 			#include "UnityCG.cginc"
 
-			sampler2D _MainTex;
-			uniform float4 _MainTex_ST;
 			float4 _Mask;
 
-			uniform float4x4 unity_GUIClipTextureMatrix;
-			sampler2D _GUIClipTexture;
 
 			struct appdata_t {
 				float4 vertex : POSITION;
@@ -51,11 +58,12 @@ Shader "Hidden/LinearMaterial"
 				return o;
 			}
 
-			fixed4 frag( v2f i ) : SV_Target
+			float4 frag( v2f i ) : SV_Target
 			{
 				float4 c = tex2D( _MainTex, i.texcoord );
+				if (_ManualTex2SRGB) c.rgb = LinearToGammaSpace(c.rgb);
 				c.rgb *= _Mask.rgb;
-
+				
 				c.a = tex2D( _GUIClipTexture, i.clipUV ).a;
 				return c;
 			}
@@ -70,13 +78,8 @@ Shader "Hidden/LinearMaterial"
 
 			#include "UnityCG.cginc"
 
-			sampler2D _MainTex;
-			uniform float4 _MainTex_ST;
 			float _InvertedZoom;
 			float4 _Mask;
-
-			uniform float4x4 unity_GUIClipTextureMatrix;
-			sampler2D _GUIClipTexture;
 
 			struct appdata_t {
 				float4 vertex : POSITION;
@@ -99,7 +102,7 @@ Shader "Hidden/LinearMaterial"
 				return o;
 			}
 
-			fixed4 frag( v2f i ) : SV_Target
+			float4 frag( v2f i ) : SV_Target
 			{
 				float2 p = 2 * i.texcoord - 1;
 				float r = sqrt( dot( p,p ) );
@@ -107,10 +110,11 @@ Shader "Hidden/LinearMaterial"
 				float alpha = saturate( ( 1 - r )*( 45 * _InvertedZoom + 5 ) );
 
 				float4 c = tex2D( _MainTex, i.texcoord );
+				if (_ManualTex2SRGB) c.rgb = LinearToGammaSpace(c.rgb);
+
 				c.rgb *= _Mask.rgb;
-
 				c.rgb *= alpha;
-
+				
 				c.a = tex2D( _GUIClipTexture, i.clipUV ).a;
 				return c;
 			}
@@ -125,15 +129,11 @@ Shader "Hidden/LinearMaterial"
 
 			#include "UnityCG.cginc"
 
-			sampler2D _MainTex;
 			sampler2D _BackGround;
-			uniform float4 _MainTex_ST;
 			uniform float4 _BackGround_ST;
 			float _InvertedZoom;
 			float4 _Mask;
 
-			uniform float4x4 unity_GUIClipTextureMatrix;
-			sampler2D _GUIClipTexture;
 
 			struct appdata_t {
 				float4 vertex : POSITION;
@@ -156,11 +156,13 @@ Shader "Hidden/LinearMaterial"
 				return o;
 			}
 
-			fixed4 frag( v2f i ) : SV_Target
+			float4 frag( v2f i ) : SV_Target
 			{
 				float3 back = tex2D( _BackGround, ( i.texcoord * 2 - 1 ) * _InvertedZoom).b;
 
 				float4 c = tex2D( _MainTex, i.texcoord );
+				if (_ManualTex2SRGB) c.rgb = LinearToGammaSpace(c.rgb);
+
 				c.rgb *= _Mask.rgb;
 				c.rgb = lerp( back, c.rgb, c.a );
 
@@ -178,15 +180,10 @@ Shader "Hidden/LinearMaterial"
 
 			#include "UnityCG.cginc"
 
-			sampler2D _MainTex;
 			sampler2D _BackGround;
-			uniform float4 _MainTex_ST;
 			uniform float4 _BackGround_ST;
 			float _InvertedZoom;
 			float4 _Mask;
-
-			uniform float4x4 unity_GUIClipTextureMatrix;
-			sampler2D _GUIClipTexture;
 
 			struct appdata_t {
 				float4 vertex : POSITION;
@@ -209,7 +206,7 @@ Shader "Hidden/LinearMaterial"
 				return o;
 			}
 
-			fixed4 frag( v2f i ) : SV_Target
+			float4 frag( v2f i ) : SV_Target
 			{
 				float2 p = 2 * i.texcoord - 1;
 				float3 back = tex2D( _BackGround, p * _InvertedZoom).b;
@@ -219,6 +216,7 @@ Shader "Hidden/LinearMaterial"
 
 				float4 c = 0;
 				c = tex2D( _MainTex, i.texcoord );
+				if (_ManualTex2SRGB) c.rgb = LinearToGammaSpace(c.rgb);
 				c.rgb *= _Mask.rgb;
 				c.rgb = lerp( back, c.rgb, c.a * alpha);
 

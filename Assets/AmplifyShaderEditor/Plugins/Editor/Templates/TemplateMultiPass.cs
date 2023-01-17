@@ -516,8 +516,11 @@ namespace AmplifyShaderEditor
 				case TemplateModuleDataType.ModuleInputFrag:
 				{
 					m_templateIdManager.SetReplacementText( prefix + m_subShaders[ subShaderId ].Modules.InputsFragTag.Id, text );
-				}
-				break;
+				}break;
+				case TemplateModuleDataType.ModuleRenderPlatforms:
+				{
+					m_templateIdManager.SetReplacementText( prefix + m_subShaders[ subShaderId ].Modules.RenderPlatformHelper.ID , text );
+				}break;
 			}
 		}
 
@@ -915,6 +918,12 @@ namespace AmplifyShaderEditor
 					m_templateIdManager.SetReplacementText( prefix + TemplatesManager.TemplateAllModulesTag, text );
 				}
 				break;
+				case TemplateModuleDataType.ModuleRenderPlatforms:
+				{
+					prefix = m_subShaders[ subShaderId ].Passes[ passId ].Modules.UniquePrefix;
+					m_templateIdManager.SetReplacementText( prefix + m_subShaders[ subShaderId ].Passes[ passId ].Modules.RenderPlatformHelper.ID , text );
+				}
+				break;
 				case TemplateModuleDataType.ModuleShaderModel:
 				{
 					prefix = m_subShaders[ subShaderId ].Passes[ passId ].Modules.UniquePrefix;
@@ -1129,8 +1138,7 @@ namespace AmplifyShaderEditor
 				{
 					prefix = m_subShaders[ subShaderId ].Passes[ passId ].UniquePrefix;
 					m_templateIdManager.SetReplacementText( prefix + m_subShaders[ subShaderId ].Passes[ passId ].TessDomainData.Id, text );
-				}
-				break;
+				}break;
 			}
 		}
 

@@ -52,6 +52,49 @@ namespace AmplifyShaderEditor
 				}
 			}
 		}
+		public override void OnInputPortConnected( int portId , int otherNodeId , int otherPortId , bool activateNode = true )
+		{
+			base.OnInputPortConnected( portId , otherNodeId , otherPortId , activateNode );
+			UpdateConnections();
+		}
+
+		public override void OnConnectedOutputNodeChanges( int inputPortId , int otherNodeId , int otherPortId , string name , WirePortDataType type )
+		{
+			base.OnConnectedOutputNodeChanges( inputPortId , otherNodeId , otherPortId , name , type );
+			UpdateConnections();
+		}
+
+		public override void OnInputPortDisconnected( int portId )
+		{
+			base.OnInputPortDisconnected( portId );
+			UpdateConnections();
+		}
+
+		private void UpdateConnections()
+		{
+			WirePortDataType mainType = WirePortDataType.FLOAT;
+
+			int highest = UIUtils.GetPriority( mainType );
+			for( int i = 0 ; i < m_inputPorts.Count ; i++ )
+			{
+				if( m_inputPorts[ i ].IsConnected )
+				{
+					WirePortDataType portType = m_inputPorts[ i ].GetOutputConnection().DataType;
+					if( UIUtils.GetPriority( portType ) > highest )
+					{
+						mainType = portType;
+						highest = UIUtils.GetPriority( portType );
+					}
+				}
+			}
+
+			for( int i = 0 ; i < m_inputPorts.Count ; i++ )
+			{
+				m_inputPorts[ i ].ChangeType( mainType , false );
+			}
+
+			m_outputPorts[ 0 ].ChangeType( mainType , false );
+		}
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
 		{
