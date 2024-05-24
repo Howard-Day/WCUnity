@@ -47,7 +47,9 @@ public class GameObjTracker : MonoBehaviour
 
     public static ShipSettings GetShipByID(int checkID)
     {
-        ShipSettings result;
+
+        ShipSettings result = new ShipSettings();
+
         foreach (ShipSettings ship in Ships)
         {
             if (ship.ShipID == checkID)
@@ -55,11 +57,10 @@ public class GameObjTracker : MonoBehaviour
                 result = ship;
             }
         }
-        if (result != null)
+        //if (result != null)
             return result;
-        else
-            return 9999999999999;
-
+        //else
+        //    return;
     }
 
     public static void RegisterTeams()

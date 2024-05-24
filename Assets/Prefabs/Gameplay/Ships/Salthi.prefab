@@ -211,6 +211,7 @@ MonoBehaviour:
   BounceSpin: {x: 0, y: 0, z: 0}
   BouncePush: 0
   lastHit: 0
+  lastHitID: 0
   oldRot: {x: 0, y: 0, z: 0, w: 0}
   rotDelta: {x: 0, y: 0, z: 0}
   throttle: 0
