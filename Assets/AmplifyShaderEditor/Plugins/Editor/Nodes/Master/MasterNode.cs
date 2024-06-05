@@ -240,13 +240,6 @@ namespace AmplifyShaderEditor
 
 		protected void DrawCustomInspector( bool dropdown )
 		{
-#if !UNITY_2018_3_OR_NEWER
-			dropdown = false;
-#else
-			if( ASEPackageManagerHelper.CurrentHDVersion <= ASESRPVersions.ASE_SRP_5_16_1 )
-				dropdown = false;
-#endif
-
 			EditorGUILayout.BeginHorizontal();
 			m_customInspectorName = EditorGUILayoutTextField( CustomInspectorStr, m_customInspectorName );
 			if( !dropdown )
@@ -266,79 +259,68 @@ namespace AmplifyShaderEditor
 
 					GenericMenu menu = new GenericMenu();
 					AddMenuItem( menu, Constants.DefaultCustomInspector );
-#if UNITY_2018_3_OR_NEWER
-					ASESRPVersions version = ASESRPVersions.ASE_SRP_RECENT;
-					bool foundHDRP = ASEPackageManagerHelper.FoundHDVersion;
-					bool foundURP = ASEPackageManagerHelper.FoundLWVersion;
+
+					ASESRPBaseline version = ASESRPBaseline.ASE_SRP_INVALID;
+					bool foundHDRP = ASEPackageManagerHelper.FoundHDRPVersion;
+					bool foundURP = ASEPackageManagerHelper.FoundURPVersion;
 
 					if( foundHDRP && foundURP )
 					{
-						version = ( ASEPackageManagerHelper.CurrentHDVersion > ASEPackageManagerHelper.CurrentLWVersion ) ? ASEPackageManagerHelper.CurrentHDVersion : ASEPackageManagerHelper.CurrentLWVersion;
+						version = ( ASEPackageManagerHelper.CurrentHDRPBaseline > ASEPackageManagerHelper.CurrentURPBaseline ) ? ASEPackageManagerHelper.CurrentHDRPBaseline : ASEPackageManagerHelper.CurrentURPBaseline;
 					}
 					else if( foundHDRP )
 					{
-						version = ASEPackageManagerHelper.CurrentHDVersion;
+						version = ASEPackageManagerHelper.CurrentHDRPBaseline;
 					}
 					else if( foundURP )
 					{
-						version = ASEPackageManagerHelper.CurrentLWVersion;
+						version = ASEPackageManagerHelper.CurrentURPBaseline;
 					}
 
-					if( version > ASESRPVersions.ASE_SRP_6_9_1 )
+					if( foundHDRP )
 					{
-						if( foundHDRP )
+						if( version >= ASESRPBaseline.ASE_SRP_11 )
 						{
-							if( version >= ASESRPVersions.ASE_SRP_11_0_0 )
-							{
-								AddMenuItem( menu , "Rendering.HighDefinition.DecalShaderGraphGUI" );
-								AddMenuItem( menu , "Rendering.HighDefinition.LightingShaderGraphGUI" );
-								AddMenuItem( menu , "Rendering.HighDefinition.LitShaderGraphGUI" );
-								AddMenuItem( menu , "Rendering.HighDefinition.HDUnlitGUI" );
-							}
-							else
-							if( version >= ASESRPVersions.ASE_SRP_10_0_0 )
-							{
-								AddMenuItem( menu , "Rendering.HighDefinition.DecalGUI" );
-								AddMenuItem( menu , "Rendering.HighDefinition.LitShaderGraphGUI" );
-								AddMenuItem( menu , "Rendering.HighDefinition.LightingShaderGraphGUI" );
-								AddMenuItem( menu , "Rendering.HighDefinition.HDUnlitGUI" );
-							}
-							else if( version >= ASESRPVersions.ASE_SRP_12_0_0 )
-							{
-								AddMenuItem( menu , "Rendering.HighDefinition.DecalGUI" );
-								AddMenuItem( menu , "Rendering.HighDefinition.LitShaderGraphGUI" );
-								AddMenuItem( menu , "Rendering.HighDefinition.LightingShaderGraphGUI" );
-								AddMenuItem( menu , "Rendering.HighDefinition.HDUnlitGUI" );
-							}
-							else
-							{
-								AddMenuItem( menu , "UnityEditor.Rendering.HighDefinition.HDLitGUI" );
-							}
+							AddMenuItem( menu , "Rendering.HighDefinition.DecalShaderGraphGUI" );
+							AddMenuItem( menu , "Rendering.HighDefinition.LightingShaderGraphGUI" );
+							AddMenuItem( menu , "Rendering.HighDefinition.LitShaderGraphGUI" );
+							AddMenuItem( menu , "Rendering.HighDefinition.HDUnlitGUI" );
 						}
+						else
+						if( version >= ASESRPBaseline.ASE_SRP_10 )
+						{
+							AddMenuItem( menu , "Rendering.HighDefinition.DecalGUI" );
+							AddMenuItem( menu , "Rendering.HighDefinition.LitShaderGraphGUI" );
+							AddMenuItem( menu , "Rendering.HighDefinition.LightingShaderGraphGUI" );
+							AddMenuItem( menu , "Rendering.HighDefinition.HDUnlitGUI" );
+						}
+						else if( version >= ASESRPBaseline.ASE_SRP_12 )
+						{
+							AddMenuItem( menu , "Rendering.HighDefinition.DecalGUI" );
+							AddMenuItem( menu , "Rendering.HighDefinition.LitShaderGraphGUI" );
+							AddMenuItem( menu , "Rendering.HighDefinition.LightingShaderGraphGUI" );
+							AddMenuItem( menu , "Rendering.HighDefinition.HDUnlitGUI" );
+						}
+						else
+						{
+							AddMenuItem( menu , "UnityEditor.Rendering.HighDefinition.HDLitGUI" );
+						}
+					}
 
-						if( foundURP )
-						{
-							if( version >= ASESRPVersions.ASE_SRP_12_0_0 )
-							{
-								AddMenuItem( menu , "UnityEditor.ShaderGraphLitGUI" );
-								AddMenuItem( menu , "UnityEditor.ShaderGraphUnlitGUI" );
-								AddMenuItem( menu , "UnityEditor.Rendering.Universal.DecalShaderGraphGUI" );
-								AddMenuItem( menu , "UnityEditor.ShaderGraphLitGUI" );
-							}
-							else
-							{
-								AddMenuItem( menu , "UnityEditor.ShaderGraph.PBRMasterGUI" );
-							}
-						}
-						
-					}
-					else
+					if( foundURP )
 					{
-						AddMenuItem( menu, "UnityEditor.Experimental.Rendering.HDPipeline.HDLitGUI" );
+						if( version >= ASESRPBaseline.ASE_SRP_12 )
+						{
+							AddMenuItem( menu , "UnityEditor.ShaderGraphLitGUI" );
+							AddMenuItem( menu , "UnityEditor.ShaderGraphUnlitGUI" );
+							AddMenuItem( menu , "UnityEditor.Rendering.Universal.DecalShaderGraphGUI" );
+							AddMenuItem( menu , "UnityEditor.ShaderGraphLitGUI" );
+						}
+						else
+						{
+							AddMenuItem( menu , "UnityEditor.ShaderGraph.PBRMasterGUI" );
+						}
 					}
-#else
-					AddMenuItem( menu, "UnityEditor.Experimental.Rendering.HDPipeline.HDLitGUI" );
-#endif
 					menu.ShowAsContext();
 				}
 			}
@@ -357,11 +339,11 @@ namespace AmplifyShaderEditor
 
 		protected void DrawShaderName()
 		{
-#if UNITY_2019_1_OR_NEWER
+
 			// this is a hack to control the automatic selection of text fields when the window is selected after serialization
 			// by having a selectable label the focus happens on it instead and doesn't interupt the usual flow of the editor
 			EditorGUILayout.SelectableLabel( "", GUILayout.Height( 0 ) );
-#endif
+
 			EditorGUI.BeginChangeCheck();
 			string newShaderName = EditorGUILayoutTextField( m_shaderNameContent, m_shaderName );
 			if( EditorGUI.EndChangeCheck() )

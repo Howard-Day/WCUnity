@@ -8,7 +8,7 @@ using UnityEditor;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "World Space Light Dir", "Light", "Computes normalized world space light direction" )]
+	[NodeAttributes( "World Space Light Dir", "Lighting", "Computes normalized world space light direction" )]
 	public sealed class WorldSpaceLightDirHlpNode : HelperParentNode
 	{
 		private const string NormalizeOptionStr = "Safe Normalize";

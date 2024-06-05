@@ -90,11 +90,7 @@ namespace UnityEditor
 			if ( m_previewRenderUtility == null )
 			{
 				m_previewRenderUtility = new PreviewRenderUtility();
-#if UNITY_2017_1_OR_NEWER
 				m_cameraTransform = m_previewRenderUtility.camera.transform;
-#else
-				m_cameraTransform = m_previewRenderUtility.m_Camera.transform;
-#endif
 				m_cameraTransform.position = new Vector3( 0, 0, -4 );
 				m_cameraTransform.rotation = Quaternion.identity;
 			}
@@ -173,11 +169,7 @@ namespace UnityEditor
 				m_previewRenderUtility.DrawMesh( m_previewMesh, Matrix4x4.identity, m_material, 0 );
 				m_cameraTransform.rotation = Quaternion.Euler( new Vector3( -m_mouseDelta.y, -m_mouseDelta.x, 0 ) );
 				m_cameraTransform.position = m_cameraTransform.forward * -8f;
-#if UNITY_2017_1_OR_NEWER
 				m_previewRenderUtility.camera.Render();
-#else
-				m_previewRenderUtility.m_Camera.Render();
-#endif
 				GUI.DrawTexture( r, resultRender, ScaleMode.StretchToFill, false );
 			}
 		}
@@ -263,11 +255,7 @@ namespace UnityEditor
 			{
 				if ( GUILayout.Button( "Open in Shader Editor" ) )
 				{
-#if UNITY_2018_3_OR_NEWER
 					ASEPackageManagerHelper.SetupLateShader( shader );
-#else
-					AmplifyShaderEditorWindow.ConvertShaderToASE( shader );
-#endif
 				}
 
 				if ( GUILayout.Button( "Open in Text Editor" ) )
@@ -310,12 +298,9 @@ namespace UnityEditor
 					break;
 				}
 				EditorGUILayout.LabelField( "Disable batching", label, new GUILayoutOption[ 0 ] );
-#if UNITY_2019_3_OR_NEWER
 				ShowKeywords( shader );
 				srpCompatibilityCheckMaterial.SetPass( 0 );
-#endif
 
-#if UNITY_2018_3_OR_NEWER
 				int shaderActiveSubshaderIndex = ShaderUtilEx.GetShaderActiveSubshaderIndex( shader );
 				int sRPBatcherCompatibilityCode = ShaderUtilEx.GetSRPBatcherCompatibilityCode( shader, shaderActiveSubshaderIndex );
 				string label2 = ( sRPBatcherCompatibilityCode != 0 ) ? "not compatible" : "compatible";
@@ -324,11 +309,11 @@ namespace UnityEditor
 				{
 					EditorGUILayout.HelpBox( ShaderUtilEx.GetSRPBatcherCompatibilityIssueReason( shader, shaderActiveSubshaderIndex, sRPBatcherCompatibilityCode ), MessageType.Info );
 				}
-#endif
+
 				CustomShaderInspector.ShowShaderProperties( shader );
 			}
 		}
-#if UNITY_2019_3_OR_NEWER
+
 		private void ShowKeywords( Shader s )
 		{
 			EditorGUILayout.BeginHorizontal();
@@ -345,7 +330,7 @@ namespace UnityEditor
 
 			EditorGUILayout.EndHorizontal();
 		}
-#endif
+
 		private void ShowShaderCodeArea( Shader s )
 		{
 			CustomShaderInspector.ShowSurfaceShaderButton( s );
@@ -466,12 +451,10 @@ namespace UnityEditor
 			GUILayout.EndScrollView();
 		}
 
-#if UNITY_2019_3_OR_NEWER
 		ShaderMessage[] m_ShaderMessages;
-#endif
+
 		private void ShowShaderErrors( Shader s )
 		{
-#if UNITY_2019_3_OR_NEWER
 			if( Event.current.type == EventType.Layout )
 			{
 				int n = ShaderUtil.GetShaderMessageCount( s );
@@ -486,14 +469,6 @@ namespace UnityEditor
 				return;
 
 			ShaderInspectorEx.ShaderErrorListUI( s, m_ShaderMessages, ref this.m_ScrollPosition );
-#else
-			int shaderErrorCount = ShaderUtilEx.GetShaderErrorCount( s );
-			if ( shaderErrorCount < 1 )
-			{
-				return;
-			}
-			CustomShaderInspector.ShaderErrorListUI( s, ShaderUtilEx.GetShaderErrors( s ), ref this.m_ScrollPosition );
-#endif
 		}
 
 		private void ShowCompiledCodeButton( Shader s )
@@ -512,6 +487,7 @@ namespace UnityEditor
 #endif
 			EditorGUILayout.BeginHorizontal( new GUILayoutOption[ 0 ] );
 			EditorGUILayout.PrefixLabel( "Compiled code", EditorStyles.miniButton );
+
 			bool hasCode = ShaderUtilEx.HasShaderSnippets( s ) || ShaderUtilEx.HasSurfaceShaders( s ) || ShaderUtilEx.HasFixedFunctionShaders( s );
 			if( hasCode )
 			{
@@ -771,11 +747,7 @@ namespace UnityEditor
 #endif
 		public static void FetchCachedErrors( Shader s )
 		{
-#if UNITY_2019_3_OR_NEWER
 			ShaderUtilEx.Type.InvokeMember( "FetchCachedMessages", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.InvokeMethod, null, null, new object[] { s } );
-#else
-			ShaderUtilEx.Type.InvokeMember( "FetchCachedErrors", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.InvokeMethod, null, null, new object[] { s } );
-#endif
 		}
 
 		public static string[] GetShaderGlobalKeywords( Shader s )
@@ -790,11 +762,7 @@ namespace UnityEditor
 
 		public static int GetShaderErrorCount( Shader s )
 		{
-#if UNITY_2019_3_OR_NEWER
 			return ShaderUtil.GetShaderMessageCount( s );
-#else
-			return ( int ) ShaderUtilEx.Type.InvokeMember( "GetShaderErrorCount", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.InvokeMethod, null, null, new object[] { s } );
-#endif
 		}
 
 		public static int GetAvailableShaderCompilerPlatforms()
@@ -862,7 +830,6 @@ namespace UnityEditor
 			return ( bool ) ShaderUtilEx.Type.InvokeMember( "DoesIgnoreProjector", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.InvokeMethod, null, null, new object[] { s } );
 		}
 
-#if UNITY_2018_3_OR_NEWER
 		public static int GetShaderActiveSubshaderIndex( Shader s )
 		{
 			return (int)ShaderUtilEx.Type.InvokeMember( "GetShaderActiveSubshaderIndex", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.InvokeMethod, null, null, new object[] { s } );
@@ -877,7 +844,6 @@ namespace UnityEditor
 		{
 			return (string)ShaderUtilEx.Type.InvokeMember( "GetSRPBatcherCompatibilityIssueReason", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.InvokeMethod, null, null, new object[] { s, subShaderIdx, err } );
 		}
-#endif
 	}
 
 	public static class FileUtilEx
@@ -896,12 +862,10 @@ namespace UnityEditor
 		private static System.Type type = null;
 		public static  System.Type Type { get { return ( type == null ) ? type = System.Type.GetType( "UnityEditor.ShaderInspector, UnityEditor" ) : type; } }
 
-#if UNITY_2019_3_OR_NEWER
 		public static void ShaderErrorListUI( UnityEngine.Object shader, ShaderMessage[] messages, ref Vector2 scrollPosition )
 		{
 			Type.InvokeMember( "ShaderErrorListUI", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.InvokeMethod, null, null, new object[] { shader, messages, scrollPosition } );
 		}
-#endif
 	}
 
 	public static class GUISkinEx
@@ -921,11 +885,7 @@ namespace UnityEditor
 
 		public static bool ButtonMouseDown( Rect position, GUIContent content, FocusType focusType, GUIStyle style )
 		{
-#if UNITY_5_6_OR_NEWER
 			return EditorGUI.DropdownButton( position, content, focusType, style );
-#else
-			return ( bool ) EditorGUIEx.Type.InvokeMember( "ButtonMouseDown", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.InvokeMethod, null, null, new object[] { position, content, focusType, style } );
-#endif
 		}
 
 		public static float kObjectFieldMiniThumbnailHeight

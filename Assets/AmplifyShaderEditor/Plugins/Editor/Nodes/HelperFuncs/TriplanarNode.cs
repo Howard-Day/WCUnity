@@ -1090,11 +1090,7 @@ namespace AmplifyShaderEditor
 				texMid = texTop;
 				texBot = texTop;
 
-#if UNITY_2018_1_OR_NEWER
 				if( ( outsideGraph.SamplingMacros || m_topTexPort.DataType == WirePortDataType.SAMPLER2DARRAY ) )
-#else
-				if( ( outsideGraph.SamplingMacros || m_topTexPort.DataType == WirePortDataType.SAMPLER2DARRAY ) && !outsideGraph.IsStandardSurface )
-#endif
 					ssTop = GeneratorUtils.GenerateSamplerState( ref dataCollector, UniqueId, texTop , VariableMode.Create );
 			}
 			else
@@ -1120,21 +1116,12 @@ namespace AmplifyShaderEditor
 					dataCollector.AddToProperties( UniqueId, m_botTexture.GetTexture2DPropertyValue(), m_botTexture.OrderIndex );
 					texBot = m_botTexture.PropertyName;
 				}
-#if UNITY_2018_1_OR_NEWER
 				if( ( outsideGraph.SamplingMacros || m_topTexPort.DataType == WirePortDataType.SAMPLER2DARRAY ) )
 					ssTop = GeneratorUtils.GenerateSamplerState( ref dataCollector, UniqueId, texTop , VariableMode.Create );
 				if( ( outsideGraph.SamplingMacros || m_midTexPort.DataType == WirePortDataType.SAMPLER2DARRAY ) )
 					ssMid = GeneratorUtils.GenerateSamplerState( ref dataCollector, UniqueId, texMid , VariableMode.Create );
 				if( ( outsideGraph.SamplingMacros || m_botTexPort.DataType == WirePortDataType.SAMPLER2DARRAY ) )
 					ssBot = GeneratorUtils.GenerateSamplerState( ref dataCollector, UniqueId, texBot , VariableMode.Create );
-#else
-				if( ( outsideGraph.SamplingMacros || m_topTexPort.DataType == WirePortDataType.SAMPLER2DARRAY ) && !outsideGraph.IsStandardSurface )
-					ssTop = GeneratorUtils.GenerateSamplerState( ref dataCollector, UniqueId, texTop , VariableMode.Create);
-				if( ( outsideGraph.SamplingMacros || m_midTexPort.DataType == WirePortDataType.SAMPLER2DARRAY ) && !outsideGraph.IsStandardSurface )
-					ssMid = GeneratorUtils.GenerateSamplerState( ref dataCollector, UniqueId, texMid , VariableMode.Create);
-				if( ( outsideGraph.SamplingMacros || m_botTexPort.DataType == WirePortDataType.SAMPLER2DARRAY ) && !outsideGraph.IsStandardSurface )
-					ssBot = GeneratorUtils.GenerateSamplerState( ref dataCollector, UniqueId, texBot , VariableMode.Create);
-#endif
 			}
 
 			if( !isVertex )
@@ -1176,10 +1163,6 @@ namespace AmplifyShaderEditor
 			if( m_selectedTriplanarType == TriplanarType.Spherical )
 			{
 				samplers = GeneratorUtils.GetPropertyDeclaraction( "topTexMap", m_topTexPort.DataType, ", " ) + GeneratorUtils.GetSamplerDeclaraction( "samplertopTexMap", m_topTexPort.DataType, ", " );
-#if !UNITY_2018_1_OR_NEWER
-				if( m_topTexPort.DataType == WirePortDataType.SAMPLER2DARRAY && outsideGraph.IsStandardSurface )
-					samplers = "UNITY_ARGS_TEX2DARRAY(topTexMap), ";
-#endif
 
 				string array1 = "";
 				string array2 = "";
@@ -1224,17 +1207,6 @@ namespace AmplifyShaderEditor
 				string topArgs = GeneratorUtils.GetPropertyDeclaraction( "topTexMap", m_topTexPort.DataType, ", " ) + GeneratorUtils.GetSamplerDeclaraction( "samplertopTexMap", m_topTexPort.DataType, ", " );
 				string midArgs = GeneratorUtils.GetPropertyDeclaraction( "midTexMap", m_midTexPort.DataType, ", " ) + GeneratorUtils.GetSamplerDeclaraction( "samplermidTexMap", m_midTexPort.DataType, ", " );
 				string botArgs = GeneratorUtils.GetPropertyDeclaraction( "botTexMap", m_botTexPort.DataType, ", " ) + GeneratorUtils.GetSamplerDeclaraction( "samplerbotTexMap", m_botTexPort.DataType, ", " );
-
-#if !UNITY_2018_1_OR_NEWER
-				if( m_topTexPort.DataType == WirePortDataType.SAMPLER2DARRAY && outsideGraph.IsStandardSurface )
-					topArgs = "UNITY_ARGS_TEX2DARRAY(topTexMap), ";
-
-				if( m_midTexPort.DataType == WirePortDataType.SAMPLER2DARRAY && outsideGraph.IsStandardSurface )
-					midArgs = "UNITY_ARGS_TEX2DARRAY(midTexMap), ";
-
-				if( m_botTexPort.DataType == WirePortDataType.SAMPLER2DARRAY && outsideGraph.IsStandardSurface )
-					botArgs = "UNITY_ARGS_TEX2DARRAY(botTexMap), ";
-#endif
 
 				samplers = topArgs + midArgs + botArgs;
 
@@ -1325,15 +1297,6 @@ namespace AmplifyShaderEditor
 			{
 				pos = m_posPort.GeneratePortInstructions( ref dataCollector );
 			}
-
-#if !UNITY_2018_1_OR_NEWER
-			if( outsideGraph.IsStandardSurface && m_topTexPort.DataType == WirePortDataType.SAMPLER2DARRAY )
-				texTop = "UNITY_PASS_TEX2DARRAY(" + texTop + ")";
-			if( outsideGraph.IsStandardSurface && m_midTexPort.DataType == WirePortDataType.SAMPLER2DARRAY )
-				texMid = "UNITY_PASS_TEX2DARRAY(" + texMid + ")";
-			if( outsideGraph.IsStandardSurface && m_botTexPort.DataType == WirePortDataType.SAMPLER2DARRAY )
-				texBot = "UNITY_PASS_TEX2DARRAY(" + texBot + ")";
-#endif
 
 			string call = string.Empty;
 			string normalScale = m_scalePort.GeneratePortInstructions( ref dataCollector );

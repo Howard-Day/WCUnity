@@ -67,6 +67,29 @@ public class AmplifyShaderFunction : ScriptableObject
 		set { m_nodeCategory = value; }
 	}
 
+	public enum HeaderStyle
+	{
+		Default,
+		Category,
+		Custom
+	}
+
+	[SerializeField]
+	private HeaderStyle m_headerStyle = HeaderStyle.Default;
+	public HeaderStyle Header
+	{
+		get { return m_headerStyle; }
+		set { m_headerStyle = value; }
+	}
+
+	[SerializeField]
+	private Color m_headerColor = new Color( 1.00f, 0.4f, 0.0f, 1.0f );
+	public Color HeaderColor
+	{
+		get { return m_headerColor; }
+		set { m_headerColor = value; }
+	}
+
 	[SerializeField]
 	private string m_customNodeCategory = string.Empty;
 	public string CustomNodeCategory

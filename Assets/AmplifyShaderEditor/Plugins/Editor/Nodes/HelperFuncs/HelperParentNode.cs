@@ -75,11 +75,11 @@ namespace AmplifyShaderEditor
 			string finalResult = m_funcType + "( " + concatResults + " )";
 			if( dataCollector.IsTemplate )
 			{
-				if( dataCollector.TemplateDataCollectorInstance.CurrentSRPType == TemplateSRPType.Lightweight && !string.IsNullOrEmpty( m_funcLWFormatOverride ) )
+				if( dataCollector.TemplateDataCollectorInstance.CurrentSRPType == TemplateSRPType.URP && !string.IsNullOrEmpty( m_funcLWFormatOverride ) )
 				{
 					finalResult = string.Format( m_funcLWFormatOverride, concatResults );
 				}
-				else if( dataCollector.TemplateDataCollectorInstance.CurrentSRPType == TemplateSRPType.HD && !string.IsNullOrEmpty( m_funcHDFormatOverride ) )
+				else if( dataCollector.TemplateDataCollectorInstance.CurrentSRPType == TemplateSRPType.HDRP && !string.IsNullOrEmpty( m_funcHDFormatOverride ) )
 				{
 					finalResult = string.Format( m_funcHDFormatOverride, concatResults );
 				}

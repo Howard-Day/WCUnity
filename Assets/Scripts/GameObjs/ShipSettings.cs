@@ -17,6 +17,7 @@ public class ShipSettings : MonoBehaviour
     [SerializeField] public float turnRate = 50f;
     [SerializeField] public float maxFuel = 2500f;
     [SerializeField] public float fuelBurnRate = 2f;
+    [SerializeField] public bool bingoFuel = false;
     [SerializeField] bool invertYAxis = false;
     [SerializeField] public float topSpeed = 20f;
     [SerializeField] public float burnSpeed = 50f;
@@ -163,9 +164,9 @@ public class ShipSettings : MonoBehaviour
         }
         else //Fuck, basically just a max coasting speed. Good fucking luck, cowboy
         {
-            speed = Mathf.Min(targetSpeed, .8f);
+            bingoFuel = true;
+            speed = Mathf.Min(targetSpeed, topSpeed*.666f);
             isAfterburning = false;
-
         }
     }
 
@@ -174,7 +175,7 @@ public class ShipSettings : MonoBehaviour
         //Show that internal damage has taken place! 
         hitInternal = doComponentDamage;
         //print("Internal Damage is " + doComponentDamage);
-        Instantiate(InternalDamageVFX, transform.position, Quaternion.identity, transform);
+        Instantiate(InternalDamageVFX, transform.position, Quaternion.identity, DecoRoot);
         if (hitInternal) //only do damage if intentional! 
         {
             if (lastHit == HitLoc.F) // damage the components that got hit from the front, randomly
@@ -213,7 +214,7 @@ public class ShipSettings : MonoBehaviour
 
     void ArmorDamage(Vector3 pos) {
         //Show that armor damage has taken place! 
-        GameObject Debris = Instantiate(DamageVFX, pos, Quaternion.identity, transform.parent);
+        GameObject Debris = Instantiate(DamageVFX, pos, Quaternion.identity, DecoRoot);
         Debris.GetComponent<DampInitVelocity>().initDir = DeathDir;
         Debris.GetComponent<DampInitVelocity>().initVel = DeathVel;
     }
@@ -268,7 +269,7 @@ public class ShipSettings : MonoBehaviour
         {
             if (bounceColliders[ib] != gameObject.GetComponent<SphereCollider>()) //Ignore it if we're.. LOOKING AT OURSELVES
             {
-                //sprint("Bounce detected between "+ name +" and "+ bounceColliders[ib].name);
+                //print("Bounce detected between "+ name +" and "+ bounceColliders[ib].name);
                 ShipSettings hitShip = bounceColliders[ib].gameObject.GetComponent<ShipSettings>();
                 if (recover >= 1f)// && hitShip != null)
                 {
@@ -474,7 +475,6 @@ public class ShipSettings : MonoBehaviour
         if (AITeam == TEAM.CONFED)
         {
             GameObjTracker.kilrathiKills += 1;
-
         }
     }
 
@@ -487,7 +487,7 @@ public class ShipSettings : MonoBehaviour
   int DeathType;
   float DeathLength;
   GameObject Trail;
-
+    Transform DecoRoot;  
   void DoHealth()
   {
     //Constantly recharge the shields till full
@@ -512,6 +512,9 @@ public class ShipSettings : MonoBehaviour
     DeathVel = speed;
     }
 
+    if(!DecoRoot)
+        DecoRoot = GameObject.Find("Deco_Objs").transform;
+
     if(_CoreStrength <= 0) //We dead, son
     { 
       isDead = true;
@@ -528,7 +531,7 @@ public class ShipSettings : MonoBehaviour
       {
       if (!Boom)
       { 
-        Boom = Instantiate(DeathVFX[Random.Range(0,DeathVFX.Length-1)],transform.position,Quaternion.identity,transform.parent);
+        Boom = Instantiate(DeathVFX[Random.Range(0,DeathVFX.Length-1)],transform.position,Quaternion.identity, DecoRoot);
         Boom.GetComponent<DampInitVelocity>().initDir = DeathDir;
         Boom.GetComponent<DampInitVelocity>().initVel = DeathVel;
         
@@ -551,13 +554,13 @@ public class ShipSettings : MonoBehaviour
         DeathLength -= Time.deltaTime*5.5f;
         if (DeathLength > .5f)
         {
-          GameObject DeathTrail = Instantiate(DeathTrailVFX,transform.position,Quaternion.identity,transform.parent);
+          GameObject DeathTrail = Instantiate(DeathTrailVFX,transform.position,Quaternion.identity,DecoRoot);
           DeathTrail.GetComponent<DampInitVelocity>().initDir = DeathDir;
           DeathTrail.GetComponent<DampInitVelocity>().initVel = DeathVel/8;
         }
         if (DeathLength <= 0 && !Boom)
         { 
-          Boom = Instantiate(DeathVFX[Random.Range(0,DeathVFX.Length-1)],transform.position,Quaternion.identity,transform.parent);
+          Boom = Instantiate(DeathVFX[Random.Range(0,DeathVFX.Length-1)],transform.position,Quaternion.identity,DecoRoot);
           Boom.GetComponent<DampInitVelocity>().initDir = DeathDir;
           Boom.GetComponent<DampInitVelocity>().initVel = DeathVel;
           Destroy(gameObject, .25f);
@@ -577,13 +580,13 @@ public class ShipSettings : MonoBehaviour
       DeathLength -= Time.deltaTime;
         if (DeathLength > .25f)
         {
-          GameObject DeathTrail = Instantiate(DeathTrailVFX,transform.position,Quaternion.identity,transform.parent);
+          GameObject DeathTrail = Instantiate(DeathTrailVFX,transform.position,Quaternion.identity,DecoRoot);
           DeathTrail.GetComponent<DampInitVelocity>().initDir = DeathDir;
           DeathTrail.GetComponent<DampInitVelocity>().initVel = DeathVel/8;
         }
         if (DeathLength <= 0 && !Boom)
         { 
-          Boom = Instantiate(DeathVFX[Random.Range(0,DeathVFX.Length-1)],transform.position,Quaternion.identity,transform.parent);
+          Boom = Instantiate(DeathVFX[Random.Range(0,DeathVFX.Length-1)],transform.position,Quaternion.identity,DecoRoot);
           Boom.GetComponent<DampInitVelocity>().initDir = DeathDir;
           Boom.GetComponent<DampInitVelocity>().initVel = DeathVel;
           Destroy(gameObject, .25f);

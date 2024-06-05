@@ -190,6 +190,7 @@ namespace AmplifyShaderEditor
 	{
 		public AseOptionsActionType ActionType;
 		public string ActionData = string.Empty;
+		public string ActionData2 = string.Empty;
 		public int ActionDataIdx = -1;
 
 		public string PassName;
@@ -866,8 +867,11 @@ namespace AmplifyShaderEditor
 						string[] arr = optionItems[ optionsIdx ].Split( OptionsDataSeparator );
 						if( arr.Length > 1 )
 						{
-							int.TryParse( arr[ 0 ], out actionItem.ActionDataIdx );
-							actionItem.ActionData = arr[ 1 ];
+							if ( !int.TryParse( arr[ 0 ], out actionItem.ActionDataIdx ) )
+								actionItem.ActionDataIdx = -1;
+						
+							actionItem.ActionData = arr[ 0 ];
+							actionItem.ActionData2 = arr[ 1 ];
 						}
 					}
 					break;

@@ -7,8 +7,12 @@ namespace AmplifyShaderEditor
 	{
 		public const string VertexBlendWeightsStr = "ase_blendWeights";
 		public const string VertexBlendIndicesStr = "ase_blendIndices";
+		public const string ObjectPositionStr = "ase_objectPosition";
 		public const string ObjectScaleStr = "ase_objectScale";
 		public const string ParentObjectScaleStr = "ase_parentObjectScale";
+		public const string ObjectBoundsMinStr = "ase_objectBoundsMin";
+		public const string ObjectBoundsMaxStr = "ase_objectBoundsMax";
+		public const string ObjectBoundsSizeStr = "ase_objectBoundsSize";
 		public const string ScreenDepthStr = "ase_screenDepth";
 		public const string ViewPositionStr = "ase_viewPos";
 		public const string WorldViewDirectionStr = "ase_worldViewDir";
@@ -69,6 +73,16 @@ namespace AmplifyShaderEditor
 			return Identity4x4;
 		}
 
+		// OBJECT POSITION
+		static public string GenerateObjectPosition( ref MasterNodeDataCollector dataCollector, int uniqueId )
+		{
+			if ( dataCollector.IsTemplate )
+				return dataCollector.TemplateDataCollectorInstance.GenerateObjectPosition( ref dataCollector, uniqueId );
+
+			string value = "UNITY_MATRIX_M._m03_m13_m23";
+			dataCollector.AddLocalVariable( uniqueId, PrecisionType.Float, WirePortDataType.FLOAT3, ObjectPositionStr, value );
+			return ObjectPositionStr;
+		}
 
 		// OBJECT SCALE
 		static public string GenerateObjectScale( ref MasterNodeDataCollector dataCollector , int uniqueId )
@@ -201,7 +215,7 @@ namespace AmplifyShaderEditor
 			{
 				string worldNormal = GenerateWorldNormal( ref dataCollector , uniqueId );
 				string worldTangent = GenerateWorldTangent( ref dataCollector , uniqueId );
-				dataCollector.AddToVertexLocalVariables( uniqueId , string.Format( "half tangentSign = {0}.tangent.w * unity_WorldTransformParams.w;" , Constants.VertexShaderInputStr ) );
+				dataCollector.AddToVertexLocalVariables( uniqueId , string.Format( "half tangentSign = {0}.tangent.w * ( unity_WorldTransformParams.w >= 0.0 ? 1.0 : -1.0 );", Constants.VertexShaderInputStr ) );
 				result = "cross( " + worldNormal + ", " + worldTangent + " ) * tangentSign";
 			}
 
@@ -311,10 +325,6 @@ namespace AmplifyShaderEditor
 			string samplerDecl = string.Empty;
 
 			ParentGraph outsideGraph = UIUtils.CurrentWindow.OutsideGraph;
-#if !UNITY_2018_1_OR_NEWER
-			if( outsideGraph.IsStandardSurface )
-				return string.Empty;
-#endif
 			if( outsideGraph.IsSRP )
 				//if( dataCollector.IsSRP )
 				samplerDecl = string.Format( Constants.SamplerDeclSRPFormat , sampler ) + ";";
@@ -345,11 +355,7 @@ namespace AmplifyShaderEditor
 		public static string GetSamplerDeclaraction( string sampler , TextureType type , string termination = "" )
 		{
 			ParentGraph outsideGraph = UIUtils.CurrentWindow.OutsideGraph;
-#if UNITY_2018_1_OR_NEWER
 			if( outsideGraph.SamplingMacros || type == TextureType.Texture2DArray )
-#else
-			if( ( outsideGraph.SamplingMacros || type == TextureType.Texture2DArray ) && !outsideGraph.IsStandardSurface /*) || type == TextureType.Texture2DArray*/ )
-#endif
 			{
 				if( outsideGraph.IsSRP )
 					return string.Format( Constants.SamplerDeclSRPFormat , sampler ) + termination;
@@ -373,11 +379,7 @@ namespace AmplifyShaderEditor
 				return "sampler1D " + texture + termination;
 
 			ParentGraph outsideGraph = UIUtils.CurrentWindow.OutsideGraph;
-#if UNITY_2018_1_OR_NEWER
 			if( outsideGraph.SamplingMacros || type == TextureType.Texture2DArray )
-#else
-			if( ( outsideGraph.SamplingMacros || type == TextureType.Texture2DArray ) && !outsideGraph.IsStandardSurface )
-#endif
 			{
 				if( outsideGraph.IsSRP )
 					return string.Format( Constants.TexDeclarationNoSamplerSRPMacros[ type ] , texture ) + termination;
@@ -399,11 +401,7 @@ namespace AmplifyShaderEditor
 			TextureType textureType = Constants.WireToTexture[ type ];
 
 			bool usingMacro = false;
-#if UNITY_2018_1_OR_NEWER
 			if( ousideGraph.SamplingMacros || textureType == TextureType.Texture2DArray )
-#else
-			if( ( ousideGraph.SamplingMacros && !ousideGraph.IsStandardSurface ) || textureType == TextureType.Texture2DArray )
-#endif
 				usingMacro = true;
 
 			switch( mip )
@@ -443,12 +441,7 @@ namespace AmplifyShaderEditor
 				else
 				{
 					AddCustomStandardSamplingMacros( ref dataCollector , type , mip );
-#if !UNITY_2018_1_OR_NEWER
-					if( ousideGraph.IsStandardSurface )
-						result = string.Format( Constants.TexSampleStandardMacros[ textureType ] , mipSuffix , property , samplerState , uv + mipParams );
-					else
-#endif
-						result = string.Format( Constants.TexSampleSamplerStandardMacros[ textureType ] , mipSuffix , property , samplerState , uv + mipParams );
+					result = string.Format( Constants.TexSampleSamplerStandardMacros[ textureType ] , mipSuffix , property , samplerState , uv + mipParams );
 
 				}
 			}
@@ -907,7 +900,7 @@ namespace AmplifyShaderEditor
 			{
 				GenerateVertexNormal( ref dataCollector , uniqueId , precision );
 				GenerateVertexTangent( ref dataCollector , uniqueId , precision , WirePortDataType.FLOAT3 );
-				dataCollector.AddLocalVariable( uniqueId , precision , WirePortDataType.FLOAT3 , VertexBitangentStr , "cross( " + VertexNormalStr + ", " + VertexTangentStr + ") * " + Constants.VertexShaderInputStr + ".tangent.w * unity_WorldTransformParams.w" );
+				dataCollector.AddLocalVariable( uniqueId , precision , WirePortDataType.FLOAT3 , VertexBitangentStr , "cross( " + VertexNormalStr + ", " + VertexTangentStr + ") * " + Constants.VertexShaderInputStr + ".tangent.w * ( unity_WorldTransformParams.w >= 0.0 ? 1.0 : -1.0 )" );
 			}
 			return VertexBitangentStr;
 		}
@@ -1022,22 +1015,13 @@ namespace AmplifyShaderEditor
 			dataCollector.AddLocalVariable( uniqueId, "#endif //aseld" );
 			return WorldLightDirStr;
 		}
-
-		private static readonly string[] SafeNormalizeBuiltin = 
+		
+		private static readonly string[] SafeNormalize =
 		{
-			"inline float{0} ASESafeNormalize(float{0} inVec)\n",
+			"float{0} ASESafeNormalize(float{0} inVec)\n",
 			"{\n",
-			"\tfloat dp3 = max( 0.001f , dot( inVec , inVec ) );\n",
-			"\treturn inVec* rsqrt( dp3);\n",
-			"}\n"
-		};
-
-		private static readonly string[] SafeNormalizeSRP =
-		{
-			"real{0} ASESafeNormalize(float{0} inVec)\n",
-			"{\n",
-			"\treal dp3 = max(FLT_MIN, dot(inVec, inVec));\n",
-			"\treturn inVec* rsqrt( dp3);\n",
+			"\tfloat dp3 = max(1.175494351e-38, dot(inVec, inVec));\n",
+			"\treturn inVec* rsqrt(dp3);\n",
 			"}\n",
 		};
 
@@ -1059,7 +1043,7 @@ namespace AmplifyShaderEditor
 			if( safeNormalize )
 			{
 				string[] finalFunction = null;
-				string[] funcVersion = dataCollector.IsSRP ? SafeNormalizeSRP : SafeNormalizeBuiltin;
+				string[] funcVersion = SafeNormalize;
 
 				finalFunction = new string[ funcVersion.Length ];
 
@@ -1129,27 +1113,15 @@ namespace AmplifyShaderEditor
 
 			if( dataCollector.IsTemplate && dataCollector.IsSRP )
 			{
-#if UNITY_2018_3_OR_NEWER
-				if( ASEPackageManagerHelper.CurrentHDVersion > ASESRPVersions.ASE_SRP_7_2_1 )
+				if( applyScale )
 				{
-					if( applyScale )
-					{
-						dataCollector.AddLocalVariable( uniqueId, precision, WirePortDataType.FLOAT3, "unpack" + outputId, "UnpackNormalScale( " + src + ", " + scale + " )" );
-						dataCollector.AddLocalVariable( uniqueId, "unpack" + outputId + ".z = lerp( 1, unpack" + outputId + ".z, saturate(" + scale + ") );" );
-						funcName = "unpack" + outputId;
-					}
-					else
-					{
-						funcName = "UnpackNormalScale( " + src + ", " + scale + " )";
-					}
-				} 
+					dataCollector.AddLocalVariable( uniqueId, precision, WirePortDataType.FLOAT3, "unpack" + outputId, "UnpackNormalScale( " + src + ", " + scale + " )" );
+					dataCollector.AddLocalVariable( uniqueId, "unpack" + outputId + ".z = lerp( 1, unpack" + outputId + ".z, saturate(" + scale + ") );" );
+					funcName = "unpack" + outputId;
+				}
 				else
-#endif
 				{
-					if( dataCollector.TemplateDataCollectorInstance.IsHDRP )
-						funcName = "UnpackNormalmapRGorAG( " + src + ", " + scale + " )";
-					else
-						funcName = "UnpackNormalScale( " + src + ", " + scale + " )";
+					funcName = "UnpackNormalScale( " + src + ", " + scale + " )";
 				}
 			}
 			else
@@ -1423,8 +1395,7 @@ namespace AmplifyShaderEditor
 
 		public static void RegisterUnity2019MatrixDefines( ref MasterNodeDataCollector dataCollector )
 		{
-#if UNITY_2019_1_OR_NEWER
-			if( dataCollector.IsSRP && dataCollector.TemplateDataCollectorInstance.IsHDRP && ASEPackageManagerHelper.CurrentHDVersion >= ASESRPVersions.ASE_SRP_5_13_0 )
+			if( dataCollector.IsSRP && dataCollector.TemplateDataCollectorInstance.IsHDRP )
 			{
 				//dataCollector.AddToDefines( -1, "unity_CameraProjection UNITY_MATRIX_P" );
 				//dataCollector.AddToDefines( -1, "unity_CameraInvProjection UNITY_MATRIX_I_P" );
@@ -1436,7 +1407,6 @@ namespace AmplifyShaderEditor
 				dataCollector.AddToUniforms( -1, "float4x4 unity_WorldToCamera;" );
 				dataCollector.AddToUniforms( -1, "float4x4 unity_CameraToWorld;" );
 			}
-#endif
 		}
 	}
 }

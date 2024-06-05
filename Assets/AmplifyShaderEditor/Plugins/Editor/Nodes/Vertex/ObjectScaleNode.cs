@@ -7,7 +7,7 @@ using UnityEditor;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Object Scale", "Vertex Data", "Object Scale extracted directly from its transform matrix" )]
+	[NodeAttributes( "Object Scale", "Object", "Object Scale extracted directly from its transform matrix" )]
 	public class ObjectScaleNode : ParentNode
 	{
 		private const string RotationIndependentScaleStr = "Rotation Independent Scale";

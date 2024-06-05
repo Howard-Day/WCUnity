@@ -4,6 +4,7 @@
 using UnityEngine;
 using UnityEditor;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace AmplifyShaderEditor
@@ -148,7 +149,7 @@ namespace AmplifyShaderEditor
 		private NodeAvailability m_currentCanvasMode = NodeAvailability.SurfaceShader;
 
 		[SerializeField]
-		private TemplateSRPType m_currentSRPType = TemplateSRPType.BuiltIn;
+		private TemplateSRPType m_currentSRPType = TemplateSRPType.BiRP;
 
 		//private List<ParentNode> m_visibleNodes = new List<ParentNode>();
 
@@ -208,7 +209,7 @@ namespace AmplifyShaderEditor
 
 		public void Init()
 		{
-			Undo.undoRedoPerformed += OnUndoRedoCallback;
+			UndoUtils.RegisterUndoRedoCallback( OnUndoRedoCallback );
 			m_normalDependentCount = 0;
 			m_nodes = new List<ParentNode>();
 			m_samplerNodes = new UsageListSamplerNodes();
@@ -400,8 +401,8 @@ namespace AmplifyShaderEditor
 			for( int i = 0; i < m_nodes.Count; i++ )
 			{
 				if( m_nodes[ i ] != null )
-				{
-					Undo.ClearUndo( m_nodes[ i ] );
+				{					
+					UndoUtils.ClearUndo( m_nodes[ i ] );
 					m_nodes[ i ].Destroy();
 					GameObject.DestroyImmediate( m_nodes[ i ] );
 				}
@@ -537,26 +538,26 @@ namespace AmplifyShaderEditor
 
 		public void FullCleanUndoStack()
 		{
-			Undo.ClearUndo( this );
+			UndoUtils.ClearUndo( this );
 			int count = m_nodes.Count;
 			for( int i = 0; i < count; i++ )
 			{
 				if( m_nodes[ i ] != null )
 				{
-					Undo.ClearUndo( m_nodes[ i ] );
+					UndoUtils.ClearUndo( m_nodes[ i ] );
 				}
 			}
 		}
 
 		public void FullRegisterOnUndoStack()
 		{
-			Undo.RegisterCompleteObjectUndo( this, Constants.UndoRegisterFullGrapId );
+			UndoUtils.RegisterCompleteObjectUndo( this, Constants.UndoRegisterFullGrapId );
 			int count = m_nodes.Count;
 			for( int i = 0; i < count; i++ )
 			{
 				if( m_nodes[ i ] != null )
 				{
-					Undo.RegisterCompleteObjectUndo( m_nodes[ i ], Constants.UndoRegisterFullGrapId );
+					UndoUtils.RegisterCompleteObjectUndo( m_nodes[ i ], Constants.UndoRegisterFullGrapId );
 				}
 			}
 		}
@@ -696,12 +697,12 @@ namespace AmplifyShaderEditor
 
 		public void Destroy()
 		{
-			Undo.undoRedoPerformed -= OnUndoRedoCallback;
+			UndoUtils.UnregisterUndoRedoCallback( OnUndoRedoCallback );
 			for( int i = 0; i < m_nodes.Count; i++ )
 			{
 				if( m_nodes[ i ] != null )
 				{
-					Undo.ClearUndo( m_nodes[ i ] );
+					UndoUtils.ClearUndo( m_nodes[ i ] );
 					m_nodes[ i ].Destroy();
 					GameObject.DestroyImmediate( m_nodes[ i ] );
 				}
@@ -906,9 +907,9 @@ namespace AmplifyShaderEditor
 			if( registerUndo )
 			{
 				UIUtils.MarkUndoAction();
-				Undo.RegisterCompleteObjectUndo( ParentWindow, Constants.UndoCreateNodeId );
-				Undo.RegisterCompleteObjectUndo( this, Constants.UndoCreateNodeId );
-				Undo.RegisterCreatedObjectUndo( node, Constants.UndoCreateNodeId );
+				UndoUtils.RegisterCompleteObjectUndo( ParentWindow, Constants.UndoCreateNodeId );
+				UndoUtils.RegisterCompleteObjectUndo( this, Constants.UndoCreateNodeId );
+				UndoUtils.RegisterCreatedObjectUndo( node, Constants.UndoCreateNodeId );
 			}
 
 			if( OnNodeEvent != null )
@@ -1090,7 +1091,8 @@ namespace AmplifyShaderEditor
 
 		public void ForceReOrder()
 		{
-			m_nodes.Sort( ( x, y ) => x.Depth.CompareTo( y.Depth ) );
+			// @diogo: replaced Sort() with OrderBy() for stable sorting
+			m_nodes = m_nodes.OrderBy( s => s.Depth ).ToList();
 		}
 
 		public bool Draw( DrawInfo drawInfo )
@@ -1762,12 +1764,12 @@ namespace AmplifyShaderEditor
 			//bool validMovement = delta.magnitude > 0.001f;
 			//if ( validMovement )
 			//{
-			//	Undo.RegisterCompleteObjectUndo( ParentWindow, Constants.UndoMoveNodesId );
+			//	UndoUtils.RegisterCompleteObjectUndo( ParentWindow, Constants.UndoMoveNodesId );
 			//	for ( int i = 0; i < m_selectedNodes.Count; i++ )
 			//	{
 			//		if ( !m_selectedNodes[ i ].MovingInFrame )
 			//		{
-			//			Undo.RecordObject( m_selectedNodes[ i ], Constants.UndoMoveNodesId );
+			//			UndoUtils.RecordObject( m_selectedNodes[ i ], Constants.UndoMoveNodesId );
 			//			m_selectedNodes[ i ].Move( delta, snap );
 			//		}
 			//	}
@@ -1777,8 +1779,8 @@ namespace AmplifyShaderEditor
 			bool performUndo = delta.magnitude > 0.01f;
 			if( performUndo )
 			{
-				Undo.RegisterCompleteObjectUndo( ParentWindow, Constants.UndoMoveNodesId );
-				Undo.RegisterCompleteObjectUndo( this, Constants.UndoMoveNodesId );
+				UndoUtils.RegisterCompleteObjectUndo( ParentWindow, Constants.UndoMoveNodesId );
+				UndoUtils.RegisterCompleteObjectUndo( this, Constants.UndoMoveNodesId );
 			}
 
 			for( int i = 0; i < m_selectedNodes.Count; i++ )
@@ -1991,8 +1993,8 @@ namespace AmplifyShaderEditor
 			if( registerUndo )
 			{
 				UIUtils.MarkUndoAction();
-				Undo.RegisterCompleteObjectUndo( ParentWindow, Constants.UndoDeleteConnectionId );
-				Undo.RegisterCompleteObjectUndo( this, Constants.UndoDeleteConnectionId );
+				UndoUtils.RegisterCompleteObjectUndo( ParentWindow, Constants.UndoDeleteConnectionId );
+				UndoUtils.RegisterCompleteObjectUndo( this, Constants.UndoDeleteConnectionId );
 				node.RecordObject( Constants.UndoDeleteConnectionId );
 			}
 
@@ -2238,10 +2240,10 @@ namespace AmplifyShaderEditor
 			UIUtils.ClearUndoHelper();
 			//Record deleted nodes
 			UIUtils.MarkUndoAction();
-			Undo.RegisterCompleteObjectUndo( ParentWindow, Constants.UndoDeleteNodeId );
-			Undo.RegisterCompleteObjectUndo( this, Constants.UndoDeleteNodeId );
-			Undo.RecordObjects( selectedNodes, Constants.UndoDeleteNodeId );
-			Undo.RecordObjects( extraNodes.ToArray(), Constants.UndoDeleteNodeId );
+			UndoUtils.RegisterCompleteObjectUndo( ParentWindow, Constants.UndoDeleteNodeId );
+			UndoUtils.RegisterCompleteObjectUndo( this, Constants.UndoDeleteNodeId );
+			UndoUtils.RecordObjects( selectedNodes, Constants.UndoDeleteNodeId );
+			UndoUtils.RecordObjects( extraNodes.ToArray(), Constants.UndoDeleteNodeId );
 
 			//Record deleting connections
 			for( int i = 0; i < selectedNodes.Length; i++ )
@@ -2376,12 +2378,12 @@ namespace AmplifyShaderEditor
 				}
 
 				//Remove node from main list
-				//Undo.RecordObject( node, "Destroying node " + ( node.Attributes != null? node.Attributes.Name: node.GetType().ToString() ) );
+				//UndoUtils.RecordObject( node, "Destroying node " + ( node.Attributes != null? node.Attributes.Name: node.GetType().ToString() ) );
 				if( registerUndo )
 				{
 					UIUtils.MarkUndoAction();
-					Undo.RegisterCompleteObjectUndo( ParentWindow, Constants.UndoDeleteNodeId );
-					Undo.RegisterCompleteObjectUndo( this, Constants.UndoDeleteNodeId );
+					UndoUtils.RegisterCompleteObjectUndo( ParentWindow, Constants.UndoDeleteNodeId );
+					UndoUtils.RegisterCompleteObjectUndo( this, Constants.UndoDeleteNodeId );
 					node.RecordObjectOnDestroy( Constants.UndoDeleteNodeId );
 				}
 
@@ -2391,10 +2393,14 @@ namespace AmplifyShaderEditor
 				m_nodes.Remove( node );
 				m_nodesDict.Remove( node.UniqueId );
 				node.Destroy();
-				if( registerUndo )
-					Undo.DestroyObjectImmediate( node );
+				if ( registerUndo )
+				{
+					UndoUtils.DestroyObjectImmediate( node );
+				}
 				else
+				{
 					DestroyImmediate( node );
+				}					
 				IsDirty = true;
 				m_markToReOrder = true;
 			}
@@ -2949,8 +2955,9 @@ namespace AmplifyShaderEditor
 					}
 				}
 			}
-
-			m_nodes.Sort( ( x, y ) => { return y.GraphDepth.CompareTo( x.GraphDepth ); } );
+			
+			// @diogo: replaced Sort() with OrderBy() for stable sorting
+			m_nodes = m_nodes.OrderByDescending( s => s.GraphDepth ).ToList();
 		}
 
 		public void WriteToString( ref string nodesInfo, ref string connectionsInfo )
@@ -3359,7 +3366,7 @@ namespace AmplifyShaderEditor
 				case AvailableShaderTypes.SurfaceShader:
 				{
 					CurrentCanvasMode = NodeAvailability.SurfaceShader;
-					m_currentSRPType = TemplateSRPType.BuiltIn;
+					m_currentSRPType = TemplateSRPType.BiRP;
 					newMasterNode = CreateNode( typeof( StandardSurfaceOutputNode ), false ) as MasterNode;
 				}
 				break;
@@ -3370,7 +3377,7 @@ namespace AmplifyShaderEditor
 					{
 						newMasterNode = CreateNode( typeof( TemplateMasterNode ), false ) as MasterNode;
 						( newMasterNode as TemplateMasterNode ).SetTemplate( templateData as TemplateData, writeDefaultData, false );
-						m_currentSRPType = TemplateSRPType.BuiltIn;
+						m_currentSRPType = TemplateSRPType.BiRP;
 					}
 					else
 					{
@@ -3524,7 +3531,7 @@ namespace AmplifyShaderEditor
 
 				ParentWindow.IsShaderFunctionWindow = false;
 				CurrentCanvasMode = NodeAvailability.TemplateShader;
-				m_currentSRPType = TemplateSRPType.BuiltIn;
+				m_currentSRPType = TemplateSRPType.BiRP;
 				newMasterNode.OnMaterialUpdatedEvent += OnMaterialUpdatedEvent;
 				newMasterNode.OnShaderUpdatedEvent += OnShaderUpdatedEvent;
 				newMasterNode.IsMainOutputNode = true;
@@ -4034,9 +4041,9 @@ namespace AmplifyShaderEditor
 		public bool IsLoading { get { return m_isLoading; } set { m_isLoading = value; } }
 		public bool IsDuplicating { get { return m_isDuplicating; } set { m_isDuplicating = value; } }
 		public TemplateSRPType CurrentSRPType { get { return m_currentSRPType; }set { m_currentSRPType = value; } }
-		public bool IsSRP { get { return m_currentSRPType == TemplateSRPType.Lightweight || m_currentSRPType == TemplateSRPType.HD; } }
-		public bool IsHDRP { get { return m_currentSRPType == TemplateSRPType.HD; } }
-		public bool IsLWRP { get { return m_currentSRPType == TemplateSRPType.Lightweight; } }
+		public bool IsSRP { get { return m_currentSRPType == TemplateSRPType.URP || m_currentSRPType == TemplateSRPType.HDRP; } }
+		public bool IsHDRP { get { return m_currentSRPType == TemplateSRPType.HDRP; } }
+		public bool IsLWRP { get { return m_currentSRPType == TemplateSRPType.URP; } }
 		public bool IsStandardSurface { get { return GetNode( m_masterNodeId ) is StandardSurfaceOutputNode; } }
 		
 		public bool SamplingMacros { 

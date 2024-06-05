@@ -8,11 +8,13 @@ using UnityEditor;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Indirect Specular Light", "Light", "Indirect Specular Light", NodeAvailabilityFlags = (int)( NodeAvailability.CustomLighting | NodeAvailability.TemplateShader ) )]
+	[NodeAttributes( "Indirect Specular Light", "Lighting", "Indirect Specular Light", NodeAvailabilityFlags = (int)( NodeAvailability.CustomLighting | NodeAvailability.TemplateShader ) )]
 	public sealed class IndirectSpecularLight : ParentNode
 	{
 		[SerializeField]
 		private ViewSpace m_normalSpace = ViewSpace.Tangent;
+		[SerializeField]
+		private bool m_normalize = true;
 
 		private const string DefaultErrorMessage = "This node only returns correct information using a custom light model, otherwise returns 0";
 		private bool m_upgradeMessage = false;
@@ -66,6 +68,10 @@ namespace AmplifyShaderEditor
 
 			EditorGUI.BeginChangeCheck();
 			m_normalSpace = (ViewSpace)EditorGUILayoutEnumPopup( "Normal Space", m_normalSpace );
+			if( m_normalSpace != ViewSpace.World || !m_inputPorts[ 0 ].IsConnected )
+			{
+				m_normalize = EditorGUILayoutToggle("Normalize", m_normalize);
+			}
 			if( EditorGUI.EndChangeCheck() )
 			{
 				UpdatePort();
@@ -144,7 +150,7 @@ namespace AmplifyShaderEditor
 				}
 				else
 				{
-					if( dataCollector.CurrentSRPType == TemplateSRPType.Lightweight )
+					if( dataCollector.CurrentSRPType == TemplateSRPType.URP )
 					{
 						string worldViewDir = dataCollector.TemplateDataCollectorInstance.GetViewDir( false, MasterNodePortCategory.Fragment );
 						string worldNormal = string.Empty;
@@ -167,7 +173,7 @@ namespace AmplifyShaderEditor
 						dataCollector.AddLocalVariable( UniqueId, "float3 indirectSpecular" + OutputId + " = GlossyEnvironmentReflection( reflectVector" + OutputId + ", 1.0 - " + tempsmoothness + ", " + tempocclusion + " );" );
 						return "indirectSpecular" + OutputId;
 					}
-					else if( dataCollector.CurrentSRPType == TemplateSRPType.HD )
+					else if( dataCollector.CurrentSRPType == TemplateSRPType.HDRP )
 					{
 						UIUtils.ShowMessage( UniqueId, "Indirect Specular Light node currently not supported on HDRP" );
 						return m_outputPorts[0].ErrorValue;
@@ -187,7 +193,13 @@ namespace AmplifyShaderEditor
 
 				normal = m_inputPorts[ 0 ].GeneratePortInstructions( ref dataCollector );
 				if( m_normalSpace == ViewSpace.Tangent )
+				{
 					normal = "WorldNormalVector( " + Constants.InputVarStr + " , " + normal + " )";
+					if( m_normalize )
+					{
+						normal = "normalize( " + normal + " )";
+					}
+				}
 
 				dataCollector.AddLocalVariable( UniqueId, "float3 indirectNormal" + OutputId + " = " + normal + ";" );
 				normal = "indirectNormal" + OutputId;
@@ -204,7 +216,7 @@ namespace AmplifyShaderEditor
 					}
 				}
 
-				normal = GeneratorUtils.GenerateWorldNormal( ref dataCollector, UniqueId );
+				normal = GeneratorUtils.GenerateWorldNormal( ref dataCollector, UniqueId, m_normalize );
 			}
 
 			string smoothness = m_inputPorts[ 1 ].GeneratePortInstructions( ref dataCollector );

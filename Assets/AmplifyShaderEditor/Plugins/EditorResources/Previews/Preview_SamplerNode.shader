@@ -24,7 +24,6 @@ Shader "Hidden/SamplerNode"
 			CGPROGRAM
 			#pragma vertex vert_img
 			#pragma fragment frag
-			#pragma exclude_renderers d3d9 
 			#pragma target 3.5
 			#include "UnityCG.cginc"
 			#include "UnityStandardUtils.cginc"
@@ -36,28 +35,24 @@ Shader "Hidden/SamplerNode"
 
 			float4 frag( v2f_img i ) : SV_Target
 			{
-				if( _Default == 1 )
+				const float3 white = float3( 1, 1, 1 );
+				const float3 black = float3( 0, 0, 0 );
+				const float3 grey = GammaToLinearSpace( 127.0 / 255.0 ).xxx;
+				const float3 bump = float3( 0.5, 0.5, 1 );
+				const float3 linearGrey = ( 127.0 / 255.0 ).xxx;
+				const float3 red = float3( 1, 0, 0 );
+
+				float4 result = float4( 0, 0, 0, 1 );
+				switch ( _Default )
 				{
-					return 1;
+					case 1: result.rgb = white; break;
+					case 2: result.rgb = black; break;
+					case 3: result.rgb = grey; break;
+					case 4: result.rgb = ( _Unpack == 1 ) ? UnpackScaleNormal( bump.xxyy, tex2D( _F, i.uv ).r ) : bump; break;
+					case 5: result.rgb = linearGrey; break;
+					case 6: result.rgb = red; break;
 				}
-				else if( _Default == 2 )
-				{
-					return 0;
-				} 
-				else if( _Default == 3 )
-				{
-					return 0.5f;
-				}
-				else if( _Default == 4 )
-				{
-					float4 h = float4(0.5,0.5,1,1);
-					if ( _Unpack == 1 ) 
-					{
-						h.rgb = UnpackScaleNormal( h.xxyy, tex2D( _F, i.uv ).r );
-					} 
-					return h;
-				}
-				return 1;
+				return result;
 			}
 			ENDCG
 		}
@@ -67,7 +62,6 @@ Shader "Hidden/SamplerNode"
 			CGPROGRAM
 			#pragma vertex vert_img
 			#pragma fragment frag
-			#pragma exclude_renderers d3d9 
 			#pragma target 3.5
 			#include "UnityCG.cginc"
 			#include "UnityStandardUtils.cginc"

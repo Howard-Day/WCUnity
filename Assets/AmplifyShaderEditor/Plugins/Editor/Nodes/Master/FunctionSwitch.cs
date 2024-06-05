@@ -19,7 +19,7 @@ namespace AmplifyShaderEditor
 
 		private const string CurrSelectedStr = "Current";
 		private const string MaxAmountStr = "Amount";
-		private const int MaxAllowedAmount = 9;
+		private const int MaxAllowedAmount = 10;
 
 		private const int MinComboSize = 50;
 		private const int MaxComboSize = 105;
@@ -46,7 +46,7 @@ namespace AmplifyShaderEditor
 		private bool m_toggleMode = false;
 
 		[SerializeField]
-		private string[] m_optionNames = { "In 0", "In 1", "In 2", "In 3", "In 4", "In 5", "In 6", "In 7", "In 8" };
+		private string[] m_optionNames = { "In 0", "In 1", "In 2", "In 3", "In 4", "In 5", "In 6", "In 7", "In 8", "In 9" };
 
 		[SerializeField]
 		private int m_orderIndex = -1;

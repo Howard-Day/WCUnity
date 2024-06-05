@@ -57,16 +57,16 @@ namespace AmplifyShaderEditor
 			if( !EditorApplication.isPlayingOrWillChangePlaymode )
 			{
 				Preferences.ShowOption show = Preferences.ShowOption.Never;
-				if( !EditorPrefs.HasKey( Preferences.PrefStartUp ) )
+				if( !EditorPrefs.HasKey( Preferences.User.Keys.StartUp ) )
 				{
 					show = Preferences.ShowOption.Always;
-					EditorPrefs.SetInt( Preferences.PrefStartUp, 0 );
+					EditorPrefs.SetInt( Preferences.User.Keys.StartUp, 0 );
 				}
 				else
 				{
 					if( Time.realtimeSinceStartup < 10 )
 					{
-						show = (Preferences.ShowOption) EditorPrefs.GetInt( Preferences.PrefStartUp, 0 );
+						show = (Preferences.ShowOption) EditorPrefs.GetInt( Preferences.User.Keys.StartUp, 0 );
 						// check version here
 						if( show == Preferences.ShowOption.OnNewVersion )
 						{
@@ -94,11 +94,7 @@ namespace AmplifyShaderEditor
 		{
 			using( www = UnityWebRequest.Get( url ) )
 			{
-#if UNITY_2017_2_OR_NEWER
 				yield return www.SendWebRequest();
-#else
-				yield return www.Send();
-#endif
 
 				while( www.isDone == false )
 					yield return null;

@@ -1268,7 +1268,7 @@ namespace AmplifyShaderEditor
 
 			if( string.IsNullOrEmpty( m_code ) )
 			{
-				UIUtils.ShowMessage( UniqueId , string.Format( "Custom Expression \"{0}\" need to have code associated" , m_customExpressionName ) , MessageSeverity.Warning );
+				UIUtils.ShowMessage( UniqueId , string.Format( "Custom Expression '{0}' need to have code associated" , m_customExpressionName ) , MessageSeverity.Warning );
 				return "0";
 			}
 
@@ -1287,10 +1287,10 @@ namespace AmplifyShaderEditor
 				!codeContainsReturn &&
 				m_mode == CustomExpressionMode.Create && !m_voidMode )
 			{
-				UIUtils.ShowMessage( UniqueId , string.Format( "Custom Expression \"{0}\" has a non-void return type but no return instruction was detected" , m_customExpressionName ) , MessageSeverity.Error );
+				UIUtils.ShowMessage( UniqueId , string.Format( "Custom Expression '{0}' has a non-void return type but no return instruction was detected" , m_customExpressionName ) , MessageSeverity.Error );
 
 				if( outputId != 0 )
-					UIUtils.ShowMessage( UniqueId , string.Format( "Attempting to get value on Custom Expression \"{0}\" from inexisting \"{1}\" inout/out variable" , m_customExpressionName , m_outputPorts[ outputId ].Name ) , MessageSeverity.Error );
+					UIUtils.ShowMessage( UniqueId , string.Format( "Attempting to get value on Custom Expression '{0}' from inexisting '{1}' inout/out variable" , m_customExpressionName , m_outputPorts[ outputId ].Name ) , MessageSeverity.Error );
 
 				return "0";
 			}

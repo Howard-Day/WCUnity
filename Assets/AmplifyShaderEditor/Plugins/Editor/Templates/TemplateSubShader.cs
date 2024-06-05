@@ -63,7 +63,7 @@ namespace AmplifyShaderEditor
 			}
 
 			m_modules = new TemplateModulesData( m_customOptionsContainer , idManager , m_templateProperties , uniquePrefix + "Module" , subShaderInfo.StartIdx , subShaderInfo.Modules , true );
-			if( m_modules.SRPType == TemplateSRPType.HD )
+			if( m_modules.SRPType == TemplateSRPType.HDRP )
 			{
 				m_modules.SRPIsPBR = subShaderInfo.Data.Contains( TemplateHelperFunctions.HDPBRTag );
 			}
@@ -71,7 +71,7 @@ namespace AmplifyShaderEditor
 			Dictionary<string , TemplateShaderPropertyData> ownDuplicatesDict = new Dictionary<string , TemplateShaderPropertyData>( duplicatesHelper );
 
 			TemplateHelperFunctions.CreateShaderGlobalsList( subShaderInfo.Modules , ref m_availableShaderGlobals , ref ownDuplicatesDict , subShaderIx , -1 );
-			if( m_modules.SRPType == TemplateSRPType.BuiltIn )
+			if( m_modules.SRPType == TemplateSRPType.BiRP )
 			{
 				TemplateHelperFunctions.CheckUnityBuiltinGlobalMacros( subShaderInfo.Modules , ref m_availableShaderGlobals , ref ownDuplicatesDict , subShaderIx , -1 );
 			}

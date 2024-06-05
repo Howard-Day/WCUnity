@@ -212,6 +212,6 @@ namespace AmplifyShaderEditor
 		public string DefaultShaderName { get { return m_defaultShaderName; } set { m_defaultShaderName = value; } }
 		public bool IsValid { get { return m_isValid; } }
 		public TemplateDataType TemplateType { get { return m_templateType; } }
-		public virtual void Init( string name, string guid, bool isCommunity ) { m_communityTemplate = isCommunity; }
+		public virtual void Init( string name, string guid, string path, bool isCommunity ) { m_communityTemplate = isCommunity; }
 	}
 }

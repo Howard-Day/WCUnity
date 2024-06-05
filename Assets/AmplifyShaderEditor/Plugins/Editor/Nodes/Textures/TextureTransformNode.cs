@@ -75,7 +75,7 @@ namespace AmplifyShaderEditor
 
 			SetPreviewInputs();
 
-			if( !Preferences.GlobalDisablePreviews )
+			if( !Preferences.User.DisablePreviews )
 			{
 				RenderTexture temp = RenderTexture.active;
 

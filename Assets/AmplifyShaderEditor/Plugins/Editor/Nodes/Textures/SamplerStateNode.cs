@@ -65,11 +65,9 @@ namespace AmplifyShaderEditor
 		private readonly string[] m_wrapModeStr = {
 			"Repeat",
 			"Clamp", 
-#if UNITY_2018_3_OR_NEWER
 			"Mirror",
 			"Mirror Once",
 			"Per-axis" 
-#endif
 		};
 
 		protected override void CommonInit( int uniqueId )
@@ -176,7 +174,6 @@ namespace AmplifyShaderEditor
 					m_wrapModeU = TextureWrapMode.Clamp;
 					m_wrapModeV = TextureWrapMode.Clamp;
 					break;
-#if UNITY_2018_3_OR_NEWER
 					case 2:
 					m_wrapModeU = TextureWrapMode.Mirror;
 					m_wrapModeV = TextureWrapMode.Mirror;
@@ -185,7 +182,6 @@ namespace AmplifyShaderEditor
 					m_wrapModeU = TextureWrapMode.MirrorOnce;
 					m_wrapModeV = TextureWrapMode.MirrorOnce;
 					break;
-#endif
 				}
 			}
 
@@ -209,10 +205,6 @@ namespace AmplifyShaderEditor
 
 			if( m_texPort.IsConnected || m_referenceNodeId >= 0 )
 				EditorGUILayout.HelpBox( MessageTextureObject, MessageType.Info );
-
-#if !UNITY_2018_1_OR_NEWER
-			EditorGUILayout.HelpBox( MessageUnitSuppport, MessageType.Warning );
-#endif
 		}
 
 		public override void OnNodeLogicUpdate( DrawInfo drawInfo )
@@ -268,14 +260,14 @@ namespace AmplifyShaderEditor
 			switch( m_filterMode )
 			{
 				case FilterMode.Point:
-				result += "_point";
+				result += "_Point";
 				break;
 				default:
 				case FilterMode.Bilinear:
-				result += "_linear";
+				result += "_Linear";
 				break;
 				case FilterMode.Trilinear:
-				result += "_trilinear";
+				result += "_Trilinear";
 				break;
 			}
 
@@ -284,56 +276,50 @@ namespace AmplifyShaderEditor
 			{
 				case 0:
 				default:
-				result += "_repeat";
+				result += "_Repeat";
 				break;
 				case 1:
-				result += "_clamp";
+				result += "_Clamp";
 				break;
-#if UNITY_2018_3_OR_NEWER
 				case 2:
-				result += "_mirror";
+				result += "_Mirror";
 				break;
 				case 3:
-				result += "_mirrorOnce";
+				result += "_MirrorOnce";
 				break;
-#endif
 				case 4:
 				{
 					switch( m_wrapModeU )
 					{
 						default:
 						case TextureWrapMode.Repeat:
-						result += "_repeatU";
+						result += "_RepeatU";
 						break;
 						case TextureWrapMode.Clamp:
-						result += "_clampU";
+						result += "_ClampU";
 						break;
-#if UNITY_2018_3_OR_NEWER
 						case TextureWrapMode.Mirror:
-						result += "_mirrorU";
+						result += "_MirrorU";
 						break;
 						case TextureWrapMode.MirrorOnce:
-						result += "_mirrorOnceU";
+						result += "_MirrorOnceU";
 						break;
-#endif
 					}
 					switch( m_wrapModeV )
 					{
 						default:
 						case TextureWrapMode.Repeat:
-						result += "_repeatV";
+						result += "_RepeatV";
 						break;
 						case TextureWrapMode.Clamp:
-						result += "_clampV";
+						result += "_ClampV";
 						break;
-#if UNITY_2018_3_OR_NEWER
 						case TextureWrapMode.Mirror:
-						result += "_mirrorV";
+						result += "_MirrorV";
 						break;
 						case TextureWrapMode.MirrorOnce:
-						result += "_mirrorOnceV";
+						result += "_MirrorOnceV";
 						break;
-#endif
 					}
 				}
 				break;
@@ -343,10 +329,10 @@ namespace AmplifyShaderEditor
 			{
 				default:
 				case AnisoModes.None:break;
-				case AnisoModes.X2:	result += "_aniso2";break;
-				case AnisoModes.X4: result += "_aniso4"; break;
-				case AnisoModes.X8: result += "_aniso8"; break;
-				case AnisoModes.X16: result += "_aniso16"; break;
+				case AnisoModes.X2:	result += "_Aniso2";break;
+				case AnisoModes.X4: result += "_Aniso4"; break;
+				case AnisoModes.X8: result += "_Aniso8"; break;
+				case AnisoModes.X16: result += "_Aniso16"; break;
 			}
 #endif
 

@@ -1,11 +1,478 @@
-Release Notes:
-* Warning: 
-    * Some rendering platform tags changed across sub-SRP versions and we decided to update our templates to the latest ones.
-      On SRP 10 and above there's no issue as all versions are updated but on version 7, only the latest 7.6 version recognizes the new tags.
-      All other older SRP 7 versions as well as all SRP 8 versions don't recognize the new tags.
-      Over this new ASE version we added the Rendering Platforms menu over the Master Node properties window on SRP templates so if on your current SRP version p.e this warning appear
-        * Unrecognized renderer for #pragma only_renderers: xboxseries
-      You only need to go to the Rendering Platforms menu and deselect that specific tag.
+v1.9.4.2
+
+   Nodes
+      * Fixed "Indirect Diffuse Light" node failing to generate code in URP Unlit
+
+v1.9.4.1
+
+   Nodes
+      * Reverted branch code optimizations due to errors on "If" and "Switch" nodes
+
+v1.9.4
+
+   Editor
+      * Template-restricted/specific nodes now show errors with Surface shader (#299)
+      * Fixed nodes sometimes missing attributes (#296)
+      * Fixed swizzle node preview (#292)
+      * Fixed "forwardadd" option added to URP/HDRP with "Instanced Terrain" (#300)
+
+   Templates 
+      * Added Lit/Unlit option for "Enable SSAO" URP 10-17x (#289)
+      * Added Lit/Unlit option for "Receive shadows" URP 10-17x (#233)
+      * Added Lighting Model option (PBR or Simple) to URP Lit 12-17x
+      * Fixed Lit/Unlit missing DOTS support in ExtraPrePass URP 10-17x (#286)
+      * Fixed Unlit missing FoveatedRenderingKeywords.hlsl URP 14-17x (#288)
+      * Fixed Lit LOD Cross Fade pragma in Forward and Gbuffer passes URP 16x
+      * Fixed Lit/Fabric Decal error in 2023.1.0 HDRP 15x (#293)
+      * Fixed Premultiply shader bug in URP Unlit template, all versions (#301)
+      * Fixed terrain instancing in BiRP templates
+      * Fixed foveated rendering related errors on macOS (URP 14) using Forward+ (#238)
+
+   Nodes
+      * Added "Object Bounds" node
+      * Added "Object Position" node
+      * Added "Compute Mip Level" node
+      * Added "Alpha Split" node
+      * Added "Alpha Merge" node
+      * Added "Flip" node
+      * Added "Nand" node
+      * Added "Not" node
+      * Added "Is Infinite" node
+      * Added "Is NaN" node
+      * Added "Current Frame" output to "Flipbook UV Animation" node
+      * Added "Max Frame" property to "Flipbook UV Animation" node
+      * Added "Switch" node support for "dynamic_branch" pragma
+      * Renamed "Static Switch" node to "Switch"
+      * Updated "Light Attenuation" node for URP 14.0.9 to 17 (#238)
+      * Fixed "SRP Baked GI" and "Indirect Diffuse Light" nodes in HDRP 17x (#285)
+      * Fixed "If" node code generation to take proper advantage of dynamic branching
+      * Fixed "Billboard" node generating implicit vector casting
+      * Fixed "Dither" node causing crashes on PS5
+      * Fixed "SRP Baked GI" node in Unity 16x 2023.2.20+ (#298)
+      * Fixed "SRP Baked GI" node error in Unity 14x 2022.3.26+ (#297)
+      * Fixed "Flipbook" node to also work with Clamp wrap mode (#304)
+      * Fixed timing issues in "Flipbook UV Animation" node
+      * Fixed "Indirect Diffuse Lighting" generating code in "Meta" pass (#232)
+
+v1.9.3.3
+
+   Editor
+      * Added support for Unity 6 (preview)
+      * Split Preferences into User-level and Project-level settings
+      * Added template ase_unity_cond_begin/end replacement tags (Unity version)
+      * Added template ability to set port actions via LinkId instead of Id/Name
+
+   Templates
+      * SRP 17x templates updated per Unity 6.0.0b13
+      * Updated HDRP Hair templates
+      * Fixed Double Sided Mode in HDRP templates (#279)
+      * Added conservative depth option to HDRP templates
+      * Fixed decal error in Decal template in HDRP 12x 14x
+      * Added missing Dots include in URP Unlit DepthNormal pass (#267)
+      * Fixed incorrect include for Foveated Rendering in URP
+      * Updated all templates 10x to 17x
+
+   Nodes
+      * Fixed DepthFade and ScreenDepth code generation in URP (#271)
+
+v1.9.3.2
+
+   Templates
+      * Fixed URP 14x template compile errors in some Unity versions
+
+v1.9.3.1
+
+   Editor
+      * Potential fix ASEPackageManagerHelper exceptions in batchmode (#237)
+
+   Templates
+      * Added URP 2D templates to SRP 17x
+      * Fixed URP 2D templates color change bug in 15x and 16x (#211)
+
+   Nodes
+      * Added min/max/steps inputs to "Parallax Occlusion Mapping" node (#163)
+
+v1.9.3
+
+   Editor
+      * Fixed inline properties sometimes losing connection (#212)
+      * Fixed broken double-click to change property names (#231)
+      * Fixed broken "Reset and Forget All" in ASE Preferences
+
+   Templates
+      * Added support for URP/HDRP 17x (Unity 2023.3.0b4)
+      * Updated URP/HDRP with latest unity changes (10x to 17x)
+      * Updated HDRP Refraction (10x to 17x)
+      * Fixed HDRP logic issues in SSR (10x to 17x)
+      * Fixed HDRP FullscreenDebug pass errors (#246)
+      * Fixed HDRP Unlit build errors (#247)
+
+   Nodes
+      * Updated "Polar Coordinate" node
+      * Updated "Flipbook" node
+      * Updated "SRP Additional Light" node
+
+   Samples      
+      * Removed URP Reflection Probe sample (moved to Amplify Shader Pack)
+      * Removed URP Terrain sample (moved to Amplify Shader Pack)
+      * Removed unused assets
+
+v1.9.2.2
+
+   Templates
+      * Massive template URP template update (all SRP versions)
+      * Massive template HDRP template update (all SRP versions)
+      * Added Local Vertex Tangent to Surface shader Master Node input      
+      * Deprecated duplicated DepthNormals pass in URP Unlit 12x
+
+   Nodes
+      * Fixed Normalize node when using safe mode
+      * Improved "World Normal Face" shader function precision
+      * Added Safe Normalize toggle to "World Normal Face"
+      * Fixed SRP Additional Light shader function
+      * Fixed Flipbook shader function
+
+v1.9.2.1
+
+   Templates
+      * Added initial support for URP/HDRP 17
+      * Updated all URP/HDRP templates
+      * Force AlphaToMask Off on URP ScenePicking/SceneSelection passes
+      * Fixed URP 14x 15x 16x Decal not working properly on Mac (#217)
+      * Fixed HDRP 12x 14x 15x 16x Unlit errors on Shadow Matte option (#218)
+
+   Nodes
+      * Fixed World Normal node sometimes generating errors on iOS platform (#225)
+      * Fixed dither node not updating subtitle when switching pattern (#229)
+      * Fixed errors in Light Color Node (#227)
+
+   Editor
+      * Proper fix for guistyle typo warning
+
+v1.9.2
+
+   Highlights
+      * Added support for 2023.2 and URP/HDRP 16x
+      * Added URP/HDRP 16x samples
+      * Fixed URP/HDRP 15x samples
+      * Added "Always Align to Grid" option to Preferences
+
+   Editor
+      * Node lengths now align to grid during snap
+      * Node header height now same regardless of subtitle
+      * Shader Function node Icon now white
+      * Removed [ASEBegin]/[ASEEnd] SRP tags
+
+   Samples
+      * Fixed Built-in samples
+      * Removed some Built-in samples conflicting with ASP
+
+v1.9.1.9
+
+   Editor
+      * Adjusted UIUtils toolbar style fix to include Unity 2021.3
+      * Switched from http to https as workaround for connection issues
+
+   Templates
+      * Fixed Decal related errors in Lit template (HDRP 14x 15x)
+      * Fixed OUTPUT_SH errors on URP 15x
+
+v1.9.1.8
+
+   Editor
+      * Fixed Undo-related error spam (#205)
+      * Fix for UIUtils console spam on Unity 2022.3+ (#208)
+      * Fixed "Indirect Diffuse Light" node errors on URP 15 (#209)
+      * Added "Device Depth" node; depth range compatible with "Depth Value" input
+      
+   Templates
+      * Fixed "Depth Value" input issues on URP (#190)
+      * Fixed EarlyZ errors on URP (#191)      
+      * Fixed "Depth Offset" input issues on HDRP
+
+v1.9.1.7
+
+   Editor
+      * Fixed Start Screen high CPU/GPU usage
+
+   Templates
+      * Fixed decal angle fade in (HDRP 12x 14x 15x)
+      * Fixed positionCS errors in Lit shader (URP 15x)
+
+v1.9.1.6
+
+   Editor
+      * Added support for Unity 2023
+      * Fixed NRE caused by Shader Function additional directives
+      * Fixed resize NRE in functions switch
+      * Increased MaxAllowedAmount in FunctionSwitch from 9 to 10
+      * Fixed GetScriptingDefineSymbolsForGroup deprecation warnings
+
+   Samples
+      * Added samples for SRP 15x
+
+   Nodes
+      * New "Metal Reflectance" node
+      * New "All" node
+      * New "Any" node
+      * New "Reciprocal" node
+      * New "Bacteria Smoothstep" node
+      * New "World Normal Face" node
+      * Update "Bacteria Smoothstep" node
+      * Added tags "refl reflect reflection" to "Reflect" node
+      * Renamed "Light" category to "Lighting"
+      * Added SRP 16x to "SwitchBySRPVersion" Node
+
+   Templates
+      * New SRP templates 15x
+      * Added ase_pragma to "UI-Default" template
+      * Updated SRP templates (10x 12x 14x)      
+      * Fixed color mask for light layers in HDRP (12x)
+      * Fixed URP terrain instancing (12x 14x)
+
+v1.9.1.5
+
+   Editor
+      * Fixed error in template additional directives helper
+
+   Templates
+      * Fixed LOD Cross Fade visual issues when using vertex position output (URP 14x)
+      * Fixed Unlit shader errors when using LOD CrossFade (URP 14x)
+
+v1.9.1.4
+
+   Editor
+      * Added SRP 15 baseline pointing to SRP 14 packages (not official support yet)
+      * Added template owner info on action logs
+      * Fixed online sharing errors; added warnings to request enabling HTTP in 2022.1+
+      * Added conditional fields Passes and SRPVersion to additional directives
+
+   Nodes
+      * SRP Additional Light now only adds directives to relevant pass
+      * Fixed SRP Additional Light normals and Forward+ support
+      * Fixed Sample Lightmap node when both static and dynamic lightmaps are used
+
+   Templates
+      * Fixed decal errors when DECAL_RECONSTRUCT_NORMAL not defined (URP 12x 14x)
+      * Fixed Lit shader not writing Occlusion to GBuffer (URP 12x 14x)
+      * Fixed errors in Motion Vector interpolators using "Vertex TexCoord" 4/5 (HDRP all)
+      * Fixed backface picking in URP 2D templates (URP 12x 14x)
+      * Fixed decal template errors when using instancing (URP 12x 14x)
+      * Fixed rendering layers (URP 14x)
+      * Updated LOD crossfade to support blue noise + keyword optimizations
+      * Fixed instancing in FullScreenDebug pass (HDRP 12x 14x)
+      * Fixed Lit shader subsurface and transmission logic (HDRP 12x 14x)
+
+v1.9.1.3
+
+   Editor
+      * Fixed unity exceptions caused by get_productName
+      * Fixed upgrade issue for shaders earlier than 1.9.0 causing missing passes
+      * Fixed Removed down arrows from sample import buttons in start screen
+      * Fixed preview texture showing incorrect data at edges
+      * Fixed ASEPackageManagerHelper errors when SRP unitypackages are missing
+      * Fixed script compile error in Unity 2021.1
+
+   Samples
+      * Fixed and reorganized samples for all SRP versions
+      * Added sample packages per SRP; updated Start Screen sample import buttons
+
+   Nodes
+      * Restored pragma multi_compile directives in SRP Additional Light for Unlit shaders
+      * Small improvement in Decode Directional Lightmap
+      * Added new Sample Lightmap shader function with support for Bicubic sampling
+      * Fixed Lightmap UV shader function
+      * Fixed LightAttenuation pragmas on URP 14x
+
+   Templates
+      * Fixed debug display; reduced min shader model to 3.5 for webgl2 (URP all)
+      * Fixed reflection/specular highlights toggle (URP 14x)
+      * Removed deprecated option from Hair template (HDRP 10x)
+      * Fixed URP Lit template causing bugs in "Depth Fade" node (12x 14x)
+      * Updated all SRP templates with synced property ordering and minor cleanups
+      * Updated all SRP templates to support core library's bicubic filtering
+      * Fixed shader errors when virtual texturing is enabled (HDRP 12x)
+      * Fixed "Blend Preserves Specular" not showing in Hair shaders (HDRP 10x 14x)
+      * Fixed scene view debug visualization causing errors in Lit shaders (URP 12x 14x)
+
+v1.9.1.2
+
+   Editor
+      * Fixed default template menu having invalid items
+
+   Nodes
+      * Fixed light loop regression in "SRP Additional Light" node (URP 10x)
+
+v1.9.1.1
+
+   Samples
+      * Fixed built-in SimpleTerrain example splats and terrain instancing warnings on 2021.x
+
+   Templates
+      * Fixed light loop errors in Transmission and Translucency features (URP Lit 14x)
+
+   Nodes
+      * Fixed bug in "LightAttenuation" node" breaking cascade shadows
+      * Fixed light loop errors in "SRP Additional Light" node (URP 14x)
+
+v1.9.1
+
+   Highlights
+      * Added support for SRP 14
+      * Added support for URP Forward+
+      * Improved support for SRP 10+ package (10xx to 11xx)
+      * Improved support for SRP 12+ package (12xx to 13xx)
+      * Improved editor performance and stability
+      * Improved compile times and reduced variants for SRP templates
+      * Temporary disabled Undo
+
+   Known Issues
+      * URP 2D/Sprite templates may not work properly (update delayed to 1.9.2)
+      * Undo is slow and unstable, when enabled
+
+   Templates
+      * Removed references to GBuffer pass in URP Unlit 12x
+      * Removed "LightMode" tag from Legacy Unlit template
+      * Moved CustomRT shaders to their own folder
+      * Fixed "Blend Preserves Specular" not working properly in some templates
+      * Fixed warnings related to _SHADOWS_SOFT and _ADDITIONAL_LIGHT_SHADOWS
+      * Fixed Normal vector normalization in Surface shader and custom lighting (BiRP)
+      * Fixed errors when disabling scene lighting in HDRP 12x
+      * Fixed shader keyword excess in URP 10x Lit and Unlit
+      * Fixed URP 12x decal tangents
+      * Fixed errors when using Translucency/Transmission with rendering layers
+      * Fixed stencil section writing "<Default>" when no value is set
+      * Added Shader Function option to use default header, Category color or custom
+      * Added identifiable "Fs" icon to left of Shader Function headers
+      * Added back "Normal Alpha" to HDRP 10x12x Decal template
+      * Updated UI-Default and moved to "UI/Default" in template selection
+      * Updated URP 12x decal template to match SG
+      * Updated "SRP Additional Light" node to support Forward+
+      * All ASE built-in Shader Functions now use Category color
+      * Cleaned up empty spaces and normalized ASE_ keywords across templates
+
+   Nodes
+      * Removed deprecated "SubstanceBlendMetallic" shader function
+      * Removed redundant pragma multi_compile directives from "SRP Additional Light"
+      * Moved face nodes to new "Primitive" category
+      * Fixed is_front_face related nodes broken in Surface shader mode
+      * Fixed default Shadow Mask in "SRP Additional Light" to sample baked mask
+      * Fixed mesh rendering layer errors in "SRP Additional Light"
+      * Fixed "Switch by SRP Version" fallback to None when RP Asset is not set
+      * Added node color for "Primitive" category to match "Vertex Data"
+      * Added "camera vector" search tag to "view dir" node
+      * Added "reciprocal square root" tags to RSqrt
+      * Added "square root" tags to Sqrt node
+      * Added "Blackbody" built-in shader function
+      * Added "TwoSidedSign" node
+      * Added "Square" node (for A * A)
+      * Added "Lightmap UV" node to retrieve both static and dynamic lightmap UVs
+      * Added "Shadow Mask" node
+      * Changed "Switch by Pipeline" labels to BiRP Surf, BiRP Vert/Frag, URP and HDRP
+
+   Editor
+      * Removed canvas panning/zoom info from metadata; now saved to editor prefs
+      * Fixed order of serialized-nodes/metadata changing on every save
+      * Fixed sampler state expression generation to match SG
+      * Fixed preview memory leak when "Disable Node Previews" is enabled
+      * Fixed ASE auto-importing highest SRP templates when version below min (10x)
+      * Fixed sampler syntax generation causing errors when using sampling macros
+      * Fixed secondary passes overriding global graph precision
+      * Fixed compile errors on Unity 2021
+      * Fixed DOTS instanced property support in SRP 12x and higher
+      * Fixed small numbers in Properties causing parse errors in ShaderLab
+      * Fixed inline property dependency resolve during graph load
+      * Improved SRP template auto-importer version matching and verification
+      * UV set labels now start from zero instead of one for consistency
+      * Updated master node Rendering Platforms list to latest; added missing platforms
+
+   Preferences
+      * Added "Enable Undo" option to preferences window (off by default)
+
+   Samples
+      * Removed Substance sample
+      * Unpacked CustomRT Rain sample
+
+v1.9.0.2
+
+   Nodes
+      * Fixed Light Attenuation node bug causing materials to be transparent on builds
+
+   Templates
+      * Fixed world position in decal templates (URP-HDRP, 10x-12x)
+      * Fixed errors when using Angle Fade in decal template (URP 12x)
+      * Fixed decal UV, Tangent bugs and multiple other issues (URP-HDRP, 10x-12x)
+      * Fixed template SetOption action not executing properly
+      * Fixed translucency, transmission, clear coat may break Forward Only (URP 12x)
+      * Fixed unity_WorldTransformParams (all SRP)
+
+   Editor
+      * Fixed bug in GlobalAutoSRP preferences option
+      * Fixed ASE not auto-importing SRP packages before opening canvas
+      * Fixed batch compile timer not being reset
+
+v1.9.0.1
+
+   Templates
+      * Fixed URP Transparent seethrough SSAO
+
+   Editor
+      * Updated start screen to display all changelog for all revisions of minor version
+
+v1.9.0
+
+   Important
+      * Raised minimum Unity support to 2019.4 LTS
+      * Raised minimum URP support to 10
+      * Raised minimum HDRP support to 10   
+   
+   Known Issues
+      * URP 2D/Sprite templates may not work properly (update due in 1.9.1)
+   
+   Improvements
+      * Improved support for SRP 10+ package (10xx to 11xx)
+      * Improved support for SRP 12+ package (12xx to 13xx)
+      * Improved ASE startup time 
+   
+   Templates
+      * Added "Forward Only" option to relevant shader templates
+      * Added template authoring 'ase_srp_cond' tags for SRP version conditional usage
+      * Fixed ASE_SRP_VERSION to contain actual SRP package version
+      * Fixed empty fallback; now generating "Fallback Off"
+      * Fixed template stencil buffer module default values
+      * Unpacked PPStack templates to Legacy folder and deleted package
+      * Unpacked CustomRTT templates to Legacy folder and deleted package
+      * Unpacked HDRP diffusion profile node to outside template packages
+      * Renamed Universal/PBR to Universal/Lit
+      * Renamed "Legacy/Post Process" to "Legacy/Image Effect"
+      * Renamed all instances of "Custom RT" to "Custom Render Texture" (new menu)
+      * Renamed HDRP template paths to start with HDRP/ instead of HD/
+      * Removed code paths involving deprecated SRP versions
+      * Removed legacy URP templates below 10x
+      * Removed legacy HDRP templates below 10x
+      * Removed legacy Lightweight templates
+      * Removed deprecated DefaultUnlit and HD/PBR shaders
+   
+   Nodes
+      * Added "Switch By SRP Version" node which relies on active SRP package
+      * Added additional texture property default values (linearGrey, red)
+   
+   Preferences
+      * Added "Log Batch Compilation" option to ASE prefs to log timed batch compile
+      * Added "Log Shader Compilation" option to ASE prefs to log timed compile
+      * Added "Force Template Inline Properties" prefs toggle (off by default)
+      * Removed Async compilation warning message and respective toggle in preferences
+      * Removed legacy Substance Node support
+   
+   Editor
+      * Added ASE version to 'Made with Amplify Shader Editor' comment on first line
+      * Removed deprecated sample buttons from start screen
+      * Console window is now wider + tweaked some messages
+      * Shader selection menu is now sorted alphabetically
+      * Template parsing performance improved with multi-threading (up to 8x faster)
+      * Fixed errors related to get_productName
+      * Fixed previews not refreshing during undo or master node replacement
+      * Fixed inline properties due to template upgrade bug caused by property reordering
 
 v1.8.9 rev 35:
 * Fixes:

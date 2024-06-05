@@ -218,7 +218,7 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		public void Refresh()
+		public void Update( bool isRefreshing = true )
 		{
 			if( OnActionPerformedEvt != null )
 			{
@@ -228,12 +228,12 @@ namespace AmplifyShaderEditor
 					{
 						if( i != m_currentOption && i != m_options.DisableIdx )
 						{
-							OnActionPerformedEvt( false, true, true, this, m_options.ActionsPerOption[ i ] );
+							OnActionPerformedEvt( false, isRefreshing, true, this, m_options.ActionsPerOption[ i ] );
 						}
 					}
 				}
 
-				OnActionPerformedEvt( false, true, false, this, m_options.ActionsPerOption[ m_currentOption ] );
+				OnActionPerformedEvt( false, isRefreshing, false, this, m_options.ActionsPerOption[ m_currentOption ] );
 			}
 		}
 

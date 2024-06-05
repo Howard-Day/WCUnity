@@ -445,6 +445,7 @@ MonoBehaviour:
   turnRate: 55
   maxFuel: 3000
   fuelBurnRate: 2.5
+  bingoFuel: 0
   invertYAxis: 0
   topSpeed: 38
   burnSpeed: 110

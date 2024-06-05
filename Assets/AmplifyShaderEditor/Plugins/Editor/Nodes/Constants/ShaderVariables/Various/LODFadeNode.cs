@@ -32,14 +32,11 @@ namespace AmplifyShaderEditor
 			ChangeOutputName( 4, "Unused" );
 			m_value = "unity_LODFade";
 			m_previewShaderGUID = "fcd4d93f57ffc51458d4ade10df2fdb4";
-#if UNITY_2019_1_OR_NEWER
 			m_autoWrapProperties = true;
-#endif
 		}
 
 		public override string GenerateShaderForOutput( int outputId , ref MasterNodeDataCollector dataCollector , bool ignoreLocalvar )
 		{
-#if UNITY_2019_1_OR_NEWER
 			string result = base.GenerateShaderForOutput( outputId , ref dataCollector , ignoreLocalvar );
 			if( m_legacyBehavior && outputId == 1)
 			{
@@ -55,18 +52,15 @@ namespace AmplifyShaderEditor
 			{
 				return result;
 			}
-#else
-			return base.GenerateShaderForOutput( outputId , ref dataCollector , ignoreLocalvar );
-#endif
 		}
-#if UNITY_2019_1_OR_NEWER
+
 		public override void DrawProperties()
 		{
 			base.DrawProperties();
 			m_legacyBehavior = EditorGUILayoutToggle( LegacyVarLabel , m_legacyBehavior );
 			EditorGUILayout.HelpBox( LegacyVarInfo , MessageType.Info );
 		}
-#endif
+
 		public override void RefreshExternalReferences()
 		{
 			base.RefreshExternalReferences();

@@ -243,6 +243,15 @@ namespace AmplifyShaderEditor
 				}
 				SerializedProperty hidden = serializedObject.FindProperty( "m_hidden" );
 				EditorGUILayout.PropertyField( hidden, new GUIContent( "Hidden" ) );
+
+				SerializedProperty customHeader = serializedObject.FindProperty( "m_headerStyle" );
+				EditorGUILayout.PropertyField( customHeader, new GUIContent( "Header Style" ) );
+				if ( customHeader.intValue == ( int )AmplifyShaderFunction.HeaderStyle.Custom )
+				{
+					SerializedProperty headerColor = serializedObject.FindProperty( "m_headerColor" );
+					EditorGUILayout.PropertyField( headerColor, new GUIContent( "Header Color" ) );
+				}				
+
 				serializedObject.ApplyModifiedProperties();
 			}
 			EditorGUIUtility.labelWidth = cacheWidth;

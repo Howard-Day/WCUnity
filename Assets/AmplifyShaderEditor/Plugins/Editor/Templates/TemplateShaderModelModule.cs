@@ -57,7 +57,7 @@ namespace AmplifyShaderEditor
 				int templateModule = TemplateHelperFunctions.ShaderModelToArrayIdx[ modulesData.ShaderModel.Value ];
 				if( templateModule > m_shaderModelIdx )
 				{
-					if( Preferences.GlobalForceTemplateMinShaderModel )
+					if( Preferences.User.ForceTemplateMinShaderModel )
 					{
 						m_shaderModelIdx = templateModule;
 						UIUtils.ShowMessage("Changing shader model to minimum set by template: " + modulesData.ShaderModel.Value+"\n"+

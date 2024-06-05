@@ -177,12 +177,7 @@ namespace AmplifyShaderEditor
 				EditorGUILayout.PropertyField( m_sizeY, new GUIContent( "Y" ) );
 			}
 			EditorGUIUtility.labelWidth = 100;
-#if UNITY_2017_1_OR_NEWER
 			m_lockRatio.boolValue = GUILayout.Toggle( m_lockRatio.boolValue, "L", "minibutton", GUILayout.Width( 18 ) );
-#else
-			GUILayout.Toggle( m_lockRatio.boolValue, "L", "minibutton", GUILayout.Width( 18 ) );
-			m_lockRatio.boolValue = true;
-#endif
 			if( m_lockRatio.boolValue )
 			{
 				m_sizeX.intValue = m_sizes[ m_selectedSize.intValue ];

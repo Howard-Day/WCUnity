@@ -11,7 +11,6 @@ namespace AmplifyShaderEditor
 	public sealed class SinTimeNode : ConstVecShaderVariable
 	{
 		//double m_time;
-#if UNITY_2018_3_OR_NEWER
 		private readonly string[] SRPTime =
 		{
 			"sin( _TimeParameters.x * 0.125 )",
@@ -19,7 +18,7 @@ namespace AmplifyShaderEditor
 			"sin( _TimeParameters.x * 0.5 )",
 			"_TimeParameters.y",
 		};
-#endif
+
 		protected override void CommonInit( int uniqueId )
 		{
 			base.CommonInit( uniqueId );
@@ -44,14 +43,12 @@ namespace AmplifyShaderEditor
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
 		{
-#if UNITY_2018_3_OR_NEWER
 			if( outputId > 0 && dataCollector.IsTemplate )
 			{
-				if( ( dataCollector.TemplateDataCollectorInstance.IsHDRP && ASEPackageManagerHelper.CurrentHDVersion > ASESRPVersions.ASE_SRP_5_16_1 ) ||
-					( dataCollector.TemplateDataCollectorInstance.IsLWRP && ASEPackageManagerHelper.CurrentLWVersion > ASESRPVersions.ASE_SRP_5_16_1 ) )
+				if( dataCollector.TemplateDataCollectorInstance.IsHDRP || dataCollector.TemplateDataCollectorInstance.IsLWRP )
 					return SRPTime[ outputId - 1 ];
 			}
-#endif
+
 			return base.GenerateShaderForOutput( outputId, ref dataCollector, ignoreLocalvar );
 		}
 	}

@@ -7,7 +7,7 @@ using UnityEditor;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Shade Vertex Lights", "Light", "Computes illumination from four per-vertex lights and ambient, given object space position & normal" )]
+	[NodeAttributes( "Shade Vertex Lights", "Lighting", "Computes illumination from four per-vertex lights and ambient, given object space position & normal" )]
 	public sealed class ShadeVertexLightsHlpNode : ParentNode
 	{
 		private const string HelperMessage = "Shade Vertex Lights node only outputs correct results on\nTemplate Vertex/Frag shaders with their LightMode set to Vertex.";

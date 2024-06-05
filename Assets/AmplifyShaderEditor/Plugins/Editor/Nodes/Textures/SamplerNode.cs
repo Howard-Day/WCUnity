@@ -31,19 +31,7 @@ namespace AmplifyShaderEditor
 	}
 
 	[Serializable]
-#if UNITY_2018_1_OR_NEWER
 	[NodeAttributes( "Texture Sample", "Textures", "Samples a chosen texture and returns its color values, <b>Texture</b> and <b>UVs</b> can be overriden and you can select different mip modes and levels. It can also unpack and scale textures marked as normalmaps.", KeyCode.T, true, 0, int.MaxValue, typeof( Texture ), typeof( Texture2D ), typeof( Texture3D ), typeof( Cubemap ), typeof( CustomRenderTexture ), Tags = "Array" )]
-#else
-
-    // Disabling Substance Deprecated warning
-#pragma warning disable 0618
-    [NodeAttributes("Texture Sample", "Textures", "Samples a chosen texture and returns its color values, <b>Texture</b> and <b>UVs</b> can be overriden and you can select different mip modes and levels. It can also unpack and scale textures marked as normalmaps.", KeyCode.T, true, 0, int.MaxValue, typeof(Texture), typeof(Texture2D), typeof(Texture3D), typeof(Cubemap), typeof(ProceduralTexture), typeof(RenderTexture)
-#if UNITY_2017_1_OR_NEWER
-		,typeof( CustomRenderTexture )
-#endif
-        )]
-#pragma warning restore 0618
-#endif
 	public sealed class SamplerNode : TexturePropertyNode
 	{
 		private const string MipModeStr = "Mip Mode";
@@ -1082,11 +1070,7 @@ namespace AmplifyShaderEditor
 			bool useMacros = false;
 
 			ParentGraph outsideGraph = UIUtils.CurrentWindow.OutsideGraph;
-#if UNITY_2018_1_OR_NEWER
 			if( outsideGraph.SamplingMacros || m_currentType == TextureType.Texture2DArray )
-#else
-			if( ( outsideGraph.SamplingMacros && !outsideGraph.IsStandardSurface ) || m_currentType == TextureType.Texture2DArray )
-#endif
 			{
 				useMacros = Constants.TexSampleSRPMacros.ContainsKey( m_currentType );
 			}
@@ -1153,19 +1137,8 @@ namespace AmplifyShaderEditor
 				}
 				else
 				{
-#if !UNITY_2018_1_OR_NEWER
-					if( outsideGraph.IsStandardSurface )
-					{
-						if( m_currentType == TextureType.Texture2DArray )
-							GeneratorUtils.AddCustomStandardSamplingMacros( ref dataCollector, m_currentType, currMipMode );
-						samplerValue = string.Format( Constants.TexSampleStandardMacros[ m_currentType ], suffix, propertyName, samplerToUse, uvCoords );
-					} 
-					else
-#endif
-					{
-						GeneratorUtils.AddCustomStandardSamplingMacros( ref dataCollector, m_currentType, currMipMode );
-						samplerValue = string.Format( Constants.TexSampleSamplerStandardMacros[ m_currentType ], suffix, propertyName, samplerToUse, uvCoords );
-					}
+					GeneratorUtils.AddCustomStandardSamplingMacros( ref dataCollector, m_currentType, currMipMode );
+					samplerValue = string.Format( Constants.TexSampleSamplerStandardMacros[ m_currentType ], suffix, propertyName, samplerToUse, uvCoords );
 				}
 			}
 			else
@@ -1539,11 +1512,7 @@ namespace AmplifyShaderEditor
 			if( isVertex )
 			{
 				string lodLevel = m_lodPort.GeneratePortInstructions( ref dataCollector );
-#if UNITY_2018_1_OR_NEWER
 				if( ( outsideGraph.SamplingMacros || m_currentType == TextureType.Texture2DArray ) && m_currentType != TextureType.Texture1D )
-#else
-				if( ( ( outsideGraph.SamplingMacros && !outsideGraph.IsStandardSurface ) || m_currentType == TextureType.Texture2DArray ) && m_currentType != TextureType.Texture1D )
-#endif
 					return uvs + ", " + lodLevel;
 				else
 					return UIUtils.PrecisionWirePortToCgType( PrecisionType.Float, WirePortDataType.FLOAT4 ) + "( " + uvs + uvAppendix + lodLevel + ")";
@@ -1553,11 +1522,7 @@ namespace AmplifyShaderEditor
 				if( ( m_mipMode == MipType.MipLevel || m_mipMode == MipType.MipBias ) /*&& m_lodPort.IsConnected*/ )
 				{
 					string lodLevel = m_lodPort.GeneratePortInstructions( ref dataCollector );
-#if UNITY_2018_1_OR_NEWER
 					if( ( outsideGraph.SamplingMacros || m_currentType == TextureType.Texture2DArray ) && m_currentType != TextureType.Texture1D )
-#else
-					if( ( ( outsideGraph.SamplingMacros && !outsideGraph.IsStandardSurface ) || m_currentType == TextureType.Texture2DArray ) && m_currentType != TextureType.Texture1D )
-#endif
 						return uvs + ", " + lodLevel;
 					else
 						return UIUtils.PrecisionWirePortToCgType( PrecisionType.Float, WirePortDataType.FLOAT4 ) + "( " + uvs + uvAppendix + lodLevel + ")";

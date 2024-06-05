@@ -12,6 +12,7 @@ public class SpawnRoot : MonoBehaviour
     {
         GameObject root = Instantiate(SpawnParent,transform.position, transform.rotation);
         transform.parent = root.transform;
+        root.name = SpawnParent.name;
         root.GetComponent<AIPlayer>().AISkillLevel = aiLevel;
         if(isPlayer)
         {

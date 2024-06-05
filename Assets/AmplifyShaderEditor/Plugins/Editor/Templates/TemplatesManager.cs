@@ -2,10 +2,14 @@
 // Copyright (c) Amplify Creations, Lda <info@amplify.pt>
 
 using System;
-using UnityEditor;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using UnityEngine;
+using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using UnityEditor;
+using UnityEngine;
 
 namespace AmplifyShaderEditor
 {
@@ -542,47 +546,40 @@ namespace AmplifyShaderEditor
 																//new TemplateTagData( TemplateColorMaskTag,false),
 																//new TemplateTagData( TemplateStencilOpTag,true),
 																};
-		public static string LightweigthPBRGUID = "1976390536c6c564abb90fe41f6ee334";
-		public static string LightweigthUnlitGUID = "e2514bdcf5e5399499a9eb24d175b9db";
-		public static string UniversalPBRGUID = "94348b07e5e8bab40bd6c8a1e3df54cd";
-		public static string UniversalUnlitGUID = "2992e84f91cbeb14eab234972e07ea9d";
+		public static string URPLitGUID = "94348b07e5e8bab40bd6c8a1e3df54cd";
+		public static string URPUnlitGUID = "2992e84f91cbeb14eab234972e07ea9d";
 
-		public static string HDNewLitGUID = "53b46d85872c5b24c8f4f0a1c3fe4c87";
-		public static string HDNewPBRGUID = "41e04be03f2c20941bc749271be1c937";
-		public static string HDNewUnlitGUID = "7f5cb9c3ea6481f469fdd856555439ef";
-		public static string HDLitGUID = "091c43ba8bd92c9459798d59b089ce4e";
-		public static string HDPBRGUID = "bb308bce79762c34e823049efce65141";
-		public static string HDUnlitGUID = "dfe2f27ac20b08c469b2f95c236be0c3";
+		public static string HDRPLitGUID = "53b46d85872c5b24c8f4f0a1c3fe4c87";
+		public static string HDRPUnlitGUID = "7f5cb9c3ea6481f469fdd856555439ef";
 
 		public static Dictionary<string, string> DeprecatedTemplates = new Dictionary<string, string>()
 		{
-			{ HDLitGUID, HDNewLitGUID},
-			{ HDUnlitGUID,HDNewUnlitGUID},
-			{ HDPBRGUID,HDNewLitGUID},
-			{ HDNewPBRGUID,HDNewLitGUID}
 		};
 
 		public static Dictionary<string, string> OfficialTemplates = new Dictionary<string, string>()
 		{
+			{ "6ce779933eb99f049b78d6163735e06f","Custom Render Texture/Initialize"},
+			{ "32120270d1b3a8746af2aca8bc749736","Custom Render Texture/Update"},
+
+			{ "5056123faa0c79b47ab6ad7e8bf059a4","UI/Default" },
+
+			{ "ed95fe726fd7b4644bb42f4d1ddd2bcd","Legacy/Lit"},
 			{ "0770190933193b94aaa3065e307002fa","Legacy/Unlit"},
-			{ "32139be9c1eb75640a847f011acf3bcf","Legacy/Post-Processing Stack"},
-			{ "6ce779933eb99f049b78d6163735e06f","Legacy/Custom RT Init"},
-			{ "32120270d1b3a8746af2aca8bc749736","Legacy/Custom RT Update"},
-			{ LightweigthPBRGUID,"LW/PBR"},
-			{ LightweigthUnlitGUID,"LW/Unlit"},
-			{ UniversalPBRGUID,"Universal/PBR"},
-			{ UniversalUnlitGUID,"Universal/Unlit"},
-			{ "53b46d85872c5b24c8f4f0a1c3fe4c87","HD/Lit"},
-			{ HDLitGUID,"Deprecated/HD/Lit"},
-			{ HDPBRGUID,"Deprecated/HD/PBR"},
-			{ HDUnlitGUID,"Deprecated/HD/Unlit"},
-			{ "c71b220b631b6344493ea3cf87110c93","Legacy/Post Process" },
-			{ "6e114a916ca3e4b4bb51972669d463bf","Deprecated/Legacy/Default Unlit" },
-			{ "5056123faa0c79b47ab6ad7e8bf059a4","Legacy/Default UI" },
 			{ "899e609c083c74c4ca567477c39edef0","Legacy/Unlit Lightmap" },
+			{ "e1de45c0d41f68c41b2cc20c8b9c05ef","Legacy/Multi Pass Unlit" },
+
+			{ "32139be9c1eb75640a847f011acf3bcf","Legacy/Post-Processing Stack"},
+			{ "c71b220b631b6344493ea3cf87110c93","Legacy/Image Effect" },
+
 			{ "0f8ba0101102bb14ebf021ddadce9b49","Legacy/Default Sprites" },
 			{ "0b6a9f8b4f707c74ca64c0be8e590de0","Legacy/Particles Alpha Blended" },
-			{ "e1de45c0d41f68c41b2cc20c8b9c05ef","Legacy/Multi Pass Unlit" }
+			
+
+			{ URPLitGUID,"Universal/Lit"},
+			{ URPUnlitGUID,"Universal/Unlit"},
+
+			{ HDRPLitGUID,"HDRP/Lit"},
+			{ HDRPUnlitGUID,"HDRP/Unlit"},
 		};
 
 		public static readonly string TemplateMenuItemsFileGUID = "da0b931bd234a1e43b65f684d4b59bfb";
@@ -617,6 +614,15 @@ namespace AmplifyShaderEditor
 			}
 		}
 
+		struct TemplateDescriptor
+		{
+			public TemplateDataParent template;
+			public string name;
+			public string guid;
+			public string path;
+			public bool isCommunity;
+		}
+
 		public void Init()
 		{
 			if( !Initialized )
@@ -627,29 +633,84 @@ namespace AmplifyShaderEditor
 				string templateMenuItems = IOUtils.LoadTextFileFromDisk( AssetDatabase.GUIDToAssetPath( TemplateMenuItemsFileGUID ) );
 				bool refreshTemplateMenuItems = false;
 
-				foreach( KeyValuePair<string, string> kvp in OfficialTemplates )
+				string[] allShaders = AssetDatabase.FindAssets( "t:shader" );
+				var templates = new Dictionary<string,TemplateDescriptor>();				
+				
+				// Add official templates first
+				foreach ( KeyValuePair<string, string> kvp in OfficialTemplates )
 				{
-					if( !string.IsNullOrEmpty( AssetDatabase.GUIDToAssetPath( kvp.Key ) ) )
-					{
-						TemplateMultiPass template = ScriptableObject.CreateInstance<TemplateMultiPass>();
-						template.Init( kvp.Value, kvp.Key, false );
-						AddTemplate( template );
-						if( !refreshTemplateMenuItems && templateMenuItems.IndexOf( kvp.Value ) < 0 )
-							refreshTemplateMenuItems = true;
+					string guid = kvp.Key;
+					string path = AssetDatabase.GUIDToAssetPath( guid );
+					if ( !string.IsNullOrEmpty( path ) && !templates.ContainsKey( guid ) )
+					{												
+						var desc = new TemplateDescriptor();
+						desc.template = ScriptableObject.CreateInstance<TemplateMultiPass>();
+						desc.name = kvp.Value;
+						desc.guid = guid;
+						desc.path = path;
+						desc.isCommunity = false;
+						templates.Add( desc.guid, desc );
 					}
 				}
 
 				// Search for other possible templates on the project
-				string[] allShaders = AssetDatabase.FindAssets( "t:shader" );
-				for( int i = 0; i < allShaders.Length; i++ )
+				var candidates = new List<KeyValuePair<string, string>>( allShaders.Length );
+				var candidateBag = new ConcurrentBag<string>();
+
+				for ( int i = 0; i < allShaders.Length; i++ )
 				{
-					if( !m_availableTemplates.ContainsKey( allShaders[ i ] ) )
+					if ( !templates.ContainsKey( allShaders[ i ] ) )
 					{
-						CheckAndLoadTemplate( allShaders[ i ] );
+						candidates.Add( new KeyValuePair<string, string>( allShaders[ i ], AssetDatabase.GUIDToAssetPath( allShaders[ i ] ) ) );
 					}
 				}
 
-				// TODO: Sort list alphabeticaly 
+				Parallel.For( 0, candidates.Count, i =>				
+				{
+					string body = File.ReadAllText( candidates[ i ].Value ); ;
+					if ( body.IndexOf( TemplatesManager.TemplateShaderNameBeginTag ) > -1 )
+					{
+						candidateBag.Add( candidates[ i ].Key );
+					}						
+				} );
+				
+				foreach ( var guid in candidateBag )
+				{
+					TemplateDataParent template = GetTemplate( guid );
+					if ( template == null && !templates.ContainsKey( guid ) )
+					{
+						var desc = new TemplateDescriptor();
+						desc.template = ScriptableObject.CreateInstance<TemplateMultiPass>();
+						desc.name = string.Empty;
+						desc.guid = guid;
+						desc.path = AssetDatabase.GUIDToAssetPath( guid );
+						desc.isCommunity = true;
+						templates.Add( desc.guid, desc );					
+					}				
+				}
+
+				var templateList = templates.Values.ToArray();
+				Parallel.For( 0, templateList.Length, i =>				
+				{
+					TemplateDescriptor desc = templateList[ i ];
+					desc.template.Init( desc.name, desc.guid, desc.path, desc.isCommunity );
+				} );
+				
+				foreach ( var pair in templates )
+				{
+					TemplateDescriptor desc = pair.Value;
+					
+					if ( desc.template.IsValid )
+					{
+						AddTemplate( desc.template );
+					}					
+				
+					if ( !desc.isCommunity && !refreshTemplateMenuItems && templateMenuItems.IndexOf( name ) < 0 )
+					{
+						refreshTemplateMenuItems = true;
+					}
+				}
+
 				AvailableTemplateNames = new string[ m_sortedTemplates.Count + 1 ];
 				AvailableTemplateNames[ 0 ] = "Custom";
 				for( int i = 0; i < m_sortedTemplates.Count; i++ )
@@ -683,7 +744,7 @@ namespace AmplifyShaderEditor
 				{
 					if( m_sortedTemplates[ i ].Name == m_sortedTemplates[ j ].Name )
 					{
-						var match = Regex.Match( m_sortedTemplates[ i ].Name, @".+(\d+)" );
+						var match = Regex.Match( m_sortedTemplates[ i ].Name, @"^.*?(\d+(?:[.,]\d+)?)\s*$" );
 						if( match.Success )
 						{
 							string strNumber = match.Groups[ 1 ].Value;
@@ -700,6 +761,13 @@ namespace AmplifyShaderEditor
 				}
 			}
 
+			// Sort templates by name
+			var sorted = new SortedDictionary<string, string>();
+			for ( int i = 0; i < m_sortedTemplates.Count; i++ )
+			{
+				sorted.Add( m_sortedTemplates[ i ].Name, m_sortedTemplates[ i ].GUID );
+			}			
+
 			System.Text.StringBuilder fileContents = new System.Text.StringBuilder();
 			fileContents.Append( "// Amplify Shader Editor - Visual Shader Editing Tool\n" );
 			fileContents.Append( "// Copyright (c) Amplify Creations, Lda <info@amplify.pt>\n" );
@@ -710,14 +778,14 @@ namespace AmplifyShaderEditor
 			fileContents.Append( "\tpublic class TemplateMenuItems\n" );
 			fileContents.Append( "\t{\n" );
 			int fixedPriority = 85;
-			for( int i = 0; i < m_sortedTemplates.Count; i++ )
+			foreach ( var pair in sorted )
 			{
-				fileContents.AppendFormat( "\t\t[MenuItem( \"Assets/Create/Amplify Shader/{0}\", false, {1} )]\n", m_sortedTemplates[ i ].Name, fixedPriority );
-				string itemName = UIUtils.RemoveInvalidCharacters( m_sortedTemplates[ i ].Name );
+				fileContents.AppendFormat( "\t\t[MenuItem( \"Assets/Create/Amplify Shader/{0}\", false, {1} )]\n", pair.Key, fixedPriority );
+				string itemName = UIUtils.RemoveInvalidCharacters( pair.Key );
 				fileContents.AppendFormat( "\t\tpublic static void ApplyTemplate{0}()\n", itemName/*i*/ );
 				fileContents.Append( "\t\t{\n" );
 				//fileContents.AppendFormat( "\t\t\tAmplifyShaderEditorWindow.CreateNewTemplateShader( \"{0}\" );\n", m_sortedTemplates[ i ].GUID );
-				fileContents.AppendFormat( "\t\t\tAmplifyShaderEditorWindow.CreateConfirmationTemplateShader( \"{0}\" );\n", m_sortedTemplates[ i ].GUID );
+				fileContents.AppendFormat( "\t\t\tAmplifyShaderEditorWindow.CreateConfirmationTemplateShader( \"{0}\" );\n", pair.Value );
 				fileContents.Append( "\t\t}\n" );
 			}
 			fileContents.Append( "\t}\n" );
@@ -873,7 +941,7 @@ namespace AmplifyShaderEditor
 				if( body.IndexOf( TemplatesManager.TemplateShaderNameBeginTag ) > -1 )
 				{
 					templateData = ScriptableObject.CreateInstance<TemplateMultiPass>();
-					templateData.Init( string.Empty, guid, true );
+					templateData.Init( string.Empty, guid, datapath, true );
 					if( templateData.IsValid )
 					{
 						AddTemplate( templateData );

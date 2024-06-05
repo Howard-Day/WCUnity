@@ -15,91 +15,65 @@ namespace AmplifyShaderEditor
 		public RenderPlatforms Value;
 	}
 
+	public enum RenderPlatforms
+	{
+		d3d9,
+		d3d11,
+		glcore,
+		gles,
+		gles3,
+		metal,
+		d3d11_9x,
+		xbox360,
+		xboxone,
+		xboxseries,
+		ps4,
+		playstation,
+		psp2,
+		n3ds,
+		wiiu,
+		@switch,
+		vulkan,
+		nomrt,
+		ps5,        // @diogo: added in 19100
+		all
+	}
+
 	[Serializable]
 	public class RenderingPlatformOpHelper
 	{
 		private const string RenderingPlatformsStr = " Rendering Platforms";
 		public static readonly RenderPlatformInfo[] RenderingPlatformsInfo =
 		{
-#if UNITY_2019_4_OR_NEWER
-			new RenderPlatformInfo(){Label = " Direct3D 9", Value = RenderPlatforms.d3d9},
-			new RenderPlatformInfo(){Label = " Direct3D 11 9.x", Value = RenderPlatforms.d3d11_9x},
 			new RenderPlatformInfo(){Label = " Direct3D 11/12", Value = RenderPlatforms.d3d11},
 			new RenderPlatformInfo(){Label = " OpenGL 3.x/4.x", Value = RenderPlatforms.glcore},
 			new RenderPlatformInfo(){Label = " OpenGL ES 2.0", Value = RenderPlatforms.gles},
 			new RenderPlatformInfo(){Label = " OpenGL ES 3.x", Value = RenderPlatforms.gles3},
-			new RenderPlatformInfo(){Label = " iOS/Mac Metal", Value = RenderPlatforms.metal},
+			new RenderPlatformInfo(){Label = " Metal iOS/macOS", Value = RenderPlatforms.metal},
 			new RenderPlatformInfo(){Label = " Vulkan", Value = RenderPlatforms.vulkan},
-			new RenderPlatformInfo(){Label = " Xbox 360", Value = RenderPlatforms.xbox360},
 			new RenderPlatformInfo(){Label = " Xbox One", Value = RenderPlatforms.xboxone},
 			new RenderPlatformInfo(){Label = " Xbox Series X", Value = RenderPlatforms.xboxseries},
-			new RenderPlatformInfo(){Label = " PlayStation 4 (Legacy)", Value = RenderPlatforms.ps4},
 			new RenderPlatformInfo(){Label = " PlayStation", Value = RenderPlatforms.playstation},
-			new RenderPlatformInfo(){Label = " PlayStation Vita", Value = RenderPlatforms.psp2},
-			new RenderPlatformInfo(){Label = " Nintendo 3DS", Value = RenderPlatforms.n3ds},
-			new RenderPlatformInfo(){Label = " Nintendo Wii U", Value = RenderPlatforms.wiiu},
-			new RenderPlatformInfo(){Label = " Nintendo Switch", Value = RenderPlatforms.@switch},
-			new RenderPlatformInfo(){Label = " No MRT", Value = RenderPlatforms.nomrt}
-#else
-			new RenderPlatformInfo(){Label = " Direct3D 9", Value = RenderPlatforms.d3d9},
-			new RenderPlatformInfo(){Label = " Direct3D 11 9.x", Value = RenderPlatforms.d3d11_9x},
-			new RenderPlatformInfo(){Label = " Direct3D 11/12", Value = RenderPlatforms.d3d11},
-			new RenderPlatformInfo(){Label = " OpenGL 3.x/4.x", Value = RenderPlatforms.glcore},
-			new RenderPlatformInfo(){Label = " OpenGL ES 2.0", Value = RenderPlatforms.gles},
-			new RenderPlatformInfo(){Label = " OpenGL ES 3.x", Value = RenderPlatforms.gles3},
-			new RenderPlatformInfo(){Label = " iOS/Mac Metal", Value = RenderPlatforms.metal},
-			new RenderPlatformInfo(){Label = " Vulkan", Value = RenderPlatforms.vulkan},
-			new RenderPlatformInfo(){Label = " Xbox 360", Value = RenderPlatforms.xbox360},
-			new RenderPlatformInfo(){Label = " Xbox One", Value = RenderPlatforms.xboxone},
 			new RenderPlatformInfo(){Label = " PlayStation 4", Value = RenderPlatforms.ps4},
-			new RenderPlatformInfo(){Label = " PlayStation Vita", Value = RenderPlatforms.psp2},
-			new RenderPlatformInfo(){Label = " Nintendo 3DS", Value = RenderPlatforms.n3ds},
-			new RenderPlatformInfo(){Label = " Nintendo Wii U", Value = RenderPlatforms.wiiu},
+			new RenderPlatformInfo(){Label = " PlayStation 5", Value = RenderPlatforms.ps5},
 			new RenderPlatformInfo(){Label = " Nintendo Switch", Value = RenderPlatforms.@switch},
-			new RenderPlatformInfo(){Label = " No MRT", Value = RenderPlatforms.nomrt}
-#endif
 		};
 
 		// Values from this dictionary must be the indices corresponding from the list above
 		public static readonly Dictionary<RenderPlatforms, int> PlatformToIndex = new Dictionary<RenderPlatforms, int>()
 		{
-#if UNITY_2019_4_OR_NEWER
-			{RenderPlatforms.d3d9,			0},
-			{RenderPlatforms.d3d11_9x,		1},
-			{RenderPlatforms.d3d11,			2},
-			{RenderPlatforms.glcore,		3},
-			{RenderPlatforms.gles,			4},
-			{RenderPlatforms.gles3,			5},
-			{RenderPlatforms.metal,			6},
-			{RenderPlatforms.vulkan,		7},
-			{RenderPlatforms.xbox360,		8},
-			{RenderPlatforms.xboxone,		9},
-			{RenderPlatforms.xboxseries,	10},
-			{RenderPlatforms.ps4,			11},
-			{RenderPlatforms.playstation,	12},
-			{RenderPlatforms.psp2,			13},
-			{RenderPlatforms.n3ds,			14},
-			{RenderPlatforms.wiiu,			15},
-			{RenderPlatforms.@switch,		16},
-			{RenderPlatforms.nomrt,			17}
-#else
-			{RenderPlatforms.d3d9,          0},
-			{RenderPlatforms.d3d11_9x,      1},
-			{RenderPlatforms.d3d11,         2},
-			{RenderPlatforms.glcore,        3},
-			{RenderPlatforms.gles,          4},
-			{RenderPlatforms.gles3,         5},
-			{RenderPlatforms.metal,         6},
-			{RenderPlatforms.vulkan,        7},
-			{RenderPlatforms.xbox360,       8},
-			{RenderPlatforms.xboxone,       9},
-			{RenderPlatforms.ps4,           10},
-			{RenderPlatforms.psp2,          11},
-			{RenderPlatforms.n3ds,          12},
-			{RenderPlatforms.wiiu,          13},
-			{RenderPlatforms.@switch,       14},
-			{RenderPlatforms.nomrt,			15}
-#endif
+			{RenderPlatforms.d3d11,			0},
+			{RenderPlatforms.glcore,		1},
+			{RenderPlatforms.gles,			2},
+			{RenderPlatforms.gles3,			3},
+			{RenderPlatforms.metal,			4},
+			{RenderPlatforms.vulkan,		5},
+			{RenderPlatforms.xboxone,		6},
+			{RenderPlatforms.xboxseries,    7},
+			{RenderPlatforms.playstation,   8},
+			{RenderPlatforms.ps4,			9},
+			{RenderPlatforms.ps5,			10},
+			{RenderPlatforms.@switch,		11},
 		};
 
 		
@@ -273,11 +247,19 @@ namespace AmplifyShaderEditor
 							m_renderingPlatformValues[ i ] = false;
 						}
 
-						m_renderingPlatformValues[ PlatformToIndex[ firstPlatform ]] = true;
-						for( int i = 1; i < count; i++ )
+						// @diogo: should have been designed as exclude, instead of include, to avoid stuff like this...
+						if ( UIUtils.CurrentShaderVersion() < 19100 )
 						{
-							RenderPlatforms currPlatform = (RenderPlatforms)Enum.Parse( typeof( RenderPlatforms ), nodeParams[ index++ ] );
-							m_renderingPlatformValues[ PlatformToIndex[ currPlatform ] ] = true;
+							m_renderingPlatformValues[ PlatformToIndex[ RenderPlatforms.ps5 ] ] = true;
+						}
+
+						for( int i = 0; i < count; i++ )
+						{
+							RenderPlatforms currPlatform = ( i == 0 ) ? firstPlatform : (RenderPlatforms)Enum.Parse( typeof( RenderPlatforms ), nodeParams[ index++ ] );
+							if ( PlatformToIndex.TryGetValue( currPlatform, out int platformIndex ) )
+							{
+								m_renderingPlatformValues[ platformIndex ] = true;
+							}
 						}
 					}
 				}

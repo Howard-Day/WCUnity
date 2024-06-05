@@ -16,7 +16,6 @@ Shader "Hidden/TexturePropertyNode"
 			CGPROGRAM
 			#pragma vertex vert_img
 			#pragma fragment frag
-			#pragma exclude_renderers d3d9 
 			#pragma target 3.5
 			#include "UnityCG.cginc"
 			int _Default;
@@ -49,7 +48,6 @@ Shader "Hidden/TexturePropertyNode"
 			CGPROGRAM
 			#pragma vertex vert_img
 			#pragma fragment frag
-			#pragma exclude_renderers d3d9 
 			#pragma target 3.5
 			#include "UnityCG.cginc"
 

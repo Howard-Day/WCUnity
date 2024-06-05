@@ -187,7 +187,7 @@ namespace AmplifyShaderEditor
 						default: case TransformSpaceTo.Object: break;
 						case TransformSpaceTo.World:
 						{
-							if( dataCollector.IsTemplate && dataCollector.TemplateDataCollectorInstance.CurrentSRPType != TemplateSRPType.BuiltIn )
+							if( dataCollector.IsTemplate && dataCollector.TemplateDataCollectorInstance.CurrentSRPType != TemplateSRPType.BiRP )
 								result = string.Format( AseSRPObjectToWorldDirFormat, result );
 							else
 								result = string.Format( AseObjectToWorldDirFormat, result );
@@ -196,7 +196,7 @@ namespace AmplifyShaderEditor
 						break;
 						case TransformSpaceTo.View:
 						{
-							if( dataCollector.IsTemplate && dataCollector.TemplateDataCollectorInstance.CurrentSRPType == TemplateSRPType.HD )
+							if( dataCollector.IsTemplate && dataCollector.TemplateDataCollectorInstance.CurrentSRPType == TemplateSRPType.HDRP )
 								result = string.Format( AseHDObjectToViewDirFormat, result );
 							else
 								result = string.Format( AseObjectToViewDirFormat, result );
@@ -205,7 +205,7 @@ namespace AmplifyShaderEditor
 						break;
 						case TransformSpaceTo.Clip:
 						{
-							if( dataCollector.IsTemplate && dataCollector.TemplateDataCollectorInstance.CurrentSRPType != TemplateSRPType.BuiltIn )
+							if( dataCollector.IsTemplate && dataCollector.TemplateDataCollectorInstance.CurrentSRPType != TemplateSRPType.BiRP )
 							{
 								result = string.Format( AseSRPObjectToClipDirFormat, result );
 							}
@@ -225,7 +225,7 @@ namespace AmplifyShaderEditor
 					{
 						case TransformSpaceTo.Object:
 						{
-							if( dataCollector.IsTemplate && dataCollector.TemplateDataCollectorInstance.CurrentSRPType != TemplateSRPType.BuiltIn )
+							if( dataCollector.IsTemplate && dataCollector.TemplateDataCollectorInstance.CurrentSRPType != TemplateSRPType.BiRP )
 								result = string.Format( AseSRPWorldToObjectDirFormat, result );
 							else
 								result = string.Format( AseWorldToObjectDirFormat, result );
@@ -242,7 +242,7 @@ namespace AmplifyShaderEditor
 						break;
 						case TransformSpaceTo.Clip:
 						{
-							if( dataCollector.IsTemplate && dataCollector.TemplateDataCollectorInstance.CurrentSRPType != TemplateSRPType.BuiltIn )
+							if( dataCollector.IsTemplate && dataCollector.TemplateDataCollectorInstance.CurrentSRPType != TemplateSRPType.BiRP )
 							{
 								result = string.Format( AseSRPWorldToClipDirFormat, result );
 							}
@@ -275,7 +275,7 @@ namespace AmplifyShaderEditor
 						default: case TransformSpaceTo.View: break;
 						case TransformSpaceTo.Clip:
 						{
-							if( dataCollector.IsTemplate && dataCollector.TemplateDataCollectorInstance.CurrentSRPType != TemplateSRPType.BuiltIn )
+							if( dataCollector.IsTemplate && dataCollector.TemplateDataCollectorInstance.CurrentSRPType != TemplateSRPType.BiRP )
 							{
 								result = string.Format( AseSRPViewToClipDirFormat, result );
 							}
@@ -295,7 +295,7 @@ namespace AmplifyShaderEditor
 				//	{
 				//		case TransformSpace.Object:
 				//		{
-				//			if( dataCollector.IsTemplate && dataCollector.TemplateDataCollectorInstance.CurrentSRPType == TemplateSRPType.HD )
+				//			if( dataCollector.IsTemplate && dataCollector.TemplateDataCollectorInstance.CurrentSRPType == TemplateSRPType.HDRP )
 				//			{
 				//				result = string.Format( AseHDClipToObjectDirFormat, result );
 				//			}
@@ -308,7 +308,7 @@ namespace AmplifyShaderEditor
 				//		break;
 				//		case TransformSpace.World:
 				//		{
-				//			if( dataCollector.IsTemplate && dataCollector.TemplateDataCollectorInstance.CurrentSRPType == TemplateSRPType.HD )
+				//			if( dataCollector.IsTemplate && dataCollector.TemplateDataCollectorInstance.CurrentSRPType == TemplateSRPType.HDRP )
 				//			{
 				//				result = string.Format( AseHDClipToWorldDirFormat, result );
 				//			}
@@ -321,7 +321,7 @@ namespace AmplifyShaderEditor
 				//		break;
 				//		case TransformSpace.View:
 				//		{
-				//			if( dataCollector.IsTemplate && dataCollector.TemplateDataCollectorInstance.CurrentSRPType == TemplateSRPType.HD )
+				//			if( dataCollector.IsTemplate && dataCollector.TemplateDataCollectorInstance.CurrentSRPType == TemplateSRPType.HDRP )
 				//			{
 				//				result = string.Format( AseHDClipToViewDirFormat, result );
 				//			}

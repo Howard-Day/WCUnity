@@ -8,7 +8,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Static Switch", "Logical Operators", "Creates a shader keyword toggle", Available = true )]
+	[NodeAttributes( "Switch", "Logical Operators", "Creates a shader keyword toggle", Available = true )]
 	public sealed class StaticSwitch : PropertyNode
 	{
 		public enum ShaderStage
@@ -49,13 +49,9 @@ namespace AmplifyShaderEditor
 
 		private const string IsLocalStr = "Is Local";
 		private const string StageStr = "Stage";
-#if UNITY_2019_1_OR_NEWER
+
 		[SerializeField]
 		private bool m_isLocal = true;
-#else
-		[SerializeField]
-		private bool m_isLocal = false;
-#endif
 
 		[SerializeField]
 		private ShaderStage m_shaderStage = ShaderStage.All;
@@ -76,15 +72,22 @@ namespace AmplifyShaderEditor
 		public enum KeywordModeType
 		{
 			Toggle = 0,
-			ToggleOff,
-			KeywordEnum,
+			ToggleOff = 1,
+			KeywordEnum = 2,
 		}
 
 		public enum StaticSwitchVariableMode
 		{
 			Create = 0,
-			Fetch,
-			Reference
+			Fetch = 1,
+			Reference = 2
+		}
+
+		public enum KeywordType
+		{
+			ShaderFeature = 0,
+			MultiCompile = 1,
+			DynamicBranch = 2,
 		}
 
 		[SerializeField]
@@ -93,7 +96,7 @@ namespace AmplifyShaderEditor
 		[SerializeField]
 		private StaticSwitch m_reference = null;
 
-		private const string StaticSwitchStr = "Static Switch";
+		private const string StaticSwitchStr = "Switch";
 		private const string MaterialToggleStr = "Material Toggle";
 
 		private const string ToggleMaterialValueStr = "Material Value";
@@ -108,8 +111,8 @@ namespace AmplifyShaderEditor
 		private const string KeywordTypeStr = "Keyword Type";
 
 		private const string KeywordNameStr = "Keyword Name";
-		public readonly static string[] KeywordTypeList = { "Shader Feature", "Multi Compile"/*, "Define Symbol"*/ };
-		public readonly static int[] KeywordTypeInt = { 0, 1/*, 2*/ };
+		public readonly static string[] KeywordTypeList = { "Shader Feature", "Multi Compile", "Dynamic Branch" };
+		public readonly static int[] KeywordTypeInt = { ( int )KeywordType.ShaderFeature, ( int )KeywordType.MultiCompile, ( int )KeywordType.DynamicBranch };
 
 		[SerializeField]
 		private string[] m_defaultKeywordNames = { "Key0", "Key1", "Key2", "Key3", "Key4", "Key5", "Key6", "Key7", "Key8" };
@@ -131,6 +134,9 @@ namespace AmplifyShaderEditor
 		private bool m_isStaticSwitchDirty = false;
 
 		private Rect m_iconPos;
+
+		public const string DynamicBranchErrorMsg = "dynamic_branch requires Unity 2022.1+";
+		public const string KeywordModifierSurfaceWarning = "Keyword stage ignored in Surface Shaders due to Unity bug.";
 
 		protected override void CommonInit( int uniqueId )
 		{
@@ -160,6 +166,9 @@ namespace AmplifyShaderEditor
 
 			m_previewShaderGUID = "0b708c11c68e6a9478ac97fe3643eab1";
 			m_showAutoRegisterUI = true;
+
+			m_errorMessageTooltip = DynamicBranchErrorMsg;
+			m_errorMessageTypeIsError = NodeMessageType.Error;
 		}
 
 		public override void SetPreviewInputs()
@@ -171,7 +180,7 @@ namespace AmplifyShaderEditor
 
 			StaticSwitch node = ( m_staticSwitchVarMode == StaticSwitchVariableMode.Reference && m_reference != null ) ? m_reference : this;
 
-			if( m_createToggle )
+			if ( m_createToggle && m_materialMode )
 				PreviewMaterial.SetInt( m_conditionId, node.MaterialValue );
 			else
 				PreviewMaterial.SetInt( m_conditionId, node.DefaultValue );
@@ -266,12 +275,18 @@ namespace AmplifyShaderEditor
 		public override string GetPropertyValue()
 		{
 			if( m_createToggle )
-				if( m_keywordModeType == KeywordModeType.KeywordEnum && m_keywordEnumAmount > 0 )
-					return PropertyAttributes + "[" + m_keywordModeType.ToString() + "(" + GetKeywordEnumPropertyList() + ")] " + m_propertyName + "(\"" + m_propertyInspectorName + "\", Float) = " + m_defaultValue;
+			{
+				string value = UIUtils.PropertyFloatToString( m_defaultValue );
+				if ( m_keywordModeType == KeywordModeType.KeywordEnum && m_keywordEnumAmount > 0 )
+				{
+					return PropertyAttributes + "[" + m_keywordModeType.ToString() + "(" + GetKeywordEnumPropertyList() + ")] " + m_propertyName + "(\"" + m_propertyInspectorName + "\", Float) = " + value;
+				}
 				else
-					return PropertyAttributes + "[" + m_keywordModeType.ToString() + "(" + GetPropertyValStr() + ")] " + m_propertyName + "(\"" + m_propertyInspectorName + "\", Float) = " + m_defaultValue;
-			else
-				return string.Empty;
+				{
+					return PropertyAttributes + "[" + m_keywordModeType.ToString() + "(" + GetPropertyValStr() + ")] " + m_propertyName + "(\"" + m_propertyInspectorName + "\", Float) = " + value;
+				}
+			}
+			return string.Empty;
 		}
 
 		public string KeywordEnum( int index )
@@ -311,7 +326,7 @@ namespace AmplifyShaderEditor
 
 		public override string GetPropertyValStr()
 		{
-			if( m_keywordModeType == KeywordModeType.KeywordEnum )
+			if ( m_keywordModeType == KeywordModeType.KeywordEnum )
 				return PropertyName;
 			else if( !m_lockKeyword )
 				return CurrentKeyword;
@@ -319,6 +334,18 @@ namespace AmplifyShaderEditor
 				return m_currentKeyword;
 			else
 				return PropertyName + OnOffStr;
+		}
+
+		public override string GetSubTitleVarNameFormatStr()
+		{
+			if ( m_multiCompile == ( int )KeywordType.DynamicBranch )
+			{
+				return "Dynamic( {0} )"; 
+			}
+			else
+			{
+				return "Static( {0} )";
+			}
 		}
 
 		private string GetKeywordEnumPropertyList()
@@ -357,6 +384,13 @@ namespace AmplifyShaderEditor
 			dataType = string.Empty;
 			dataName = string.Empty;
 			return false;
+		}
+
+		public override void OnNodeLogicUpdate( DrawInfo drawInfo )
+		{
+			base.OnNodeLogicUpdate( drawInfo );
+
+			m_showErrorMessage = ( m_multiCompile == ( int )KeywordType.DynamicBranch && TemplateHelperFunctions.GetUnityVersion() < 20220100 );
 		}
 
 		public override void DrawProperties()
@@ -450,6 +484,11 @@ namespace AmplifyShaderEditor
 				if( EditorGUI.EndChangeCheck() )
 				{
 					BeginPropertyFromInspectorCheck();
+				}
+
+				if ( m_showErrorMessage )
+				{
+					EditorGUILayout.HelpBox( DynamicBranchErrorMsg, MessageType.Error );
 				}
 			}
 			else if( CurrentVarMode == StaticSwitchVariableMode.Reference )
@@ -554,18 +593,25 @@ namespace AmplifyShaderEditor
 				}
 			}
 
-#if UNITY_2019_1_OR_NEWER
-			m_isLocal = EditorGUILayoutToggle( IsLocalStr, m_isLocal );
-#endif
-
-#if UNITY_2019_4_OR_NEWER
-			m_shaderStage = (ShaderStage)EditorGUILayoutEnumPopup( StageStr , m_shaderStage );
-#endif
-
-			//if( CurrentVarMode == StaticSwitchVariableMode.Create )
+			GUI.enabled = ( m_multiCompile != ( int )KeywordType.DynamicBranch );
 			{
-				ShowAutoRegister();
+				m_isLocal = EditorGUILayoutToggle( IsLocalStr, m_isLocal );
+
+				m_shaderStage = ( ShaderStage )EditorGUILayoutEnumPopup( StageStr, m_shaderStage );
+
+				bool isFunction = ( m_containerGraph.CurrentCanvasMode == NodeAvailability.ShaderFunction );
+				bool isTemplate = ( m_containerGraph.CurrentCanvasMode == NodeAvailability.TemplateShader );
+				if ( ( !isTemplate || isFunction ) && ( m_keywordModeType == KeywordModeType.KeywordEnum ) && ( m_shaderStage != ShaderStage.All ) )
+				{
+					EditorGUILayout.HelpBox( KeywordModifierSurfaceWarning, isFunction ? MessageType.Info : MessageType.Warning );
+				}
+
+				//if( CurrentVarMode == StaticSwitchVariableMode.Create )
+				{
+					ShowAutoRegister();
+				}
 			}
+			GUI.enabled = true;
 
 			EditorGUI.BeginChangeCheck();
 			m_createToggle = EditorGUILayoutToggle( MaterialToggleStr, m_createToggle );
@@ -858,27 +904,47 @@ namespace AmplifyShaderEditor
 				}
 			}
 		}
-		string GetStaticSwitchType()
+		string GetStaticSwitchType( bool allowStages )
 		{
-			string staticSwitchType = ( m_multiCompile == 1 ) ? "multi_compile" : "shader_feature";
-#if UNITY_2019_1_OR_NEWER
-			if( m_isLocal )
-				staticSwitchType += "_local";
-#endif
+			string staticSwitchType;
+			bool allowModifiers = true;
 
-#if UNITY_2019_4_OR_NEWER
-			switch( m_shaderStage )
+			switch ( m_multiCompile )
 			{
+				case 1:
+					staticSwitchType = "multi_compile";
+					break;
+				case 2:
+					staticSwitchType = "dynamic_branch";
+					allowModifiers = false;
+					break;
 				default:
-				case ShaderStage.All:break;
-				case ShaderStage.Vertex: staticSwitchType += "_vertex"; break;
-				case ShaderStage.Fragment:	staticSwitchType += "_fragment"; break;
-				case ShaderStage.Hull: staticSwitchType += "_hull"; break;
-				case ShaderStage.Domain: staticSwitchType += "_domain"; break;
-				case ShaderStage.Geometry: staticSwitchType += "_geometry"; break;
-				case ShaderStage.Raytracing: staticSwitchType += "_raytracing"; break;
+					staticSwitchType = "shader_feature";
+					break;
 			}
-#endif
+
+			if ( allowModifiers )
+			{
+				if ( m_isLocal )
+				{
+					staticSwitchType += "_local";
+				}
+
+				if ( allowStages )
+				{
+					switch ( m_shaderStage )
+					{
+						default:
+						case ShaderStage.All: break;
+						case ShaderStage.Vertex: staticSwitchType += "_vertex"; break;
+						case ShaderStage.Fragment: staticSwitchType += "_fragment"; break;
+						case ShaderStage.Hull: staticSwitchType += "_hull"; break;
+						case ShaderStage.Domain: staticSwitchType += "_domain"; break;
+						case ShaderStage.Geometry: staticSwitchType += "_geometry"; break;
+						case ShaderStage.Raytracing: staticSwitchType += "_raytracing"; break;
+					}
+				}
+			}
 			return staticSwitchType;
 		}
 
@@ -886,19 +952,17 @@ namespace AmplifyShaderEditor
 		{
 			if( CurrentVarMode == StaticSwitchVariableMode.Create )
 			{
-				string staticSwitchType = GetStaticSwitchType();
+				string staticSwitchType = GetStaticSwitchType( allowStages: dataCollector.IsTemplate || ( m_keywordModeType != KeywordModeType.KeywordEnum ) );
+
 				if( m_keywordModeType == KeywordModeType.KeywordEnum )
 				{
-					if( m_multiCompile == 1 )
-						dataCollector.AddToPragmas( UniqueId, staticSwitchType + " " + GetKeywordEnumPragmaList() );
-					else if( m_multiCompile == 0 )
-						dataCollector.AddToPragmas( UniqueId, staticSwitchType + " " + GetKeywordEnumPragmaList() );
+					dataCollector.AddToPragmas( UniqueId, staticSwitchType + " " + GetKeywordEnumPragmaList() );
 				}
 				else
 				{
 					if( m_multiCompile == 1 )
 						dataCollector.AddToPragmas( UniqueId, staticSwitchType + " __ " + CurrentKeyword );
-					else if( m_multiCompile == 0 )
+					else
 						dataCollector.AddToPragmas( UniqueId, staticSwitchType + " " + CurrentKeyword );
 				}
 			}
@@ -925,6 +989,12 @@ namespace AmplifyShaderEditor
 			if( m_outputPorts[ 0 ].IsLocalValue( dataCollector.PortCategory ) )
 				return m_outputPorts[ 0 ].LocalValue( dataCollector.PortCategory );
 
+			if ( m_showErrorMessage )
+			{
+				UIUtils.ShowMessage( DynamicBranchErrorMsg );
+				return GenerateErrorValue();
+			}
+
 			base.GenerateShaderForOutput( outputId, ref dataCollector, ignoreLocalvar );
 
 			StaticSwitch node = ( m_staticSwitchVarMode == StaticSwitchVariableMode.Reference && m_reference != null ) ? m_reference : this;
@@ -939,45 +1009,95 @@ namespace AmplifyShaderEditor
 
 			if( node.KeywordModeTypeValue == KeywordModeType.KeywordEnum )
 			{
-				string defaultKey = "\t" + outType + " staticSwitch" + OutputId + " = " + m_inputPorts[ node.DefaultValue ].GeneratePortInstructions( ref dataCollector ) + ";";
-
 				string[] allOutputs = new string[ node.KeywordEnumAmount ];
-				for( int i = 0; i < node.KeywordEnumAmount; i++ )
+				for ( int i = 0; i < node.KeywordEnumAmount; i++ )
 					allOutputs[ i ] = m_inputPorts[ i ].GeneratePortInstructions( ref dataCollector );
 
-				for( int i = 0; i < node.KeywordEnumAmount; i++ )
+				if ( m_multiCompile == ( int )KeywordType.DynamicBranch )
 				{
-					string keyword = node.KeywordEnum( i );
-					if( i == 0 )
-						dataCollector.AddLocalVariable( UniqueId, "#if defined(" + keyword + ")", true );
-					else
-						dataCollector.AddLocalVariable( UniqueId, "#elif defined(" + keyword + ")", true );
+					string defaultKey = "\t" + outType + " dynamicSwitch" + OutputId + " = " + m_inputPorts[ node.DefaultValue ].GeneratePortInstructions( ref dataCollector ) + ";";
 
-					if( node.DefaultValue == i )
-						dataCollector.AddLocalVariable( UniqueId, defaultKey, true );
-					else
-						dataCollector.AddLocalVariable( UniqueId, "\t" + outType + " staticSwitch" + OutputId + " = " + allOutputs[ i ] + ";", true );
+					dataCollector.AddLocalVariable( UniqueId, outType + " dynamicSwitch" + OutputId + " = ( " + outType + " )0;", true );
+					for ( int i = 0; i < node.KeywordEnumAmount; i++ )
+					{
+						string keyword = node.KeywordEnum( i );
+						if ( i == 0 )
+							dataCollector.AddLocalVariable( UniqueId, "UNITY_BRANCH if ( " + keyword + " )", true );
+						else
+							dataCollector.AddLocalVariable( UniqueId, "else if ( " + keyword + " )", true );
+
+						dataCollector.AddLocalVariable( UniqueId, "{", true );
+
+						if ( node.DefaultValue == i )
+							dataCollector.AddLocalVariable( UniqueId, defaultKey, true );
+						else
+							dataCollector.AddLocalVariable( UniqueId, "\tdynamicSwitch" + OutputId + " = " + allOutputs[ i ] + ";", true );
+
+						dataCollector.AddLocalVariable( UniqueId, "}", true );
+					}
 				}
-				dataCollector.AddLocalVariable( UniqueId, "#else", true );
-				dataCollector.AddLocalVariable( UniqueId, defaultKey, true );
-				dataCollector.AddLocalVariable( UniqueId, "#endif", true );
+				else
+				{
+					string defaultKey = "\t" + outType + " staticSwitch" + OutputId + " = " + m_inputPorts[ node.DefaultValue ].GeneratePortInstructions( ref dataCollector ) + ";";					
+
+					for ( int i = 0; i < node.KeywordEnumAmount; i++ )
+					{
+						string keyword = node.KeywordEnum( i );
+						if ( i == 0 )
+							dataCollector.AddLocalVariable( UniqueId, "#if defined( " + keyword + " )", true );
+						else
+							dataCollector.AddLocalVariable( UniqueId, "#elif defined( " + keyword + " )", true );
+
+						if ( node.DefaultValue == i )
+							dataCollector.AddLocalVariable( UniqueId, defaultKey, true );
+						else
+							dataCollector.AddLocalVariable( UniqueId, "\t" + outType + " staticSwitch" + OutputId + " = " + allOutputs[ i ] + ";", true );
+					}
+					dataCollector.AddLocalVariable( UniqueId, "#else", true );
+					dataCollector.AddLocalVariable( UniqueId, defaultKey, true );
+					dataCollector.AddLocalVariable( UniqueId, "#endif", true );
+				}
 			}
 			else
 			{
 				string falseCode = m_inputPorts[ 0 ].GeneratePortInstructions( ref dataCollector );
 				string trueCode = m_inputPorts[ 1 ].GeneratePortInstructions( ref dataCollector );
 
-				//if( node.CurrentVarMode == StaticSwitchVariableMode.Fetch )
+				if ( m_multiCompile == ( int )KeywordType.DynamicBranch )
+				{
+					dataCollector.AddLocalVariable( UniqueId, outType + " dynamicSwitch" + OutputId + " = ( " + outType + " )0;", true );
+					dataCollector.AddLocalVariable( UniqueId, "UNITY_BRANCH if ( " + node.CurrentKeyword + " )", true );
+					dataCollector.AddLocalVariable( UniqueId, "{", true );
+					dataCollector.AddLocalVariable( UniqueId, "\tdynamicSwitch" + OutputId + " = " + trueCode + ";", true );
+					dataCollector.AddLocalVariable( UniqueId, "}", true );
+					dataCollector.AddLocalVariable( UniqueId, "else", true );
+					dataCollector.AddLocalVariable( UniqueId, "{", true );
+					dataCollector.AddLocalVariable( UniqueId, "\tdynamicSwitch" + OutputId + " = " + falseCode + ";", true );
+					dataCollector.AddLocalVariable( UniqueId, "}", true );
+					m_outputPorts[ 0 ].SetLocalValue( "dynamicSwitch" + OutputId, dataCollector.PortCategory );
+				}
+				else
+				{
+					//if( node.CurrentVarMode == StaticSwitchVariableMode.Fetch )
 					dataCollector.AddLocalVariable( UniqueId, "#ifdef " + node.CurrentKeyword, true );
-				//else
-				//	dataCollector.AddLocalVariable( UniqueId, "#ifdef " + node.PropertyName + OnOffStr, true );
-				dataCollector.AddLocalVariable( UniqueId, "\t" + outType + " staticSwitch" + OutputId + " = " + trueCode + ";", true );
-				dataCollector.AddLocalVariable( UniqueId, "#else", true );
-				dataCollector.AddLocalVariable( UniqueId, "\t" + outType + " staticSwitch" + OutputId + " = " + falseCode + ";", true );
-				dataCollector.AddLocalVariable( UniqueId, "#endif", true );
+					//else
+					//	dataCollector.AddLocalVariable( UniqueId, "#ifdef " + node.PropertyName + OnOffStr, true );
+					dataCollector.AddLocalVariable( UniqueId, "\t" + outType + " staticSwitch" + OutputId + " = " + trueCode + ";", true );
+					dataCollector.AddLocalVariable( UniqueId, "#else", true );
+					dataCollector.AddLocalVariable( UniqueId, "\t" + outType + " staticSwitch" + OutputId + " = " + falseCode + ";", true );
+					dataCollector.AddLocalVariable( UniqueId, "#endif", true );
+					m_outputPorts[ 0 ].SetLocalValue( "staticSwitch" + OutputId, dataCollector.PortCategory );
+				}
 			}
 
-			m_outputPorts[ 0 ].SetLocalValue( "staticSwitch" + OutputId, dataCollector.PortCategory );
+			if ( m_multiCompile == ( int )KeywordType.DynamicBranch )
+			{
+				m_outputPorts[ 0 ].SetLocalValue( "dynamicSwitch" + OutputId, dataCollector.PortCategory );
+			}
+			else
+			{
+				m_outputPorts[ 0 ].SetLocalValue( "staticSwitch" + OutputId, dataCollector.PortCategory );
+			}
 			return m_outputPorts[ 0 ].LocalValue( dataCollector.PortCategory );
 		}
 
@@ -994,10 +1114,10 @@ namespace AmplifyShaderEditor
 			else
 			{
 				subTitle = GetPropertyValStr();
-				subTitleFormat = Constants.SubTitleVarNameFormatStr;
+				subTitleFormat = GetSubTitleVarNameFormatStr();
 			}
 
-			SetAdditonalTitleTextOnCallback( subTitle, ( instance, newSubTitle ) => instance.AdditonalTitleContent.text = string.Format( subTitleFormat, newSubTitle ) );
+			SetAdditonalTitleTextOnCallback( subTitle, subTitleFormat, ( instance, newSubTitle ) => instance.AdditonalTitleContent.text = string.Format( subTitleFormat, newSubTitle ) );
 
 			if( !m_isEditing && ContainerGraph.LodLevel <= ParentGraph.NodeLOD.LOD3 )
 			{

@@ -53,9 +53,9 @@ namespace AmplifyShaderEditor
 
 	public enum TemplateSRPType
 	{
-		BuiltIn,
-		HD,
-		Lightweight
+		BiRP,
+		HDRP,
+		URP
 	}
 
 	[Serializable]
@@ -134,7 +134,7 @@ namespace AmplifyShaderEditor
 		private TemplateShaderModelData m_shaderModel = new TemplateShaderModelData();
 
 		[SerializeField]
-		private TemplateSRPType m_srpType = TemplateSRPType.BuiltIn;
+		private TemplateSRPType m_srpType = TemplateSRPType.BiRP;
 
 		[SerializeField]
 		private bool m_srpIsPBR = false;
@@ -808,7 +808,7 @@ namespace AmplifyShaderEditor
 		public TemplateShaderModelData ShaderModel { get { return m_shaderModel; } }
 		public TemplateSRPType SRPType { get { return m_srpType; } set { m_srpType = value; } }
 		public bool SRPIsPBR { get { return m_srpIsPBR; } set { m_srpIsPBR = value; } }
-		public bool SRPIsPBRHD { get { return m_srpIsPBR && m_srpType == TemplateSRPType.HD; }  }
+		public bool SRPIsPBRHD { get { return m_srpIsPBR && m_srpType == TemplateSRPType.HDRP; }  }
 		public string UniquePrefix { get { return m_uniquePrefix; } }
 		public string PassUniqueName { get { return m_passUniqueName; } }
 		public bool HasPassUniqueName { get { return !string.IsNullOrEmpty( m_passUniqueName ); } }

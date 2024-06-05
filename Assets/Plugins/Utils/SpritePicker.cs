@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 
+
 // credit goes to Daniel Koozer for his amazing solution
 
 [ExecuteInEditMode]
@@ -18,7 +19,9 @@ public class SpritePicker : MonoBehaviour
     billboard = transform.Find("Billboard");    
     if(Application.isPlaying)
       billboardMaterial = billboard.GetComponent<Renderer>().material;
-  }
+    //if (Application.isEditor)
+      //  billboardMaterial = billboard.GetComponent<Renderer>().material;
+    }
 
   void Update()
   {
@@ -27,6 +30,11 @@ public class SpritePicker : MonoBehaviour
     if (!billboard || !billboardMaterial || frames == Vector2Int.zero || !gameCamera)
     {
       return;
+    }
+    if (!gameCamera && Application.isEditor)
+    {
+            if(Camera.current != null)
+                gameCamera = Camera.current.transform;
     }
 
     int yaw = 0, pitch = 0;

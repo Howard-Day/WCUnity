@@ -126,7 +126,7 @@ namespace AmplifyShaderEditor
 
 		void CheckAndChangeName()
 		{
-			m_variableName = UIUtils.RemoveInvalidCharacters( m_variableName );
+			m_variableName = UIUtils.RemoveRegisterInvalidCharacters( m_variableName );
 			if( string.IsNullOrEmpty( m_variableName ) )
 			{
 				m_variableName = LocalDefaultNameStr + OutputId;
@@ -247,7 +247,14 @@ namespace AmplifyShaderEditor
 			if( m_inputPorts[ 0 ].DataType == WirePortDataType.OBJECT )
 				m_outputPorts[ 0 ].SetLocalValue( result, dataCollector.PortCategory );
 			else
-				RegisterLocalVariable( 0, result, ref dataCollector, m_variableName + OutputId );
+			{
+				var name = m_variableName;
+				name = name.Replace("/", "_");
+                name = name.Replace(" ", "_");
+
+                RegisterLocalVariable(0, result, ref dataCollector, name + OutputId);
+            }
+
 			return m_outputPorts[ 0 ].LocalValue( dataCollector.PortCategory );
 		}
 

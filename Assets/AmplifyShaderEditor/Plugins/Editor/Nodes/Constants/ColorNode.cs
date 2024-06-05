@@ -14,19 +14,11 @@ namespace AmplifyShaderEditor
 		private const string ColorSpaceStr = "Color Space";
 
 		[SerializeField]
-#if UNITY_2018_1_OR_NEWER
 		[ColorUsage( true, true )]
-#else
-		[ColorUsage( true, true, float.MinValue, float.MinValue, float.MinValue, float.MaxValue )]
-#endif
 		private Color m_defaultValue = new Color( 0, 0, 0, 0 );
 
 		[SerializeField]
-#if UNITY_2018_1_OR_NEWER
 		[ColorUsage( true, true )]
-#else
-		[ColorUsage( true, true, float.MinValue, float.MinValue, float.MinValue, float.MaxValue )]
-#endif
 		private Color m_materialValue = new Color( 0, 0, 0, 0 );
 
 		[SerializeField]
@@ -34,9 +26,6 @@ namespace AmplifyShaderEditor
 
 		//[SerializeField]
 		//private ASEColorSpace m_colorSpace = ASEColorSpace.Auto;
-#if !UNITY_2018_1_OR_NEWER
-		private ColorPickerHDRConfig m_hdrConfig = new ColorPickerHDRConfig( 0, float.MaxValue, 0, float.MaxValue );
-#endif
 		private GUIContent m_dummyContent;
 
 		private int m_cachedPropertyId = -1;
@@ -90,11 +79,7 @@ namespace AmplifyShaderEditor
 		{
 			m_textLabelWidth = ( m_currentParameterType == PropertyType.Constant ) ? 152 : 105;
 
-#if UNITY_2018_1_OR_NEWER
 			m_defaultValue = EditorGUILayoutColorField( Constants.DefaultValueLabelContent, m_defaultValue, false, true, m_isHDR );
-#else
-			m_defaultValue = EditorGUILayoutColorField( Constants.DefaultValueLabelContent, m_defaultValue, false, true, m_isHDR, m_hdrConfig );
-#endif
 			if( m_currentParameterType == PropertyType.Constant )
 			{
 				
@@ -152,11 +137,7 @@ namespace AmplifyShaderEditor
 		{
 			if( m_materialMode )
 				EditorGUI.BeginChangeCheck();
-#if UNITY_2018_1_OR_NEWER
 			m_materialValue = EditorGUILayoutColorField( Constants.MaterialValueLabelContent, m_materialValue, false, true, m_isHDR );
-#else
-			m_materialValue = EditorGUILayoutColorField( Constants.MaterialValueLabelContent, m_materialValue, false, true, m_isHDR, m_hdrConfig );
-#endif
 			if( m_materialMode && EditorGUI.EndChangeCheck() )
 				m_requireMaterialUpdate = true;
 		}
@@ -206,11 +187,7 @@ namespace AmplifyShaderEditor
 				if( m_materialMode && m_currentParameterType != PropertyType.Constant )
 				{
 					EditorGUI.BeginChangeCheck();
-#if UNITY_2018_1_OR_NEWER
 					m_materialValue = EditorGUIColorField( m_propertyDrawPos, m_dummyContent, m_materialValue, false, true, m_isHDR );
-#else
-					m_materialValue = EditorGUIColorField( m_propertyDrawPos, m_dummyContent, m_materialValue, false, true, m_isHDR, m_hdrConfig );
-#endif
 					if( EditorGUI.EndChangeCheck() )
 					{
 						PreviewIsDirty = true;
@@ -224,11 +201,7 @@ namespace AmplifyShaderEditor
 				else
 				{
 					EditorGUI.BeginChangeCheck();
-#if UNITY_2018_1_OR_NEWER
 					m_defaultValue = EditorGUIColorField( m_propertyDrawPos, m_dummyContent, m_defaultValue, false, true, m_isHDR );
-#else
-					m_defaultValue = EditorGUIColorField( m_propertyDrawPos, m_dummyContent, m_defaultValue, false, true, m_isHDR, m_hdrConfig );
-#endif
 					if( EditorGUI.EndChangeCheck() )
 					{
 						PreviewIsDirty = true;
@@ -400,7 +373,11 @@ namespace AmplifyShaderEditor
 
 		public override string GetPropertyValue()
 		{
-			return PropertyAttributes + m_propertyName + "(\"" + m_propertyInspectorName + "\", Color) = (" + m_defaultValue.r + "," + m_defaultValue.g + "," + m_defaultValue.b + "," + m_defaultValue.a + ")";
+			string r = UIUtils.PropertyFloatToString( m_defaultValue.r );
+			string g = UIUtils.PropertyFloatToString( m_defaultValue.g );
+			string b = UIUtils.PropertyFloatToString( m_defaultValue.b );
+			string a = UIUtils.PropertyFloatToString( m_defaultValue.a );
+			return PropertyAttributes + m_propertyName + "(\"" + m_propertyInspectorName + "\", Color) = (" + r + "," + g + "," + b + "," + a + ")";
 		}
 
 		public override void UpdateMaterial( Material mat )

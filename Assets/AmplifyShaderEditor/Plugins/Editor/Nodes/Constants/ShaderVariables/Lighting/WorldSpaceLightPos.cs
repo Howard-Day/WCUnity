@@ -6,7 +6,7 @@ using UnityEngine;
 namespace AmplifyShaderEditor
 {
 	[System.Serializable]
-	[NodeAttributes( "World Space Light Pos", "Light", "Light Position" )]
+	[NodeAttributes( "World Space Light Pos", "Lighting", "Light Position" )]
 	public sealed class WorldSpaceLightPos : ShaderVariablesNode
 	{
 		private const string HelperText =
@@ -75,7 +75,7 @@ namespace AmplifyShaderEditor
 				return;
 
 			SetPreviewInputs();
-			if( !Preferences.GlobalDisablePreviews )
+			if( !Preferences.User.DisablePreviews )
 			{
 				RenderTexture temp = RenderTexture.active;
 

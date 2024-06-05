@@ -12,7 +12,6 @@ namespace AmplifyShaderEditor
 	[NodeAttributes( "Grab Screen Color" , "Camera And Screen" , "Grabed pixel color value from screen" )]
 	public sealed class ScreenColorNode : PropertyNode
 	{
-#if UNITY_5_6_OR_NEWER
 		private readonly string[] ASEDeclareMacro =
 		{
 			"#if defined(UNITY_STEREO_INSTANCING_ENABLED) || defined(UNITY_STEREO_MULTIVIEW_ENABLED)",
@@ -21,7 +20,7 @@ namespace AmplifyShaderEditor
 			"#define ASE_DECLARE_SCREENSPACE_TEXTURE(tex) UNITY_DECLARE_SCREENSPACE_TEXTURE(tex)",
 			"#endif"
 		};
-#endif
+
 		private readonly Color ReferenceHeaderColor = new Color( 0.6f , 3.0f , 1.25f , 1.0f );
 
 		private const string SamplerType = "tex2D";
@@ -81,7 +80,7 @@ namespace AmplifyShaderEditor
 			"}\n"
 		};
 #endif
-#if UNITY_2018_3_OR_NEWER
+
 		private const string HDSampleSceneColorHeader5 = "ASEHDSampleSceneColor({0}, {1}, {2})";
 		private readonly string[] HDSampleSceneColorFunc5 =
 		{
@@ -105,13 +104,7 @@ namespace AmplifyShaderEditor
 			"\treturn float4(0.0, 0.0, 0.0, 1.0);\n",
 			"}\n",
 		};
-#endif
 
-#if !UNITY_2018_3_OR_NEWER
-		// Legacy SRP code
-		private const string DeclareOpaqueTextureObject = "TEXTURE2D( _CameraOpaqueTexture);";
-		private const string DeclareOpaqueTextureSampler = "SAMPLER( sampler_CameraOpaqueTexture);";
-#endif
 		public ScreenColorNode() : base() { }
 		public ScreenColorNode( int uniqueId, float x, float y, float width, float height ) : base( uniqueId, x, y, width, height ) { }
 
@@ -182,8 +175,7 @@ namespace AmplifyShaderEditor
 				m_sizeIsDirty = true;
 			}
 
-#if UNITY_2018_3_OR_NEWER
-			if( ( ContainerGraph.IsHDRP || ContainerGraph.ParentWindow.IsShaderFunctionWindow ) && ASEPackageManagerHelper.CurrentHDVersion >= ASESRPVersions.ASE_SRP_5_13_0 )
+			if( ContainerGraph.IsHDRP || ContainerGraph.ParentWindow.IsShaderFunctionWindow )
 			{
 				m_inputPorts[ 1 ].Visible = true;
 			}
@@ -191,9 +183,6 @@ namespace AmplifyShaderEditor
 			{
 				m_inputPorts[ 1 ].Visible = false;
 			}
-#else
-			m_inputPorts[ 1 ].Visible = false;
-#endif
 		}
 
 		protected override void ChangeSizeFinished()
@@ -342,15 +331,13 @@ namespace AmplifyShaderEditor
 			}
 			ShowVariableMode();
 			ShowAutoRegister();
-#if UNITY_2018_3_OR_NEWER
-			if( ( ContainerGraph.IsHDRP || ContainerGraph.ParentWindow.IsShaderFunctionWindow ) &&  ASEPackageManagerHelper.CurrentHDVersion >= ASESRPVersions.ASE_SRP_5_13_0 )
+			if( ContainerGraph.IsHDRP || ContainerGraph.ParentWindow.IsShaderFunctionWindow )
 			{
 				m_exposure = EditorGUILayoutToggle( "Exposure", m_exposure );
 			}
-#endif
 
 #if UNITY_2021_1_OR_NEWER
-			if( ( ContainerGraph.IsLWRP || ContainerGraph.ParentWindow.IsShaderFunctionWindow ) && ASEPackageManagerHelper.CurrentHDVersion >= ASESRPVersions.ASE_SRP_11_0_0 )
+			if( ( ContainerGraph.IsLWRP || ContainerGraph.ParentWindow.IsShaderFunctionWindow ) && ASEPackageManagerHelper.CurrentHDRPBaseline >= ASESRPBaseline.ASE_SRP_11 )
 			{
 				m_isURP2D = EditorGUILayoutToggle( "2D Renderer" , m_isURP2D);
 				if( m_isURP2D )
@@ -391,37 +378,24 @@ namespace AmplifyShaderEditor
 
 		public void SetMacros( ref MasterNodeDataCollector dataCollector )
 		{
-#if UNITY_5_6_OR_NEWER
-			if( !dataCollector.IsTemplate || dataCollector.CurrentSRPType == TemplateSRPType.BuiltIn )
+			if( !dataCollector.IsTemplate || dataCollector.CurrentSRPType == TemplateSRPType.BiRP )
 			{
 				for( int i = 0; i < ASEDeclareMacro.Length; i++ )
 				{
 					dataCollector.AddToDirectives( ASEDeclareMacro[ i ] );
 				}
 			}
-#endif
 		}
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalVar )
 		{
 			SetMacros( ref dataCollector );
 
-#if !UNITY_2018_3_OR_NEWER
-			if( dataCollector.IsTemplate && dataCollector.CurrentSRPType == TemplateSRPType.HD )
-			{
-				UIUtils.ShowMessage( UniqueId, "GrabPasses are not supported on Unity HD Scriptable Rendering Pipeline old versions." );
-				return GetOutputColorItem( 0, outputId, "(0).xxxx" );
-			}
-#endif
 			if( m_outputPorts[ 0 ].IsLocalValue( dataCollector.PortCategory ) )
 				return GetOutputColorItem( 0, outputId, m_outputPorts[ 0 ].LocalValue( dataCollector.PortCategory ) );
 
 			string valueName = string.Empty;
 			if( dataCollector.IsSRP )
 			{
-#if !UNITY_2018_3_OR_NEWER
-				dataCollector.AddToUniforms( UniqueId, DeclareOpaqueTextureObject );
-				dataCollector.AddToUniforms( UniqueId, DeclareOpaqueTextureSampler );
-#endif
 				valueName = FetchVarName + OutputId;
 				dataCollector.AddToDirectives( OpaqueTextureDefine, -1 , AdditionalLineType.Define);
 				string uvCoords = GetUVCoords( ref dataCollector, ignoreLocalVar, false );
@@ -444,20 +418,10 @@ namespace AmplifyShaderEditor
 				}
 				else
 				{
-#if UNITY_2018_3_OR_NEWER
-					if( ASEPackageManagerHelper.CurrentHDVersion >= ASESRPVersions.ASE_SRP_5_13_0 )
-					{
-						string lod = m_inputPorts[ 1 ].GeneratePortInstructions( ref dataCollector );
-						dataCollector.AddFunction( HDSampleSceneColorFunc5[ 0 ], HDSampleSceneColorFunc5, false );
-						string exposureValue = m_exposure ? "1.0" : "GetInverseCurrentExposureMultiplier()";
-						dataCollector.AddLocalVariable( UniqueId, m_currentPrecisionType, WirePortDataType.FLOAT4, valueName, string.Format( HDSampleSceneColorHeader5, uvCoords, lod, exposureValue ) );
-					}
-					else
-					{
-						dataCollector.AddFunction( HDSampleSceneColorFunc4[ 0 ], HDSampleSceneColorFunc4, false );
-						dataCollector.AddLocalVariable( UniqueId, m_currentPrecisionType, WirePortDataType.FLOAT4, valueName, string.Format( HDSampleSceneColorHeader4, uvCoords ) );
-					}
-#endif
+					string lod = m_inputPorts[ 1 ].GeneratePortInstructions( ref dataCollector );
+					dataCollector.AddFunction( HDSampleSceneColorFunc5[ 0 ], HDSampleSceneColorFunc5, false );
+					string exposureValue = m_exposure ? "1.0" : "GetInverseCurrentExposureMultiplier()";
+					dataCollector.AddLocalVariable( UniqueId, m_currentPrecisionType, WirePortDataType.FLOAT4, valueName, string.Format( HDSampleSceneColorHeader5, uvCoords, lod, exposureValue ) );					
 				}
 			}
 			else
@@ -501,15 +465,11 @@ namespace AmplifyShaderEditor
 				return m_outputPorts[ 0 ].LocalValue( dataCollector.PortCategory );
 
 			string uvValue = GetUVCoords( ref dataCollector, ignoreLocalVar, isProjecting );
-#if UNITY_5_6_OR_NEWER
 			if( isProjecting )
 			{
 				uvValue = string.Format( "{0}.xy/{0}.w", uvValue );
 			}
 			string samplerOp = string.Format( "UNITY_SAMPLE_SCREENSPACE_TEXTURE({0},{1})", propertyName, uvValue );
-#else
-			string samplerOp = SamplerType + ( isProjecting ? "proj" : "" ) + "( " + propertyName + ", " + uvValue + " )";
-#endif
 			dataCollector.AddLocalVariable( UniqueId, UIUtils.PrecisionWirePortToCgType( CurrentPrecisionType, m_outputPorts[ 0 ].DataType ) + " " + ScreenColorStr + OutputId + " = " + samplerOp + ";" );
 			return ScreenColorStr + OutputId;
 		}
@@ -536,11 +496,7 @@ namespace AmplifyShaderEditor
 			}
 
 			if( isProjecting && !dataCollector.IsSRP )
-#if UNITY_5_6_OR_NEWER
-			return result;
-#else
-			return "UNITY_PROJ_COORD( " + result + " )";
-#endif
+				return result;
 			else
 				return result;
 		}
@@ -722,11 +678,7 @@ namespace AmplifyShaderEditor
 
 				return m_referenceNode.GetUniformValue();
 			}
-#if UNITY_5_6_OR_NEWER
 			return "ASE_DECLARE_SCREENSPACE_TEXTURE( " + PropertyName + " )";
-#else
-			return "uniform sampler2D " + PropertyName + ";";
-#endif
 		}
 
 		public override bool GetUniformData( out string dataType, out string dataName, ref bool fullValue )
@@ -741,14 +693,9 @@ namespace AmplifyShaderEditor
 
 				return m_referenceNode.GetUniformData( out dataType, out dataName, ref fullValue );
 			}
-#if UNITY_5_6_OR_NEWER
 			dataName = "ASE_DECLARE_SCREENSPACE_TEXTURE( " + PropertyName + " )";
 			dataType = string.Empty;
 			fullValue = true;
-#else
-			dataType = "sampler2D";
-			dataName = PropertyName;
-#endif
 			return true;
 		}
 

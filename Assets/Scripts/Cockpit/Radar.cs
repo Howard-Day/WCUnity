@@ -50,7 +50,14 @@ public class Radar : MonoBehaviour
         BlipRoot.transform.parent = gameObject.transform;
         BlipRoot.transform.localPosition = Vector3.zero;  
         BlipRoot.transform.localScale = Vector3.one;
-        RegisterBlips();      
+        RegisterBlips();
+
+        HitFore.isOn = false;
+        HitRight.isOn = false;
+        HitLeft.isOn = false;
+        HitUp.isOn = false;
+        HitDown.isOn = false;
+        HitBack.isOn = false;
     }
 
     //radarRefreshNeeded
@@ -116,11 +123,11 @@ public class Radar : MonoBehaviour
 
     void DoHitFlash() //Show incoming fire on the radar! 
     {
-        if(GameObjTracker.frames % 120 == 0) // Every 2 sec (approx) reset the hit history
+        if(GameObjTracker.frames % 120 == 0 || Camera.main == null) // Every 2 sec (approx) reset the hit history, or if the cockpit has been destroyed. 
         {
             shipMain.lastHit = ShipSettings.HitLoc.NULL;
         }
-        if(GameObjTracker.frames % 30 == 0) //every sec (approx) reset the hit flashes to off
+        if(GameObjTracker.frames % 30 == 0 || Camera.main == null) //every sec (approx) reset the hit flashes to off
         {
             HitFore.isOn = false;
             HitRight.isOn = false;

@@ -28,11 +28,11 @@ namespace AmplifyShaderEditor
 			string matrixName = string.Empty;
 			if( dataCollector.IsTemplate  )
 			{
-				if( dataCollector.TemplateDataCollectorInstance.CurrentSRPType == TemplateSRPType.HD && !string.IsNullOrEmpty( m_matrixHDName ) )
+				if( dataCollector.TemplateDataCollectorInstance.CurrentSRPType == TemplateSRPType.HDRP && !string.IsNullOrEmpty( m_matrixHDName ) )
 				{
 					matrixName = m_matrixHDName;
 				}
-				else if( dataCollector.TemplateDataCollectorInstance.CurrentSRPType == TemplateSRPType.Lightweight && !string.IsNullOrEmpty( m_matrixLWName ) )
+				else if( dataCollector.TemplateDataCollectorInstance.CurrentSRPType == TemplateSRPType.URP && !string.IsNullOrEmpty( m_matrixLWName ) )
 				{
 					matrixName = m_matrixLWName;
 				}

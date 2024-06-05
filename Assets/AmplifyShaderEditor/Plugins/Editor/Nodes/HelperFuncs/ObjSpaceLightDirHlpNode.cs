@@ -5,7 +5,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Object Space Light Dir", "Light", "Computes object space light direction (not normalized)" )]
+	[NodeAttributes( "Object Space Light Dir", "Lighting", "Computes object space light direction (not normalized)" )]
 	public sealed class ObjSpaceLightDirHlpNode : HelperParentNode
 	{
 		protected override void CommonInit( int uniqueId )

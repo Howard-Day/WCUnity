@@ -23,7 +23,7 @@ Shader /*ase_name*/ "Hidden/Templates/Unlit" /*end*/
 		Pass
 		{
 			Name "Unlit"
-			Tags { "LightMode" = "ForwardBase" }
+
 			CGPROGRAM
 
 			#ifndef UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX

@@ -9,9 +9,8 @@ namespace AmplifyShaderEditor
 	public sealed class SimpleTimeNode : ShaderVariablesNode
 	{
 		private const string TimeStandard = "_Time.y";
-#if UNITY_2018_3_OR_NEWER
 		private const string TimeSRP = "_TimeParameters.x";
-#endif
+
 		protected override void CommonInit( int uniqueId )
 		{
 			base.CommonInit( uniqueId );
@@ -28,14 +27,13 @@ namespace AmplifyShaderEditor
 			base.GenerateShaderForOutput( outputId, ref dataCollector, ignoreLocalvar );
 			string multiplier = m_inputPorts[ 0 ].GeneratePortInstructions( ref dataCollector );
 			string timeGlobalVar = TimeStandard;
-#if UNITY_2018_3_OR_NEWER
+
 			if( dataCollector.IsTemplate )
 			{
-				if( ( dataCollector.TemplateDataCollectorInstance.IsHDRP && ASEPackageManagerHelper.CurrentHDVersion > ASESRPVersions.ASE_SRP_5_16_1 ) ||
-					( dataCollector.TemplateDataCollectorInstance.IsLWRP && ASEPackageManagerHelper.CurrentLWVersion > ASESRPVersions.ASE_SRP_5_16_1 ) )
+				if( dataCollector.TemplateDataCollectorInstance.IsHDRP || dataCollector.TemplateDataCollectorInstance.IsLWRP )
 					timeGlobalVar = TimeSRP;
 			}
-#endif
+
 			if( multiplier == "1.0" )
 				return timeGlobalVar;
 

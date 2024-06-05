@@ -27,7 +27,6 @@ namespace AmplifyShaderEditor
 		public override void OnNodeLogicUpdate( DrawInfo drawInfo )
 		{
 			base.OnNodeLogicUpdate( drawInfo );
-#if UNITY_2019_1_OR_NEWER
 			if( UIUtils.CurrentWindow.OutsideGraph.IsStandardSurface )
 			{
 				if( !m_showErrorMessage )
@@ -40,19 +39,10 @@ namespace AmplifyShaderEditor
 			{
 				m_showErrorMessage = false;
 			}
-#else
-			if( !m_showErrorMessage )
-			{
-				m_showErrorMessage = true;
-				m_errorMessageTooltip = IncorrectUnityVersionMessage;
-			}
-#endif
 		}
 
 		public override string GenerateShaderForOutput( int outputId , ref MasterNodeDataCollector dataCollector , bool ignoreLocalVar )
 		{
-#if UNITY_2019_1_OR_NEWER
-
 			string blendIndices = string.Empty;
 			if( dataCollector.MasterNodeCategory == AvailableShaderTypes.Template )
 			{
@@ -61,9 +51,6 @@ namespace AmplifyShaderEditor
 			}
 
 			return GenerateErrorValue( outputId );
-#else
-			return GenerateErrorValue( outputId );
-#endif
 		}
 	}
 }

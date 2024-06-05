@@ -146,7 +146,6 @@ namespace AmplifyShaderEditor
 
 		public void ReadFromString( ref uint index, ref string[] nodeParams )
 		{
-#if UNITY_2019_3_OR_NEWER
 			Enum.TryParse<InlineSamplerFilteringMode>( nodeParams[ index++ ], out m_filterMode );
 			Enum.TryParse<InlineSamplerWrapCoordinates>( nodeParams[ index++ ], out m_mainWrapMode.Coordinates );
 
@@ -161,23 +160,6 @@ namespace AmplifyShaderEditor
 
 				m_additionalWrapOptions.Add( option );
 			}
-#else
-			m_filterMode =(InlineSamplerFilteringMode) Enum.Parse( typeof( InlineSamplerFilteringMode ), nodeParams[ index++ ] );
-			m_mainWrapMode.Coordinates = (InlineSamplerWrapCoordinates)Enum.Parse( typeof( InlineSamplerWrapCoordinates ),nodeParams[ index++ ] );
-
-			int count = 0;
-			int.TryParse( nodeParams[ index++ ], out count );
-			for( int i = 0; i < count; i++ )
-			{
-				InlineSamplerWrapOptions option = new InlineSamplerWrapOptions();
-
-				option.WrapMode = ( InlineSamplerWrapMode)Enum.Parse(typeof( InlineSamplerWrapMode ), nodeParams[ index++ ] );
-				option.Coordinates = ( InlineSamplerWrapCoordinates)Enum.Parse(typeof( InlineSamplerWrapCoordinates ), nodeParams[ index++ ] );
-
-				m_additionalWrapOptions.Add( option );
-			}
-#endif
-
 		}
 
 		public void WriteToString( ref string nodeInfo )

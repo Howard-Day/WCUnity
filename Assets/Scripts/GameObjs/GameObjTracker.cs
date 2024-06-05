@@ -14,7 +14,9 @@ public class GameObjTracker : MonoBehaviour
     static public bool bracketRefreshNeeded = false;
     public GameObject[] KilrathiSpawn;
     public GameObject[] ConfedSpawn;
-    public GameObject PlayerSpawn;
+    public bool randomPlayerSpawn = false;
+    public int playerSpawnIndex = 0;
+    public GameObject[] PlayerSpawn;
     public static int confedKills = 0;
     public static int kilrathiKills = 0;
     public static int playerKills = 0;
@@ -109,8 +111,14 @@ public class GameObjTracker : MonoBehaviour
         }
         if(Camera.main == null)
         {
-            GameObject ship = Instantiate(PlayerSpawn, Random.onUnitSphere*200f,Quaternion.identity);
-            ship.name = PlayerSpawn.name;
+
+            int RandomIndex = Mathf.RoundToInt(Random.Range(0, PlayerSpawn.Length));
+            if (!randomPlayerSpawn)
+            {
+                RandomIndex = playerSpawnIndex;
+            }
+            GameObject ship = Instantiate(PlayerSpawn[RandomIndex], Random.onUnitSphere*200f,Quaternion.identity);
+            ship.name = PlayerSpawn[RandomIndex].name;
         }
     }
     // Update is called once per frame

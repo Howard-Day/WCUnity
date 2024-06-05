@@ -294,7 +294,7 @@ namespace AmplifyShaderEditor
 
 				if( UIUtils.IsNumericName( m_propertyName ) )
 				{
-					UIUtils.ShowMessage( UniqueId, string.Format( "Invalid property name '{0}' as it cannot start with numbers. Reverting to previous name.", m_propertyName ), MessageSeverity.Warning );
+					UIUtils.ShowMessage( UniqueId, string.Format( "Invalid property name '{0}' as it cannot start with numbers. Reverting to last valid name '{1}'", m_propertyName, m_oldName ), MessageSeverity.Warning );
 					m_propertyName = m_oldName;
 					GUI.FocusControl( string.Empty );
 					return;
@@ -316,7 +316,7 @@ namespace AmplifyShaderEditor
 					{
 						GUI.FocusControl( string.Empty );
 						RegisterFirstAvailablePropertyName( true, true );
-						UIUtils.ShowMessage( UniqueId, string.Format( "Duplicate property name found on edited node.\nAssigning first valid one {0}", m_propertyName ) );
+						UIUtils.ShowMessage( UniqueId, string.Format( "Property name '{0}' is already in use. Reverting to last valid name '{1}'", m_propertyName, m_oldName ) );
 					}
 				}
 			}
@@ -373,9 +373,9 @@ namespace AmplifyShaderEditor
 
 		public void ChangeParameterType( PropertyType parameterType )
 		{
-			Undo.RegisterCompleteObjectUndo( m_containerGraph.ParentWindow, Constants.UndoChangePropertyTypeNodesId );
-			Undo.RegisterCompleteObjectUndo( m_containerGraph, Constants.UndoChangePropertyTypeNodesId );
-			Undo.RecordObject( this, Constants.UndoChangePropertyTypeNodesId );
+			UndoUtils.RegisterCompleteObjectUndo( m_containerGraph.ParentWindow, Constants.UndoChangePropertyTypeNodesId );
+			UndoUtils.RegisterCompleteObjectUndo( m_containerGraph, Constants.UndoChangePropertyTypeNodesId );
+			UndoUtils.RecordObject( this, Constants.UndoChangePropertyTypeNodesId );
 
 			if( m_currentParameterType == PropertyType.Constant || m_currentParameterType == PropertyType.Global )
 			{
@@ -525,7 +525,7 @@ namespace AmplifyShaderEditor
 					EditorGUI.BeginChangeCheck();
 					EditorGUILayout.BeginHorizontal();
 					m_enumNames[ i ] = EditorGUILayoutTextField( "Name", m_enumNames[ i ] );
-					m_enumValues[ i ] = EditorGUILayoutIntField( "Value", m_enumValues[ i ], GUILayout.Width( 100 ) );
+					m_enumValues[ i ] = Mathf.Max( 0, EditorGUILayoutIntField( "Value", m_enumValues[ i ], GUILayout.Width( 100 ) ) );
 					EditorGUILayout.EndHorizontal();
 					if( EditorGUI.EndChangeCheck() )
 					{
@@ -1021,6 +1021,7 @@ namespace AmplifyShaderEditor
 		}
 
 		public virtual string GetPropertyValStr() { return string.Empty; }
+		public virtual string GetSubTitleVarNameFormatStr() { return Constants.SubTitleVarNameFormatStr; }
 
 		public override bool OnClick( Vector2 currentMousePos2D )
 		{
@@ -1141,7 +1142,7 @@ namespace AmplifyShaderEditor
 					//if( globalHandler )
 					//{
 					string currValue = ( m_currentParameterType == PropertyType.Global && m_globalDefaultBehavior ) ? "<GLOBAL>" : GetPropertyValStr();
-					SetClippedAdditionalTitle( string.Format( m_useVarSubtitle ? Constants.SubTitleVarNameFormatStr : Constants.SubTitleValueFormatStr, currValue ), m_longNameSize, LongNameEnder );
+					SetClippedAdditionalTitle( string.Format( m_useVarSubtitle ? GetSubTitleVarNameFormatStr() : Constants.SubTitleValueFormatStr, currValue ), m_longNameSize, LongNameEnder );
 					//}
 					//else
 					//{
@@ -1151,7 +1152,7 @@ namespace AmplifyShaderEditor
 					//	}
 					//	else
 					//	{
-					//		SetAdditonalTitleText( string.Format( m_useVarSubtitle ? Constants.SubTitleVarNameFormatStr : Constants.SubTitleValueFormatStr, GetPropertyValStr() ) );
+					//		SetAdditonalTitleText( string.Format( m_useVarSubtitle ? GetSubTitleVarNameFormatStr() : Constants.SubTitleValueFormatStr, GetPropertyValStr() ) );
 					//	}
 					//}
 				}
@@ -1283,7 +1284,7 @@ namespace AmplifyShaderEditor
 			{
 				GUI.FocusControl( string.Empty );
 				RegisterFirstAvailablePropertyName( releaseOldOne );
-				UIUtils.ShowMessage( UniqueId, string.Format( "Duplicate name found on edited node.\nAssigning first valid one {0}", m_propertyInspectorName ) );
+				UIUtils.ShowMessage( UniqueId, string.Format( "Property name '{0}' is already in use. Reverting to last valid name '{1}'", propertyName, m_oldName ) );
 			}
 		}
 

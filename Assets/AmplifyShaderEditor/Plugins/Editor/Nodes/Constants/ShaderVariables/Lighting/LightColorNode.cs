@@ -6,10 +6,14 @@ using UnityEngine;
 namespace AmplifyShaderEditor
 {
 	[System.Serializable]
-	[NodeAttributes( "Light Color", "Light", "Light Color, RGB value already contains light intensity while A only contains light intensity" )]
+	[NodeAttributes( "Light Color", "Lighting", "Light Color, RGB value already contains light intensity while A only contains light intensity" )]
 	public sealed class LightColorNode : ShaderVariablesNode
 	{
 		private const string m_lightColorValue = "_LightColor0";
+
+		private const string m_localIntensityVar = "ase_lightIntensity";
+		private const string m_localColorVar = "ase_lightColor";
+
 		protected override void CommonInit( int uniqueId )
 		{
 			base.CommonInit( uniqueId );
@@ -31,7 +35,7 @@ namespace AmplifyShaderEditor
 
 			if( !PreviewIsDirty )
 				return;
-			if( !Preferences.GlobalDisablePreviews )
+			if( !Preferences.User.DisablePreviews )
 			{
 				int count = m_outputPorts.Count;
 				for( int i = 0 ; i < count ; i++ )
@@ -52,38 +56,43 @@ namespace AmplifyShaderEditor
 				dataCollector.AddToIncludes( -1, Constants.UnityLightingLib );
 
 			base.GenerateShaderForOutput( outputId, ref dataCollector, ignoreLocalvar );
-
-			string finalVar = m_lightColorValue;
-			if( dataCollector.IsTemplate && dataCollector.IsSRP )
+			
+			if ( dataCollector.IsTemplate && dataCollector.IsSRP )
 			{
-				if( dataCollector.TemplateDataCollectorInstance.CurrentSRPType == TemplateSRPType.HD )
+				string constantVar;
+				if ( dataCollector.TemplateDataCollectorInstance.CurrentSRPType == TemplateSRPType.HDRP )
 				{
 					dataCollector.TemplateDataCollectorInstance.AddHDLightInfo();
-					finalVar = string.Format( TemplateHelperFunctions.HDLightInfoFormat, "0", "color" ); ;
+					constantVar = string.Format( TemplateHelperFunctions.HDLightInfoFormat, "0", "color" ); ;
 				}
 				else
 				{
-					finalVar = "_MainLightColor";
+					constantVar = "_MainLightColor";
 				}
+
+				dataCollector.AddLocalVariable( UniqueId, CurrentPrecisionType, WirePortDataType.FLOAT, m_localIntensityVar, 
+					string.Format( "max( max( {0}.r, {0}.g ), {0}.b )", constantVar ) );
+
+				dataCollector.AddLocalVariable( UniqueId, CurrentPrecisionType, WirePortDataType.FLOAT4, m_localColorVar,
+					string.Format( "float4( {0}.rgb / {1}, {1} )", constantVar, m_localIntensityVar ) );
 			}
 			else
 			{
 				dataCollector.AddLocalVariable( UniqueId, "#if defined(LIGHTMAP_ON) && ( UNITY_VERSION < 560 || ( defined(LIGHTMAP_SHADOW_MIXING) && !defined(SHADOWS_SHADOWMASK) && defined(SHADOWS_SCREEN) ) )//aselc" );
-				dataCollector.AddLocalVariable( UniqueId, CurrentPrecisionType, WirePortDataType.FLOAT4, "ase_lightColor", "0" );
+				dataCollector.AddLocalVariable( UniqueId, CurrentPrecisionType, WirePortDataType.FLOAT4, m_localColorVar, "0" );
 				dataCollector.AddLocalVariable( UniqueId, "#else //aselc" );
-				dataCollector.AddLocalVariable( UniqueId, CurrentPrecisionType, WirePortDataType.FLOAT4, "ase_lightColor", finalVar );
+				dataCollector.AddLocalVariable( UniqueId, CurrentPrecisionType, WirePortDataType.FLOAT4, m_localColorVar, m_lightColorValue );
 				dataCollector.AddLocalVariable( UniqueId, "#endif //aselc" );
-				finalVar = "ase_lightColor";
 			}
 			//else if( ContainerGraph.CurrentStandardSurface.CurrentLightingModel == StandardShaderLightModel.CustomLighting )
 			//	finalVar = "gi.light.color";
 
-			switch( outputId )
+			switch ( outputId )
 			{
 				default:
-				case 0: return finalVar;
-				case 1: return finalVar + ".rgb";
-				case 2: return finalVar + ".a";
+				case 0: return m_localColorVar;
+				case 1: return m_localColorVar + ".rgb";
+				case 2: return m_localColorVar + ".a";
 			}
 		}
 	}

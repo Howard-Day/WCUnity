@@ -60,6 +60,7 @@ namespace AmplifyShaderEditor
 			m_autoUpdateOutputPort = false;
 			m_hasLeftDropdown = true;
 			m_previewShaderGUID = "d20531704ce28b14bafb296f291f6608";
+			m_previewMaterialPassId = 0;
 			SetAdditonalTitleText( "Value( XYZW )" );
 			CalculatePreviewData();
 		}
@@ -78,60 +79,33 @@ namespace AmplifyShaderEditor
 
 		void CalculatePreviewData()
 		{
-			switch( m_outputPorts[ 0 ].DataType )
-			{
-				default: m_maskValue = Vector4.zero; break;
-				case WirePortDataType.INT:
-				case WirePortDataType.FLOAT: m_maskValue = new Vector4( 1, 0, 0, 0 ); break;
-				case WirePortDataType.FLOAT2: m_maskValue = new Vector4( 1, 1, 0, 0 ); break;
-				case WirePortDataType.FLOAT3: m_maskValue = new Vector4( 1, 1, 1, 0 ); break;
-				case WirePortDataType.FLOAT4:
-				case WirePortDataType.COLOR: m_maskValue = Vector4.one; break;
-			}
-
 			int inputMaxChannelId = 0;
-			switch( m_inputPorts[ 0 ].DataType )
+			switch ( m_inputPorts[ 0 ].DataType )
 			{
 				case WirePortDataType.FLOAT4:
 				case WirePortDataType.COLOR:
-				inputMaxChannelId = 3;
-				break;
+					inputMaxChannelId = 3;
+					break;
 				case WirePortDataType.FLOAT3:
-				inputMaxChannelId = 2;
-				break;
+					inputMaxChannelId = 2;
+					break;
 				case WirePortDataType.FLOAT2:
-				inputMaxChannelId = 1;
-				break;
+					inputMaxChannelId = 1;
+					break;
 				case WirePortDataType.INT:
 				case WirePortDataType.FLOAT:
-				inputMaxChannelId = 0;
-				break;
+					inputMaxChannelId = 0;
+					break;
 				case WirePortDataType.OBJECT:
 				case WirePortDataType.FLOAT3x3:
 				case WirePortDataType.FLOAT4x4:
-				break;
-			}
-			
-			m_previewMaterialPassId = -1;
-			float passValue = 0;
-			for( int i = 3; i > -1; i-- )
-			{
-				int currentSwizzle = Mathf.Min( inputMaxChannelId, m_selectedOutputSwizzleTypes[ i ] );
-				if( currentSwizzle > 0 )
-				{
-					passValue += Mathf.Pow( 4, 3 - i ) * currentSwizzle;
-				}
+					break;
 			}
 
-			m_previewMaterialPassId = (int)passValue;
-
-			if( m_previewMaterialPassId == -1 )
+			for ( int i = 0; i < 4; i++ )
 			{
-				m_previewMaterialPassId = 0;
-				if( DebugConsoleWindow.DeveloperMode )
-				{
-					UIUtils.ShowMessage( UniqueId, "Could not find pass ID for swizzle", MessageSeverity.Error );
-				}
+				int channel = m_selectedOutputSwizzleTypes[ Mathf.Min( m_selectedOutputTypeInt, i ) ];
+				m_maskValue[ i ] = Mathf.Min( inputMaxChannelId, channel );
 			}
 		}
 

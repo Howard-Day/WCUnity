@@ -46,7 +46,7 @@ namespace AmplifyShaderEditor
 				return;
 
 			SetPreviewInputs();
-			if( !Preferences.GlobalDisablePreviews )
+			if( !Preferences.User.DisablePreviews )
 			{
 				int count = m_outputPorts.Count;
 				for( int i = 0 ; i < count ; i++ )

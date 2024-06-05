@@ -10,7 +10,7 @@ namespace AmplifyShaderEditor
 
 		static string[] OnWillSaveAssets( string[] paths )
 		{
-			if( !Preferences.GlobalUpdateOnSceneSave )
+			if( !Preferences.User.UpdateOnSceneSave )
 				return paths;
 
 			bool canSave = false;

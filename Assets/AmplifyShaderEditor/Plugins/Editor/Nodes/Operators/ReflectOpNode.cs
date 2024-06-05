@@ -6,7 +6,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Reflect", "Vector Operators", "Reflection vector given an incidence vector and a normal vector" )]
+	[NodeAttributes( "Reflect", "Vector Operators", "Reflection vector given an incidence vector and a normal vector", tags: "refl reflect reflection" )]
 	public sealed class ReflectOpNode : DynamicTypeNode
 	{
 		protected override void CommonInit( int uniqueId )

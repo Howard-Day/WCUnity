@@ -256,7 +256,7 @@ namespace AmplifyShaderEditor
 		{
 			get
 			{
-				if( Preferences.GlobalDisablePreviews )
+				if( Preferences.User.DisablePreviews )
 				{
 					return UIUtils.DummyRT;
 				}

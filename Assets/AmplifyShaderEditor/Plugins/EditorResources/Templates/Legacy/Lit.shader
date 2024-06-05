@@ -19,7 +19,7 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 		//_SpecularHighlights("Specular Highlights", Float) = 1.0
 		//_GlossyReflections("Reflections", Float) = 1.0
 	}
-	
+
 	SubShader
 	{
 		/*ase_subshader_options:Name=Additional Options
@@ -55,11 +55,11 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 			Option:  Refraction Model:None:None
 				None,disable:HidePort:ForwardBase:Refraction Index
 				None,disable:HidePort:ForwardBase:Refraction Color
-				None,disable:RemoveDefine:_REFRACTION_ASE 1
+				None,disable:RemoveDefine:ASE_REFRACTION 1
 				None,disable:RemoveDefine:ASE_NEEDS_FRAG_SCREEN_POSITION
 				Legacy:ShowPort:ForwardBase:Refraction Index
 				Legacy:ShowPort:ForwardBase:Refraction Color
-				Legacy:SetDefine:_REFRACTION_ASE 1
+				Legacy:SetDefine:ASE_REFRACTION 1
 				Legacy:SetDefine:ASE_NEEDS_FRAG_SCREEN_POSITION
 			Option:  Dither Shadows:false,true:true
 				true:SetDefine:UNITY_STANDARD_USE_DITHER_MASK 1
@@ -72,10 +72,10 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 				true:IncludePass:Deferred
 				false:ExcludePass:Deferred
 			Option:Transmission:false,true:false
-				false:RemoveDefine:_TRANSMISSION_ASE 1
+				false:RemoveDefine:ASE_TRANSMISSION 1
 				false:HidePort:ForwardBase:Transmission
 				false:HideOption:  Transmission Shadow
-				true:SetDefine:_TRANSMISSION_ASE 1
+				true:SetDefine:ASE_TRANSMISSION 1
 				true:ShowPort:ForwardBase:Transmission
 				true:ShowOption:  Transmission Shadow
 				true:SetOption:Deferred Pass,0
@@ -84,7 +84,7 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 				Change:SetShaderProperty:_TransmissionShadow,_TransmissionShadow( "Transmission Shadow", Range( 0, 1 ) ) = 0.5
 				Inline,disable:SetShaderProperty:_TransmissionShadow,//_TransmissionShadow( "Transmission Shadow", Range( 0, 1 ) ) = 0.5
 			Option:Translucency:false,true:false
-				false:RemoveDefine:_TRANSLUCENCY_ASE 1
+				false:RemoveDefine:ASE_TRANSLUCENCY 1
 				false:HidePort:ForwardBase:Translucency
 				false:HideOption:  Translucency Strength
 				false:HideOption:  Normal Distortion
@@ -92,7 +92,7 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 				false:HideOption:  Direct
 				false:HideOption:  Ambient
 				false:HideOption:  Shadow
-				true:SetDefine:_TRANSLUCENCY_ASE 1
+				true:SetDefine:ASE_TRANSLUCENCY 1
 				true:ShowPort:ForwardBase:Translucency
 				true:ShowOption:  Translucency Strength
 				true:ShowOption:  Normal Distortion
@@ -165,13 +165,13 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 				true:IncludePass:ExtraPrePass
 				false,disable:ExcludePass:ExtraPrePass
 			Option:Tessellation:false,true:false
-				true:SetDefine:TESSELLATION_ON 1
+				true:SetDefine:ASE_TESSELLATION 1
 				true:SetDefine:pragma require tessellation tessHW
 				true:SetDefine:pragma hull HullFunction
 				true:SetDefine:pragma domain DomainFunction
 				true:ShowOption:  Phong
 				true:ShowOption:  Type
-				false,disable:RemoveDefine:TESSELLATION_ON 1
+				false,disable:RemoveDefine:ASE_TESSELLATION 1
 				false,disable:RemoveDefine:pragma require tessellation tessHW
 				false,disable:RemoveDefine:pragma hull HullFunction
 				false,disable:RemoveDefine:pragma domain DomainFunction
@@ -268,7 +268,7 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 		{
 			return tessValue;
 		}
-		
+
 		float CalcDistanceTessFactor (float4 vertex, float minDist, float maxDist, float tess, float4x4 o2w, float3 cameraPos )
 		{
 			float3 wpos = mul(o2w,vertex).xyz;
@@ -369,7 +369,7 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 		{
 			Name "ExtraPrePass"
 			Tags { "LightMode" = "ForwardBase" }
-			
+
 			Blend One Zero
 			Cull Back
 			ZWrite On
@@ -411,7 +411,7 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 				/*ase_vdata:p=p;t=t;n=n;uv1=tc1.xyzw;uv2=tc2.xyzw*/
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
-			
+
 			struct v2f {
 				#if UNITY_VERSION >= 201810
 					UNITY_POSITION(pos);
@@ -438,7 +438,7 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 				UNITY_VERTEX_OUTPUT_STEREO
 			};
 
-			#ifdef TESSELLATION_ON
+			#ifdef ASE_TESSELLATION
 				float _TessPhongStrength;
 				float _TessValue;
 				float _TessMin;
@@ -447,7 +447,7 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 				float _TessMaxDisp;
 			#endif
 			/*ase_globals*/
-	
+
 			/*ase_funcs*/
 
 			v2f VertexFunction (appdata v /*ase_vert_input*/ ) {
@@ -499,7 +499,7 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 				return o;
 			}
 
-			#if defined(TESSELLATION_ON)
+			#if defined(ASE_TESSELLATION)
 			struct VertexControl
 			{
 				float4 vertex : INTERNALTESSPOS;
@@ -586,12 +586,12 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 				return VertexFunction( v );
 			}
 			#endif
-			
+
 			fixed4 frag (v2f IN /*ase_frag_input*/
 				#ifdef _DEPTHOFFSET_ON
 				, out float outputDepth : SV_Depth
 				#endif
-				) : SV_Target 
+				) : SV_Target
 			{
 				UNITY_SETUP_INSTANCE_ID(IN);
 
@@ -644,7 +644,7 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 			/*ase_main_pass*/
 			Name "ForwardBase"
 			Tags { "LightMode" = "ForwardBase" }
-			
+
 			Blend One Zero
 
 			CGPROGRAM
@@ -680,7 +680,7 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 				/*ase_vdata:p=p;t=t;n=n;uv1=tc1.xyzw;uv2=tc2.xyzw*/
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
-			
+
 			struct v2f {
 				#if UNITY_VERSION >= 201810
 					UNITY_POSITION(pos);
@@ -716,10 +716,10 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 				UNITY_VERTEX_OUTPUT_STEREO
 			};
 
-			#ifdef _TRANSMISSION_ASE
+			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
 			#endif
-			#ifdef _TRANSLUCENCY_ASE
+			#ifdef ASE_TRANSLUCENCY
 				float _TransStrength;
 				float _TransNormal;
 				float _TransScattering;
@@ -727,7 +727,7 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 				float _TransAmbient;
 				float _TransShadow;
 			#endif
-			#ifdef TESSELLATION_ON
+			#ifdef ASE_TESSELLATION
 				float _TessPhongStrength;
 				float _TessValue;
 				float _TessMin;
@@ -736,7 +736,7 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 				float _TessMaxDisp;
 			#endif
 			/*ase_globals*/
-	
+
 			/*ase_funcs*/
 
 			v2f VertexFunction (appdata v /*ase_vert_input*/ ) {
@@ -811,7 +811,7 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 				return o;
 			}
 
-			#if defined(TESSELLATION_ON)
+			#if defined(ASE_TESSELLATION)
 			struct VertexControl
 			{
 				float4 vertex : INTERNALTESSPOS;
@@ -898,12 +898,12 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 				return VertexFunction( v );
 			}
 			#endif
-			
+
 			fixed4 frag (v2f IN /*ase_frag_input*/
 				#ifdef _DEPTHOFFSET_ON
 				, out float outputDepth : SV_Depth
 				#endif
-				) : SV_Target 
+				) : SV_Target
 			{
 				UNITY_SETUP_INSTANCE_ID(IN);
 
@@ -948,7 +948,7 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 				float3 RefractionColor = /*ase_frag_out:Refraction Color;Float3;11;-1;_RefractionColor*/1/*end*/;
 				float RefractionIndex = /*ase_frag_out:Refraction Index;Float;12;-1;_RefractionIndex*/1/*end*/;
 				float3 Transmission = /*ase_frag_out:Transmission;Float3;13;-1;_Transmission*/1/*end*/;
-				float3 Translucency = /*ase_frag_out:Translucency;Float3;14;-1;_Translucency*/1/*end*/;				
+				float3 Translucency = /*ase_frag_out:Translucency;Float3;14;-1;_Translucency*/1/*end*/;
 
 				#ifdef _ALPHATEST_ON
 					clip( o.Alpha - AlphaClipThreshold );
@@ -1007,7 +1007,7 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 					giInput.boxMin[1] = unity_SpecCube1_BoxMin;
 					giInput.probePosition[1] = unity_SpecCube1_ProbePosition;
 				#endif
-				
+
 				#if defined(_SPECULAR_SETUP)
 					LightingStandardSpecular_GI(o, giInput, gi);
 				#else
@@ -1027,8 +1027,8 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 				#else
 					c += LightingStandard( o, worldViewDir, gi );
 				#endif
-				
-				#ifdef _TRANSMISSION_ASE
+
+				#ifdef ASE_TRANSMISSION
 				{
 					float shadow = /*ase_inline_begin*/_TransmissionShadow/*ase_inline_end*/;
 					#ifdef DIRECTIONAL
@@ -1041,7 +1041,7 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 				}
 				#endif
 
-				#ifdef _TRANSLUCENCY_ASE
+				#ifdef ASE_TRANSLUCENCY
 				{
 					float shadow = /*ase_inline_begin*/_TransShadow/*ase_inline_end*/;
 					float normal = /*ase_inline_begin*/_TransNormal/*ase_inline_end*/;
@@ -1062,7 +1062,7 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 				}
 				#endif
 
-				//#ifdef _REFRACTION_ASE
+				//#ifdef ASE_REFRACTION
 				//	float4 projScreenPos = ScreenPos / ScreenPos.w;
 				//	float3 refractionOffset = ( RefractionIndex - 1.0 ) * mul( UNITY_MATRIX_V, WorldNormal ).xyz * ( 1.0 - dot( WorldNormal, WorldViewDirection ) );
 				//	projScreenPos.xy += refractionOffset.xy;
@@ -1153,10 +1153,10 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 				UNITY_VERTEX_OUTPUT_STEREO
 			};
 
-			#ifdef _TRANSMISSION_ASE
+			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
 			#endif
-			#ifdef _TRANSLUCENCY_ASE
+			#ifdef ASE_TRANSLUCENCY
 				float _TransStrength;
 				float _TransNormal;
 				float _TransScattering;
@@ -1164,7 +1164,7 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 				float _TransAmbient;
 				float _TransShadow;
 			#endif
-			#ifdef TESSELLATION_ON
+			#ifdef ASE_TESSELLATION
 				float _TessPhongStrength;
 				float _TessValue;
 				float _TessMin;
@@ -1173,7 +1173,7 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 				float _TessMaxDisp;
 			#endif
 			/*ase_globals*/
-	
+
 			/*ase_funcs*/
 
 			v2f VertexFunction (appdata v /*ase_vert_input*/ ) {
@@ -1228,7 +1228,7 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 				return o;
 			}
 
-			#if defined(TESSELLATION_ON)
+			#if defined(ASE_TESSELLATION)
 			struct VertexControl
 			{
 				float4 vertex : INTERNALTESSPOS;
@@ -1320,7 +1320,7 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 				#ifdef _DEPTHOFFSET_ON
 				, out float outputDepth : SV_Depth
 				#endif
-				) : SV_Target 
+				) : SV_Target
 			{
 				UNITY_SETUP_INSTANCE_ID(IN);
 
@@ -1362,7 +1362,7 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 				o.Alpha = /*ase_frag_out:Alpha;Float;7;-1;_Alpha*/1/*end*/;
 				float AlphaClipThreshold = /*ase_frag_out:Alpha Clip Threshold;Float;8;-1;_AlphaClip*/0.5/*end*/;
 				float3 Transmission = /*ase_frag_out:Transmission;Float3;9;-1;_Transmission*/1/*end*/;
-				float3 Translucency = /*ase_frag_out:Translucency;Float3;10;-1;_Translucency*/1/*end*/;		
+				float3 Translucency = /*ase_frag_out:Translucency;Float3;10;-1;_Translucency*/1/*end*/;
 
 				#ifdef _ALPHATEST_ON
 					clip( o.Alpha - AlphaClipThreshold );
@@ -1399,8 +1399,8 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 				#else
 					c += LightingStandard( o, worldViewDir, gi );
 				#endif
-				
-				#ifdef _TRANSMISSION_ASE
+
+				#ifdef ASE_TRANSMISSION
 				{
 					float shadow = /*ase_inline_begin*/_TransmissionShadow/*ase_inline_end*/;
 					#ifdef DIRECTIONAL
@@ -1413,7 +1413,7 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 				}
 				#endif
 
-				#ifdef _TRANSLUCENCY_ASE
+				#ifdef ASE_TRANSLUCENCY
 				{
 					float shadow = /*ase_inline_begin*/_TransShadow/*ase_inline_end*/;
 					float normal = /*ase_inline_begin*/_TransNormal/*ase_inline_end*/;
@@ -1434,7 +1434,7 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 				}
 				#endif
 
-				//#ifdef _REFRACTION_ASE
+				//#ifdef ASE_REFRACTION
 				//	float4 projScreenPos = ScreenPos / ScreenPos.w;
 				//	float3 refractionOffset = ( RefractionIndex - 1.0 ) * mul( UNITY_MATRIX_V, WorldNormal ).xyz * ( 1.0 - dot( WorldNormal, WorldViewDirection ) );
 				//	projScreenPos.xy += refractionOffset.xy;
@@ -1464,7 +1464,6 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 			#pragma vertex vert
 			#pragma fragment frag
 			#pragma target 3.0
-			#pragma exclude_renderers nomrt
 			#pragma skip_variants FOG_LINEAR FOG_EXP FOG_EXP2
 			#pragma multi_compile_prepassfinal
 			#ifndef UNITY_PASS_DEFERRED
@@ -1524,7 +1523,7 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 			float4 unity_LightmapFade;
 			#endif
 			fixed4 unity_Ambient;
-			#ifdef TESSELLATION_ON
+			#ifdef ASE_TESSELLATION
 				float _TessPhongStrength;
 				float _TessValue;
 				float _TessMin;
@@ -1533,7 +1532,7 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 				float _TessMaxDisp;
 			#endif
 			/*ase_globals*/
-	
+
 			/*ase_funcs*/
 
 			v2f VertexFunction (appdata v /*ase_vert_input*/ ) {
@@ -1590,7 +1589,7 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 				return o;
 			}
 
-			#if defined(TESSELLATION_ON)
+			#if defined(ASE_TESSELLATION)
 			struct VertexControl
 			{
 				float4 vertex : INTERNALTESSPOS;
@@ -1689,7 +1688,7 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 				#ifdef _DEPTHOFFSET_ON
 				, out float outputDepth : SV_Depth
 				#endif
-			) 
+			)
 			{
 				UNITY_SETUP_INSTANCE_ID(IN);
 
@@ -1868,7 +1867,7 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 				UNITY_VERTEX_OUTPUT_STEREO
 			};
 
-			#ifdef TESSELLATION_ON
+			#ifdef ASE_TESSELLATION
 				float _TessPhongStrength;
 				float _TessValue;
 				float _TessMin;
@@ -1877,7 +1876,7 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 				float _TessMaxDisp;
 			#endif
 			/*ase_globals*/
-	
+
 			/*ase_funcs*/
 
 			v2f VertexFunction (appdata v /*ase_vert_input*/ ) {
@@ -1920,7 +1919,7 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 				return o;
 			}
 
-			#if defined(TESSELLATION_ON)
+			#if defined(ASE_TESSELLATION)
 			struct VertexControl
 			{
 				float4 vertex : INTERNALTESSPOS;
@@ -2012,10 +2011,10 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 				#ifdef _DEPTHOFFSET_ON
 				, out float outputDepth : SV_Depth
 				#endif
-				) : SV_Target 
+				) : SV_Target
 			{
 				UNITY_SETUP_INSTANCE_ID(IN);
-				
+
 				#ifdef LOD_FADE_CROSSFADE
 					UNITY_APPLY_DITHER_CROSSFADE(IN.pos.xy);
 				#endif
@@ -2025,7 +2024,7 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 				#else
 					SurfaceOutputStandard o = (SurfaceOutputStandard)0;
 				#endif
-				
+
 				/*ase_frag_code:IN=v2f*/
 				o.Albedo = /*ase_frag_out:Albedo;Float3;0;-1;_Albedo*/fixed3( 0.5, 0.5, 0.5 )/*end*/;
 				o.Normal = fixed3( 0, 0, 1 );
@@ -2111,7 +2110,7 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 			#ifdef UNITY_STANDARD_USE_DITHER_MASK
 				sampler3D _DitherMaskLOD;
 			#endif
-			#ifdef TESSELLATION_ON
+			#ifdef ASE_TESSELLATION
 				float _TessPhongStrength;
 				float _TessValue;
 				float _TessMin;
@@ -2120,7 +2119,7 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 				float _TessMaxDisp;
 			#endif
 			/*ase_globals*/
-	
+
 			/*ase_funcs*/
 
 			v2f VertexFunction (appdata v /*ase_vert_input*/ ) {
@@ -2150,7 +2149,7 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 				return o;
 			}
 
-			#if defined(TESSELLATION_ON)
+			#if defined(ASE_TESSELLATION)
 			struct VertexControl
 			{
 				float4 vertex : INTERNALTESSPOS;
@@ -2245,7 +2244,7 @@ Shader /*ase_name*/ "Hidden/Legacy/Lit" /*end*/
 				#if !defined( CAN_SKIP_VPOS )
 				, UNITY_VPOS_TYPE vpos : VPOS
 				#endif
-				) : SV_Target 
+				) : SV_Target
 			{
 				UNITY_SETUP_INSTANCE_ID(IN);
 

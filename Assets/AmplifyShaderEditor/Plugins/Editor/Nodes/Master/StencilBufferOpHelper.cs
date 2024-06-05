@@ -106,6 +106,7 @@ namespace AmplifyShaderEditor
 		private const string FailBackStr = "Fail Back";
 		private const string ZFailBackStr = "ZFail Back";
 
+		private const int ReferenceDefaultValue = 0;
 		private const int ReadMaskDefaultValue = 255;
 		private const int WriteMaskDefaultValue = 255;
 		private const int ComparisonDefaultValue = 0;
@@ -117,7 +118,7 @@ namespace AmplifyShaderEditor
 		private bool m_active;
 
 		[SerializeField]
-		private InlineProperty m_refValue = new InlineProperty();
+		private InlineProperty m_refValue = new InlineProperty( ReferenceDefaultValue );
 		[SerializeField]
 		private InlineProperty m_readMask = new InlineProperty( ReadMaskDefaultValue );
 		[SerializeField]

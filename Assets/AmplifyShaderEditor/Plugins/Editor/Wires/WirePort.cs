@@ -276,8 +276,8 @@ namespace AmplifyShaderEditor
 				//ParentNode node = UIUtils.GetNode( m_nodeId );
 				//if ( node )
 				//{
-				//	Undo.RegisterCompleteObjectUndo( node.ContainerGraph.ParentWindow, Constants.UndoChangeTypeNodesId );
-				//	Undo.RecordObject( node, Constants.UndoChangeTypeNodesId );
+				//	UndoUtils.RegisterCompleteObjectUndo( node.ContainerGraph.ParentWindow, Constants.UndoChangeTypeNodesId );
+				//	UndoUtils.RecordObject( node, Constants.UndoChangeTypeNodesId );
 				//}
 				DataType = newType;
 				if( invalidateConnections )

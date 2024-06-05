@@ -11,7 +11,7 @@ namespace AmplifyShaderEditor
 	[Serializable]
 	public class TemplateNodeParent : ParentNode
 	{
-		protected const string ErrorMessageStr = "This node can only be used inside a Template category!";
+		protected const string ErrorMessageStr = "This node cannot be used with Surface Shaders or Shader Functions.\n\nPlease change your Shader Type to a compatible template, such as Legacy, URP, HDRP or other.";
 		protected const string DataLabelStr = "Data";
 		protected const string SubShaderStr = "SubShader";
 		protected const string PassStr = "Pass";
@@ -164,6 +164,22 @@ namespace AmplifyShaderEditor
 			{
 				m_showErrorMessage = false;
 			}
+		}
+
+		public override void DrawProperties()
+		{
+			base.DrawProperties();			
+			if ( m_showErrorMessage )
+			{
+				EditorGUILayout.HelpBox( ErrorMessageStr, MessageType.Error );
+				return;
+			}
+		}
+
+		public override void OnNodeLogicUpdate( DrawInfo drawInfo )
+		{
+			base.OnNodeLogicUpdate( drawInfo );
+			m_showErrorMessage = ( m_containerGraph.CurrentCanvasMode != NodeAvailability.TemplateShader );
 		}
 
 		protected void FetchMultiPassTemplate( MasterNode masterNode = null )

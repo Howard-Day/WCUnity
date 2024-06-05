@@ -25,7 +25,7 @@ namespace AmplifyShaderEditor
 
 	public class ConsoleLogWindow
 	{
-		public const int MAXWIDTH = 400;
+		public const int MAXWIDTH = 500;
 		public const float FADETIME = 7;
 
 		private readonly GUIContent m_boxToggleContent = new GUIContent( "\u2261", "Toggle Message Box" );
@@ -54,7 +54,7 @@ namespace AmplifyShaderEditor
 
 			GUIContent gc = new GUIContent( m_parentWindow.Messages.Count + ": " + itemMessage );
 			float maxWidth = m_parentWindow.MaxMsgWidth;
-			maxWidth = Mathf.Max( GUIStyle.none.CalcSize( gc ).x + 16, maxWidth );
+			maxWidth = Mathf.Max( UIUtils.ConsoleLogLabel.CalcSize( gc ).x + 16, maxWidth );
 			maxWidth = Mathf.Min( maxWidth, MAXWIDTH );
 			m_parentWindow.MaxMsgWidth = maxWidth;
 		}
@@ -293,7 +293,7 @@ namespace AmplifyShaderEditor
 		public void ClearMessages()
 		{
 			m_parentWindow.Messages.Clear();
-			m_parentWindow.MaxMsgWidth = 100;
+			m_parentWindow.MaxMsgWidth = MAXWIDTH;
 		}
 
 		public void Toggle()

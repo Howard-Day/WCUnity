@@ -14,10 +14,10 @@ namespace AmplifyShaderEditor
 		protected override void CommonInit( int uniqueId )
 		{
 			base.CommonInit( uniqueId );
-			AddInputPort( WirePortDataType.FLOAT, false, "Surface", -1, MasterNodePortCategory.Fragment, 0 );
-			AddInputPort( WirePortDataType.FLOAT, false, "Default RP", -1, MasterNodePortCategory.Fragment, 3 );
-			AddInputPort( WirePortDataType.FLOAT, false, "Lightweight", -1, MasterNodePortCategory.Fragment, 1 );
-			AddInputPort( WirePortDataType.FLOAT, false, "HD", -1, MasterNodePortCategory.Fragment, 2 );
+			AddInputPort( WirePortDataType.FLOAT, false, "BiRP Surface", -1, MasterNodePortCategory.Fragment, 0 );
+			AddInputPort( WirePortDataType.FLOAT, false, "BiRP VertFrag", -1, MasterNodePortCategory.Fragment, 3 );
+			AddInputPort( WirePortDataType.FLOAT, false, "URP", -1, MasterNodePortCategory.Fragment, 1 );
+			AddInputPort( WirePortDataType.FLOAT, false, "HDRP", -1, MasterNodePortCategory.Fragment, 2 );
 			AddOutputPort( WirePortDataType.FLOAT, Constants.EmptyPortValue );
 
 		}
@@ -40,19 +40,19 @@ namespace AmplifyShaderEditor
 		{
 			switch( UIUtils.CurrentWindow.OutsideGraph.CurrentSRPType )
 			{
-				case TemplateSRPType.BuiltIn:
+				case TemplateSRPType.BiRP:
 				{
 					InputPort port = UIUtils.CurrentWindow.OutsideGraph.IsStandardSurface ? GetInputPortByUniqueId( 0 ) : GetInputPortByUniqueId( 3 );
 					m_outputPorts[ 0 ].ChangeType( port.DataType, false );
 				}
 				break;
-				case TemplateSRPType.Lightweight:
+				case TemplateSRPType.URP:
 				{
 					InputPort port = GetInputPortByUniqueId( 1 );
 					m_outputPorts[ 0 ].ChangeType( port.DataType, false );
 				}
 				break;
-				case TemplateSRPType.HD:
+				case TemplateSRPType.HDRP:
 				{
 					InputPort port = GetInputPortByUniqueId( 2 );
 					m_outputPorts[ 0 ].ChangeType( port.DataType, false );
@@ -66,17 +66,17 @@ namespace AmplifyShaderEditor
 			base.GenerateShaderForOutput( outputId, ref dataCollector, ignoreLocalvar );
 			switch( dataCollector.CurrentSRPType )
 			{
-				case TemplateSRPType.BuiltIn:
+				case TemplateSRPType.BiRP:
 				{
 					InputPort port = UIUtils.CurrentWindow.OutsideGraph.IsStandardSurface ? GetInputPortByUniqueId( 0 ) : GetInputPortByUniqueId( 3 );
 					return port.GeneratePortInstructions( ref dataCollector );
 				}
-				case TemplateSRPType.Lightweight:
+				case TemplateSRPType.URP:
 				{
 					InputPort port = GetInputPortByUniqueId( 1 );
 					return port.GeneratePortInstructions( ref dataCollector );
 				}
-				case TemplateSRPType.HD:
+				case TemplateSRPType.HDRP:
 				{
 					InputPort port = GetInputPortByUniqueId( 2 );
 					return port.GeneratePortInstructions( ref dataCollector );

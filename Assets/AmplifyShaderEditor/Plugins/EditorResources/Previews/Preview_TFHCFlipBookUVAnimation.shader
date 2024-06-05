@@ -8,6 +8,7 @@ Shader "Hidden/TFHCFlipBookUVAnimation"
 		_D ("_Speed", 2D) = "white" {}
 		_E ("_StartFrame", 2D) = "white" {}
 		_F ("_Speed", 2D) = "white" {}
+		_G( "_MaxFrame", 2D ) = "white" {}
 	}
 	SubShader
 	{
@@ -21,6 +22,7 @@ Shader "Hidden/TFHCFlipBookUVAnimation"
 			sampler2D _D;
 			sampler2D _E;
 			sampler2D _F;
+			sampler2D _G;
 			float _EditorTime;
 		ENDCG
 
@@ -35,13 +37,14 @@ Shader "Hidden/TFHCFlipBookUVAnimation"
 				float row = tex2D( _C, i.uv ).r;
 				float spd = tex2D( _D, i.uv ).r;
 				float str = tex2D( _E, i.uv ).r;
-		
-				float fbtotaltiles = col * row;
+				float maxframe = tex2D( _G, i.uv ).r;
+				float numframes = col * row;
+				float fbtotaltiles = ( maxframe < 0 ) ? numframes : min( numframes, maxframe + 1 );
 				float fbcolsoffset = 1.0f / col;
 				float fbrowsoffset = 1.0f / row;
 				float fbspeed = _EditorTime * spd;
 				float2 fbtiling = float2(fbcolsoffset, fbrowsoffset);
-				float fbcurrenttileindex = round( fmod( fbspeed + str, fbtotaltiles) );
+				float fbcurrenttileindex = floor( fmod( fbspeed + str, fbtotaltiles) );
 				fbcurrenttileindex += ( fbcurrenttileindex < 0) ? fbtotaltiles : 0;
 				float fblinearindextox = round ( fmod ( fbcurrenttileindex, col ) );
 				float fboffsetx = fblinearindextox * fbcolsoffset;
@@ -67,12 +70,14 @@ Shader "Hidden/TFHCFlipBookUVAnimation"
 				float spd = tex2D( _D, i.uv ).r;
 				float str = tex2D( _E, i.uv ).r;
 				float time = tex2D( _F, i.uv ).r;
-				float fbtotaltiles = col * row;
+				float maxframe = tex2D( _G, i.uv ).r;
+				float numframes = col * row;
+				float fbtotaltiles = ( maxframe < 0 ) ? numframes : min( numframes, maxframe + 1 );
 				float fbcolsoffset = 1.0f / col;
 				float fbrowsoffset = 1.0f / row;
 				float fbspeed = time * spd;
 				float2 fbtiling = float2(fbcolsoffset, fbrowsoffset);
-				float fbcurrenttileindex = round( fmod( fbspeed + str, fbtotaltiles) );
+				float fbcurrenttileindex = floor( fmod( fbspeed + str, fbtotaltiles) );
 				fbcurrenttileindex += ( fbcurrenttileindex < 0) ? fbtotaltiles : 0;
 				float fblinearindextox = round ( fmod ( fbcurrenttileindex, col ) );
 				float fboffsetx = fblinearindextox * fbcolsoffset;

@@ -25,7 +25,7 @@ namespace AmplifyShaderEditor
 			string matrixName = string.Empty;
 			if( dataCollector.IsTemplate  )
 			{
-				if( dataCollector.TemplateDataCollectorInstance.CurrentSRPType == TemplateSRPType.HD && !string.IsNullOrEmpty( m_matrixHDName ) )
+				if( dataCollector.TemplateDataCollectorInstance.CurrentSRPType == TemplateSRPType.HDRP && !string.IsNullOrEmpty( m_matrixHDName ) )
 				{
 					string varName = "localWorldVar" + OutputId;
 					dataCollector.AddLocalVariable( UniqueId, PrecisionType.Float, WirePortDataType.FLOAT4, varName, value );
@@ -33,7 +33,7 @@ namespace AmplifyShaderEditor
 					value = varName;
 					matrixName = m_matrixHDName;
 				}
-				else if( dataCollector.TemplateDataCollectorInstance.CurrentSRPType == TemplateSRPType.Lightweight && !string.IsNullOrEmpty( m_matrixLWName ) )
+				else if( dataCollector.TemplateDataCollectorInstance.CurrentSRPType == TemplateSRPType.URP && !string.IsNullOrEmpty( m_matrixLWName ) )
 				{
 					matrixName = m_matrixLWName;
 				}

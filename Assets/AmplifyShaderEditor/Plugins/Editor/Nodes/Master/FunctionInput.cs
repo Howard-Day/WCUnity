@@ -393,7 +393,7 @@ namespace AmplifyShaderEditor
 			m_sizeIsDirty = true;
 		}
 
-		public int PortCreateRestriction( WirePortDataType dataType )
+		public static int PortCreateRestriction( WirePortDataType dataType )
 		{
 			int restrictions = 0;
 			WirePortDataType[] types = null;

@@ -1,9 +1,10 @@
 // Amplify Shader Editor - Visual Shader Editing Tool
 // Copyright (c) Amplify Creations, Lda <info@amplify.pt>
-#if UNITY_2018_3_OR_NEWER
+
 using System;
 using UnityEngine;
 using UnityEditor;
+
 namespace AmplifyShaderEditor
 {
 	[Serializable]
@@ -30,7 +31,7 @@ namespace AmplifyShaderEditor
 		{
 			base.OnNodeLogicUpdate( drawInfo );
 			m_showErrorMessage = ( ContainerGraph.CurrentCanvasMode == NodeAvailability.SurfaceShader ) ||
-									( ContainerGraph.CurrentCanvasMode == NodeAvailability.TemplateShader && ContainerGraph.CurrentSRPType != TemplateSRPType.Lightweight );
+									( ContainerGraph.CurrentCanvasMode == NodeAvailability.TemplateShader && ContainerGraph.CurrentSRPType != TemplateSRPType.URP );
 		}
 
 		public override void DrawProperties()
@@ -63,4 +64,3 @@ namespace AmplifyShaderEditor
 		}
 	}
 }
-#endif

@@ -77,6 +77,20 @@ namespace AmplifyShaderEditor
 		public string[] ReadOptionsHelper = new string[] { };
 
 		private bool m_lateRefresh = false;
+		
+		private Texture2D m_headerIcon = null;
+		public Texture2D HeaderIcon
+		{
+			get
+			{
+				if ( m_headerIcon == null )
+				{
+					m_headerIcon = AssetDatabase.LoadAssetAtPath<Texture2D>( AssetDatabase.GUIDToAssetPath( "5b59dcde73b12b746af7ff7c47a1195d" ) );
+				}
+				return m_headerIcon;
+			}
+		}
+		public const int HeaderIconSize = 32;
 
 		private Dictionary<int, bool> m_duplicatesBuffer = new Dictionary<int, bool>();
 		string LastLine( string text )
@@ -218,6 +232,8 @@ namespace AmplifyShaderEditor
 			}
 
 			UIUtils.RegisterFunctionNode( this );
+
+			RefreshUIHeaderColor();
 
 			m_previewShaderGUID = "aca70c900c50c004e8ef0b47c4fac4d4";
 			m_useInternalPortData = false;
@@ -1199,7 +1215,7 @@ namespace AmplifyShaderEditor
 
 			if( m_functionGraph != null )
 			{
-				Undo.RegisterCompleteObjectUndo( m_functionGraph, Id );
+				UndoUtils.RegisterCompleteObjectUndo( m_functionGraph, Id );
 				for( int i = 0; i < m_functionGraph.AllNodes.Count; i++ )
 				{
 					m_functionGraph.AllNodes[ i ].RecordObject( Id );

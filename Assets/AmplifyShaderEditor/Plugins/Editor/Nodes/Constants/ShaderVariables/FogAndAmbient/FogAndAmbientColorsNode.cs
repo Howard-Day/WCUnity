@@ -17,7 +17,7 @@ namespace AmplifyShaderEditor
 	}
 
 	[Serializable]
-	[NodeAttributes( "Fog And Ambient Colors", "Light", "Fog and Ambient colors" )]
+	[NodeAttributes( "Fog And Ambient Colors", "Lighting", "Fog and Ambient colors" )]
 	public sealed class FogAndAmbientColorsNode : ShaderVariablesNode
 	{
 		private const string ColorLabelStr = "Color";
@@ -93,7 +93,7 @@ namespace AmplifyShaderEditor
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
 		{
 			base.GenerateShaderForOutput( outputId, ref dataCollector, ignoreLocalvar );
-			if( dataCollector.IsTemplate && dataCollector.CurrentSRPType == TemplateSRPType.HD )
+			if( dataCollector.IsTemplate && dataCollector.CurrentSRPType == TemplateSRPType.HDRP )
 			{
 				switch( m_selectedType )
 				{

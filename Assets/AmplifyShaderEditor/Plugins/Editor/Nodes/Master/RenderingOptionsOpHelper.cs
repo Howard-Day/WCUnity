@@ -26,9 +26,7 @@ namespace AmplifyShaderEditor
 		private readonly static GUIContent UseDefaultCasterContent = new GUIContent( " Use Default Shadow Caster", "\nIf True always use surface default shadow caster Default: False" );
 		private readonly static GUIContent ForceNoShadowCastingContent = new GUIContent( " Force No Shadow Casting", "\nIf True then an object that is rendered using this subshader will never cast shadows Default: False" );
 		private readonly static GUIContent ForceEnableInstancingContent = new GUIContent( " Force Enable Instancing", "\nIf True forces instancing on shader independent of having instanced properties" );
-#if UNITY_5_6_OR_NEWER
 		private readonly static GUIContent ForceDisableInstancingContent = new GUIContent( " Force Disable Instancing", "\nIf True forces disable instancing on shader independent of having instanced properties" );
-#endif
 		private readonly static GUIContent SpecularHightlightsContent = new GUIContent( " Fwd Specular Highlights Toggle", "\nIf True creates a material toggle to set Unity's internal specular highlight rendering keyword" );
 		private readonly static GUIContent ReflectionsContent = new GUIContent( " Fwd Reflections Toggle", "\nIf True creates a material toggle to set Unity's internal reflections rendering keyword" );
 
@@ -112,9 +110,7 @@ namespace AmplifyShaderEditor
 					m_forceEnableInstancing = owner.EditorGUILayoutToggleLeft( ForceEnableInstancingContent, m_forceEnableInstancing );
 				}
 
-#if UNITY_5_6_OR_NEWER
 				m_forceDisableInstancing = owner.EditorGUILayoutToggleLeft( ForceDisableInstancingContent, m_forceDisableInstancing );
-#endif
 				m_specularHighlightToggle = owner.EditorGUILayoutToggleLeft( SpecularHightlightsContent, m_specularHighlightToggle );
 				m_reflectionsToggle = owner.EditorGUILayoutToggleLeft( ReflectionsContent, m_reflectionsToggle );
 				m_disableBatching = (DisableBatchingTagValues)owner.EditorGUILayoutEnumPopup( DisableBatchingContent, m_disableBatching );
@@ -139,12 +135,10 @@ namespace AmplifyShaderEditor
 				}
 			}
 
-#if UNITY_2017_1_OR_NEWER
-		if( m_lodCrossfade )
-		{
-			OptionalParameters += Constants.LodCrossFadeOption2017 + Constants.OptionalParametersSep;
-		}
-#endif
+			if( m_lodCrossfade )
+			{
+				OptionalParameters += Constants.LodCrossFadeOption2017 + Constants.OptionalParametersSep;
+			}
 		}
 
 		public void ReadFromString( ref uint index, ref string[] nodeParams )

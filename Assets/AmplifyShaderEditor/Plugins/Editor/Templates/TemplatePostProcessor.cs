@@ -26,6 +26,9 @@ namespace AmplifyShaderEditor
 
 		static void OnPostprocessAllAssets( string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths )
 		{
+			ASEPackageManagerHelper.RequestInfo();
+			ASEPackageManagerHelper.Update();
+
 			bool containsShaders = false;
 			for( int i = 0; i < importedAssets.Length; i++ )
 			{
@@ -98,7 +101,7 @@ namespace AmplifyShaderEditor
 						refreshMenuItems = true;
 						string name = TemplatesManager.OfficialTemplates.ContainsKey( guid ) ? TemplatesManager.OfficialTemplates[ guid ] : string.Empty;
 						TemplateMultiPass mp = TemplateMultiPass.CreateInstance<TemplateMultiPass>();
-						mp.Init( name, guid, true );
+						mp.Init( name, guid, AssetDatabase.GUIDToAssetPath( guid ), true );
 						templatesManager.AddTemplate( mp );
 					}
 				}

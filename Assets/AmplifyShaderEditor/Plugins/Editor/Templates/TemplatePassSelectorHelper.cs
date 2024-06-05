@@ -65,6 +65,14 @@ namespace AmplifyShaderEditor
 			m_currentPassesDict = null;
 		}
 
+		public void Reset()
+		{
+			for ( int i = 0; i < m_currentPasses.Length; i++ )
+			{
+				m_currentPasses[ i ].Visible = true;
+			}
+		}
+
 		public void Destroy()
 		{
 			m_currentPasses = null;

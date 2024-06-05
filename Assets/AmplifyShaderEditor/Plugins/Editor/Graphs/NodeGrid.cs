@@ -10,11 +10,11 @@ namespace AmplifyShaderEditor
 	public class NodeGrid
 	{
 		private bool m_debugGrid = false;
-		private const float GRID_SIZE_X = 100;
-		private const float GRID_SIZE_Y = 100;
+		private const float GRID_SIZE_X = 16;
+		private const float GRID_SIZE_Y = 16;
 
-		private const float GRID_AREA_X = 1000;
-		private const float GRID_AREA_Y = 1000;
+		private const float GRID_AREA_X = 64;
+		private const float GRID_AREA_Y = 64;
 
 		private Dictionary<int, Dictionary<int, List<ParentNode>>> m_grid;
 

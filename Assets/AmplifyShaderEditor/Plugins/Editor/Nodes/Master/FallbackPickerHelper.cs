@@ -8,6 +8,7 @@ namespace AmplifyShaderEditor
 	public class FallbackPickerHelper : ScriptableObject
 	{
 		private const string FallbackFormat = "Fallback \"{0}\"";
+		private const string FallbackOff = "Fallback Off";
 		private const string FallbackShaderStr = "Fallback";
 		private const string ShaderPoputContext = "CONTEXT/ShaderPopup";
 
@@ -56,7 +57,7 @@ namespace AmplifyShaderEditor
 			if ( shader != null )
 			{
 				UIUtils.MarkUndoAction();
-				Undo.RecordObject( this, "Selected fallback shader" );
+				UndoUtils.RecordObject( this, "Selected fallback shader" );
 				m_fallbackShader = shader.name;
 			}
 		}
@@ -83,7 +84,7 @@ namespace AmplifyShaderEditor
 			get
 			{
 				if( string.IsNullOrEmpty( m_fallbackShader ) )
-					return string.Empty;
+					return "\t" + FallbackOff + "\n";
 
 				return "\t" + string.Format( FallbackFormat, m_fallbackShader ) + "\n";
 			}
@@ -94,7 +95,7 @@ namespace AmplifyShaderEditor
 			get
 			{
 				if( string.IsNullOrEmpty( m_fallbackShader ) )
-					return string.Empty;
+					return FallbackOff;
 
 				return string.Format( FallbackFormat, m_fallbackShader );
 			}
