@@ -11,6 +11,6 @@ public class DampInitVelocity : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        transform.position += initDir * initVel * DampVel * Time.deltaTime;        
+        transform.position += initDir * initVel * DampVel * Time.deltaTime;
     }
 }

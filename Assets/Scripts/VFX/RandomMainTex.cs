@@ -11,7 +11,7 @@ public class RandomMainTex : MonoBehaviour
     {
         MeshRenderer r = gameObject.GetComponent<MeshRenderer>();
         if (r != null && !randomSwitchDone)
-        {         
+        {
             r.material.mainTexture = RandomTextures[Random.Range(0, RandomTextures.Length - 1)];
             randomSwitchDone = true;
         }

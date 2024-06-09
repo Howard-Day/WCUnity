@@ -16,25 +16,25 @@ public class RandomSliders : MonoBehaviour
     {
         SlidersMax = new float[Sliders.Length];
         SlidersTarget = new float[Sliders.Length];
-        foreach(Image s in Sliders)
+        foreach (Image s in Sliders)
         {
             SlidersMax[intCount] = s.fillAmount;
-            SlidersTarget[intCount] = Random.Range(0,s.fillAmount);
-            intCount ++;
+            SlidersTarget[intCount] = Random.Range(0, s.fillAmount);
+            intCount++;
         }
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(GameObjTracker.frames % frameSkip ==0)
+        if (GameObjTracker.frames % frameSkip == 0)
         {
-            int chooseRand = Random.Range(0,Sliders.Length);
-            SlidersTarget[chooseRand] = Random.Range(0,SlidersMax[chooseRand]);
+            int chooseRand = Random.Range(0, Sliders.Length);
+            SlidersTarget[chooseRand] = Random.Range(0, SlidersMax[chooseRand]);
         }
-        for(int i = 0; i < Sliders.Length; i++)
+        for (int i = 0; i < Sliders.Length; i++)
         {
-            Sliders[i].fillAmount = Mathf.SmoothStep(Sliders[i].fillAmount,SlidersTarget[i],speed);
+            Sliders[i].fillAmount = Mathf.SmoothStep(Sliders[i].fillAmount, SlidersTarget[i], speed);
         }
     }
 }

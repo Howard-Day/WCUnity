@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class SnapToPixelGrid : MonoBehaviour 
+public class SnapToPixelGrid : MonoBehaviour
 {
     [ExecuteInEditMode]
     [SerializeField]
@@ -18,7 +18,7 @@ public class SnapToPixelGrid : MonoBehaviour
     /// Using the parent's world position, this moves to the nearest pixel grid location by 
     /// offseting this GameObject by the difference between the parent position and pixel grid.
     /// </summary>
-    private void LateUpdate() 
+    private void LateUpdate()
     {
         Vector3 newLocalPosition = Vector3.zero;
 

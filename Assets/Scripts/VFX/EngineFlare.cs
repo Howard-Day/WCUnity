@@ -13,8 +13,8 @@ public class EngineFlare : MonoBehaviour
     public Vector2 FlareLengths;
     public float FlareThrottle;
 
-    Material FlareMat; 
-    bool TextureSwap = false; 
+    Material FlareMat;
+    bool TextureSwap = false;
     VolumetricLines.VolumetricLineBehavior VolLine;
 
     // Start is called before the first frame update
@@ -30,44 +30,44 @@ public class EngineFlare : MonoBehaviour
             return;
         mat.mainTexture = to;
         TextureSwap = false;
-     
+
     }
 
     // Update is called once per frame
     void Update()
     {
-        FlareMat.SetFloat("_LineWidth", Mathf.Lerp(FlareWidths.x,FlareWidths.y,FlareThrottle)*Random.Range(.9f,1.1f) );
-        if(FlareThrottle <= .2f && TextureSwap == false)
+        FlareMat.SetFloat("_LineWidth", Mathf.Lerp(FlareWidths.x, FlareWidths.y, FlareThrottle) * Random.Range(.9f, 1.1f));
+        if (FlareThrottle <= .2f && TextureSwap == false)
         {
             TextureSwap = true;
-            SwapTexture(IdleThrottle,FlareMat);
-        }
-        
-        if(FlareThrottle <= .45f && FlareThrottle > .1f  && TextureSwap == false)
-        {
-            TextureSwap = true;
-            SwapTexture(ThirdThrottle,FlareMat);
+            SwapTexture(IdleThrottle, FlareMat);
         }
 
-        if(FlareThrottle <= .75f && FlareThrottle > .35f && TextureSwap == false)
+        if (FlareThrottle <= .45f && FlareThrottle > .1f && TextureSwap == false)
         {
             TextureSwap = true;
-            SwapTexture(CruiseThrottle,FlareMat);
-        }
-        
-        if(FlareThrottle <= 1.1f && FlareThrottle > .75f && TextureSwap == false)
-        {
-            TextureSwap = true;
-            SwapTexture(FullThrottle,FlareMat);
+            SwapTexture(ThirdThrottle, FlareMat);
         }
 
-        if(FlareThrottle > 1.1f && TextureSwap == false)
+        if (FlareThrottle <= .75f && FlareThrottle > .35f && TextureSwap == false)
         {
             TextureSwap = true;
-            SwapTexture(Afterburn,FlareMat);
-            FlareMat.SetFloat("_LineWidth", FlareWidths.y*Random.Range(1.25f,1.5f));
+            SwapTexture(CruiseThrottle, FlareMat);
         }
-        VolLine.StartPos = new Vector3(0,0,Mathf.Lerp(FlareLengths.y,FlareLengths.x,FlareThrottle));
+
+        if (FlareThrottle <= 1.1f && FlareThrottle > .75f && TextureSwap == false)
+        {
+            TextureSwap = true;
+            SwapTexture(FullThrottle, FlareMat);
+        }
+
+        if (FlareThrottle > 1.1f && TextureSwap == false)
+        {
+            TextureSwap = true;
+            SwapTexture(Afterburn, FlareMat);
+            FlareMat.SetFloat("_LineWidth", FlareWidths.y * Random.Range(1.25f, 1.5f));
+        }
+        VolLine.StartPos = new Vector3(0, 0, Mathf.Lerp(FlareLengths.y, FlareLengths.x, FlareThrottle));
 
     }
 }

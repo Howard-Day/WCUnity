@@ -94,7 +94,6 @@ GameObject:
   - component: {fileID: 2289861991765167615}
   - component: {fileID: 1524424820}
   - component: {fileID: 2289861991765167608}
-  - component: {fileID: 2844008454367371773}
   - component: {fileID: 2289861991765167609}
   - component: {fileID: 2289861991765167614}
   m_Layer: 10
@@ -217,24 +216,6 @@ MonoBehaviour:
   oldRot: {x: 0, y: 0, z: 0, w: 0}
   rotDelta: {x: 0, y: 0, z: 0}
   throttle: 0
---- !u!114 &2844008454367371773
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2289861991765167612}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: af4d4b77870d3794386aa40c6ef77e06, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _pitch: 0
-  _yaw: 0
-  _roll: 0
-  _targetthrottle: 1
-  fireGuns: 0
-  afterBurn: 0
 --- !u!114 &2289861991765167609
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -247,15 +228,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9a786fafaafa36f45a2047a82a97b822, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  logDebug: 0
-  WingmanTo: {fileID: 0}
-  PatrolPoints: []
+  messageHandler: {fileID: 0}
   ActiveAIState: 5
   AISkillLevel: 1
-  AITarget: {fileID: 0}
-  Tracker: {fileID: 0}
+  PatrolPoints: []
+  logDebug: 0
   doDebugOrient: 0
   debugOrient: {fileID: 0}
+  AITarget: {fileID: 0}
+  Tracker: {fileID: 0}
+  WingmanTo: {fileID: 0}
   impatience: 0
   angleToTarget: 0
 --- !u!114 &2289861991765167614
@@ -387,10 +369,15 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 2289861991765167615}
     m_Modifications:
+    - target: {fileID: 4227018905819228824, guid: 25aa2b8dc2c23ac468e2c4e8bd236172,
+        type: 3}
+      propertyPath: index
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8183780097333578742, guid: 25aa2b8dc2c23ac468e2c4e8bd236172,
         type: 3}
       propertyPath: m_Name
-      value: Left Mounting Point
+      value: Laser Cannon
       objectReference: {fileID: 0}
     - target: {fileID: 8183780097333578743, guid: 25aa2b8dc2c23ac468e2c4e8bd236172,
         type: 3}
@@ -400,17 +387,17 @@ PrefabInstance:
     - target: {fileID: 8183780097333578743, guid: 25aa2b8dc2c23ac468e2c4e8bd236172,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -2
+      value: -1.75
       objectReference: {fileID: 0}
     - target: {fileID: 8183780097333578743, guid: 25aa2b8dc2c23ac468e2c4e8bd236172,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 0.125
       objectReference: {fileID: 0}
     - target: {fileID: 8183780097333578743, guid: 25aa2b8dc2c23ac468e2c4e8bd236172,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 5
+      value: 5.25
       objectReference: {fileID: 0}
     - target: {fileID: 8183780097333578743, guid: 25aa2b8dc2c23ac468e2c4e8bd236172,
         type: 3}
@@ -555,7 +542,7 @@ PrefabInstance:
     - target: {fileID: 8183780097333578742, guid: 25aa2b8dc2c23ac468e2c4e8bd236172,
         type: 3}
       propertyPath: m_Name
-      value: Right Mounting Point
+      value: Laser Cannon
       objectReference: {fileID: 0}
     - target: {fileID: 8183780097333578743, guid: 25aa2b8dc2c23ac468e2c4e8bd236172,
         type: 3}
@@ -565,17 +552,17 @@ PrefabInstance:
     - target: {fileID: 8183780097333578743, guid: 25aa2b8dc2c23ac468e2c4e8bd236172,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 2
+      value: 1.75
       objectReference: {fileID: 0}
     - target: {fileID: 8183780097333578743, guid: 25aa2b8dc2c23ac468e2c4e8bd236172,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 0.125
       objectReference: {fileID: 0}
     - target: {fileID: 8183780097333578743, guid: 25aa2b8dc2c23ac468e2c4e8bd236172,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 5
+      value: 5.25
       objectReference: {fileID: 0}
     - target: {fileID: 8183780097333578743, guid: 25aa2b8dc2c23ac468e2c4e8bd236172,
         type: 3}

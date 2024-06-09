@@ -12,28 +12,28 @@ public class KeyPlayer : MonoBehaviour
     public bool afterBurn = false;
 
     ShipSettings ship;
-    LaserCannon[] laserCannons;
+    ProjectileWeapon[] laserCannons;
     // Start is called before the first frame update
     void Start()
     {
         ship = GetComponent<ShipSettings>();
-          laserCannons = GetComponentsInChildren<LaserCannon>();
+        laserCannons = GetComponentsInChildren<ProjectileWeapon>();
     }
     void FireGuns(bool fire)
     {
-    foreach (LaserCannon laserCannon in laserCannons)
+        foreach (ProjectileWeapon laserCannon in laserCannons)
         {
-        laserCannon.fire = fire;
+            laserCannon.fire = fire;
         }
     }
     void DoBurn(bool isAfterburning)
     {
-        if(isAfterburning)
+        if (isAfterburning)
         {
             ship.isAfterburning = isAfterburning;
             ship.targetSpeed = ship.burnSpeed;
         }
-        if(!isAfterburning)
+        if (!isAfterburning)
         {
             ship.isAfterburning = isAfterburning;
             //ship.targetSpeed = ship.burnSpeed;
@@ -46,7 +46,7 @@ public class KeyPlayer : MonoBehaviour
         ship.pitch = _pitch;
         ship.yaw = _yaw;
         ship.roll = _roll;
-        ship.targetSpeed = Mathf.Lerp(0,ship.topSpeed,_targetthrottle);
+        ship.targetSpeed = Mathf.Lerp(0, ship.topSpeed, _targetthrottle);
         DoBurn(afterBurn);
         FireGuns(fireGuns);
     }

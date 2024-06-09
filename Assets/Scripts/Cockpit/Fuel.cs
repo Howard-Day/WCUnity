@@ -13,12 +13,12 @@ public class Fuel : MonoBehaviour
 
     void Blink(Toggle thing, int frameLength)
     {
-        if(GameObjTracker.frames % frameLength == 0)
+        if (GameObjTracker.frames % frameLength == 0)
         {
-        if(thing.isOn)
-            thing.isOn = false;
-        else
-            thing.isOn = true;                
+            if (thing.isOn)
+                thing.isOn = false;
+            else
+                thing.isOn = true;
         }
     }
 
@@ -30,8 +30,8 @@ public class Fuel : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        FuelLevel.normalizedValue = shipMain._Fuel/shipMain.maxFuel;
-        if(FuelLevel.normalizedValue < .2f)
+        FuelLevel.normalizedValue = shipMain._Fuel / shipMain.maxFuel;
+        if (FuelLevel.normalizedValue < .2f)
         {
             Blink(lowFuelWarning, 25);
         }

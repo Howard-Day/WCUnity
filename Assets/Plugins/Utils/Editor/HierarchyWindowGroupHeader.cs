@@ -16,4 +16,4 @@ public class HierarchyWindowGroupHeader : Editor
             EditorGUI.DropShadowLabel(selectionRect, gameObject.name.Replace("-", "").ToUpperInvariant());
         }
     }
-} 
+}

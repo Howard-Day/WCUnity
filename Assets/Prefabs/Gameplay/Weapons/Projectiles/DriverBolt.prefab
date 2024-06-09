@@ -26,12 +26,12 @@ PrefabInstance:
         type: 3}
       propertyPath: hitShield
       value: 
-      objectReference: {fileID: 1507481365441476783, guid: 9549ed6531e9ee94f8743be5220d01af,
+      objectReference: {fileID: 400538386877157161, guid: 86510d0776ceb1c47b4efd13c49ff3c1,
         type: 3}
     - target: {fileID: 3189708683096768518, guid: adcaf87f2ba126246a6a9e28511b5b38,
         type: 3}
       propertyPath: m_lineWidth
-      value: 3
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 3189708683096768518, guid: adcaf87f2ba126246a6a9e28511b5b38,
         type: 3}

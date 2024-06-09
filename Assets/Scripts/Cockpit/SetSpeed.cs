@@ -18,18 +18,19 @@ public class SetSpeed : MonoBehaviour
         shipMain = (ShipSettings)gameObject.GetComponentInParent<ShipSettings>();
     }
     int? lastGenInt;
-    int? NumberGen (int min, int max, int skip)
+    int? NumberGen(int min, int max, int skip)
     {
-        if(GameObjTracker.frames % skip == 0)
+        if (GameObjTracker.frames % skip == 0)
         {
-            lastGenInt = Random.Range(min,max);
+            lastGenInt = Random.Range(min, max);
             return lastGenInt;
         }
-        else{
-            if(lastGenInt == null)
+        else
+        {
+            if (lastGenInt == null)
             {
-            lastGenInt = Random.Range(min,max);
-            return lastGenInt;
+                lastGenInt = Random.Range(min, max);
+                return lastGenInt;
             }
             return lastGenInt;
         }
@@ -37,21 +38,20 @@ public class SetSpeed : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-       float setSpeed = shipMain.targetSpeed;
-       if (setSpeed >= shipMain.topSpeed)
-        setSpeed = shipMain.topSpeed;
-       if(shipMain.isAfterburning)
-        setSpeed = shipMain.burnSpeed;
-         
-       int speedDisp = Mathf.FloorToInt(setSpeed*10);
-       if(randompreText)
-       {
-           Speed.text = NumberGen(minAmt,maxAmt,frameskip).Value.ToString("D2")+speedDisp.ToString(); 
-       }
-       else
-       {
-           Speed.text = preText+speedDisp.ToString(); 
-       }
+        float setSpeed = shipMain.targetSpeed;
+        if (setSpeed >= shipMain.topSpeed)
+            setSpeed = shipMain.topSpeed;
+        if (shipMain.isAfterburning)
+            setSpeed = shipMain.burnSpeed;
+
+        int speedDisp = Mathf.FloorToInt(setSpeed * 10);
+        if (randompreText)
+        {
+            Speed.text = NumberGen(minAmt, maxAmt, frameskip).Value.ToString("D2") + speedDisp.ToString();
+        }
+        else
+        {
+            Speed.text = preText + speedDisp.ToString();
+        }
     }
 }
- 

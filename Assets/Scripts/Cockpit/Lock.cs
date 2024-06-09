@@ -10,12 +10,12 @@ public class Lock : MonoBehaviour
     // Start is called before the first frame update
     void Blink(Toggle thing, int frameLength)
     {
-        if(GameObjTracker.frames % frameLength == 0)
+        if (GameObjTracker.frames % frameLength == 0)
         {
-        if(thing.isOn)
-            thing.isOn = false;
-        else
-            thing.isOn = true;                
+            if (thing.isOn)
+                thing.isOn = false;
+            else
+                thing.isOn = true;
         }
     }
     /// <summary>
@@ -24,13 +24,14 @@ public class Lock : MonoBehaviour
     /// </summary>
     void Start()
     {
-        shipMain = (ShipSettings)gameObject.GetComponentInParent<ShipSettings>();    
+        shipMain = (ShipSettings)gameObject.GetComponentInParent<ShipSettings>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(shipMain.isBeingShot){
+        if (shipMain.isBeingShot)
+        {
             Blink(locked, 15);
         }
         else

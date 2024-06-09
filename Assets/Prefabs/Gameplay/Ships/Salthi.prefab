@@ -94,7 +94,6 @@ GameObject:
   - component: {fileID: 2289861991765167615}
   - component: {fileID: 1524424820}
   - component: {fileID: 2289861991765167608}
-  - component: {fileID: 2844008454367371773}
   - component: {fileID: 2289861991765167609}
   - component: {fileID: 2289861991765167614}
   m_Layer: 10
@@ -216,24 +215,6 @@ MonoBehaviour:
   oldRot: {x: 0, y: 0, z: 0, w: 0}
   rotDelta: {x: 0, y: 0, z: 0}
   throttle: 0
---- !u!114 &2844008454367371773
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2289861991765167612}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: af4d4b77870d3794386aa40c6ef77e06, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _pitch: 0
-  _yaw: 1
-  _roll: 0
-  _targetthrottle: 0
-  fireGuns: 0
-  afterBurn: 0
 --- !u!114 &2289861991765167609
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -246,15 +227,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9a786fafaafa36f45a2047a82a97b822, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  logDebug: 0
-  WingmanTo: {fileID: 0}
-  PatrolPoints: []
+  messageHandler: {fileID: 0}
   ActiveAIState: 3
   AISkillLevel: 1
-  AITarget: {fileID: 0}
-  Tracker: {fileID: 0}
+  PatrolPoints: []
+  logDebug: 0
   doDebugOrient: 0
   debugOrient: {fileID: 0}
+  AITarget: {fileID: 0}
+  Tracker: {fileID: 0}
+  WingmanTo: {fileID: 0}
   impatience: 0
   angleToTarget: 0
 --- !u!114 &2289861991765167614
@@ -314,7 +296,7 @@ PrefabInstance:
     - target: {fileID: 1288848702199815780, guid: c4226626b13314140b9ead9c39de066a,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 6
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 1288848702199815780, guid: c4226626b13314140b9ead9c39de066a,
         type: 3}
@@ -356,6 +338,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Photon Blaster
       objectReference: {fileID: 0}
+    - target: {fileID: 6546310811933622027, guid: c4226626b13314140b9ead9c39de066a,
+        type: 3}
+      propertyPath: index
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c4226626b13314140b9ead9c39de066a, type: 3}
 --- !u!4 &216686168421211944 stripped
@@ -389,7 +376,7 @@ PrefabInstance:
     - target: {fileID: 1288848702199815780, guid: c4226626b13314140b9ead9c39de066a,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 6
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 1288848702199815780, guid: c4226626b13314140b9ead9c39de066a,
         type: 3}
@@ -505,6 +492,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7989437017167104986, guid: 2097a4efc6d07894fad7c4356faa2704,
+        type: 3}
+      propertyPath: m_Mesh
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 7989437017167104987, guid: 2097a4efc6d07894fad7c4356faa2704,
         type: 3}

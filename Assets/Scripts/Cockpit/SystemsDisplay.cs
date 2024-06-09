@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI; // Required when Using UI elements.
 public class SystemsDisplay : MonoBehaviour
 {
-    public enum MFDMode {Weapon, Damge};
+    public enum MFDMode { Weapon, Damge };
 
     public MFDMode currentMode = MFDMode.Weapon;
 
@@ -12,7 +12,7 @@ public class SystemsDisplay : MonoBehaviour
     public Text currentWeapon;
     public Text currentGun;
     public Text damage;
-    
+
     public GameObject shipBase;
 
     public Material ActiveWeapon;
@@ -39,7 +39,7 @@ public class SystemsDisplay : MonoBehaviour
         public GameObject ShieldGen;
         public GameObject CompSys;
         public GameObject ComUnit;
-        public GameObject  Track;
+        public GameObject Track;
         public GameObject AccelAbs;
         public GameObject EjectSys;
         public GameObject RepairSys;
@@ -51,22 +51,22 @@ public class SystemsDisplay : MonoBehaviour
 
 
     ShipSettings shipMain;
-    LaserCannon[] guns;
-    List <GameObject> gunIcons;
+    ProjectileWeapon[] guns;
+    List<GameObject> gunIcons;
 
     // Start is called before the first frame update
     void Start()
     {
         shipMain = (ShipSettings)gameObject.GetComponentInParent<ShipSettings>();
-        guns = shipMain.gameObject.GetComponentsInChildren<LaserCannon>();   
+        guns = shipMain.gameObject.GetComponentsInChildren<ProjectileWeapon>();
         gunIcons = new List<GameObject>();
-        
+
     }
     bool wRegSuccess = false;
 
     public void RegisterWeapons()
     {
-        if(gunIcons.Count > 0)
+        if (gunIcons.Count > 0)
         {
             foreach (GameObject icon in gunIcons)
             {
@@ -74,9 +74,9 @@ public class SystemsDisplay : MonoBehaviour
             }
         }
         gunIcons = new List<GameObject>();
-        foreach (LaserCannon gun in guns)
+        foreach (ProjectileWeapon gun in guns)
         {
-            Vector3 localPos = gun.gameObject.transform.localPosition/shipMain.shipRadius;
+            Vector3 localPos = gun.gameObject.transform.localPosition / shipMain.shipRadius;
             if (localPos.magnitude >= Mathf.Infinity)
             {
                 wRegSuccess = false;
@@ -89,12 +89,12 @@ public class SystemsDisplay : MonoBehaviour
                 xFlip = true;
             }
             localPos.z = 0f;
-            localPos *= .15f;            
+            localPos *= .15f;
             localPos += shipBase.transform.position;
             //print(localPos);
-            if(gun.Type == LaserCannon.GunType.Laser)
+            if (gun.Type == ProjectileWeapon.GunType.Laser)
             {
-                GameObject gunIcon = (GameObject)Instantiate(WIcon.Laser,localPos,Quaternion.identity,shipBase.transform);
+                GameObject gunIcon = (GameObject)Instantiate(WIcon.Laser, localPos, Quaternion.identity, shipBase.transform);
                 gunIcon.GetComponent<SpriteRenderer>().flipX = xFlip;
                 gunIcon.GetComponent<SpriteRenderer>().material = ActiveWeapon;
                 gunIcons.Add(gunIcon);
@@ -105,25 +105,25 @@ public class SystemsDisplay : MonoBehaviour
             wRegSuccess = true;
         }
     }
-    
+
     // Update is called once per frame
     void LateUpdate()
     {
-    switch(currentMode)
-    {
-        case MFDMode.Weapon:
+        switch (currentMode)
         {
-            if(gunIcons.Count == 0 || !wRegSuccess)
-            {
-                RegisterWeapons();      
-            }
+            case MFDMode.Weapon:
+                {
+                    if (gunIcons.Count == 0 || !wRegSuccess)
+                    {
+                        RegisterWeapons();
+                    }
 
-        } 
-        break;
+                }
+                break;
 
 
 
-    }
+        }
 
     }
 }

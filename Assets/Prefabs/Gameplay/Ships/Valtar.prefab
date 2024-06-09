@@ -25,14 +25,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 797306068785879485}
-  m_LocalRotation: {x: -0, y: -0.19509019, z: -0, w: 0.9807853}
+  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 20, y: 20, z: 20}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 797306069139611197}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!33 &797306068785879482
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -61,7 +61,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: f6762ee01a08ad14b8ac44d7bad2734f, type: 2}
+  - {fileID: 2100000, guid: 61befd9ae7fd8ee4bab0ee699a8931e0, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -94,7 +94,6 @@ GameObject:
   - component: {fileID: 797306069139611197}
   - component: {fileID: 2448818116248008346}
   - component: {fileID: 797306069139611194}
-  - component: {fileID: 4700608578157535155}
   - component: {fileID: 797306069139611195}
   - component: {fileID: 797306069139611196}
   m_Layer: 10
@@ -118,8 +117,8 @@ Transform:
   m_Children:
   - {fileID: 797306068785879481}
   - {fileID: 1823650462825476236}
-  - {fileID: 59447806741380842}
   - {fileID: 3097340708881648027}
+  - {fileID: 59447806741380842}
   - {fileID: 6649798142112121530}
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -217,24 +216,6 @@ MonoBehaviour:
   oldRot: {x: 0, y: 0, z: 0, w: 0}
   rotDelta: {x: 0, y: 0, z: 0}
   throttle: 0
---- !u!114 &4700608578157535155
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 797306069139611198}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: af4d4b77870d3794386aa40c6ef77e06, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _pitch: 0
-  _yaw: 0
-  _roll: 0
-  _targetthrottle: 1
-  fireGuns: 0
-  afterBurn: 0
 --- !u!114 &797306069139611195
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -247,15 +228,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9a786fafaafa36f45a2047a82a97b822, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  logDebug: 0
-  WingmanTo: {fileID: 0}
-  PatrolPoints: []
+  messageHandler: {fileID: 0}
   ActiveAIState: 3
   AISkillLevel: 2
-  AITarget: {fileID: 0}
-  Tracker: {fileID: 0}
+  PatrolPoints: []
+  logDebug: 0
   doDebugOrient: 0
   debugOrient: {fileID: 0}
+  AITarget: {fileID: 0}
+  Tracker: {fileID: 0}
+  WingmanTo: {fileID: 0}
   impatience: 0
   angleToTarget: 0
 --- !u!114 &797306069139611196
@@ -300,12 +282,12 @@ PrefabInstance:
     - target: {fileID: 1288848702199815780, guid: 2eaf127825a00914c92c259066028be3,
         type: 3}
       propertyPath: m_RootOrder
-      value: 2
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 1288848702199815780, guid: 2eaf127825a00914c92c259066028be3,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -1.5
+      value: -1.25
       objectReference: {fileID: 0}
     - target: {fileID: 1288848702199815780, guid: 2eaf127825a00914c92c259066028be3,
         type: 3}
@@ -315,7 +297,7 @@ PrefabInstance:
     - target: {fileID: 1288848702199815780, guid: 2eaf127825a00914c92c259066028be3,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 7
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 1288848702199815780, guid: 2eaf127825a00914c92c259066028be3,
         type: 3}
@@ -355,7 +337,12 @@ PrefabInstance:
     - target: {fileID: 1288848702199815781, guid: 2eaf127825a00914c92c259066028be3,
         type: 3}
       propertyPath: m_Name
-      value: Left Mounting Point
+      value: Neutron Cannon
+      objectReference: {fileID: 0}
+    - target: {fileID: 6546310811933622027, guid: 2eaf127825a00914c92c259066028be3,
+        type: 3}
+      propertyPath: index
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2eaf127825a00914c92c259066028be3, type: 3}
@@ -390,7 +377,7 @@ PrefabInstance:
     - target: {fileID: 7989437017167104985, guid: 2097a4efc6d07894fad7c4356faa2704,
         type: 3}
       propertyPath: m_RootOrder
-      value: 3
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 7989437017167104985, guid: 2097a4efc6d07894fad7c4356faa2704,
         type: 3}
@@ -405,7 +392,7 @@ PrefabInstance:
     - target: {fileID: 7989437017167104985, guid: 2097a4efc6d07894fad7c4356faa2704,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -9
+      value: -8
       objectReference: {fileID: 0}
     - target: {fileID: 7989437017167104985, guid: 2097a4efc6d07894fad7c4356faa2704,
         type: 3}
@@ -442,6 +429,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7989437017167104986, guid: 2097a4efc6d07894fad7c4356faa2704,
+        type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 7989437017167104987, guid: 2097a4efc6d07894fad7c4356faa2704,
         type: 3}
       propertyPath: m_Materials.Array.data[0]
@@ -475,7 +467,7 @@ PrefabInstance:
     - target: {fileID: 1288848702199815780, guid: 2eaf127825a00914c92c259066028be3,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 1.5
+      value: 1.25
       objectReference: {fileID: 0}
     - target: {fileID: 1288848702199815780, guid: 2eaf127825a00914c92c259066028be3,
         type: 3}
@@ -485,7 +477,7 @@ PrefabInstance:
     - target: {fileID: 1288848702199815780, guid: 2eaf127825a00914c92c259066028be3,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 7
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 1288848702199815780, guid: 2eaf127825a00914c92c259066028be3,
         type: 3}
@@ -525,7 +517,7 @@ PrefabInstance:
     - target: {fileID: 1288848702199815781, guid: 2eaf127825a00914c92c259066028be3,
         type: 3}
       propertyPath: m_Name
-      value: Right Mounting Point
+      value: Neutron Cannon
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2eaf127825a00914c92c259066028be3, type: 3}
@@ -575,7 +567,7 @@ PrefabInstance:
     - target: {fileID: 7989437017167104985, guid: 2097a4efc6d07894fad7c4356faa2704,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -9
+      value: -8
       objectReference: {fileID: 0}
     - target: {fileID: 7989437017167104985, guid: 2097a4efc6d07894fad7c4356faa2704,
         type: 3}
@@ -611,6 +603,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7989437017167104986, guid: 2097a4efc6d07894fad7c4356faa2704,
+        type: 3}
+      propertyPath: m_Mesh
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 7989437017167104987, guid: 2097a4efc6d07894fad7c4356faa2704,
         type: 3}

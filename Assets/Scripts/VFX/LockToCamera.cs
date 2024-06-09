@@ -8,11 +8,11 @@ public class LockToCamera : MonoBehaviour
     // Update is called once per frame
     void LateUpdate()
     {
-        if(Camera.main && !Override)
+        if (Camera.main && !Override)
         {
             transform.position = Camera.main.transform.position;
         }
-        if(Override)
+        if (Override)
         {
             transform.position = Override.transform.position;
         }

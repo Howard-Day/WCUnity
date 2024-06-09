@@ -122,7 +122,7 @@ MonoBehaviour:
   range: 2500
   hitShield: {fileID: 400538386877157161, guid: 86510d0776ceb1c47b4efd13c49ff3c1,
     type: 3}
-  hitHull: {fileID: 0}
+  hitHull: {fileID: 400538386877157161, guid: 5d716ea7384ef6448b6a5ae6d1dbccf3, type: 3}
   shootMask:
     serializedVersion: 2
     m_Bits: 3072

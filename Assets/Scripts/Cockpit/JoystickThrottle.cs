@@ -29,19 +29,20 @@ public class JoystickThrottle : MonoBehaviour
     {
         shipMain = (ShipSettings)gameObject.GetComponentInParent<ShipSettings>();
     }
-    void DoThrottle(){
-        smoothThrottle = Mathf.SmoothStep(smoothThrottle,shipMain.targetSpeed/shipMain.topSpeed,0.2f);
-        
-        if(!shipMain.isAfterburning)
+    void DoThrottle()
+    {
+        smoothThrottle = Mathf.SmoothStep(smoothThrottle, shipMain.targetSpeed / shipMain.topSpeed, 0.2f);
+
+        if (!shipMain.isAfterburning)
         {
-            smoothBurn = Mathf.SmoothStep(smoothBurn,smoothThrottle*.75f,0.3f);
+            smoothBurn = Mathf.SmoothStep(smoothBurn, smoothThrottle * .75f, 0.3f);
         }
-        else 
+        else
         {
-            smoothBurn = Mathf.SmoothStep(smoothBurn,1,0.3f);
+            smoothBurn = Mathf.SmoothStep(smoothBurn, 1, 0.3f);
         }
         smoothBurn = Mathf.Clamp01(smoothBurn);
-        Throttle.sprite = throttleSprites[Mathf.Clamp(Mathf.FloorToInt(smoothBurn*(throttleSprites.Length-1)),0,31)];
+        Throttle.sprite = throttleSprites[Mathf.Clamp(Mathf.FloorToInt(smoothBurn * (throttleSprites.Length - 1)), 0, 31)];
         //throttlestickAnim.SetCurrentFrame((int)((currentForwardAcceleration / forwardTopSpeed) * throttlestickAnim.totalCells));
     }
     float refSteerX;
@@ -49,43 +50,43 @@ public class JoystickThrottle : MonoBehaviour
     float refSteerZ;
     void DoJoystick()
     {
-        
-        float xShift =  shipMain.rotDelta.y;
-        float yShift =  shipMain.rotDelta.x;
-        
+
+        float xShift = shipMain.rotDelta.y;
+        float yShift = shipMain.rotDelta.x;
+
         //print (xShift);
-        TargetShift = new Vector2(Mathf.Clamp(xShift,-1f,1f),-Mathf.Clamp(yShift,-1f,1f));
-        SmoothShift = Vector2.SmoothDamp(SmoothShift,TargetShift,ref RefShift, ShiftSmoothness);
+        TargetShift = new Vector2(Mathf.Clamp(xShift, -1f, 1f), -Mathf.Clamp(yShift, -1f, 1f));
+        SmoothShift = Vector2.SmoothDamp(SmoothShift, TargetShift, ref RefShift, ShiftSmoothness);
 
-        refSteerX = (SmoothShift.x+1)/2;
-        refSteerY = (SmoothShift.y+1)/2;
+        refSteerX = (SmoothShift.x + 1) / 2;
+        refSteerY = (SmoothShift.y + 1) / 2;
 
-        float steerX = 1-Mathf.Clamp01(refSteerX);
-        float steerY = 1-Mathf.Clamp01(refSteerY);        
+        float steerX = 1 - Mathf.Clamp01(refSteerX);
+        float steerY = 1 - Mathf.Clamp01(refSteerY);
 
-        int currentjoyFrame = (int)(steerY * 7f) * 8 + (int)(steerX*8f);
+        int currentjoyFrame = (int)(steerY * 7f) * 8 + (int)(steerX * 8f);
         //print("current joystick frame is" + currentjoyFrame);
         //Debug.Assert(currentjoyFrame > 63," OUT OF RANGE JOYSTICK");
-        if(shipMain.isFiring)
+        if (shipMain.isFiring)
         {
-            Joystick.sprite = firingJoystickSprites[Mathf.Clamp(currentjoyFrame,0,63)];
+            Joystick.sprite = firingJoystickSprites[Mathf.Clamp(currentjoyFrame, 0, 63)];
         }
         else
         {
-            Joystick.sprite = joystickSprites[Mathf.Clamp(currentjoyFrame,0,63)];
+            Joystick.sprite = joystickSprites[Mathf.Clamp(currentjoyFrame, 0, 63)];
         }
 
     }
     void DoFeet()
     {
-        float zShift =  -shipMain.rotDelta.z;
-        float TargetSpin = Mathf.Clamp(zShift,-1f,1f);
-        SmoothSpin = Mathf.SmoothDamp(SmoothSpin,TargetSpin,ref refSpin,ShiftSmoothness);
-        refSteerZ = (SmoothSpin+1)/2;
+        float zShift = -shipMain.rotDelta.z;
+        float TargetSpin = Mathf.Clamp(zShift, -1f, 1f);
+        SmoothSpin = Mathf.SmoothDamp(SmoothSpin, TargetSpin, ref refSpin, ShiftSmoothness);
+        refSteerZ = (SmoothSpin + 1) / 2;
         float steerZ = Mathf.Clamp01(refSteerZ);
         //Also do Feet Spinning/steer
-        int currentFeetFrame = (int)(steerZ*15f);
-        Feet.sprite = feetSprites[Mathf.Clamp(currentFeetFrame, 0,15)];
+        int currentFeetFrame = (int)(steerZ * 15f);
+        Feet.sprite = feetSprites[Mathf.Clamp(currentFeetFrame, 0, 15)];
     }
 
     // Update is called once per frame

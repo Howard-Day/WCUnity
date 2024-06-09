@@ -9,6 +9,7 @@ public class ShipSettings : MonoBehaviour
 
     [Header("Choose Team!")]
     [SerializeField] public TEAM AITeam = TEAM.CONFED;
+    //[SerializeField] public 
     [SerializeField] public bool isWingLead = false;
     [SerializeField] public LayerMask CollidesWith;
     [Header("VDU Icon!")]
@@ -165,17 +166,18 @@ public class ShipSettings : MonoBehaviour
         else //Fuck, basically just a max coasting speed. Good fucking luck, cowboy
         {
             bingoFuel = true;
-            speed = Mathf.Min(targetSpeed, topSpeed*.666f);
+            speed = Mathf.Min(targetSpeed, topSpeed * .666f);
             isAfterburning = false;
         }
     }
 
     public bool hitInternal = false;
-    void InternalDamage(bool doComponentDamage) {
+    void InternalDamage(bool doComponentDamage)
+    {
         //Show that internal damage has taken place! 
         hitInternal = doComponentDamage;
         //print("Internal Damage is " + doComponentDamage);
-        Instantiate(InternalDamageVFX, transform.position, Quaternion.identity, DecoRoot);
+        Instantiate(InternalDamageVFX, transform.position, Quaternion.identity, transform);
         if (hitInternal) //only do damage if intentional! 
         {
             if (lastHit == HitLoc.F) // damage the components that got hit from the front, randomly
@@ -212,7 +214,8 @@ public class ShipSettings : MonoBehaviour
 
 
 
-    void ArmorDamage(Vector3 pos) {
+    void ArmorDamage(Vector3 pos)
+    {
         //Show that armor damage has taken place! 
         GameObject Debris = Instantiate(DamageVFX, pos, Quaternion.identity, DecoRoot);
         Debris.GetComponent<DampInitVelocity>().initDir = DeathDir;
@@ -278,6 +281,7 @@ public class ShipSettings : MonoBehaviour
                     //equally bounce each ship, damage is made from the rest of the momentum
                     BouncePush = (speed + hitShip.speed) / 2f;
                     var weightDamageThem = ((speed + hitShip.speed) / hitShip.speed) / 4f;
+                    var weightSpin = shipRadius / hitShip.shipRadius; 
                     var weightDamage = ((speed + hitShip.speed) / speed) / 4f;
                     DoDamage(bounceColliders[ib].transform.position, (speed + hitShip.speed) * .01f * weightDamage, hitShip.ShipID);
                     hitShip.DoDamage(transform.position, (speed + hitShip.speed) * .01f * weightDamageThem, ShipID);
@@ -290,7 +294,7 @@ public class ShipSettings : MonoBehaviour
                     BounceDir = -BounceDir;
                     BounceSpin = new Vector3(Random.Range(-3f, 3f), Random.Range(-3f, 3f), Random.Range(-3f, 3f));
                     hitShip.BounceSpin = new Vector3(Random.Range(-3f, 3f), Random.Range(-3f, 3f), Random.Range(-3f, 3f));
-                    recover = 0f;
+                    recover =  Random.Range(weightSpin * .25f, weightSpin * .5f);
                 }
             }
 
@@ -310,7 +314,8 @@ public class ShipSettings : MonoBehaviour
             roll *= recover;
             speed *= recover;
             if (recover < .025f)
-            { InternalDamage(false);
+            {
+                InternalDamage(false);
             }
             transform.localRotation *= Quaternion.AngleAxis(broll_, Vector3.forward) * Quaternion.AngleAxis(byaw_, Vector3.up) * Quaternion.AngleAxis(bpitch_, invertYAxis ? Vector3.right : Vector3.left);
             transform.position += BounceDir * BouncePush * Time.deltaTime * (1 - recover);
@@ -322,8 +327,12 @@ public class ShipSettings : MonoBehaviour
     public HitLoc lastHit;
     public int lastHitID;
 
-    public void DoDamage(Vector3 hitLoc, float damage, int hitID)
+
+    
+    public int[] DoDamage(Vector3 hitLoc, float damage, int hitID) //returns true for a sheild hit, false for a hull hit, and the firing ship's ID. 
     {
+        int[] hitTracker = new int[2];
+        hitTracker[1] = ShipID;
         lastHitID = hitID;
         //Where'd the hit come from, to the center of the ship?
         Vector3 damageAngle = hitLoc - transform.position;
@@ -333,16 +342,22 @@ public class ShipSettings : MonoBehaviour
             lastHit = HitLoc.F;
             //print("hit from the front! Angle of" + Vector3.Angle(transform.forward, damageAngle));
             if (Shield.x > damage)//if shields can take the hit, let them
+            {
                 Shield.x -= damage;
+                hitTracker[0] = 1;
+                return hitTracker;
+            }
             else //oh no! the armor needs to take the hit, minus whatever damage the shield can absorb.
             {
                 damage -= Shield.x;
                 Shield.x = 0;
+                
                 //check front/left/right armor quadrants, apply damage
                 if (Vector3.Angle(transform.forward, damageAngle) <= 45) // front armor hit!
                 {
                     if (Armor.x > damage) //can the armor take the hit? 
-                    { Armor.x -= damage;
+                    {
+                        Armor.x -= damage;
                         ArmorDamage(transform.position + damageAngle / 2);
                     }
                     else  //armor takes what it can, passes the rest onto internal damage;
@@ -357,7 +372,8 @@ public class ShipSettings : MonoBehaviour
                 {
                     lastHit = HitLoc.L;
                     if (Armor.z > damage) //can the armor take the hit? 
-                    { Armor.z -= damage;
+                    {
+                        Armor.z -= damage;
                         ArmorDamage(transform.position + damageAngle / 2);
                     }
                     else  //armor takes what it can, passes the rest onto internal damage;
@@ -372,7 +388,8 @@ public class ShipSettings : MonoBehaviour
                 {
                     lastHit = HitLoc.R;
                     if (Armor.w > damage) //can the armor take the hit? 
-                    { Armor.w -= damage;
+                    {
+                        Armor.w -= damage;
                         ArmorDamage(transform.position + damageAngle / 2);
                     }
                     else  //armor takes what it can, passes the rest onto internal damage;
@@ -393,6 +410,8 @@ public class ShipSettings : MonoBehaviour
                     InternalDamage(true);
                     _CoreStrength -= damage / 8;
                 }
+                hitTracker[0] = 0;
+                return hitTracker;
             }
         }
         else //Hit from the back
@@ -401,7 +420,10 @@ public class ShipSettings : MonoBehaviour
             hitInAss = true;
             //print("hit from the back!");
             if (Shield.y > damage)//if shields can take the hit, let them
-            { Shield.y -= damage;
+            {
+                Shield.y -= damage;
+                hitTracker[0] = 1;
+                return hitTracker;
                 //print("Shields damaged for "+ damage);
             }
             else //oh no! the armor needs to take the hit, minus whatever damage the shield can absorb.
@@ -413,7 +435,8 @@ public class ShipSettings : MonoBehaviour
                 if (Vector3.Angle(-transform.forward, damageAngle) <= 45) // back armor hit!
                 {
                     if (Armor.y > damage) //can the armor take the hit? 
-                    { Armor.y -= damage;
+                    {
+                        Armor.y -= damage;
                         ArmorDamage(transform.position + damageAngle / 2);
                     }
                     else  //armor takes what it can, passes the rest onto internal damage;
@@ -428,7 +451,8 @@ public class ShipSettings : MonoBehaviour
                 {
                     lastHit = HitLoc.L;
                     if (Armor.z > damage) //can the armor take the hit? 
-                    { Armor.z -= damage;
+                    {
+                        Armor.z -= damage;
                         ArmorDamage(transform.position + damageAngle / 2);
                     }
                     else  //armor takes what it can, passes the rest onto internal damage;
@@ -443,7 +467,8 @@ public class ShipSettings : MonoBehaviour
                 {
                     lastHit = HitLoc.R;
                     if (Armor.w > damage) //can the armor take the hit? 
-                    { Armor.w -= damage;
+                    {
+                        Armor.w -= damage;
                         ArmorDamage(transform.position + damageAngle / 2);
                     }
                     else  //armor takes what it can, passes the rest onto internal damage;
@@ -465,12 +490,14 @@ public class ShipSettings : MonoBehaviour
 
                     _CoreStrength -= damage / 4;
                 }
+                hitTracker[0] = 0;
+                return hitTracker;
             }
         }
     }
 
 
-    void DoKillCounter() 
+    void DoKillCounter()
     {
         if (AITeam == TEAM.CONFED)
         {
@@ -480,128 +507,128 @@ public class ShipSettings : MonoBehaviour
 
 
 
-  GameObject Boom;
-  Vector3 DeathDir = Vector3.zero;
-  float DeathVel;
-  Vector3 DeathSpin;
-  int DeathType;
-  float DeathLength;
-  GameObject Trail;
-    Transform DecoRoot;  
-  void DoHealth()
-  {
-    //Constantly recharge the shields till full
-    if(Shield.x < _ShieldMax.x)
-      Shield.x += shieldRechargeRate*Time.deltaTime/20;
-    if(Shield.y < _ShieldMax.y)
-      Shield.y += shieldRechargeRate*Time.deltaTime/20;
-    //Should do component damage here when the corestrength is low. Ignore for now
-    if(_CoreStrength < CoreMax*.666f)
+    GameObject Boom;
+    Vector3 DeathDir = Vector3.zero;
+    float DeathVel;
+    Vector3 DeathSpin;
+    int DeathType;
+    float DeathLength;
+    GameObject Trail;
+    Transform DecoRoot;
+    void DoHealth()
     {
-      if(!Trail)
-      {
-        foreach(EngineFlare flare in engineFlares)
+        //Constantly recharge the shields till full
+        if (Shield.x < _ShieldMax.x)
+            Shield.x += shieldRechargeRate * Time.deltaTime / 20;
+        if (Shield.y < _ShieldMax.y)
+            Shield.y += shieldRechargeRate * Time.deltaTime / 20;
+        //Should do component damage here when the corestrength is low. Ignore for now
+        if (_CoreStrength < CoreMax * .666f)
         {
-          Trail = Instantiate(DamageTrails,flare.gameObject.transform.position+flare.gameObject.transform.forward*4,Quaternion.identity,flare.gameObject.transform);
+            if (!Trail)
+            {
+                foreach (EngineFlare flare in engineFlares)
+                {
+                    Trail = Instantiate(DamageTrails, flare.gameObject.transform.position + flare.gameObject.transform.forward * 4, Quaternion.identity, flare.gameObject.transform);
+                }
+            }
         }
-      }
-    }
-    if(_CoreStrength > 0) //We dead, son
-    { 
-    DeathDir = transform.forward;
-    DeathVel = speed;
-    }
-
-    if(!DecoRoot)
-        DecoRoot = GameObject.Find("Deco_Objs").transform;
-
-    if(_CoreStrength <= 0) //We dead, son
-    { 
-      isDead = true;
-      //Let's set up how we're going to die!
-      if (DeathSpin == Vector3.zero) //this happens once, let's take advantage!
-      {  
-         DeathDir = transform.forward;
-         DeathVel = speed;
-         DeathSpin = new Vector3(Random.Range(-3f,3f),Random.Range(-3f,3f),Random.Range(-3f,3f));
-         DeathType = Random.Range(0,2); //we've got three current deaths - immediate, short spin, and death tumble!
-         DeathLength = Random.Range(2f,4f);
-      }
-      if(DeathType == 0) //Die Immediately.
-      {
-      if (!Boom)
-      { 
-        Boom = Instantiate(DeathVFX[Random.Range(0,DeathVFX.Length-1)],transform.position,Quaternion.identity, DecoRoot);
-        Boom.GetComponent<DampInitVelocity>().initDir = DeathDir;
-        Boom.GetComponent<DampInitVelocity>().initVel = DeathVel;
-        
-      }
-      Destroy(gameObject, .25f);
-      transform.position += DeathDir * DeathVel* Time.deltaTime;
-      }
-
-      if(DeathType == 1)//Short burst of explosions, then Die
-      {
-        var dyaw_ = Mathf.Clamp(DeathSpin.y, -1f, 1f);
-        var dpitch_ = Mathf.Clamp(DeathSpin.x, -1f, 1f);
-        var droll_ = Mathf.Clamp(DeathSpin.z, -1f, 1f);
-        dyaw_ *= turnRate * 2f * Time.deltaTime;
-        dpitch_ *= turnRate * 2f * Time.deltaTime;
-        droll_ *= turnRate * 3f * Time.deltaTime;
-        transform.localRotation *= Quaternion.AngleAxis(droll_, Vector3.forward) * Quaternion.AngleAxis(dyaw_, Vector3.up) * Quaternion.AngleAxis(dpitch_, invertYAxis ? Vector3.right : Vector3.left);
-        transform.position += DeathDir * DeathVel* Time.deltaTime;
-        speed = 0f;
-        DeathLength -= Time.deltaTime*5.5f;
-        if (DeathLength > .5f)
+        if (_CoreStrength > 0) //We dead, son
         {
-          GameObject DeathTrail = Instantiate(DeathTrailVFX,transform.position,Quaternion.identity,DecoRoot);
-          DeathTrail.GetComponent<DampInitVelocity>().initDir = DeathDir;
-          DeathTrail.GetComponent<DampInitVelocity>().initVel = DeathVel/8;
+            DeathDir = transform.forward;
+            DeathVel = speed;
         }
-        if (DeathLength <= 0 && !Boom)
-        { 
-          Boom = Instantiate(DeathVFX[Random.Range(0,DeathVFX.Length-1)],transform.position,Quaternion.identity,DecoRoot);
-          Boom.GetComponent<DampInitVelocity>().initDir = DeathDir;
-          Boom.GetComponent<DampInitVelocity>().initVel = DeathVel;
-          Destroy(gameObject, .25f);
-        }
-      }
 
-      if(DeathType == 2)
-      {
-      var dyaw_ = Mathf.Clamp(DeathSpin.y, -1f, 1f);
-      var dpitch_ = Mathf.Clamp(DeathSpin.x, -1f, 1f);
-      var droll_ = Mathf.Clamp(DeathSpin.z, -1f, 1f);
-      dyaw_ *= turnRate * 2f * Time.deltaTime;
-      dpitch_ *= turnRate * 2f * Time.deltaTime;
-      droll_ *= turnRate * 3f * Time.deltaTime;
-      transform.localRotation *= Quaternion.AngleAxis(droll_, Vector3.forward) * Quaternion.AngleAxis(dyaw_, Vector3.up) * Quaternion.AngleAxis(dpitch_, invertYAxis ? Vector3.right : Vector3.left);
-      transform.position += DeathDir * DeathVel* Time.deltaTime;
-      DeathLength -= Time.deltaTime;
-        if (DeathLength > .25f)
+        if (!DecoRoot)
+            DecoRoot = GameObject.Find("Deco_Objs").transform;
+
+        if (_CoreStrength <= 0) //We dead, son
         {
-          GameObject DeathTrail = Instantiate(DeathTrailVFX,transform.position,Quaternion.identity,DecoRoot);
-          DeathTrail.GetComponent<DampInitVelocity>().initDir = DeathDir;
-          DeathTrail.GetComponent<DampInitVelocity>().initVel = DeathVel/8;
-        }
-        if (DeathLength <= 0 && !Boom)
-        { 
-          Boom = Instantiate(DeathVFX[Random.Range(0,DeathVFX.Length-1)],transform.position,Quaternion.identity,DecoRoot);
-          Boom.GetComponent<DampInitVelocity>().initDir = DeathDir;
-          Boom.GetComponent<DampInitVelocity>().initVel = DeathVel;
-          Destroy(gameObject, .25f);
-        }
-      }
-    }
-  }
+            isDead = true;
+            //Let's set up how we're going to die!
+            if (DeathSpin == Vector3.zero) //this happens once, let's take advantage!
+            {
+                DeathDir = transform.forward;
+                DeathVel = speed;
+                DeathSpin = new Vector3(Random.Range(-3f, 3f), Random.Range(-3f, 3f), Random.Range(-3f, 3f));
+                DeathType = Random.Range(0, 2); //we've got three current deaths - immediate, short spin, and death tumble!
+                DeathLength = Random.Range(2f, 4f);
+            }
+            if (DeathType == 0) //Die Immediately.
+            {
+                if (!Boom)
+                {
+                    Boom = Instantiate(DeathVFX[Random.Range(0, DeathVFX.Length - 1)], transform.position, Quaternion.identity, DecoRoot);
+                    Boom.GetComponent<DampInitVelocity>().initDir = DeathDir;
+                    Boom.GetComponent<DampInitVelocity>().initVel = DeathVel;
 
-  void Power()
-  {
-    if(capacitorLevel<capacitorSize) //Charge Them Guns
+                }
+                Destroy(gameObject, .25f);
+                transform.position += DeathDir * DeathVel * Time.deltaTime;
+            }
+
+            if (DeathType == 1)//Short burst of explosions, then Die
+            {
+                var dyaw_ = Mathf.Clamp(DeathSpin.y, -1f, 1f);
+                var dpitch_ = Mathf.Clamp(DeathSpin.x, -1f, 1f);
+                var droll_ = Mathf.Clamp(DeathSpin.z, -1f, 1f);
+                dyaw_ *= turnRate * 2f * Time.deltaTime;
+                dpitch_ *= turnRate * 2f * Time.deltaTime;
+                droll_ *= turnRate * 3f * Time.deltaTime;
+                transform.localRotation *= Quaternion.AngleAxis(droll_, Vector3.forward) * Quaternion.AngleAxis(dyaw_, Vector3.up) * Quaternion.AngleAxis(dpitch_, invertYAxis ? Vector3.right : Vector3.left);
+                transform.position += DeathDir * DeathVel * Time.deltaTime;
+                speed = 0f;
+                DeathLength -= Time.deltaTime * 5.5f;
+                if (DeathLength > .5f)
+                {
+                    GameObject DeathTrail = Instantiate(DeathTrailVFX, transform.position, Quaternion.identity, DecoRoot);
+                    DeathTrail.GetComponent<DampInitVelocity>().initDir = DeathDir;
+                    DeathTrail.GetComponent<DampInitVelocity>().initVel = DeathVel / 8;
+                }
+                if (DeathLength <= 0 && !Boom)
+                {
+                    Boom = Instantiate(DeathVFX[Random.Range(0, DeathVFX.Length - 1)], transform.position, Quaternion.identity, DecoRoot);
+                    Boom.GetComponent<DampInitVelocity>().initDir = DeathDir;
+                    Boom.GetComponent<DampInitVelocity>().initVel = DeathVel;
+                    Destroy(gameObject, .25f);
+                }
+            }
+
+            if (DeathType == 2)
+            {
+                var dyaw_ = Mathf.Clamp(DeathSpin.y, -1f, 1f);
+                var dpitch_ = Mathf.Clamp(DeathSpin.x, -1f, 1f);
+                var droll_ = Mathf.Clamp(DeathSpin.z, -1f, 1f);
+                dyaw_ *= turnRate * 2f * Time.deltaTime;
+                dpitch_ *= turnRate * 2f * Time.deltaTime;
+                droll_ *= turnRate * 3f * Time.deltaTime;
+                transform.localRotation *= Quaternion.AngleAxis(droll_, Vector3.forward) * Quaternion.AngleAxis(dyaw_, Vector3.up) * Quaternion.AngleAxis(dpitch_, invertYAxis ? Vector3.right : Vector3.left);
+                transform.position += DeathDir * DeathVel * Time.deltaTime;
+                DeathLength -= Time.deltaTime;
+                if (DeathLength > .25f)
+                {
+                    GameObject DeathTrail = Instantiate(DeathTrailVFX, transform.position, Quaternion.identity, DecoRoot);
+                    DeathTrail.GetComponent<DampInitVelocity>().initDir = DeathDir;
+                    DeathTrail.GetComponent<DampInitVelocity>().initVel = DeathVel / 8;
+                }
+                if (DeathLength <= 0 && !Boom)
+                {
+                    Boom = Instantiate(DeathVFX[Random.Range(0, DeathVFX.Length - 1)], transform.position, Quaternion.identity, DecoRoot);
+                    Boom.GetComponent<DampInitVelocity>().initDir = DeathDir;
+                    Boom.GetComponent<DampInitVelocity>().initVel = DeathVel;
+                    Destroy(gameObject, .25f);
+                }
+            }
+        }
+    }
+
+    void Power()
     {
-      capacitorLevel += rechargeRate*Time.deltaTime;
+        if (capacitorLevel < capacitorSize) //Charge Them Guns
+        {
+            capacitorLevel += rechargeRate * Time.deltaTime;
+        }
     }
-  }
 
     public static float GetSignedAngle(Quaternion A, Quaternion B, Vector3 axis)
     {
@@ -631,57 +658,58 @@ public class ShipSettings : MonoBehaviour
 
         Vector3 rotDeltaRough = new Vector3(-newPitchDelta, -newYawDelta, newRollDelta);
 
-        rotDelta = Vector3.Lerp(rotDelta, rotDeltaRough, deltaSmooth); 
+        rotDelta = Vector3.Lerp(rotDelta, rotDeltaRough, deltaSmooth);
 
         lastTrans.position = transform.position;
         lastTrans.rotation = transform.rotation;
     }
 
 
-  void Steer() //Autopilot!
-  {
-    var yaw_ = Mathf.Clamp(yaw, -1f, 1f);
-    var pitch_ = Mathf.Clamp(pitch, -1f, 1f);
-    var roll_ = Mathf.Clamp(roll, -1f, 1f);
-    yaw_ *= turnRate * Time.deltaTime;
-    pitch_ *= turnRate * Time.deltaTime;
-    roll_ *= turnRate  * Time.deltaTime;
-    transform.localRotation *= Quaternion.AngleAxis(roll_, Vector3.forward) * Quaternion.AngleAxis(yaw_, Vector3.up) * Quaternion.AngleAxis(pitch_, invertYAxis ? Vector3.right : Vector3.left);
+    void Steer() //Autopilot!
+    {
+        var yaw_ = Mathf.Clamp(yaw, -1f, 1f);
+        var pitch_ = Mathf.Clamp(pitch, -1f, 1f);
+        var roll_ = Mathf.Clamp(roll, -1f, 1f);
+        yaw_ *= turnRate * Time.deltaTime;
+        pitch_ *= turnRate * Time.deltaTime;
+        roll_ *= turnRate * Time.deltaTime;
+        transform.localRotation *= Quaternion.AngleAxis(roll_, Vector3.forward) * Quaternion.AngleAxis(yaw_, Vector3.up) * Quaternion.AngleAxis(pitch_, invertYAxis ? Vector3.right : Vector3.left);
 
         DeltaRot();
     }
 
 
-  public float throttle;
-  void DoThrottle()
-  {
-    var targetSpeed_ = Mathf.Clamp(targetSpeed, 0f, burnSpeed);
-    
-    if (speed < targetSpeed_)
-    // accelerating
+    public float throttle;
+    void DoThrottle()
     {
-      speed = Mathf.Lerp(speed, targetSpeed_, acceleration * Time.deltaTime);
-    }
-    else if (speed > targetSpeed_)
-    // decelerating
-    {
-      speed = Mathf.Lerp(speed, targetSpeed_, deceleration * Time.deltaTime);
-    }
-    
-    LagDir = Quaternion.Slerp(LagDir,transform.rotation,.15f*(lag+(burnSpeed/speed)*lag));
+        var targetSpeed_ = Mathf.Clamp(targetSpeed, 0f, burnSpeed);
 
-    transform.position += LagDir * Vector3.forward * speed * Time.deltaTime;
+        if (speed < targetSpeed_)
+        // accelerating
+        {
+            speed = Mathf.Lerp(speed, targetSpeed_, acceleration * Time.deltaTime);
+        }
+        else if (speed > targetSpeed_)
+        // decelerating
+        {
+            speed = Mathf.Lerp(speed, targetSpeed_, deceleration * Time.deltaTime);
+        }
 
-    //set Afterburning flag
-    if(targetSpeed > topSpeed+.1f)
-     {isAfterburning = true;}
-     else
-     {isAfterburning = false;}
-    // also set the visible flare throttles
-    foreach (EngineFlare flare in engineFlares)
-    {
-      flare.FlareThrottle = speed/(topSpeed);
+        LagDir = Quaternion.Slerp(LagDir, transform.rotation, .15f * (lag + (burnSpeed / speed) * lag));
+
+        transform.position += LagDir * Vector3.forward * speed * Time.deltaTime;
+
+        //set Afterburning flag
+        if (targetSpeed > topSpeed + .1f)
+        { isAfterburning = true; }
+        else
+        { isAfterburning = false; }
+        // also set the visible flare throttles
+        foreach (EngineFlare flare in engineFlares)
+        {
+            flare.FlareThrottle = speed / (topSpeed);
+        }
+        throttle = speed / topSpeed;
     }
-    throttle = speed/topSpeed;
-  }
 }
+

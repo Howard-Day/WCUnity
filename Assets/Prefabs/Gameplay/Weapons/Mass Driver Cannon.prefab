@@ -44,12 +44,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 090bc13d9b91431459a5b0dcd1a3689f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  index: 0
-  fire: 0
-  GunId: 0
   Type: 2
-  laserBoltPrefab: {fileID: 2311620947440507634, guid: 400bd9c956c54aa4082b4547ccf6bb2c,
+  projectilePrefab: {fileID: 2311620947440507634, guid: 400bd9c956c54aa4082b4547ccf6bb2c,
+    type: 3}
+  muzzleflashPrefab: {fileID: 400538386877157162, guid: 83c57107cc299d34cb1bd3f829391fa9,
     type: 3}
   fireRate: 0.5
   powerDrain: 1.2
   gunRange: 360
+  index: 0
+  fire: 0
+  GunId: 0

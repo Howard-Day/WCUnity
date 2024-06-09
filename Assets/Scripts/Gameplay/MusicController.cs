@@ -1,10 +1,10 @@
-﻿    using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class MusicController : MonoBehaviour
 {
-    public enum MissionStatus {LAUNCH, START, COMBAT, SUCCESS, FAIL, LANDING};
+    public enum MissionStatus { LAUNCH, START, COMBAT, SUCCESS, FAIL, LANDING };
     public MissionStatus Status = MissionStatus.START;
 
     [HideInInspector] public AudioListener Listener;
@@ -31,7 +31,7 @@ public class MusicController : MonoBehaviour
 
     AudioSource Music1;
     AudioSource Music2;
-    AudioSource  NextMusicBlend;
+    AudioSource NextMusicBlend;
 
     // Start is called before the first frame update
     void Start()
@@ -50,12 +50,13 @@ public class MusicController : MonoBehaviour
     }
     public void DynamicMusic()
     {
-        switch(Status)
+        switch (Status)
         {
-            case(MissionStatus.START):{
+            case (MissionStatus.START):
+                {
 
-            }
-            break;
+                }
+                break;
 
         }
     }
@@ -63,7 +64,7 @@ public class MusicController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 }
 

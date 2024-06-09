@@ -37,7 +37,7 @@ public class Radar : MonoBehaviour
     public Toggle HitDown;
     public Toggle HitBack;
     [HideInInspector]
-    public List <BlipController> RadarBlips;
+    public List<BlipController> RadarBlips;
     GameObject BlipRoot;
 
     // Start is called before the first frame update
@@ -48,7 +48,7 @@ public class Radar : MonoBehaviour
         BlipRoot = new GameObject();
         BlipRoot.name = "BlipRoot";
         BlipRoot.transform.parent = gameObject.transform;
-        BlipRoot.transform.localPosition = Vector3.zero;  
+        BlipRoot.transform.localPosition = Vector3.zero;
         BlipRoot.transform.localScale = Vector3.one;
         RegisterBlips();
 
@@ -69,29 +69,29 @@ public class Radar : MonoBehaviour
         }
         RadarBlips = new List<BlipController>();
 
-        if(shipMain.AITeam == ShipSettings.TEAM.CONFED)
+        if (shipMain.AITeam == ShipSettings.TEAM.CONFED)
         {
-            MakeBlips(GameObjTracker.KilrathiShips, enemyNear,enemyFar);
-            MakeBlips(GameObjTracker.ConfedShips, friendlyNear,friendlyFar);
+            MakeBlips(GameObjTracker.KilrathiShips, enemyNear, enemyFar);
+            MakeBlips(GameObjTracker.ConfedShips, friendlyNear, friendlyFar);
         }
-        if(shipMain.AITeam == ShipSettings.TEAM.KILRATHI)
+        if (shipMain.AITeam == ShipSettings.TEAM.KILRATHI)
         {
-            MakeBlips(GameObjTracker.ConfedShips, enemyNear,enemyFar);
-            MakeBlips(GameObjTracker.KilrathiShips, friendlyNear,friendlyFar);
+            MakeBlips(GameObjTracker.ConfedShips, enemyNear, enemyFar);
+            MakeBlips(GameObjTracker.KilrathiShips, friendlyNear, friendlyFar);
         }
-        if(shipMain.AITeam == ShipSettings.TEAM.PIRATE)
+        if (shipMain.AITeam == ShipSettings.TEAM.PIRATE)
         {
-            MakeBlips(GameObjTracker.ConfedShips, enemyNear,enemyFar);
-            MakeBlips(GameObjTracker.KilrathiShips, enemyNear,enemyFar);
+            MakeBlips(GameObjTracker.ConfedShips, enemyNear, enemyFar);
+            MakeBlips(GameObjTracker.KilrathiShips, enemyNear, enemyFar);
         }
-        if(shipMain.AITeam == ShipSettings.TEAM.NEUTRAL)
+        if (shipMain.AITeam == ShipSettings.TEAM.NEUTRAL)
         {
-            MakeBlips(GameObjTracker.ConfedShips, neutralNear,neutralFar);
-            MakeBlips(GameObjTracker.KilrathiShips, neutralNear,neutralFar);
+            MakeBlips(GameObjTracker.ConfedShips, neutralNear, neutralFar);
+            MakeBlips(GameObjTracker.KilrathiShips, neutralNear, neutralFar);
         }
-        MakeBlips(GameObjTracker.PirateShips, enemyNear,enemyFar);
-        MakeBlips(GameObjTracker.NeutralShips, neutralNear,neutralFar);
-        MakeBlips(GameObjTracker.Environmental, envNear,envFar);
+        MakeBlips(GameObjTracker.PirateShips, enemyNear, enemyFar);
+        MakeBlips(GameObjTracker.NeutralShips, neutralNear, neutralFar);
+        MakeBlips(GameObjTracker.Environmental, envNear, envFar);
         GameObjTracker.radarRefreshNeeded = false;
         //print("Radar Refresh is: "+ GameObjTracker.radarRefreshNeeded);
 
@@ -99,23 +99,23 @@ public class Radar : MonoBehaviour
 
     void MakeBlips(List<ShipSettings> Ships, Color Near, Color Far)
     {
-        foreach(ShipSettings ship in Ships) //Go through a list of ships, add them 
+        foreach (ShipSettings ship in Ships) //Go through a list of ships, add them 
         {
             if (ship != shipMain) //But only if we're not looking at ourselves! 
             {
-            GameObject blipObj = new GameObject();
-            BlipController blip = blipObj.AddComponent<BlipController>() as BlipController; 
-            blipObj.name = "blip";
-            blipObj.transform.parent = BlipRoot.transform;
-            blipObj.transform.localPosition = Vector3.zero;
-            blipObj.transform.localScale = Vector3.one;
-            blip.ship = ship;
-            blip.clipDist= nearFarClip;
-            blip.Near = Near;
-            blip.Far = Far;
-            blip.radarRoot = gameObject.GetComponent<Radar>();
-            blip.shipMain = shipMain;
-            RadarBlips.Add(blip);
+                GameObject blipObj = new GameObject();
+                BlipController blip = blipObj.AddComponent<BlipController>() as BlipController;
+                blipObj.name = "blip";
+                blipObj.transform.parent = BlipRoot.transform;
+                blipObj.transform.localPosition = Vector3.zero;
+                blipObj.transform.localScale = Vector3.one;
+                blip.ship = ship;
+                blip.clipDist = nearFarClip;
+                blip.Near = Near;
+                blip.Far = Far;
+                blip.radarRoot = gameObject.GetComponent<Radar>();
+                blip.shipMain = shipMain;
+                RadarBlips.Add(blip);
             }
         }
 
@@ -123,48 +123,54 @@ public class Radar : MonoBehaviour
 
     void DoHitFlash() //Show incoming fire on the radar! 
     {
-        if(GameObjTracker.frames % 120 == 0 || Camera.main == null) // Every 2 sec (approx) reset the hit history, or if the cockpit has been destroyed. 
+        if (GameObjTracker.frames % 120 == 0 || Camera.main == null) // Every 2 sec (approx) reset the hit history, or if the cockpit has been destroyed. 
         {
             shipMain.lastHit = ShipSettings.HitLoc.NULL;
         }
-        if(GameObjTracker.frames % 30 == 0 || Camera.main == null) //every sec (approx) reset the hit flashes to off
+        if (GameObjTracker.frames % 30 == 0 || Camera.main == null) //every sec (approx) reset the hit flashes to off
         {
             HitFore.isOn = false;
             HitRight.isOn = false;
             HitLeft.isOn = false;
             HitUp.isOn = false;
             HitDown.isOn = false;
-            HitBack.isOn = false;            
+            HitBack.isOn = false;
         }
         //Flash the appropriate Radar section for incoming fire!
-        if(shipMain.lastHit == ShipSettings.HitLoc.F)
-        {HitFore.isOn = true;
-        }       
-        if(shipMain.lastHit == ShipSettings.HitLoc.R)
-        {HitRight.isOn = true;
-        }       
-        if(shipMain.lastHit == ShipSettings.HitLoc.L)
-        {HitLeft.isOn = true;
-        }       
-        if(shipMain.lastHit == ShipSettings.HitLoc.U)
-        {HitUp.isOn = true;
-        }       
-        if(shipMain.lastHit == ShipSettings.HitLoc.D)
-        {HitDown.isOn = true;
-        }       
-        if(shipMain.lastHit == ShipSettings.HitLoc.B)
-        {HitBack.isOn = true;
-        }       
+        if (shipMain.lastHit == ShipSettings.HitLoc.F)
+        {
+            HitFore.isOn = true;
+        }
+        if (shipMain.lastHit == ShipSettings.HitLoc.R)
+        {
+            HitRight.isOn = true;
+        }
+        if (shipMain.lastHit == ShipSettings.HitLoc.L)
+        {
+            HitLeft.isOn = true;
+        }
+        if (shipMain.lastHit == ShipSettings.HitLoc.U)
+        {
+            HitUp.isOn = true;
+        }
+        if (shipMain.lastHit == ShipSettings.HitLoc.D)
+        {
+            HitDown.isOn = true;
+        }
+        if (shipMain.lastHit == ShipSettings.HitLoc.B)
+        {
+            HitBack.isOn = true;
+        }
     }
 
     // Update is called once per frame
     void LateUpdate()
     {
         DoHitFlash();
-        if(GameObjTracker.radarRefreshNeeded == true)
+        if (GameObjTracker.radarRefreshNeeded == true)
         {
             RegisterBlips();
         }
-        
+
     }
 }
