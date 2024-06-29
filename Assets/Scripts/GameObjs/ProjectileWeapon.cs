@@ -3,10 +3,10 @@
 public class ProjectileWeapon : MonoBehaviour
 {
     
-    public enum GunType { Laser, Neutron, MassDriver, PhotonBlaster, ParticleCollisionEvent, TurretLaser, TurretNeutron, TurretMassDriver };
+    public enum GunType { Laser, Neutron, MassDriver, PhotonBlaster, Meson, Particle, ParticleCollisionEvent, TurretLaser, TurretNeutron, TurretMassDriver };
     public GunType Type;
     Transform mountingPoint = null;
-    [SerializeField] Transform projectilePrefab = null;
+    [SerializeField] public Transform projectilePrefab = null;
     [SerializeField] Transform muzzleflashPrefab = null;
     [SerializeField] float fireRate = .4f;
     [SerializeField] float powerDrain = 2.1f;
@@ -17,7 +17,8 @@ public class ProjectileWeapon : MonoBehaviour
     public int index;
     [HideInInspector] public bool fire = false;
     [HideInInspector] public int GunId = 0;
-
+    [HideInInspector] public float speed = 0;
+    public bool hasFired = false; //has the gun actually fired?
     /// <summary>
     /// Start is called on the frame when a script is enabled just before
     /// any of the Update methods is called the first time.
@@ -28,10 +29,12 @@ public class ProjectileWeapon : MonoBehaviour
         mountingPoint = gameObject.transform;
         //Set the Gun ID to the firing Ship ID
         GunId = MainShip.ShipID;
+        speed = projectilePrefab.GetComponent<Projectile>().speed;
     }
     // late update to give human or AI player scripts a chance to set values first
     void LateUpdate()
     {
+       
         //Catch case in occurance of not having an ID
         if (GunId == 0)
             GunId = MainShip.ShipID;
@@ -47,6 +50,11 @@ public class ProjectileWeapon : MonoBehaviour
             Proj.gameObject.GetComponent<Projectile>().ProjID = GunId;
             MainShip.capacitorLevel -= powerDrain;
             cooldown = fireRate;
+            hasFired = true;
+        }
+        if (cooldown < .9f)
+        {
+            hasFired = false;
         }
     }
 }

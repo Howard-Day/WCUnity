@@ -11,7 +11,7 @@ public class BracketController : MonoBehaviour
     public Color Color;
     public Vector2 clipDist;
     public float clipAngle;
-    private int pixelsPerUnit = 100;
+    //private int pixelsPerUnit = 100;
     Image bracketSprite;
     Vector3 newLocalPosition;
 
@@ -37,8 +37,10 @@ public class BracketController : MonoBehaviour
         // mainCamera = (Camera)GameObject.FindGameObjectWithTag("MainCamera").GetComponent("Camera");
         bracketRect = gameObject.GetComponent<RectTransform>();
         bracketRect.anchorMin = Vector2.zero;
-        bracketRect.anchorMax = Vector2.one;
+        bracketRect.anchorMax = Vector2.zero;
         bracketRect.anchoredPosition = Vector2.one / 2;
+        bracketSprite.color = Color;
+        bracketRect.sizeDelta = Vector2.zero;
         screenRes.y = Screen.height;
         screenRes.x = Screen.width;
     }
@@ -60,12 +62,12 @@ public class BracketController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!ship)
+        if (!ship || ship.isDead)
         {
             GameObjTracker.RegisterAllShips();
             GameObjTracker.RegisterTeams();
             //Destroy(this.gameObject);
-            return;
+            //return;
         }
         //use default bracket color and sprite   
         bracketSprite.color = Color;
@@ -84,7 +86,7 @@ public class BracketController : MonoBehaviour
         distTo = Vector3.Distance(hudCamera.transform.position, ship.transform.position);
 
         //unless the target is the current target!
-        if (ship == shipMain.currentTarget)
+        if (ship == shipMain.currentTarget )
         {
             bracketSprite.sprite = HUDRoot.targetBracket;
             if (GameObjTracker.frames % 15 == 0)
@@ -118,6 +120,32 @@ public class BracketController : MonoBehaviour
             }
 
         }
+        //handle hiding brackets when a ship is cloaking and cloaked! 
+        if (ship.isCloaking)
+        {
+            bracketSprite.sprite = HUDRoot.targetBracket;
+            if (GameObjTracker.frames % 15 == 0)
+            {
+                if (blink == 0)
+                {
+                    blink = 1;
+                    bracketSprite.color = Color;
+                    bracketSprite.enabled = true;
+                }
+                else
+                {
+                    blink = 0;
+                    bracketSprite.enabled = false;
+                }
+            }
+        }
+        if (ship.isCloaked)
+        {
+            bracketSprite.sprite = HUDRoot.targetBracket;
+            bracketSprite.color = Color;
+            bracketSprite.enabled = false;
+        }
+
 
         if (distTo > clipDist.y * .75f && ship != shipMain.currentTarget)
         {
@@ -155,13 +183,18 @@ public class BracketController : MonoBehaviour
         Vector2 max = extentPoints[0];
         foreach (Vector2 v in extentPoints)
         {
+
             min = new Vector2(Mathf.Min(min.x, v.x), Mathf.Min(min.y, v.y));
             max = new Vector2(Mathf.Max(max.x, v.x), Mathf.Max(max.y, v.y));
+            
         }
         Vector2 posSize = new Vector2((max.x - min.x), (max.y - min.y));
+
         RectTransform rectTrans = gameObject.transform as RectTransform;
         rectTrans.localPosition = GetScreenPosition(hudCamera, ship.gameObject.transform.position, 1.8f, new Vector2(640, 400));
         rectTrans.sizeDelta = Vector2.Min(Vector2.Max(Vector2.one * .085f, posSize * .75f), Vector2.one);
+
+
 
     }
 }

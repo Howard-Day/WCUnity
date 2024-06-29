@@ -172,7 +172,7 @@ TextureImporter:
         y: 928
         width: 78
         height: 96
-      alignment: 0
+      alignment: 9
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
@@ -194,7 +194,7 @@ TextureImporter:
         width: 26
         height: 61
       alignment: 9
-      pivot: {x: 0.51459914, y: 0.5832449}
+      pivot: {x: 0.53846157, y: 0.7704918}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -214,7 +214,7 @@ TextureImporter:
         y: 919
         width: 130
         height: 104
-      alignment: 0
+      alignment: 9
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
@@ -235,8 +235,8 @@ TextureImporter:
         y: 926
         width: 90
         height: 98
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      alignment: 9
+      pivot: {x: 0.4888889, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -256,8 +256,8 @@ TextureImporter:
         y: 913
         width: 79
         height: 110
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      alignment: 9
+      pivot: {x: 0.4936709, y: 0.5090909}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -273,12 +273,12 @@ TextureImporter:
       name: Shield_04
       rect:
         serializedVersion: 2
-        x: 715
+        x: 714
         y: 913
         width: 31
         height: 111
       alignment: 9
-      pivot: {x: 0.2730772, y: 0.5018107}
+      pivot: {x: 0.32258064, y: 0.4954955}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -294,12 +294,12 @@ TextureImporter:
       name: Shield_03
       rect:
         serializedVersion: 2
-        x: 683
-        y: 920
+        x: 684
+        y: 919
         width: 25
         height: 97
       alignment: 9
-      pivot: {x: 0.36332762, y: 0.5082882}
+      pivot: {x: 0.32, y: 0.49484533}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -317,10 +317,10 @@ TextureImporter:
         serializedVersion: 2
         x: 656
         y: 930
-        width: 19
+        width: 22
         height: 76
       alignment: 9
-      pivot: {x: 0.53173506, y: 0.5}
+      pivot: {x: 0.45454547, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -336,12 +336,12 @@ TextureImporter:
       name: Shield_01
       rect:
         serializedVersion: 2
-        x: 635
+        x: 633
         y: 942
-        width: 11
+        width: 14
         height: 53
       alignment: 9
-      pivot: {x: 0.6827171, y: 0.5}
+      pivot: {x: 0.71428573, y: 0.49056605}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -362,7 +362,7 @@ TextureImporter:
         width: 76
         height: 92
       alignment: 9
-      pivot: {x: 0.5772994, y: 0.50236446}
+      pivot: {x: 0.5394737, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -383,7 +383,7 @@ TextureImporter:
         width: 129
         height: 121
       alignment: 9
-      pivot: {x: 0.4978633, y: 0.5597378}
+      pivot: {x: 0.49612403, y: 0.5454545}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -404,7 +404,7 @@ TextureImporter:
         width: 92
         height: 111
       alignment: 9
-      pivot: {x: 0.5, y: 0.4954955}
+      pivot: {x: 0.5, y: 0.4864865}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -424,8 +424,8 @@ TextureImporter:
         y: 831
         width: 90
         height: 94
-      alignment: 0
-      pivot: {x: 0, y: 0}
+      alignment: 9
+      pivot: {x: 0.4888889, y: 0.49999997}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -433,6 +433,195 @@ TextureImporter:
       bones: []
       spriteID: 2890d9ab06f57354a9747c660f2c3722
       internalID: -1162261512
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TRGT_Strakha
+      rect:
+        serializedVersion: 2
+        x: 286
+        y: 797
+        width: 86
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.5089286}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3acf7afb5f6020945ad37fc8cadc025c
+      internalID: -619519153
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TRGT_TalonA
+      rect:
+        serializedVersion: 2
+        x: 388
+        y: 937
+        width: 96
+        height: 84
+      alignment: 9
+      pivot: {x: 0.5, y: 0.48809525}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4b59242780244194e82f282e4ddbd957
+      internalID: 1721689566
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TRGT_TalonB
+      rect:
+        serializedVersion: 2
+        x: 388
+        y: 858
+        width: 100
+        height: 75
+      alignment: 9
+      pivot: {x: 0.5, y: 0.50666666}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6351423a37aea8d468c0fcd46a1eb3e3
+      internalID: -65470843
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TRGT_TalonC
+      rect:
+        serializedVersion: 2
+        x: 387
+        y: 772
+        width: 99
+        height: 79
+      alignment: 9
+      pivot: {x: 0.5050505, y: 0.5063291}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 615ce2297735d7a4aae497aa2bd41feb
+      internalID: -508232383
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TRGT_TalonD
+      rect:
+        serializedVersion: 2
+        x: 386
+        y: 683
+        width: 110
+        height: 81
+      alignment: 9
+      pivot: {x: 0.49999997, y: 0.50617284}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 325eb9e2f83a1bc49b02242d373dbf24
+      internalID: -225803858
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TRGT_TalonE
+      rect:
+        serializedVersion: 2
+        x: 386
+        y: 596
+        width: 98
+        height: 82
+      alignment: 9
+      pivot: {x: 0.5, y: 0.49999997}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d736c4933c7e6a64ab9a8703d2d6d620
+      internalID: -2145628955
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TRGT_TalonF
+      rect:
+        serializedVersion: 2
+        x: 386
+        y: 511
+        width: 114
+        height: 78
+      alignment: 9
+      pivot: {x: 0.5, y: 0.51282054}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9ec9bd6015e18cc4f9afd309d8852e46
+      internalID: -2106772318
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TRGT_Null_01
+      rect:
+        serializedVersion: 2
+        x: 627
+        y: 769
+        width: 134
+        height: 136
+      alignment: 9
+      pivot: {x: 0.4925373, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4bbed77317b9b0040af78ea1f9a52b49
+      internalID: -623309662
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Shield_Null
+      rect:
+        serializedVersion: 2
+        x: 752
+        y: 913
+        width: 29
+        height: 111
+      alignment: 9
+      pivot: {x: 0.32312012, y: 0.49807438}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8fd7d02657ee34c45aa6fe279c25f249
+      internalID: 1890584309
       vertices: []
       indices: 
       edges: []
@@ -448,17 +637,26 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
+      Shield_Null: 1890584309
+      TRGT_TalonE: -2145628955
       Shield_02: 8667844304088249284
       SYS_Dralthi: 3007919691619370033
       Shield_03: -3859834622411165252
+      TRGT_TalonC: -508232383
       Shield_04: -6903393406301806638
+      TRGT_TalonF: -2106772318
       WEAP_Laser01: 5901147463307786492
       TRGT_Valtar: -5074887530360705704
       TRGT_Salthi: -4973505997022854714
       TRGT_Krant: -1922495045691203107
       SYS_Hornet: -8913475363001738924
+      TRGT_TalonD: -225803858
+      TRGT_Null_01: -623309662
       TRGT_Dralthi: -5658064665324839680
+      TRGT_TalonB: -65470843
+      TRGT_Strakha: -619519153
       TRGT_Scimitar: -1162261512
+      TRGT_TalonA: 1721689566
       TRGT_Hornet: 2033425799997004718
       Shield_01: 5298127484218577836
   spritePackingTag: 

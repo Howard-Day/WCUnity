@@ -6,14 +6,20 @@ public class ShipSettings : MonoBehaviour
 {
 
     public enum TEAM { CONFED, KILRATHI, NEUTRAL, PIRATE, ENV };
+    public enum CLASS { FIGHTER, FRIGATE, CAPITAL, STARBASE };
 
-    [Header("Choose Team!")]
+    [Header("Choose Team, Name, and filters")]
     [SerializeField] public TEAM AITeam = TEAM.CONFED;
+    [SerializeField] public CLASS Class = CLASS.FIGHTER;
+    [SerializeField] public string DisplayName;
     //[SerializeField] public 
     [SerializeField] public bool isWingLead = false;
     [SerializeField] public LayerMask CollidesWith;
+    [Header("Billboard")]
+    [SerializeField] public GameObject Billboard;
     [Header("VDU Icon!")]
     [SerializeField] public Sprite VDUImage;
+    
     [Header("Movement Settings")]
     [SerializeField] public float turnRate = 50f;
     [SerializeField] public float maxFuel = 2500f;
@@ -45,17 +51,25 @@ public class ShipSettings : MonoBehaviour
     [SerializeField] public GameObject InternalDamageVFX;
     [SerializeField] public GameObject DamageVFX;
     [SerializeField] public GameObject DamageTrails;
-
+    [Header("Special Abilities")]
+    [SerializeField] public bool hasCloak = false;
+    [SerializeField] public float timeToCloak = 2f;
+    [SerializeField] public GameObject[] turrets;
+    [SerializeField] public ProjectileWeapon[] projWeapons;
 
 
     //Hidden Attributes
+    [HideInInspector] public bool isPlayer = false;
+    [HideInInspector] public GameObject playerUI;
     [HideInInspector] public float shipRadius;
-    EngineFlare[] engineFlares;
     [HideInInspector] public Vector4 _ArmorMax;
     [HideInInspector] public Vector2 _ShieldMax;
     [HideInInspector] public float CoreMax;
-
     [HideInInspector] public bool hitInAss = false; //this is important information, for a lot of reasons.
+    EngineFlare[] engineFlares;
+    Material billboardMat;
+
+
     public class DamageComponents
     {
         public float IonDrive = 0f;
@@ -89,10 +103,49 @@ public class ShipSettings : MonoBehaviour
     [HideInInspector] public bool isLocked = false;
     [HideInInspector] public ShipSettings currentTarget;
     [HideInInspector] public bool currentLocked = false;
+
+    [HideInInspector] public bool hitInternal = false;
+
+    [HideInInspector] public float recover = 1f;
+    [HideInInspector] public Vector3 BounceDir;
+    [HideInInspector] public Vector3 BounceSpin;
+    [HideInInspector] public float BouncePush;
+
+    [HideInInspector] public enum HitLoc { F, R, L, U, D, B, NULL };
+    [HideInInspector] public HitLoc lastHit;
+    [HideInInspector] public int lastHitID;
+
+    GameObject Boom;
+    Vector3 DeathDir = Vector3.zero;
+    float DeathVel;
+    Vector3 DeathSpin;
+    int DeathType;
+    float DeathLength;
+    GameObject Trail;
+    Transform DecoRoot;
+
+    [HideInInspector] public Quaternion oldRot;
+    [HideInInspector] public Vector3 rotDelta;
+    Quaternion LagDir;
+    Pose lastTrans;
+
+    [HideInInspector] public float throttle;
+    [HideInInspector] public float flareIntensity = 1f;
+
+    public bool Cloak = false;
+    public bool isCloaked = false;
+    public bool isCloaking = false;
+    float cloakedAmount = 0f;
+
+    [HideInInspector] public Vector3 lastPos = Vector3.zero;
+    [HideInInspector] public Vector3 currentPos;
+    public Vector3 velocity;
+
+
     void Start()
     {
         //assign a random ID
-        ShipID = Random.Range(-32000, 32000);
+        SetId();
         shipRadius = GetComponent<SphereCollider>().radius;
         //Organize the scene
         gameObject.transform.SetParent(GameObject.FindWithTag("GamePlayObjs").transform);
@@ -106,32 +159,27 @@ public class ShipSettings : MonoBehaviour
         //Turbines to speed
         //check fuel Light
         _Fuel = maxFuel;
-
+        //Power Weapons
+        InitGuns();
         _ArmorMax = Armor; //Give us something to compare to later on
         _ShieldMax = Shield; //same
         _CoreStrength = (Armor.x + Armor.y + Armor.z + Armor.w + (Shield.x + Shield.y) / 2) / 3; //Generalized fomula for the unarmored mechanical core of the ship
         CoreMax = _CoreStrength;
+        //grab the display part of the billboard, for futher modification
+        GetBillboardMat();
+    }
+    public void SetId()
+    {
+        ShipID = Random.Range(-32000, 32000);
+        while (ShipID == 0)
+        {
+            ShipID = Random.Range(-32000, 32000);
+        }
     }
 
-    // late update to give human or AI player scripts a chance to set values first
-    void LateUpdate()
+    public void GetBillboardMat() 
     {
-        if (!isDead)
-        {
-            Steer();
-            DoThrottle();
-            Power();
-        }
-        DoHealth();
-        DoFuel();
-        AvoidObstacles(1f, shipRadius * 3f);
-        //Collision Detecting, but make sure the full collision is only being used if the ship is afterburning, simple manuvers won't do it as much.
-        //if(isAfterburning)
-        //{ DoBounce(.5f,shipRadius/2);}
-        //else
-        DoBounce(.5f, shipRadius / 32f);
-        TargetManage();
-
+        billboardMat = Billboard.GetComponent<Renderer>().sharedMaterial;   
     }
 
     void TargetManage()
@@ -149,6 +197,57 @@ public class ShipSettings : MonoBehaviour
         }
     }
 
+    int countFireIndex = 1;
+    int lastFireIndex = 0;
+    //Find our Guns, Figure out what they are, sequence them and put them in a list! 
+    void InitGuns()
+    {
+        projWeapons = GetComponentsInChildren<ProjectileWeapon>();
+        foreach (ProjectileWeapon projWeapon in projWeapons)
+        {
+            //Init gun index
+            if (projWeapon.index == 0)
+            {
+                projWeapon.index = countFireIndex;
+                countFireIndex++;
+            }
+        }
+
+    }
+    //Do Velocity calculation
+    void DoVelocity()
+    {
+        currentPos = transform.position;
+        velocity = (currentPos - lastPos) /Time.deltaTime;
+        lastPos = transform.position;
+    }
+    //Fire Guns! 
+    public void FireGuns(bool fire)
+    {
+        foreach (ProjectileWeapon projWeapon in projWeapons)
+        {
+
+            if (recover >= .99f  && projWeapon.index != lastFireIndex && !isCloaked) // Can the ship fire? Is this gun *not* the last to fire? Are we Cloaked? 
+            {
+                projWeapon.fire = fire;
+                //increment through guns
+                lastFireIndex++;
+                if (lastFireIndex > countFireIndex - 1)
+                {
+                    lastFireIndex = 1;
+                }                                
+                // if(logDebug){print("aactually setting state to " + fire);}
+                //are we firing?
+                isFiring = fire; //Make sure our broadcast flag is set! 
+            }
+            if (recover < .75f) //wait for recharge or return of control! 
+            {
+                projWeapon.fire = false;
+                isFiring = false;
+            }
+        }
+    }
+    //Handle our Fuel Levels
     void DoFuel()
     {
         var normalizedThrottle = Mathf.Clamp01(speed / topSpeed);
@@ -170,8 +269,7 @@ public class ShipSettings : MonoBehaviour
             isAfterburning = false;
         }
     }
-
-    public bool hitInternal = false;
+    //Handle Internal Damage
     void InternalDamage(bool doComponentDamage)
     {
         //Show that internal damage has taken place! 
@@ -210,10 +308,7 @@ public class ShipSettings : MonoBehaviour
             }
         }
     }
-
-
-
-
+    //Handle Armor Damage VFX
     void ArmorDamage(Vector3 pos)
     {
         //Show that armor damage has taken place! 
@@ -221,7 +316,6 @@ public class ShipSettings : MonoBehaviour
         Debris.GetComponent<DampInitVelocity>().initDir = DeathDir;
         Debris.GetComponent<DampInitVelocity>().initVel = DeathVel;
     }
-
     //Gently avoid obstacles!
     public void AvoidObstacles(float urgency, float avoidRadius)
     {
@@ -244,11 +338,11 @@ public class ShipSettings : MonoBehaviour
 
                 if (Vector3.Dot(transform.up, avoidDir) > 0)
                 {
-                    pitch -= magPush / 16f;
+                    pitch -= magPush / 8f;
                 }
                 else
                 {
-                    pitch += magPush / 16f;
+                    pitch += magPush / 8f;
                 }
 
                 //if(magPush > 0)
@@ -260,13 +354,9 @@ public class ShipSettings : MonoBehaviour
 
     }
     //Violently Collide!
-    [HideInInspector] public float recover = 1f;
-    [HideInInspector] public Vector3 BounceDir;
-    [HideInInspector] public Vector3 BounceSpin;
-    [HideInInspector] public float BouncePush;
     public void DoBounce(float recoverRate, float bounceRadius)
     {
-        Collider[] bounceColliders = Physics.OverlapSphere(gameObject.transform.position, bounceRadius, CollidesWith);
+        Collider[] bounceColliders = Physics.OverlapSphere(gameObject.transform.position, bounceRadius/10, CollidesWith);
         int ib = 0;
         while (ib < bounceColliders.Length)
         {
@@ -323,19 +413,20 @@ public class ShipSettings : MonoBehaviour
             recover += recoverRate * Time.deltaTime;
         }
     }
-    public enum HitLoc { F, R, L, U, D, B, NULL };
-    public HitLoc lastHit;
-    public int lastHitID;
-
-
-    
+    //Handle Damage
     public int[] DoDamage(Vector3 hitLoc, float damage, int hitID) //returns true for a sheild hit, false for a hull hit, and the firing ship's ID. 
     {
         int[] hitTracker = new int[2];
         hitTracker[1] = ShipID;
         lastHitID = hitID;
-        //Where'd the hit come from, to the center of the ship?
-        Vector3 damageAngle = hitLoc - transform.position;
+        //reset Last hitID periodically
+        if (GameObjTracker.frames % 30 == 0)
+        {
+            lastHitID = 0;
+        }
+
+            //Where'd the hit come from, to the center of the ship?
+            Vector3 damageAngle = hitLoc - transform.position;
         //Check font/back hit of the impact, apply that to the shields
         if (Vector3.Angle(transform.forward, damageAngle) < 90) //Hit from the front
         {
@@ -495,26 +586,36 @@ public class ShipSettings : MonoBehaviour
             }
         }
     }
-
-
-    void DoKillCounter()
-    {
-        if (AITeam == TEAM.CONFED)
+    bool playerUIDisconnected = false;
+    DampInitVelocity lagMove;
+    //Handle disconnecting the player camera when the ship dies, if it has one! TODO: add delay for the death animation
+    void DoPlayerUIDisconnect() 
+    { 
+        //San check
+        if (isPlayer && playerUI != null && !playerUIDisconnected)
         {
-            GameObjTracker.kilrathiKills += 1;
+            //disconnect the UI from the ship
+            playerUI.transform.parent = DecoRoot;
+            //get the cockpit view control, set it to chase cam mode! 
+            CockpitViewSwitcher cockpit = playerUI.GetComponentInChildren<CockpitViewSwitcher>();
+            cockpit.ChaseSwitch = false;
+            cockpit.ChaseCam = true;
+            //add a damp initial velocity to the chase cam, give it the velocity!
+            if (!lagMove)
+            {
+                lagMove = playerUI.gameObject.AddComponent<DampInitVelocity>();
+                lagMove.initDir = DeathDir;
+                lagMove.initVel = DeathVel;
+            }
+            //tell the game manager we need to respawn the player
+            GameObjTracker.playerNeedsRespawn = true;
+            GameObjTracker.oldUI = playerUI.gameObject;
+            playerUIDisconnected = true;
         }
+
     }
 
-
-
-    GameObject Boom;
-    Vector3 DeathDir = Vector3.zero;
-    float DeathVel;
-    Vector3 DeathSpin;
-    int DeathType;
-    float DeathLength;
-    GameObject Trail;
-    Transform DecoRoot;
+    //Handle Overall Ship Health
     void DoHealth()
     {
         //Constantly recharge the shields till full
@@ -563,6 +664,7 @@ public class ShipSettings : MonoBehaviour
                     Boom.GetComponent<DampInitVelocity>().initVel = DeathVel;
 
                 }
+                DoPlayerUIDisconnect();
                 Destroy(gameObject, .25f);
                 transform.position += DeathDir * DeathVel * Time.deltaTime;
             }
@@ -590,6 +692,7 @@ public class ShipSettings : MonoBehaviour
                     Boom = Instantiate(DeathVFX[Random.Range(0, DeathVFX.Length - 1)], transform.position, Quaternion.identity, DecoRoot);
                     Boom.GetComponent<DampInitVelocity>().initDir = DeathDir;
                     Boom.GetComponent<DampInitVelocity>().initVel = DeathVel;
+                    DoPlayerUIDisconnect();
                     Destroy(gameObject, .25f);
                 }
             }
@@ -616,12 +719,13 @@ public class ShipSettings : MonoBehaviour
                     Boom = Instantiate(DeathVFX[Random.Range(0, DeathVFX.Length - 1)], transform.position, Quaternion.identity, DecoRoot);
                     Boom.GetComponent<DampInitVelocity>().initDir = DeathDir;
                     Boom.GetComponent<DampInitVelocity>().initVel = DeathVel;
+                    DoPlayerUIDisconnect();
                     Destroy(gameObject, .25f);
                 }
             }
         }
     }
-
+    //Handle Power Management
     void Power()
     {
         if (capacitorLevel < capacitorSize) //Charge Them Guns
@@ -629,7 +733,7 @@ public class ShipSettings : MonoBehaviour
             capacitorLevel += rechargeRate * Time.deltaTime;
         }
     }
-
+    //Helpful Utilities
     public static float GetSignedAngle(Quaternion A, Quaternion B, Vector3 axis)
     {
         float angle = 0f;
@@ -641,13 +745,6 @@ public class ShipSettings : MonoBehaviour
         }
         return Mathf.DeltaAngle(0f, angle);
     }
-
-    [HideInInspector] public Quaternion oldRot;
-    [HideInInspector] public Vector3 rotDelta;
-    Quaternion LagDir;
-
-
-    Pose lastTrans;
     void DeltaRot()
     {
         Quaternion qLocal = Quaternion.Inverse(transform.rotation) * lastTrans.rotation;
@@ -663,8 +760,6 @@ public class ShipSettings : MonoBehaviour
         lastTrans.position = transform.position;
         lastTrans.rotation = transform.rotation;
     }
-
-
     void Steer() //Autopilot!
     {
         var yaw_ = Mathf.Clamp(yaw, -1f, 1f);
@@ -677,9 +772,7 @@ public class ShipSettings : MonoBehaviour
 
         DeltaRot();
     }
-
-
-    public float throttle;
+    //Handle our Speed and Acceleration
     void DoThrottle()
     {
         var targetSpeed_ = Mathf.Clamp(targetSpeed, 0f, burnSpeed);
@@ -707,9 +800,92 @@ public class ShipSettings : MonoBehaviour
         // also set the visible flare throttles
         foreach (EngineFlare flare in engineFlares)
         {
-            flare.FlareThrottle = speed / (topSpeed);
+            flare.FlareThrottle = (speed / (topSpeed))*flareIntensity;
         }
         throttle = speed / topSpeed;
     }
+    //Handle our cloaking device, if we have one!
+    public void DoCloak()
+    {
+        //Handle Cloaking logic
+        if (hasCloak)
+        {
+            //attempt to handle an edge case of not *completely* cloaked and getting stuck.
+            if (isCloaking && cloakedAmount >= .99f)
+            {
+                cloakedAmount = 1f;
+                isCloaked = true;
+                isCloaking = false;
+            }
+            //Start Cloaking
+            if (Cloak && !isCloaked)
+            {
+                if(cloakedAmount <=1.1f)
+                    cloakedAmount += Time.deltaTime / timeToCloak;
+                if (cloakedAmount >= 1.05f)
+                {
+                    cloakedAmount = 1f;
+                    isCloaked = true;
+
+                }
+            }
+            //Uncloak
+            if (!Cloak && isCloaked )
+            {
+                cloakedAmount -= Time.deltaTime / timeToCloak;
+
+                if (cloakedAmount <= 0f)
+                {
+                    cloakedAmount = 0f;
+                    isCloaked = false;
+                }
+            }
+            //Handle midway state and broadcast it
+            if (cloakedAmount > .01f && cloakedAmount < .99f)
+            {
+                isCloaking = true;
+            }
+            else 
+            {
+                isCloaking = false;
+            }
+            //control the visual effect of the cloak
+            if (Cloak && !isCloaking && !isCloaked)
+            {
+                GetBillboardMat();
+            }
+            //handle the Billboard material animation
+            billboardMat.SetFloat("_CloakAmount", cloakedAmount);
+            //handle dimming the engines! 
+            flareIntensity = (1 - cloakedAmount * 1.1f);           
+        }
+    }
+
+    // late update to give human or AI player scripts a chance to set values first
+    void LateUpdate()
+    {
+        if (!isDead)
+        {
+            Steer();
+            DoThrottle();
+            Power();
+        }
+        DoHealth();
+        DoFuel();
+        AvoidObstacles(1f, shipRadius *4f);
+        DoCloak();
+        TargetManage();
+        DoVelocity();
+        //Collision Detecting, but make sure the full collision is only being used if the ship is afterburning, simple manuvers won't do it as much.
+        if (isAfterburning)
+        {
+            DoBounce(.5f, shipRadius / 64f);
+        }
+        else
+        {
+            DoBounce(.75f, shipRadius / 64f);
+        }
+    }
+
 }
 

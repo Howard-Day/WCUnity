@@ -37,37 +37,52 @@ public class EngineFlare : MonoBehaviour
     void Update()
     {
         FlareMat.SetFloat("_LineWidth", Mathf.Lerp(FlareWidths.x, FlareWidths.y, FlareThrottle) * Random.Range(.9f, 1.1f));
-        if (FlareThrottle <= .2f && TextureSwap == false)
-        {
-            TextureSwap = true;
-            SwapTexture(IdleThrottle, FlareMat);
+        //Handle completely off engines
+        if (FlareThrottle < 0)
+        {            
+            gameObject.GetComponent<Renderer>().enabled = false;
         }
+        if (FlareThrottle > 0)
+        {            
+            gameObject.GetComponent<Renderer>().enabled = true;
+        }
+        //Only do Texture swaps if visible
+        if (gameObject.GetComponent<Renderer>().enabled)
+        {
+            //Handle Normal throttle range 
+            if (FlareThrottle <= .2f && FlareThrottle >= 0 && TextureSwap == false)
+            {
+                TextureSwap = true;
+                SwapTexture(IdleThrottle, FlareMat);
+            }
 
-        if (FlareThrottle <= .45f && FlareThrottle > .1f && TextureSwap == false)
-        {
-            TextureSwap = true;
-            SwapTexture(ThirdThrottle, FlareMat);
-        }
+            if (FlareThrottle <= .45f && FlareThrottle > .1f && TextureSwap == false)
+            {
+                TextureSwap = true;
+                SwapTexture(ThirdThrottle, FlareMat);
+            }
 
-        if (FlareThrottle <= .75f && FlareThrottle > .35f && TextureSwap == false)
-        {
-            TextureSwap = true;
-            SwapTexture(CruiseThrottle, FlareMat);
-        }
+            if (FlareThrottle <= .75f && FlareThrottle > .35f && TextureSwap == false)
+            {
+                TextureSwap = true;
+                SwapTexture(CruiseThrottle, FlareMat);
+            }
 
-        if (FlareThrottle <= 1.1f && FlareThrottle > .75f && TextureSwap == false)
-        {
-            TextureSwap = true;
-            SwapTexture(FullThrottle, FlareMat);
+            if (FlareThrottle <= 1.1f && FlareThrottle > .75f && TextureSwap == false)
+            {
+                TextureSwap = true;
+                SwapTexture(FullThrottle, FlareMat);
+            }
+            //Handle Afterburning!
+            if (FlareThrottle > 1.1f && TextureSwap == false)
+            {
+                TextureSwap = true;
+                SwapTexture(Afterburn, FlareMat);
+                FlareMat.SetFloat("_LineWidth", FlareWidths.y * Random.Range(1.25f, 1.5f));
+            }
         }
-
-        if (FlareThrottle > 1.1f && TextureSwap == false)
-        {
-            TextureSwap = true;
-            SwapTexture(Afterburn, FlareMat);
-            FlareMat.SetFloat("_LineWidth", FlareWidths.y * Random.Range(1.25f, 1.5f));
-        }
+        //Change length of Engine Flare
         VolLine.StartPos = new Vector3(0, 0, Mathf.Lerp(FlareLengths.y, FlareLengths.x, FlareThrottle));
-
+        
     }
 }

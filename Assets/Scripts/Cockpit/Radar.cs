@@ -68,7 +68,7 @@ public class Radar : MonoBehaviour
             Destroy(blip.gameObject);
         }
         RadarBlips = new List<BlipController>();
-
+        
         if (shipMain.AITeam == ShipSettings.TEAM.CONFED)
         {
             MakeBlips(GameObjTracker.KilrathiShips, enemyNear, enemyFar);
@@ -98,24 +98,27 @@ public class Radar : MonoBehaviour
     }
 
     void MakeBlips(List<ShipSettings> Ships, Color Near, Color Far)
-    {
-        foreach (ShipSettings ship in Ships) //Go through a list of ships, add them 
+    {        
+        if (Ships != null && Ships.Count > 0)
         {
-            if (ship != shipMain) //But only if we're not looking at ourselves! 
+            foreach (ShipSettings ship in Ships) //Go through a list of ships, add them 
             {
-                GameObject blipObj = new GameObject();
-                BlipController blip = blipObj.AddComponent<BlipController>() as BlipController;
-                blipObj.name = "blip";
-                blipObj.transform.parent = BlipRoot.transform;
-                blipObj.transform.localPosition = Vector3.zero;
-                blipObj.transform.localScale = Vector3.one;
-                blip.ship = ship;
-                blip.clipDist = nearFarClip;
-                blip.Near = Near;
-                blip.Far = Far;
-                blip.radarRoot = gameObject.GetComponent<Radar>();
-                blip.shipMain = shipMain;
-                RadarBlips.Add(blip);
+                if (ship != shipMain && !ship.isDead) //But only if we're not looking at ourselves! Or they're not dead. :P
+                {
+                    GameObject blipObj = new GameObject();
+                    BlipController blip = blipObj.AddComponent<BlipController>() as BlipController;
+                    blipObj.name = "blip";
+                    blipObj.transform.parent = BlipRoot.transform;
+                    blipObj.transform.localPosition = Vector3.zero;
+                    blipObj.transform.localScale = Vector3.one;
+                    blip.ship = ship;
+                    blip.clipDist = nearFarClip;
+                    blip.Near = Near;
+                    blip.Far = Far;
+                    blip.radarRoot = gameObject.GetComponent<Radar>();
+                    blip.shipMain = shipMain;
+                    RadarBlips.Add(blip);
+                }
             }
         }
 

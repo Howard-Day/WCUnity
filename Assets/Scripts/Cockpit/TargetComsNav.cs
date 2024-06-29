@@ -26,13 +26,22 @@ public class TargetComsNav : MonoBehaviour
     public GameObject ShieldFront;
     public GameObject ShieldBack;
     public Sprite[] shieldSprites;
+    public Sprite shieldNull;
+    public GameObject subtext;
+    public GameObject subtextNull;
+    public GameObject subtextDamaged;
+
 
     ShipSettings shipMain;
 
     ShipSettings currentTarget = null;
 
     Color textColor;
-
+    GameObject mfdSubtext;
+    Vector3 offset = Vector3.back * .05f;
+    bool subtextDamgedMode = false;
+    bool subtextNullMode = false;
+    bool subtextSwitchNeeded = false;
     // Start is called before the first frame update
     void Start()
     {
@@ -45,6 +54,43 @@ public class TargetComsNav : MonoBehaviour
     }
     void DoTarget()
     {
+        if (shipMain.currentTarget == null)
+        {
+            TargetName.text = "NO TARGET";
+            TargetName.color = TextColor;
+            TargetDist.text = "Range: NONE";
+            TargetDist.color = TextColor;
+            TargetBase.GetComponent<SpriteRenderer>().sprite = GenericVDU;
+            TargetDamaged.GetComponent<SpriteRenderer>().sprite = GenericVDU;
+            DamagedBack.SetActive(false);
+            DamagedRight.SetActive(false);
+            DamagedLeft.SetActive(false);
+            DamagedFront.SetActive(false);
+            ShieldFront.GetComponent<SpriteRenderer>().sprite = shieldNull;
+            ShieldBack.GetComponent<SpriteRenderer>().sprite = shieldNull;
+            //remove any previous MFD subtexts
+            if (mfdSubtext && !subtextNullMode)
+            {
+                Destroy(mfdSubtext);
+                subtextSwitchNeeded = true;
+                subtextDamgedMode = false;
+                
+            }
+            //check if there are no subtexts!
+            if (!mfdSubtext && !subtextNullMode)
+            {                
+                subtextSwitchNeeded = true;
+            }
+            //Create a null subtext
+            if (!mfdSubtext && !subtextNullMode && subtextSwitchNeeded)
+            {
+                mfdSubtext = Instantiate(subtextNull, TargetBase.transform.position + offset, TargetBase.transform.rotation, TargetBase.transform);
+                subtextSwitchNeeded = true;
+                subtextNullMode = true;
+            }
+            return;
+        }
+
         if (shipMain.currentTarget != null && currentTarget != shipMain)
         {
             if (currentTarget == null) //No VDU target assigned
@@ -71,8 +117,8 @@ public class TargetComsNav : MonoBehaviour
             {
                 float tarDist = Vector3.Distance(shipMain.transform.position, currentTarget.transform.position);
                 tarDist = Mathf.FloorToInt(tarDist * 10) / 10f;
-                TargetName.text = "Target: " + currentTarget.gameObject.name;
-                TargetDist.text = "Range: " + tarDist + "m";
+                TargetName.text = "Target: " + currentTarget.DisplayName;
+                TargetDist.text = "Range: " + tarDist * 2 + "m";
 
                 if (currentTarget.Armor.x < currentTarget._ArmorMax.x / 2)
                 {
@@ -92,6 +138,9 @@ public class TargetComsNav : MonoBehaviour
                 }
                 int SFront = Mathf.FloorToInt((currentTarget.Shield.x / currentTarget._ShieldMax.x) * 4) - 1;
                 int SRear = Mathf.FloorToInt((currentTarget.Shield.y / currentTarget._ShieldMax.y) * 4) - 1;
+
+                SFront = Mathf.Clamp(SFront,0,3);
+                SRear = Mathf.Clamp(SRear, 0, 3);
                 ///print(currentTarget.Shield.x/currentTarget._ShieldMax.x +" "+ currentTarget.Shield.y/currentTarget._ShieldMax.y );
 
                 if (SFront == -1)
@@ -132,12 +181,49 @@ public class TargetComsNav : MonoBehaviour
                 {
                     TargetDist.color = TextColor;
                 }
+                //handle little animated MFD target texts! 
+                //check for null subtext existence
+                if (mfdSubtext && subtextNullMode)
+                {
+                    subtextNullMode = false;
+                    Destroy(mfdSubtext);
+                }
+                //Set update flag
+                if (!mfdSubtext)
+                {
+                    subtextSwitchNeeded = true;
+                }
 
+                if (!subtextDamgedMode && subtextSwitchNeeded)
+                {
+                    mfdSubtext = Instantiate(subtext, TargetBase.transform.position + offset, TargetBase.transform.rotation, TargetBase.transform);
+                    subtextSwitchNeeded = false;
+                }
+                if (subtextDamgedMode && subtextSwitchNeeded)
+                {
+                    mfdSubtext = Instantiate(subtextDamaged, TargetBase.transform.position + offset, TargetBase.transform.rotation, TargetBase.transform);
+                    subtextSwitchNeeded = false;
+                }
+                
+                
+                //Engage ship systems damage mode! Remove old subtext...
+                if (currentTarget._CoreStrength < currentTarget.CoreMax && !subtextDamgedMode)
+                {
+                    subtextDamgedMode = true;
+                    Destroy(mfdSubtext);
+                }
+                //Back to standard mode! Remove old subtext...
+                if (currentTarget._CoreStrength >= currentTarget.CoreMax && subtextDamgedMode)
+                {
+                    subtextDamgedMode = false;
+                    Destroy(mfdSubtext);
+                }
             }
         }
-        else
+        //our target cloaked!
+        if (currentTarget && currentTarget.isCloaked)
         {
-
+            currentTarget = null;
         }
     }
 

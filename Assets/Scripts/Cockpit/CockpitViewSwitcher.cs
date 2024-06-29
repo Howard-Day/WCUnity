@@ -9,6 +9,7 @@ public class CockpitViewSwitcher : MonoBehaviour
     CockpitShift Shifter;
     public bool RandomSwitch = false;
     public bool ChaseSwitch = false;
+    public bool ChaseCam = false;
     public float DelaySwitchTime = 3f;
     public enum View { Main, Right, Left, Rear, Chase };//, Cinematic, Missile};
     public View activeView = View.Main;
@@ -27,8 +28,7 @@ public class CockpitViewSwitcher : MonoBehaviour
     public GameObject HoverUI;
     public Vector3 DriftAmts = Vector3.zero;
     public float ShiftSmoothness = .2f;
-
-
+    public bool deathCam = false;
 
     [HideInInspector] public bool isExternal = false;
     [HideInInspector] public bool isCockpitForward = true;
@@ -42,6 +42,7 @@ public class CockpitViewSwitcher : MonoBehaviour
     [HideInInspector] public Vector2 TargetShift;
 
     float refSpin;
+    HUDRoot hud;
 
     // Start is called before the first frame update
     void Start()
@@ -57,13 +58,26 @@ public class CockpitViewSwitcher : MonoBehaviour
         LeftBase.SetActive(false);
         RearBase.SetActive(false);
         Billboard.SetActive(false);
+        hud = HoverUI.GetComponent<HUDRoot>();
     }
     void DoChaseCam()
     {
-        if (!Billboard.activeInHierarchy)
+        if (Billboard && !Billboard.activeInHierarchy)
         {
             HoverUI.SetActive(true);
             Billboard.SetActive(true);
+            transform.localPosition = ChaseCamOffset;
+            transform.localEulerAngles = new Vector3(ChaseAngle, 0, 0);
+            CockpitBase.SetActive(false);
+            RightBase.SetActive(false);
+            LeftBase.SetActive(false);
+            RearBase.SetActive(false);
+
+        }
+        //disable hover UI if there's no billboard (IE, we've been destroyed)
+        if (Billboard == null)
+        {
+            HoverUI.SetActive(false);
             transform.localPosition = ChaseCamOffset;
             transform.localEulerAngles = new Vector3(ChaseAngle, 0, 0);
             CockpitBase.SetActive(false);
@@ -78,13 +92,14 @@ public class CockpitViewSwitcher : MonoBehaviour
 
         //print (xShift);
         TargetShift = new Vector2(Mathf.Clamp(xShift, -1f, 1f), -Mathf.Clamp(yShift, -1f, 1f));
+        if (shipMain.speed > shipMain.topSpeed)
+        {
+            TargetShift += new Vector2(Random.Range(-1f, 1f), Random.Range(-1f, 1f)) * .025f;
+        }
 
         SmoothShift = Vector2.SmoothDamp(SmoothShift, TargetShift, ref RefShift, ShiftSmoothness);
 
-        if (shipMain.speed > shipMain.topSpeed)
-        {
-            //SmoothShift += new Vector2(Random.Range(-1f,1f),Random.Range(-1f,1f))*.025f;
-        }
+
 
         float zShift = shipMain.rotDelta.z;
         float TargetSpin = Mathf.Clamp(zShift, -1f, 1f);
@@ -93,6 +108,10 @@ public class CockpitViewSwitcher : MonoBehaviour
         transform.localEulerAngles = new Vector3(ChaseAngle + SmoothShift.x * DriftAmts.x, SmoothShift.y * DriftAmts.y, SmoothSpin * DriftAmts.z);
         transform.localPosition = ChaseCamOffset + (-Vector3.right * SmoothShift.x * 10);
         recoverView = transform.forward;
+
+        hud.reticle.chaseCamMode = true;
+        
+
 
         /* if(shipMain.recover >= 1)
          {
@@ -119,6 +138,7 @@ public class CockpitViewSwitcher : MonoBehaviour
         }
         Shifter.xShift = 1 - shipMain.rotDelta.y;// .y;
         Shifter.yShift = 1 - shipMain.rotDelta.x;//.x;
+        hud.reticle.chaseCamMode = false;
     }
 
     void DoRearCam()
@@ -136,7 +156,7 @@ public class CockpitViewSwitcher : MonoBehaviour
         }
         Shifter.xShift = 1 - shipMain.rotDelta.y;// .y;
         Shifter.yShift = shipMain.rotDelta.x;//.x;
-
+        hud.reticle.chaseCamMode = false;
     }
     void DoRightCam()
     {
@@ -151,8 +171,9 @@ public class CockpitViewSwitcher : MonoBehaviour
             Billboard.SetActive(false);
             HoverUI.SetActive(false);
         }
-        Shifter.xShift = 1 - shipMain.rotDelta.y;// .y;
+        Shifter.xShift = 1 - shipMain.rotDelta.y;//.y;
         Shifter.yShift = 1 - shipMain.rotDelta.z;//.x;
+        hud.reticle.chaseCamMode = false;
     }
 
     void DoLeftCam()
@@ -171,6 +192,7 @@ public class CockpitViewSwitcher : MonoBehaviour
         }
         Shifter.xShift = shipMain.rotDelta.y;// .y;
         Shifter.yShift = shipMain.rotDelta.z;//.x;
+        hud.reticle.chaseCamMode = false;
     }
     // Update is called once per frame
 
@@ -202,6 +224,14 @@ public class CockpitViewSwitcher : MonoBehaviour
                 switchTime = 0f;
             }
         }
+        if (ChaseCam)
+        {
+            if (activeView == View.Main)
+            {
+                activeView = View.Chase;
+            }
+        }
+
         switch (activeView)
         {
             case View.Main:

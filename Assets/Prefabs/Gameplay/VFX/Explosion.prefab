@@ -985,13 +985,22 @@ ParticleSystem:
         m_Curve:
         - serializedVersion: 3
           time: 0
-          value: 0.5021057
+          value: 1
           inSlope: 3.0541945
           outSlope: 3.0541945
           tangentMode: 0
           weightedMode: 0
           inWeight: 0
           outWeight: 0.30479357
+        - serializedVersion: 3
+          time: 0.051813036
+          value: 0.6309712
+          inSlope: 0.3262567
+          outSlope: 0.3262567
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0.90981233
+          outWeight: 0.33333334
         - serializedVersion: 3
           time: 0.22471978
           value: 0.7900206
@@ -4808,7 +4817,7 @@ ParticleSystemRenderer:
   m_MeshDistribution: 0
   m_SortMode: 2
   m_MinParticleSize: 0
-  m_MaxParticleSize: 4
+  m_MaxParticleSize: 8
   m_CameraVelocityScale: 0
   m_VelocityScale: 0
   m_LengthScale: 2
@@ -4854,6 +4863,21 @@ MonoBehaviour:
   - {fileID: 2800000, guid: 2e5071f2aa038234db5d8385a992b428, type: 3}
   - {fileID: 2800000, guid: e70190636c82e004e97603cd5f9d46de, type: 3}
   - {fileID: 2800000, guid: f1922ce6a67855b408beb06fe0f7022a, type: 3}
+  - {fileID: 2800000, guid: 429c46a3133b4904fb308fe08c598611, type: 3}
+  - {fileID: 2800000, guid: 86400eb4506f87144a79adf64b6c2dc3, type: 3}
+  - {fileID: 2800000, guid: 6de1b9fe31c54c0468dd8a3e0e2e5914, type: 3}
+  - {fileID: 2800000, guid: f48413d5316378c4592b675a578c6db9, type: 3}
+  - {fileID: 2800000, guid: dc4aebe8897cf2244b7775188a159c92, type: 3}
+  - {fileID: 2800000, guid: 021b906a971519843be63092d77b61c6, type: 3}
+  - {fileID: 2800000, guid: 5cda2970005330643870378c514d0515, type: 3}
+  - {fileID: 2800000, guid: 21403b761a591b04883866d540596c50, type: 3}
+  - {fileID: 2800000, guid: 4b3116c4603205749806fde7eea5920b, type: 3}
+  - {fileID: 2800000, guid: 66b82526e63e3a64780fac66503aab65, type: 3}
+  - {fileID: 2800000, guid: b630807a1507f924babc207020e1ecf6, type: 3}
+  - {fileID: 2800000, guid: ea7cea29ab9514b4e98898b5a275ea05, type: 3}
+  - {fileID: 2800000, guid: 3e6bc688496c77944bf649e84307bda6, type: 3}
+  - {fileID: 2800000, guid: ddfdac58f91915545bcfbfc3f43fe5c8, type: 3}
+  - {fileID: 2800000, guid: 117a05f800ee68f4e863cce48a0c5888, type: 3}
 --- !u!1 &2564357714421902046
 GameObject:
   m_ObjectHideFlags: 0

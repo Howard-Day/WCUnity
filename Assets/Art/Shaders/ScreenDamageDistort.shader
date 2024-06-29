@@ -48,7 +48,7 @@ Shader "Unlit/ScreenDamageDistort"
             }
  
             half4 frag(v2f i) : COLOR {
-                _DmgAmt *= 4;
+                _DmgAmt *= .5;
                 _OffsetU *=.05*saturate(_DmgAmt*3);
                 _OffsetV *=.15*saturate(_DmgAmt*3);
                 _SpeedU *= 50;

@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class Projectile : MonoBehaviour
 {
-    [SerializeField] float speed = 100f;
-    [SerializeField] float damage = 1f;
-    [SerializeField] float range = 1000f;
+    [SerializeField] public float speed = 100f;
+    [SerializeField] public float damage = 1f;
+    [SerializeField] public float range = 1000f;
     [SerializeField] public GameObject hitShield;
     [SerializeField] public GameObject hitHull;
     [SerializeField] public LayerMask shootMask;

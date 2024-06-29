@@ -12,6 +12,7 @@ public class HUDRoot : MonoBehaviour
 
     public Material bracketMat;
 
+    public Reticle reticle;
 
     ShipSettings shipMain;
     public Vector2 nearFarClip;
@@ -19,7 +20,6 @@ public class HUDRoot : MonoBehaviour
     [HideInInspector]
     public List<BracketController> HUDBrackets;
     GameObject RootHUD;
-
 
 
     // Start is called before the first frame update
@@ -77,33 +77,34 @@ public class HUDRoot : MonoBehaviour
 
     void MakeBrackets(List<ShipSettings> Ships, Color Color)
     {
-        foreach (ShipSettings ship in Ships) //Go through a list of ships, add them 
+        if (Ships != null && Ships.Count > 0 )
         {
-            if (ship != shipMain) //But only if we're not looking at ourselves! 
+            foreach (ShipSettings ship in Ships) //Go through a list of ships, add them 
             {
-                GameObject bracketObj = new GameObject();
-                BracketController bracket = bracketObj.AddComponent<BracketController>() as BracketController;
-                //RectTransform rect = bracketObj.AddComponent<RectTransform>() as RectTransform;
-                bracketObj.name = "bracket";
-                bracketObj.layer = 8;
-                bracketObj.transform.parent = RootHUD.transform;
-                bracketObj.transform.localPosition = Vector3.zero;
-                bracketObj.transform.localScale = Vector3.one;
-                bracket.hudCamera = hudCamera;
-                bracket.ship = ship;
-                bracket.clipDist = nearFarClip;
-                bracket.clipAngle = angleClip;
-                bracket.Color = Color;
-                bracket.HUDRoot = gameObject.GetComponent<HUDRoot>();
-                bracket.shipMain = shipMain;
-                HUDBrackets.Add(bracket);
+                if (ship != shipMain && !ship.isDead && !ship.isCloaked ) //But only if we're not looking at ourselves! Or they're not dead or cloaked. :P
+                {
+                    GameObject bracketObj = new GameObject();
+                    BracketController bracket = bracketObj.AddComponent<BracketController>() as BracketController;
+                    //RectTransform rect = bracketObj.AddComponent<RectTransform>() as RectTransform;
+                    bracketObj.name = "bracket";
+                    bracketObj.layer = 8;
+                    bracketObj.transform.parent = RootHUD.transform;
+                    bracketObj.transform.localPosition = Vector3.zero;
+                    bracketObj.transform.localScale = Vector3.one;
+                    bracket.hudCamera = hudCamera;
+                    bracket.ship = ship;
+                    bracket.clipDist = nearFarClip;
+                    bracket.clipAngle = angleClip;
+                    bracket.Color = Color;
+                    bracket.HUDRoot = gameObject.GetComponent<HUDRoot>();
+                    bracket.shipMain = shipMain;
+                    //bracket.Init();
+                    HUDBrackets.Add(bracket);
+                }
             }
         }
 
     }
-
-
-
     // Update is called once per frame
     void Update()
     {
@@ -111,5 +112,13 @@ public class HUDRoot : MonoBehaviour
         {
             RegisterBrackets();
         }
+        foreach (BracketController bracket in HUDBrackets)
+        {
+            if (bracket.ship.isDead)
+            {
+                RegisterBrackets();
+            }
+        }
+
     }
 }

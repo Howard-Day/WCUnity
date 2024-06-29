@@ -15,7 +15,9 @@ public class SpawnRoot : MonoBehaviour
         transform.parent = root.transform;
         root.name = SpawnParent.name;
         root.GetComponent<AIPlayer>().AISkillLevel = aiLevel;
-        if(isPlayer)
+        root.GetComponent<ShipSettings>().isPlayer = true;
+        root.GetComponent<ShipSettings>().playerUI = this.gameObject;
+        if (isPlayer)
         {
             root.GetComponent<AIPlayer>().enabled = false;
             root.GetComponent<KeyPlayer>().enabled = false;

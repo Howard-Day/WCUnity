@@ -15,7 +15,7 @@ PrefabInstance:
     - target: {fileID: 236246741698921918, guid: adcaf87f2ba126246a6a9e28511b5b38,
         type: 3}
       propertyPath: speed
-      value: 400
+      value: 340
       objectReference: {fileID: 0}
     - target: {fileID: 236246741698921918, guid: adcaf87f2ba126246a6a9e28511b5b38,
         type: 3}
@@ -24,14 +24,25 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 236246741698921918, guid: adcaf87f2ba126246a6a9e28511b5b38,
         type: 3}
+      propertyPath: hitHull
+      value: 
+      objectReference: {fileID: 400538386877157161, guid: 1c46770d03020564d88b2bc473370b5c,
+        type: 3}
+    - target: {fileID: 236246741698921918, guid: adcaf87f2ba126246a6a9e28511b5b38,
+        type: 3}
       propertyPath: hitShield
       value: 
-      objectReference: {fileID: 400538386877157161, guid: 86510d0776ceb1c47b4efd13c49ff3c1,
+      objectReference: {fileID: 1507481365441476783, guid: 9549ed6531e9ee94f8743be5220d01af,
         type: 3}
     - target: {fileID: 3189708683096768518, guid: adcaf87f2ba126246a6a9e28511b5b38,
         type: 3}
+      propertyPath: m_endPos.z
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 3189708683096768518, guid: adcaf87f2ba126246a6a9e28511b5b38,
+        type: 3}
       propertyPath: m_lineWidth
-      value: 4
+      value: 2.5
       objectReference: {fileID: 0}
     - target: {fileID: 3189708683096768518, guid: adcaf87f2ba126246a6a9e28511b5b38,
         type: 3}
