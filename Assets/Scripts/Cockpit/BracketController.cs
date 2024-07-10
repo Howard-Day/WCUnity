@@ -32,6 +32,7 @@ public class BracketController : MonoBehaviour
     {
         bracketSprite = (Image)gameObject.AddComponent<Image>();
         bracketSprite.material = HUDRoot.bracketMat;
+        bracketSprite.color = new Color(0, 0, 0, 1);
         //transform.localScale = Vector3.one*.00075f;
 
         // mainCamera = (Camera)GameObject.FindGameObjectWithTag("MainCamera").GetComponent("Camera");

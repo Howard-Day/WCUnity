@@ -21,7 +21,7 @@ public class BlipController : MonoBehaviour
         blipSprite = (Image)gameObject.AddComponent<Image>();
         blipSprite.material = radarRoot.blipMat;
         transform.localScale = Vector3.one * .00075f;
-
+        blipSprite.color = new Color(0, 0, 0, 1);
     }
     int blink = 0;
     int locked = 0;

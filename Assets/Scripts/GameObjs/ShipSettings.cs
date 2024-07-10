@@ -600,6 +600,7 @@ public class ShipSettings : MonoBehaviour
             CockpitViewSwitcher cockpit = playerUI.GetComponentInChildren<CockpitViewSwitcher>();
             cockpit.ChaseSwitch = false;
             cockpit.ChaseCam = true;
+            cockpit.deathCam = true;
             //add a damp initial velocity to the chase cam, give it the velocity!
             if (!lagMove)
             {
@@ -826,7 +827,8 @@ public class ShipSettings : MonoBehaviour
                 {
                     cloakedAmount = 1f;
                     isCloaked = true;
-
+                    GameObjTracker.radarRefreshNeeded = true;
+                    GameObjTracker.bracketRefreshNeeded = true;
                 }
             }
             //Uncloak
@@ -838,6 +840,8 @@ public class ShipSettings : MonoBehaviour
                 {
                     cloakedAmount = 0f;
                     isCloaked = false;
+                    GameObjTracker.radarRefreshNeeded = true;
+                    GameObjTracker.bracketRefreshNeeded = true;
                 }
             }
             //Handle midway state and broadcast it

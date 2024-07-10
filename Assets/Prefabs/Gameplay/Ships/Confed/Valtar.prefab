@@ -379,7 +379,12 @@ PrefabInstance:
         type: 3}
       propertyPath: FullThrottle
       value: 
-      objectReference: {fileID: 2800000, guid: 05454442705c0e846bbca93b57828394, type: 3}
+      objectReference: {fileID: 2800000, guid: a0ad323c79350be44a64d5d0fca176b7, type: 3}
+    - target: {fileID: 2967868975163282982, guid: 2097a4efc6d07894fad7c4356faa2704,
+        type: 3}
+      propertyPath: IdleThrottle
+      value: 
+      objectReference: {fileID: 2800000, guid: 0ba6aed5f14e2054ab9c43cbcbe9e846, type: 3}
     - target: {fileID: 2967868975163282982, guid: 2097a4efc6d07894fad7c4356faa2704,
         type: 3}
       propertyPath: FlareWidths.x
@@ -390,6 +395,16 @@ PrefabInstance:
       propertyPath: FlareWidths.y
       value: 2.5
       objectReference: {fileID: 0}
+    - target: {fileID: 2967868975163282982, guid: 2097a4efc6d07894fad7c4356faa2704,
+        type: 3}
+      propertyPath: ThirdThrottle
+      value: 
+      objectReference: {fileID: 2800000, guid: edde5cecfc0d03c4c9eaf50361e5caa7, type: 3}
+    - target: {fileID: 2967868975163282982, guid: 2097a4efc6d07894fad7c4356faa2704,
+        type: 3}
+      propertyPath: CruiseThrottle
+      value: 
+      objectReference: {fileID: 2800000, guid: bfa08d90a0b44064ca6e6aede1301735, type: 3}
     - target: {fileID: 7989437017167104985, guid: 2097a4efc6d07894fad7c4356faa2704,
         type: 3}
       propertyPath: m_RootOrder
@@ -554,7 +569,12 @@ PrefabInstance:
         type: 3}
       propertyPath: FullThrottle
       value: 
-      objectReference: {fileID: 2800000, guid: 05454442705c0e846bbca93b57828394, type: 3}
+      objectReference: {fileID: 2800000, guid: a0ad323c79350be44a64d5d0fca176b7, type: 3}
+    - target: {fileID: 2967868975163282982, guid: 2097a4efc6d07894fad7c4356faa2704,
+        type: 3}
+      propertyPath: IdleThrottle
+      value: 
+      objectReference: {fileID: 2800000, guid: 0ba6aed5f14e2054ab9c43cbcbe9e846, type: 3}
     - target: {fileID: 2967868975163282982, guid: 2097a4efc6d07894fad7c4356faa2704,
         type: 3}
       propertyPath: FlareWidths.x
@@ -565,6 +585,16 @@ PrefabInstance:
       propertyPath: FlareWidths.y
       value: 2.5
       objectReference: {fileID: 0}
+    - target: {fileID: 2967868975163282982, guid: 2097a4efc6d07894fad7c4356faa2704,
+        type: 3}
+      propertyPath: ThirdThrottle
+      value: 
+      objectReference: {fileID: 2800000, guid: edde5cecfc0d03c4c9eaf50361e5caa7, type: 3}
+    - target: {fileID: 2967868975163282982, guid: 2097a4efc6d07894fad7c4356faa2704,
+        type: 3}
+      propertyPath: CruiseThrottle
+      value: 
+      objectReference: {fileID: 2800000, guid: bfa08d90a0b44064ca6e6aede1301735, type: 3}
     - target: {fileID: 7989437017167104985, guid: 2097a4efc6d07894fad7c4356faa2704,
         type: 3}
       propertyPath: m_RootOrder

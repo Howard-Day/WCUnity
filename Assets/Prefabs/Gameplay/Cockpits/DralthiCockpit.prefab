@@ -3476,6 +3476,10 @@ MonoBehaviour:
   HoverUI: {fileID: 3851733709107372875}
   DriftAmts: {x: 4, y: 2, z: -1}
   ShiftSmoothness: 0.5
+  deathCam: 0
+  deathCamTime: 4
+  deathCamDelay: 1
+  deathCamActiveRange: 100
   isExternal: 0
   isCockpitForward: 1
   SmoothShift: {x: 0, y: 0}
@@ -5516,7 +5520,7 @@ MonoBehaviour:
   targetBracket: {fileID: 21300000, guid: 4256eeafe99bd5a4d82559f653149237, type: 3}
   lockedBracket: {fileID: 21300000, guid: 178b77d22f76f1540939d8499b31b0db, type: 3}
   bracketMat: {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
-  reticle: {fileID: 0}
+  reticle: {fileID: 1183709410}
   nearFarClip: {x: 25, y: 1500}
   angleClip: 65
   HUDBrackets: []

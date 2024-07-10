@@ -29,6 +29,9 @@ public class CockpitViewSwitcher : MonoBehaviour
     public Vector3 DriftAmts = Vector3.zero;
     public float ShiftSmoothness = .2f;
     public bool deathCam = false;
+    public float deathCamTime = 4f;
+    public float deathCamDelay = 1f;
+    public float deathCamActiveRange = 100f;
 
     [HideInInspector] public bool isExternal = false;
     [HideInInspector] public bool isCockpitForward = true;
@@ -43,6 +46,10 @@ public class CockpitViewSwitcher : MonoBehaviour
 
     float refSpin;
     HUDRoot hud;
+    float deathTime = 0f;
+    Vector3 preDeathAngle = Vector3.zero;
+    Vector3 smoothedInterestAngle;
+    Vector3 refAngleVel;
 
     // Start is called before the first frame update
     void Start()
@@ -98,9 +105,6 @@ public class CockpitViewSwitcher : MonoBehaviour
         }
 
         SmoothShift = Vector2.SmoothDamp(SmoothShift, TargetShift, ref RefShift, ShiftSmoothness);
-
-
-
         float zShift = shipMain.rotDelta.z;
         float TargetSpin = Mathf.Clamp(zShift, -1f, 1f);
         SmoothSpin = Mathf.SmoothDamp(SmoothSpin, TargetSpin, ref refSpin, ShiftSmoothness);
@@ -111,16 +115,22 @@ public class CockpitViewSwitcher : MonoBehaviour
 
         hud.reticle.chaseCamMode = true;
         
+        if (deathCam)
+        {
+            Vector3 interestPoint = GameObjTracker.GetAverageShipLocInRange(transform.position, deathCamActiveRange, shipMain.ShipID);
+            Vector3 interestAngle =  interestPoint - transform.position;
+            smoothedInterestAngle = Vector3.SmoothDamp(smoothedInterestAngle, interestAngle, ref refAngleVel, .05f);
+            float normalizedDeathTime = Mathf.Clamp01((deathTime - deathCamDelay) / deathCamTime);
+            float smoothDeathTime = Mathf.SmoothStep(0,1,normalizedDeathTime);
+            Vector3 smoothRotateToInterest = Vector3.Slerp(preDeathAngle, smoothedInterestAngle, smoothDeathTime);// Vector3.SmoothDamp(preDeathAngle, interestPoint, ref refAngleVel, .1f);
+            transform.rotation = Quaternion.LookRotation(smoothRotateToInterest,Vector3.up);
+            deathTime += Time.deltaTime;
+        }
+        else {
+            deathTime = 0f;
+            preDeathAngle = transform.forward;
+        }
 
-
-        /* if(shipMain.recover >= 1)
-         {
-             preCollideView = transform.forward*555;   
-         }
-         else
-         {
-             transform.LookAt(Vector3.Slerp(preCollideView, recoverView, 1-shipMain.recover));
-         }*/
     }
 
     void DoMainCam()

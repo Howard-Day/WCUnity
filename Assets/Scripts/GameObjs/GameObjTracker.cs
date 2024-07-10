@@ -28,8 +28,8 @@ public class GameObjTracker : MonoBehaviour
     // Start is called before the first frame update
     [HideInInspector] public static int frames = 0;
     static public GameObject Tracker;
-    
-
+    static bool hasSetRandomLook = false;
+    static Vector3 averageLoc = Vector3.zero;
 
     void Start()
     {
@@ -79,30 +79,32 @@ public class GameObjTracker : MonoBehaviour
         return result;
     }
 
-    public Vector3 GetAverageShipLocInRange(Vector3 refLoc, float range)
+    public static Vector3 GetAverageShipLocInRange(Vector3 refLoc, float range, int ourID)
     {
-        //int local
-        Vector3 averageLoc = Vector3.zero;
+        //reset Average location
+        averageLoc = Vector3.zero;
         int foundShipCount = 0;
         //loop through all ships
         foreach (ShipSettings tarShip in Ships)
         {
-            //if it's within range, add the location to the list, and count how many we've found
-            if (Vector3.Distance(tarShip.transform.position, refLoc) < range)
+            //San check and if it's within range, add the location to the list, and count how many we've found, and it's not us
+            if (tarShip != null && Vector3.Distance(tarShip.transform.position, refLoc) < range && tarShip.ShipID != ourID)
             {
                 averageLoc += tarShip.transform.position;
                 foundShipCount++;
             }
         }
-        //if we didn't find any, look towards a random point
-        if (foundShipCount == 0)
+        //if we didn't find any ships, look towards a random point, but only if we haven't found one already!
+        if (foundShipCount == 0 && hasSetRandomLook == false)
         {
             averageLoc = refLoc + Random.onUnitSphere * range;
+            hasSetRandomLook = true;
         }
         //otherwise average the point of interest
-        else 
+        if (foundShipCount != 0)
         {
             averageLoc = averageLoc / foundShipCount;
+            hasSetRandomLook = false;
         }
         return averageLoc;        
     }
