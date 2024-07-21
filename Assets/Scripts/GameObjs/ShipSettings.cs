@@ -7,10 +7,12 @@ public class ShipSettings : MonoBehaviour
 
     public enum TEAM { CONFED, KILRATHI, NEUTRAL, PIRATE, ENV };
     public enum CLASS { FIGHTER, FRIGATE, CAPITAL, STARBASE };
+    public enum WEIGHT { LIGHT, MEDIUM, HEAVY, BOMBER };
 
     [Header("Choose Team, Name, and filters")]
     [SerializeField] public TEAM AITeam = TEAM.CONFED;
     [SerializeField] public CLASS Class = CLASS.FIGHTER;
+    [SerializeField] public WEIGHT Weight = WEIGHT.MEDIUM;
     [SerializeField] public string DisplayName;
     //[SerializeField] public 
     [SerializeField] public bool isWingLead = false;
@@ -197,7 +199,7 @@ public class ShipSettings : MonoBehaviour
         }
     }
 
-    int countFireIndex = 1;
+    int countFireIndex = 0;
     int lastFireIndex = 0;
     //Find our Guns, Figure out what they are, sequence them and put them in a list! 
     void InitGuns()
@@ -226,24 +228,42 @@ public class ShipSettings : MonoBehaviour
     {
         foreach (ProjectileWeapon projWeapon in projWeapons)
         {
-
-            if (recover >= .99f  && projWeapon.index != lastFireIndex && !isCloaked) // Can the ship fire? Is this gun *not* the last to fire? Are we Cloaked? 
+            if (capacitorLevel < projWeapon.powerDrain * (countFireIndex + 1 ))
+            {
+                if (recover >= .99f && projWeapon.index != lastFireIndex && !isCloaked) // Can the ship fire? Is this gun *not* the last to fire? Are we Cloaked? 
+                {
+                    projWeapon.fire = fire;
+                    //increment through guns
+                    
+                    // if(logDebug){print("aactually setting state to " + fire);}
+                    //are we firing?
+                    isFiring = fire; //Make sure our broadcast flag is set! 
+                }
+                if (recover >= .99f && projWeapon.index == lastFireIndex) // Can the ship fire? Is this gun the last to fire? 
+                {
+                    projWeapon.fire = false;
+                }
+                if (recover < .75f) //wait for recharge or return of control! 
+                {
+                    projWeapon.fire = false;
+                    isFiring = false;
+                }
+            }
+            else if (recover >= .99f)
             {
                 projWeapon.fire = fire;
-                //increment through guns
-                lastFireIndex++;
-                if (lastFireIndex > countFireIndex - 1)
-                {
-                    lastFireIndex = 1;
-                }                                
-                // if(logDebug){print("aactually setting state to " + fire);}
-                //are we firing?
-                isFiring = fire; //Make sure our broadcast flag is set! 
+                isFiring = fire;
             }
-            if (recover < .75f) //wait for recharge or return of control! 
+
+            if (fire == false)
             {
-                projWeapon.fire = false;
-                isFiring = false;
+                projWeapon.fire = fire;
+                isFiring = fire;
+            }
+
+            if (projWeapon.hasFired)
+            {
+                lastFireIndex = projWeapon.index;
             }
         }
     }

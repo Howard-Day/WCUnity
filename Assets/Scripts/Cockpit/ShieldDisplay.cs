@@ -4,6 +4,8 @@ using UnityEngine;
 using UnityEngine.UI; // Required when Using UI elements.
 public class ShieldDisplay : MonoBehaviour
 {
+    public float minShield = 0f;
+    public float maxShield = 1f;
     ShipSettings shipMain;
     public Slider FrontShield;
     public Slider RearShield;
@@ -43,10 +45,10 @@ public class ShieldDisplay : MonoBehaviour
     void Update()
     {
 
-        FrontShield.normalizedValue = shipMain.Shield.x / shipMain._ShieldMax.x;
+        FrontShield.normalizedValue = (shipMain.Shield.x / shipMain._ShieldMax.x) * (maxShield - minShield) + minShield;
         ForeAmt.text = Mathf.FloorToInt(shipMain.Shield.x * 10).ToString();
 
-        RearShield.normalizedValue = shipMain.Shield.y / shipMain._ShieldMax.y;
+        RearShield.normalizedValue = shipMain.Shield.y / shipMain._ShieldMax.y * (maxShield - minShield) + minShield; 
         RearAmt.text = Mathf.FloorToInt(shipMain.Shield.y * 10).ToString();
 
         ForeArmor.normalizedValue = shipMain.Armor.x / shipMain._ArmorMax.x;

@@ -38,7 +38,7 @@ public class TargetComsNav : MonoBehaviour
 
     Color textColor;
     GameObject mfdSubtext;
-    Vector3 offset = Vector3.back * .05f;
+    Vector3 offset = Vector3.back * .101f;
     bool subtextDamgedMode = false;
     bool subtextNullMode = false;
     bool subtextSwitchNeeded = false;

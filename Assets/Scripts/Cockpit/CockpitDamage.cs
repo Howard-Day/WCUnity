@@ -52,46 +52,46 @@ public class CockpitDamage : MonoBehaviour
 
         if (shipMain.lastHit == ShipSettings.HitLoc.F)
         {
-            SpawnDamage(FrontDamageZone, SmallMasks[Random.Range(0, SmallMasks.Length - 1)], new Vector2(.3f, .995f), ZoneAreaSize * 2, ShatterVFX);
-            SpawnDamage(FrontDamageZone, SmallMasks[Random.Range(0, SmallMasks.Length - 1)], new Vector2(.3f, .995f), ZoneAreaSize * 2, ShatterVFX);
+            SpawnDamage(FrontDamageZone, SmallMasks[Random.Range(0, SmallMasks.Length - 1)], new Vector2(.4f, .995f), ZoneAreaSize * 2, ShatterVFX);
+            SpawnDamage(FrontDamageZone, SmallMasks[Random.Range(0, SmallMasks.Length - 1)], new Vector2(.4f, .995f), ZoneAreaSize * 2, ShatterVFX);
         }
         if (shipMain.lastHit == ShipSettings.HitLoc.B)
         {
-            SpawnDamage(BackDamageZone, LargeMasks[Random.Range(0, LargeMasks.Length - 1)], new Vector2(.2f, .95f), ZoneAreaSize, ShatterVFX);
+            SpawnDamage(BackDamageZone, LargeMasks[Random.Range(0, LargeMasks.Length - 1)], new Vector2(.4f, .995f), ZoneAreaSize, ShatterVFX);
         }
         if (shipMain.lastHit == ShipSettings.HitLoc.R)
         {
-            SpawnDamage(RightDamageZone, LargeMasks[Random.Range(0, LargeMasks.Length - 1)], new Vector2(.2f, .95f), ZoneAreaSize, ShatterVFX);
+            SpawnDamage(RightDamageZone, LargeMasks[Random.Range(0, LargeMasks.Length - 1)], new Vector2(.4f, .995f), ZoneAreaSize, ShatterVFX);
         }
         if (shipMain.lastHit == ShipSettings.HitLoc.L)
         {
-            SpawnDamage(LeftDamageZone, LargeMasks[Random.Range(0, LargeMasks.Length - 1)], new Vector2(.2f, .95f), ZoneAreaSize, ShatterVFX);
+            SpawnDamage(LeftDamageZone, LargeMasks[Random.Range(0, LargeMasks.Length - 1)], new Vector2(.4f, .995f), ZoneAreaSize, ShatterVFX);
         }
         if (shipMain.lastHit == ShipSettings.HitLoc.U)
         {
-            SpawnDamage(UpDamageZone, SmallMasks[Random.Range(0, SmallMasks.Length - 1)], new Vector2(.2f, .95f), ZoneAreaSize, ShatterVFX);
+            SpawnDamage(UpDamageZone, SmallMasks[Random.Range(0, SmallMasks.Length - 1)], new Vector2(.4f, .995f), ZoneAreaSize, ShatterVFX);
         }
         if (shipMain.lastHit == ShipSettings.HitLoc.D)
         {
-            SpawnDamage(DownDamageZone, SmallMasks[Random.Range(0, SmallMasks.Length - 1)], new Vector2(.2f, .95f), ZoneAreaSize, ShatterVFX);
+            SpawnDamage(DownDamageZone, SmallMasks[Random.Range(0, SmallMasks.Length - 1)], new Vector2(.4f, .995f), ZoneAreaSize, ShatterVFX);
         }
         if (shipMain.componentDamage.Track >= .25f)
         {
-            SpawnDamage(RadarDamageZone, SmallMasks[Random.Range(0, SmallMasks.Length - 1)], new Vector2(.2f, .95f), 0f, DamageVFX);
+            SpawnDamage(RadarDamageZone, SmallMasks[Random.Range(0, SmallMasks.Length - 1)], new Vector2(.4f, .995f), 0f, DamageVFX);
         }
         if (shipMain.componentDamage.ShieldGen >= .5f)
         {
-            SpawnDamage(ShieldDamageZone, SmallMasks[Random.Range(0, SmallMasks.Length - 1)], new Vector2(.2f, .95f), 0f, DamageVFX);
+            SpawnDamage(ShieldDamageZone, SmallMasks[Random.Range(0, SmallMasks.Length - 1)], new Vector2(.4f, .995f), 0f, DamageVFX);
         }
 
         if (shipMain.componentDamage.CompSys >= .25f)
         {
-            SpawnDamage(VDUDamageZone2, LargeMasks[Random.Range(0, LargeMasks.Length - 1)], new Vector2(.2f, .95f), 0f, DamageVFX);
+            SpawnDamage(VDUDamageZone2, LargeMasks[Random.Range(0, LargeMasks.Length - 1)], new Vector2(.4f, .995f), 0f, DamageVFX);
         }
 
         if (shipMain.componentDamage.Track >= .25f)
         {
-            SpawnDamage(VDUDamageZone1, LargeMasks[Random.Range(0, LargeMasks.Length - 1)], new Vector2(.2f, .95f), 0f, DamageVFX);
+            SpawnDamage(VDUDamageZone1, LargeMasks[Random.Range(0, LargeMasks.Length - 1)], new Vector2(.4f, .995f), 0f, DamageVFX);
         }
         shipMain.hitInternal = false;
 

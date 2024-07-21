@@ -150,6 +150,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   AITeam: 0
   Class: 0
+  Weight: 1
   DisplayName: FK-04 Prototype
   isWingLead: 0
   CollidesWith:
@@ -175,7 +176,7 @@ MonoBehaviour:
   capacitorSize: 15
   rechargeRate: 5
   Armor: {x: 3, y: 2, z: 1, w: 1}
-  Shield: {x: 35, y: 25}
+  Shield: {x: 6, y: 5}
   shieldRechargeRate: 6
   DeathVFX:
   - {fileID: 7789471376337144576, guid: 00b8cbe808eda81448b2786984607fcd, type: 3}

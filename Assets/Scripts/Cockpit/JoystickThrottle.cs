@@ -44,6 +44,9 @@ public class JoystickThrottle : MonoBehaviour
         smoothBurn = Mathf.Clamp01(smoothBurn);
         Throttle.sprite = throttleSprites[Mathf.Clamp(Mathf.FloorToInt(smoothBurn * (throttleSprites.Length - 1)), 0, 31)];
         //throttlestickAnim.SetCurrentFrame((int)((currentForwardAcceleration / forwardTopSpeed) * throttlestickAnim.totalCells));
+
+
+
     }
     float refSteerX;
     float refSteerY;

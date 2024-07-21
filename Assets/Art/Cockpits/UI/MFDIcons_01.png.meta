@@ -626,6 +626,111 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: WEAP_Neutron01
+      rect:
+        serializedVersion: 2
+        x: 826
+        y: 951
+        width: 24
+        height: 59
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 43c0290ba49b69440a0ba4bfb1580959
+      internalID: 80863525
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WEAP_Photon01
+      rect:
+        serializedVersion: 2
+        x: 822
+        y: 877
+        width: 25
+        height: 57
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 110b3260063a7904bb7a96d63337b36c
+      internalID: -1441559671
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WEAP_Meson01
+      rect:
+        serializedVersion: 2
+        x: 794
+        y: 877
+        width: 25
+        height: 63
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a6810bad0de5bea47b47d2a8291d2e07
+      internalID: 892266123
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WEAP_Massdriver01
+      rect:
+        serializedVersion: 2
+        x: 795
+        y: 950
+        width: 24
+        height: 65
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9258587ba4df252458dcfde218d1b2c1
+      internalID: -1174805025
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SYS_Krant
+      rect:
+        serializedVersion: 2
+        x: 895
+        y: 667
+        width: 127
+        height: 113
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: be80b1c3c1396d345b30d2d3cae305cc
+      internalID: -705041706
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     physicsShape: []
     bones: []
@@ -637,7 +742,10 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
+      WEAP_Neutron01: 80863525
+      SYS_Krant: -705041706
       Shield_Null: 1890584309
+      WEAP_Massdriver01: -1174805025
       TRGT_TalonE: -2145628955
       Shield_02: 8667844304088249284
       SYS_Dralthi: 3007919691619370033
@@ -645,7 +753,9 @@ TextureImporter:
       TRGT_TalonC: -508232383
       Shield_04: -6903393406301806638
       TRGT_TalonF: -2106772318
+      WEAP_Photon01: -1441559671
       WEAP_Laser01: 5901147463307786492
+      WEAP_Meson01: 892266123
       TRGT_Valtar: -5074887530360705704
       TRGT_Salthi: -4973505997022854714
       TRGT_Krant: -1922495045691203107

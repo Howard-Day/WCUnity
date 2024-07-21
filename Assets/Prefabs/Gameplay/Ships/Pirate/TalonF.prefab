@@ -68,6 +68,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   AITeam: 3
   Class: 0
+  Weight: 1
   DisplayName: Pirate Ace
   isWingLead: 0
   CollidesWith:

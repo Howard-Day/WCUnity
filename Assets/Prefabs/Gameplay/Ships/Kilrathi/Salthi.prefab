@@ -149,6 +149,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   AITeam: 1
   Class: 0
+  Weight: 1
   DisplayName: Salthi
   isWingLead: 0
   CollidesWith:
@@ -172,7 +173,7 @@ MonoBehaviour:
     m_Bits: 3072
   deltaSmooth: 0.05
   capacitorSize: 5
-  rechargeRate: 6
+  rechargeRate: 4
   Armor: {x: 3, y: 2, z: 1.5, w: 1.5}
   Shield: {x: 3.5, y: 3.5}
   shieldRechargeRate: 4

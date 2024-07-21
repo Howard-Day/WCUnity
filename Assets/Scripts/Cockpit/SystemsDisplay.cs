@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI; // Required when Using UI elements.
 public class SystemsDisplay : MonoBehaviour
 {
+    public float XScaling = 1f;
     public enum MFDMode { Weapon, Damge };
 
     public MFDMode currentMode = MFDMode.Weapon;
@@ -25,6 +26,9 @@ public class SystemsDisplay : MonoBehaviour
         public GameObject Laser;
         public GameObject Neutron;
         public GameObject MassDriver;
+        public GameObject Photon;
+        public GameObject Meson;
+
         public GameObject DF;
         public GameObject HS;
         public GameObject IR;
@@ -90,11 +94,19 @@ public class SystemsDisplay : MonoBehaviour
             }
             localPos.z = 0f;
             localPos *= .15f;
+            localPos.x *= XScaling;
             localPos += shipBase.transform.position;
             //print(localPos);
             if (gun.Type == ProjectileWeapon.GunType.Laser)
             {
                 GameObject gunIcon = (GameObject)Instantiate(WIcon.Laser, localPos, Quaternion.identity, shipBase.transform);
+                gunIcon.GetComponent<SpriteRenderer>().flipX = xFlip;
+                gunIcon.GetComponent<SpriteRenderer>().material = ActiveWeapon;
+                gunIcons.Add(gunIcon);
+            }
+            if (gun.Type == ProjectileWeapon.GunType.PhotonBlaster)
+            {
+                GameObject gunIcon = (GameObject)Instantiate(WIcon.Photon, localPos, Quaternion.identity, shipBase.transform);
                 gunIcon.GetComponent<SpriteRenderer>().flipX = xFlip;
                 gunIcon.GetComponent<SpriteRenderer>().material = ActiveWeapon;
                 gunIcons.Add(gunIcon);

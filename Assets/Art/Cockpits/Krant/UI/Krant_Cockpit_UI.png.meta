@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: d61cd68fe7e24154fa2e409fd39d92b7
+guid: 875a3853a7cc30445b5e2edcb942fdd2
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -129,13 +129,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Valtar_Cockpit_Eject
+      name: Krant_Cockpit_Lock
       rect:
         serializedVersion: 2
-        x: 281
-        y: 189
-        width: 46
-        height: 10
+        x: 259
+        y: 396
+        width: 31
+        height: 32
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -143,19 +143,19 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 317fe24b69f992e4798f8d8f18b3aeb6
-      internalID: 1505602483
+      spriteID: c9fc0ebf2af7de045ae614337049d9ef
+      internalID: -1811299920
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Valtar_Cockpit_Lock
+      name: Krant_Cockpit_Armor1
       rect:
         serializedVersion: 2
-        x: 343
-        y: 188
-        width: 39
+        x: 330
+        y: 399
+        width: 20
         height: 11
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
@@ -164,20 +164,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: dd7a1d8a3318fe341973c2165c3324b5
-      internalID: -909266126
+      spriteID: 80d6dfa22e8787e45b14b1106c8ce0c3
+      internalID: -1044846323
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Valtar_Cockpit_Power
+      name: Krant_Cockpit_Armor2
       rect:
         serializedVersion: 2
-        x: 292
-        y: 176
-        width: 96
-        height: 7
+        x: 355
+        y: 394
+        width: 10
+        height: 20
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -185,113 +185,113 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: f84925d436ca0ab40a6229c9d849e235
-      internalID: -403704563
+      spriteID: a9c9ac2dffc5bfa4d99095af41c68846
+      internalID: 1000519760
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Valtar_Cockpit_MissilePods
+      name: Krant_Cockpit_CoreDamage
       rect:
         serializedVersion: 2
-        x: 418
-        y: 86
-        width: 12
-        height: 56
+        x: 319
+        y: 357
+        width: 42
+        height: 38
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 0ac2b5b35751b3f49a1aa87d85d41446
-      internalID: 1073109568
+      spriteID: 3163c224457fc15448b1d31ee2b6806d
+      internalID: -705009591
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Valtar_Cockpit_Shield
+      name: Krant_Cockpit_Shield
       rect:
         serializedVersion: 2
-        x: 168
-        y: 107
-        width: 66
-        height: 27
+        x: 317
+        y: 333
+        width: 47
+        height: 17
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: f9be65c7d53487a41bed22a263190496
-      internalID: -612918611
+      spriteID: 41b9fe4bd8b0f1240a2a21f969fff7e0
+      internalID: -765953337
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Valtar_Cockpit_Armor
+      name: Krant_Cockpit_Auto
       rect:
         serializedVersion: 2
-        x: 189
-        y: 69
-        width: 23
-        height: 12
+        x: 447
+        y: 144
+        width: 31
+        height: 31
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 71ba22afbd24c8c478cfb7ca9e822b87
-      internalID: 1353796258
+      spriteID: 5d8d72e7b8ae1e749b421c9649da0533
+      internalID: -1436007749
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Valtar_Cockpit_CoreFlash
+      name: Krant_Cockpit_Fuel
       rect:
         serializedVersion: 2
-        x: 188
-        y: 86
-        width: 25
-        height: 22
+        x: 382
+        y: 120
+        width: 89
+        height: 15
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 3a9d3a5b207da37489af8a1c6275c52a
-      internalID: -702431005
+      spriteID: 2fb848232e54d5d47ba1dd51234f7120
+      internalID: 1170270849
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Valtar_Cockpit_Fuel
+      name: Krant_Cockpit_Power
       rect:
         serializedVersion: 2
-        x: 142
-        y: 61
-        width: 11
-        height: 42
+        x: 209
+        y: 120
+        width: 90
+        height: 15
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 5cc6ca34a271427439ad4f28d1aaaa62
-      internalID: 899775121
+      spriteID: 08299edfe2ce9db40a29d0119f48ad3e
+      internalID: -2027593465
       vertices: []
       indices: 
       edges: []
@@ -299,7 +299,7 @@ TextureImporter:
     outline: []
     physicsShape: []
     bones: []
-    spriteID: 5e97eb03825dee720800000000000000
+    spriteID: a902d2d111956d84f924efa3b970f0d8
     internalID: 0
     vertices: []
     indices: 
@@ -307,15 +307,14 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      Valtar_Cockpit_CoreFlash: -702431005
-      Valtar_Cockpit_Power: -403704563
-      Valtar_Cockpit_Armor: 1353796258
-      Valtar_Cockpit_Fuel: 899775121
-      Valtar_Cockpit_Eject: 1505602483
-      Valtar_Cockpit_Shield: -612918611
-      Valtar_Cockpit_MissilePods: 1073109568
-      Valtar_Cockpit_Lock: -909266126
-      Valtar_Cockpit_Front0002_8: -164260994
+      Krant_Cockpit_Power: -2027593465
+      Krant_Cockpit_Lock: -1811299920
+      Krant_Cockpit_Armor2: 1000519760
+      Krant_Cockpit_Auto: -1436007749
+      Krant_Cockpit_Fuel: 1170270849
+      Krant_Cockpit_CoreDamage: -705009591
+      Krant_Cockpit_Armor1: -1044846323
+      Krant_Cockpit_Shield: -765953337
   spritePackingTag: 
   pSDRemoveMatte: 0
   pSDShowRemoveMatteOption: 0

@@ -9,7 +9,7 @@ public class ProjectileWeapon : MonoBehaviour
     [SerializeField] public Transform projectilePrefab = null;
     [SerializeField] Transform muzzleflashPrefab = null;
     [SerializeField] float fireRate = .4f;
-    [SerializeField] float powerDrain = 2.1f;
+    [SerializeField] public float powerDrain = 2.1f;
     public float gunRange;
     float cooldown = 0f;
     ShipSettings MainShip;
@@ -52,7 +52,7 @@ public class ProjectileWeapon : MonoBehaviour
             cooldown = fireRate;
             hasFired = true;
         }
-        if (cooldown < .9f)
+        if (cooldown < .125f)
         {
             hasFired = false;
         }

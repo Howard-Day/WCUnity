@@ -42,6 +42,12 @@ public class MusicController : MonoBehaviour
         Music2 = gameObject.AddComponent<AudioSource>();
         Music1.Stop();
         Music2.Stop();
+        Music1.spatialBlend = 0f;
+        Music2.spatialBlend = 0f;
+        Music1.rolloffMode = AudioRolloffMode.Linear;
+        Music2.rolloffMode = AudioRolloffMode.Linear;
+        Music1.bypassEffects = true;
+        Music2.bypassEffects = true;
         NextMusicBlend = Music1;
     }
     public void FadeMusic(AudioClip musicIn, float fadeTime, int beatFrame)
@@ -57,6 +63,16 @@ public class MusicController : MonoBehaviour
 
                 }
                 break;
+            case (MissionStatus.COMBAT):
+                {
+                    Music1.clip = Combat;
+                    if (!Music1.isPlaying)
+                    {
+                        Music1.Play();
+                    }
+                    Music1.loop = true;
+                }
+                break;
 
         }
     }
@@ -64,7 +80,7 @@ public class MusicController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        DynamicMusic();
     }
 }
 

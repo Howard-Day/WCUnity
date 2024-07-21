@@ -114,7 +114,11 @@ public class CockpitViewSwitcher : MonoBehaviour
         recoverView = transform.forward;
 
         hud.reticle.chaseCamMode = true;
-        
+        if (preDeathAngle == Vector3.zero)
+        {
+            preDeathAngle = transform.forward;
+        }
+
         if (deathCam)
         {
             Vector3 interestPoint = GameObjTracker.GetAverageShipLocInRange(transform.position, deathCamActiveRange, shipMain.ShipID);

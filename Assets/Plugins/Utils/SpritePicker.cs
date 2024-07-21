@@ -15,12 +15,15 @@ public class SpritePicker : MonoBehaviour
 
     void Start()
     {
-        gameCamera = Camera.main.transform;
+        if (Camera.main != null)
+        {
+            gameCamera = Camera.main.transform;
+        }
         billboard = transform.Find("Billboard");
         if (Application.isPlaying)
             billboardMaterial = billboard.GetComponent<Renderer>().material;
-        //if (Application.isEditor)
-        //  billboardMaterial = billboard.GetComponent<Renderer>().material;
+        if (Application.isEditor)
+            billboardMaterial = billboard.GetComponent<Renderer>().material;
     }
 
     void Update()
