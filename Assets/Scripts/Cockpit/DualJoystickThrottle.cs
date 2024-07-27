@@ -17,9 +17,11 @@ public class DualJoystickThrottle : MonoBehaviour
     [HideInInspector] public float SmoothSpin;
     public Vector2 TargetShift;
     public float ShiftSmoothness = .4f;
+    public Vector2 ParallaxAmount = Vector2.zero;
 
     float smoothThrottle;
     float smoothBurn;
+    Vector3 initialPos;
     /// <summary>
     /// Start is called on the frame when a script is enabled just before
     /// any of the Update methods is called the first time.
@@ -27,6 +29,7 @@ public class DualJoystickThrottle : MonoBehaviour
     void Start()
     {
         shipMain = (ShipSettings)gameObject.GetComponentInParent<ShipSettings>();
+        initialPos = transform.localPosition;
     }
     float refSteerX;
     float refSteerY;
@@ -95,6 +98,13 @@ public class DualJoystickThrottle : MonoBehaviour
             Feet.sprite = feetSprites[15];
         }
     }
+    Vector3 SmoothedParallax;
+    void DoParallax()
+    {
+        Vector3 TargetParallax = new Vector3(refSteerX * ParallaxAmount.x, refSteerY * ParallaxAmount.y, 0f);
+        SmoothedParallax = Vector3.Lerp(SmoothedParallax, TargetParallax, .2f);
+        transform.localPosition = initialPos + SmoothedParallax;
+    }
 
     // Update is called once per frame
     void Update()
@@ -102,5 +112,6 @@ public class DualJoystickThrottle : MonoBehaviour
 
         DoJoysticks();
         DoFeet();
+        DoParallax();
     }
 }

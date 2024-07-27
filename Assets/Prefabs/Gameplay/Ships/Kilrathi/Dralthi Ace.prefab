@@ -34,6 +34,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2289861991765167608, guid: 4cb3a1366b7e311418b2f13dcbd2c1f1,
         type: 3}
+      propertyPath: EngineSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 7cc2135b1b0c54445b4ad6b2ee14fb1d, type: 3}
+    - target: {fileID: 2289861991765167608, guid: 4cb3a1366b7e311418b2f13dcbd2c1f1,
+        type: 3}
       propertyPath: deltaSmooth
       value: 0.05
       objectReference: {fileID: 0}
@@ -49,8 +54,38 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2289861991765167608, guid: 4cb3a1366b7e311418b2f13dcbd2c1f1,
         type: 3}
+      propertyPath: AfterburnPitch
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2289861991765167608, guid: 4cb3a1366b7e311418b2f13dcbd2c1f1,
+        type: 3}
+      propertyPath: AfterburnSound
+      value: 
+      objectReference: {fileID: 8300000, guid: f4f931c10891c234b82af35f43df102d, type: 3}
+    - target: {fileID: 2289861991765167608, guid: 4cb3a1366b7e311418b2f13dcbd2c1f1,
+        type: 3}
+      propertyPath: AfterburnVolume
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2289861991765167608, guid: 4cb3a1366b7e311418b2f13dcbd2c1f1,
+        type: 3}
+      propertyPath: AfterburnSmoothness
+      value: 0.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 2289861991765167608, guid: 4cb3a1366b7e311418b2f13dcbd2c1f1,
+        type: 3}
       propertyPath: DeathVFX.Array.size
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2289861991765167608, guid: 4cb3a1366b7e311418b2f13dcbd2c1f1,
+        type: 3}
+      propertyPath: MinMaxThrottlePitch.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2289861991765167608, guid: 4cb3a1366b7e311418b2f13dcbd2c1f1,
+        type: 3}
+      propertyPath: MinMaxThrottlePitch.y
+      value: 1.25
       objectReference: {fileID: 0}
     - target: {fileID: 2289861991765167608, guid: 4cb3a1366b7e311418b2f13dcbd2c1f1,
         type: 3}
@@ -61,6 +96,16 @@ PrefabInstance:
         type: 3}
       propertyPath: DeathVFX.Array.data[2]
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 2289861991765167608, guid: 4cb3a1366b7e311418b2f13dcbd2c1f1,
+        type: 3}
+      propertyPath: MinMaxThrottleVolume.x
+      value: 0.15
+      objectReference: {fileID: 0}
+    - target: {fileID: 2289861991765167608, guid: 4cb3a1366b7e311418b2f13dcbd2c1f1,
+        type: 3}
+      propertyPath: MinMaxThrottleVolume.y
+      value: 0.25
       objectReference: {fileID: 0}
     - target: {fileID: 2289861991765167609, guid: 4cb3a1366b7e311418b2f13dcbd2c1f1,
         type: 3}

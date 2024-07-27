@@ -131,7 +131,7 @@ public class AIPlayer : MonoBehaviour
         //tarQ *= Quaternion.AngleAxis(ship.turnRate * barrelRef, Vector3.forward);
         //destQ *= Quaternion.AngleAxis(Time.time * ship.turnRate * barrelRef, Vector3.forward );
 
-        smoothAimAt = aimAt;// Vector3.SmoothDamp(smoothAimAt, aimAt, ref smoothVel, .05f);
+        smoothAimAt =  Vector3.Lerp(smoothAimAt, aimAt, .25f);
 
         Vector3 targetDir = smoothAimAt - transform.position;
 
@@ -146,9 +146,9 @@ public class AIPlayer : MonoBehaviour
         Quaternion destQ = Quaternion.Slerp(initQ, tarQ,.125f);
         */
 
-        float newPitchDest = (destQ * Vector3.forward).y * 2;
-        float newYawDest = (destQ * Vector3.right).z * 2;
-        float newRollDest = (destQ * Vector3.up).x * 2;
+        float newPitchDest = (destQ * Vector3.forward).y * 4;
+        float newYawDest = (destQ * Vector3.right).z * 4;
+        float newRollDest = (destQ * Vector3.up).x * 4;
 
         newPitchDest = Mathf.Clamp(newPitchDest, -1f, 1f);
         newYawDest = Mathf.Clamp(newYawDest, -1f, 1f);

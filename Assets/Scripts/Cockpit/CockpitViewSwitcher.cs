@@ -26,10 +26,12 @@ public class CockpitViewSwitcher : MonoBehaviour
     public GameObject LeftBase;
     public GameObject RearBase;
     public GameObject HoverUI;
+    public FrameController SpaceflightFrame;
+    public GameObject CinematicFrame;
     public Vector3 DriftAmts = Vector3.zero;
     public float ShiftSmoothness = .2f;
     public bool deathCam = false;
-    public float deathCamTime = 4f;
+    public float deathCamTime = 6f;
     public float deathCamDelay = 1f;
     public float deathCamActiveRange = 100f;
 
@@ -50,7 +52,12 @@ public class CockpitViewSwitcher : MonoBehaviour
     Vector3 preDeathAngle = Vector3.zero;
     Vector3 smoothedInterestAngle;
     Vector3 refAngleVel;
+    Vector3 chaseCamPos;
+    Quaternion chaseCamRot;
 
+    Vector3 interestPoint;
+    Vector3 interestAngle;
+    bool deathCamActive = false;
     // Start is called before the first frame update
     void Start()
     {
@@ -66,6 +73,21 @@ public class CockpitViewSwitcher : MonoBehaviour
         RearBase.SetActive(false);
         Billboard.SetActive(false);
         hud = HoverUI.GetComponent<HUDRoot>();
+        //Make our ship sounds more muted to start
+        shipMain.MinMaxThrottlePitch *= .25f;
+        shipMain.MinMaxThrottleVolume *= .25f;
+        shipMain.AfterburnPitch *= .25f;
+        shipMain.AfterburnVolume *= .25f;
+    }
+    void DoChaseCamAngles()
+    {
+        if (!deathCam)
+        {
+            chaseCamPos = transform.position;
+            chaseCamRot = transform.rotation;
+            chaseCamRot *= Quaternion.Euler(Vector3.right * ChaseAngle);
+            chaseCamPos += chaseCamRot * ChaseCamOffset;
+        }   
     }
     void DoChaseCam()
     {
@@ -79,7 +101,13 @@ public class CockpitViewSwitcher : MonoBehaviour
             RightBase.SetActive(false);
             LeftBase.SetActive(false);
             RearBase.SetActive(false);
-
+            //Turn on the Spaceflight cinematic Frame!
+            SpaceflightFrame.FrameActive = true;
+            //Make our ship sounds default when switched to external cam
+            shipMain.MinMaxThrottlePitch *= 4f;
+            shipMain.MinMaxThrottleVolume *= 4f;
+            shipMain.AfterburnPitch *= 4f;
+            shipMain.AfterburnVolume *= 4f;
         }
         //disable hover UI if there's no billboard (IE, we've been destroyed)
         if (Billboard == null)
@@ -114,20 +142,32 @@ public class CockpitViewSwitcher : MonoBehaviour
         recoverView = transform.forward;
 
         hud.reticle.chaseCamMode = true;
-        if (preDeathAngle == Vector3.zero)
-        {
-            preDeathAngle = transform.forward;
-        }
 
         if (deathCam)
-        {
-            Vector3 interestPoint = GameObjTracker.GetAverageShipLocInRange(transform.position, deathCamActiveRange, shipMain.ShipID);
-            Vector3 interestAngle =  interestPoint - transform.position;
+        {  
+            //Grab an interest angle to look at, and set the transform to the last chaseCam. Then set up a damping velocity controller
+            if (!deathCamActive)
+            {
+                interestPoint = GameObjTracker.GetAverageShipLocInRange(transform.position, deathCamActiveRange, shipMain.ShipID);
+                interestAngle = interestPoint - transform.position;
+                transform.position = chaseCamPos;
+                transform.rotation = chaseCamRot;
+                preDeathAngle = transform.forward;
+                DampInitVelocity dampVel = gameObject.AddComponent<DampInitVelocity>();
+                dampVel.initDir = shipMain.DeathDir;
+                dampVel.initVel = shipMain.DeathVel;
+                dampVel.DampVel = .9f;
+                deathCamActive = true;
+            }
             smoothedInterestAngle = Vector3.SmoothDamp(smoothedInterestAngle, interestAngle, ref refAngleVel, .05f);
             float normalizedDeathTime = Mathf.Clamp01((deathTime - deathCamDelay) / deathCamTime);
             float smoothDeathTime = Mathf.SmoothStep(0,1,normalizedDeathTime);
             Vector3 smoothRotateToInterest = Vector3.Slerp(preDeathAngle, smoothedInterestAngle, smoothDeathTime);// Vector3.SmoothDamp(preDeathAngle, interestPoint, ref refAngleVel, .1f);
             transform.rotation = Quaternion.LookRotation(smoothRotateToInterest,Vector3.up);
+            if(deathTime >= deathCamTime)
+            {
+                GameObjTracker.playerNeedsRespawn = true;
+            }
             deathTime += Time.deltaTime;
         }
         else {
@@ -149,6 +189,13 @@ public class CockpitViewSwitcher : MonoBehaviour
             RearBase.SetActive(false);
             Billboard.SetActive(false);
             HoverUI.SetActive(true);
+            //Turn off the Spaceflight cinematic Frame!
+            SpaceflightFrame.FrameActive = false;
+            //Make our ship sounds more muted when switched to internal view
+            shipMain.MinMaxThrottlePitch *= .25f;
+            shipMain.MinMaxThrottleVolume *= .25f;
+            shipMain.AfterburnPitch *= .25f;
+            shipMain.AfterburnVolume *= .25f;
         }
         Shifter.xShift = 1 - shipMain.rotDelta.y;// .y;
         Shifter.yShift = 1 - shipMain.rotDelta.x;//.x;
@@ -214,18 +261,19 @@ public class CockpitViewSwitcher : MonoBehaviour
     float switchTime;
     void LateUpdate()
     {
+        DoChaseCamAngles();
         switchTime += Time.deltaTime;
 
         if (RandomSwitch)
         {
-            if (GameObjTracker.frames % Random.Range(240, 360) == 0)
+            if (GameObjTracker.frames % Random.Range(120, 180) == 0)
             {
                 activeView = (View)Random.Range(0, System.Enum.GetValues(typeof(View)).Length);
             }
         }
         if (ChaseSwitch)
         {
-            if (GameObjTracker.frames % Random.Range(480, 360) == 0 && switchTime > DelaySwitchTime)
+            if (GameObjTracker.frames % Random.Range(120, 180) == 0 && switchTime > DelaySwitchTime)
             {
                 if (activeView == View.Main)
                 {

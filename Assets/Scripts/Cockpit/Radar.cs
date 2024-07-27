@@ -51,6 +51,7 @@ public class Radar : MonoBehaviour
         BlipRoot.transform.localPosition = Vector3.zero;
         BlipRoot.transform.localScale = Vector3.one;
         RegisterBlips();
+        shipMain.lastHit = ShipSettings.HitLoc.NULL;
 
         HitFore.isOn = false;
         HitRight.isOn = false;

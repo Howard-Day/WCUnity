@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class MusicController : MonoBehaviour
 {
+    public float MusicVolume = 1f;
     public enum MissionStatus { LAUNCH, START, COMBAT, SUCCESS, FAIL, LANDING };
     public MissionStatus Status = MissionStatus.START;
 
@@ -48,6 +49,8 @@ public class MusicController : MonoBehaviour
         Music2.rolloffMode = AudioRolloffMode.Linear;
         Music1.bypassEffects = true;
         Music2.bypassEffects = true;
+        Music1.volume = MusicVolume;
+        Music2.volume = MusicVolume;
         NextMusicBlend = Music1;
     }
     public void FadeMusic(AudioClip musicIn, float fadeTime, int beatFrame)

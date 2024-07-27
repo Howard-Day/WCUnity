@@ -3,7 +3,7 @@
 
 // credit goes to Daniel Koozer for his amazing solution
 
-[ExecuteInEditMode]
+//[ExecuteInEditMode]
 public class SpritePicker : MonoBehaviour
 {
     [SerializeField] Texture[] textureSheets = null;

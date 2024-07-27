@@ -112,6 +112,10 @@ public class HUDRoot : MonoBehaviour
         {
             RegisterBrackets();
         }
+        //if (HUDBrackets.Count != GameObjTracker.Ships.Count)
+        //{
+            //RegisterBrackets();
+        //}
         foreach (BracketController bracket in HUDBrackets)
         {
             if (bracket.ship.isDead)

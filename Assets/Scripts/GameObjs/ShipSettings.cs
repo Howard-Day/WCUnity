@@ -58,6 +58,14 @@ public class ShipSettings : MonoBehaviour
     [SerializeField] public float timeToCloak = 2f;
     [SerializeField] public GameObject[] turrets;
     [SerializeField] public ProjectileWeapon[] projWeapons;
+    [Header("SFX")]
+    [SerializeField] public AudioClip EngineSound;
+    [SerializeField] public Vector2 MinMaxThrottlePitch = Vector2.one;
+    [SerializeField] public Vector2 MinMaxThrottleVolume = Vector2.one;
+    [SerializeField] public AudioClip AfterburnSound;
+    [SerializeField] public float AfterburnPitch = 1f;
+    [SerializeField] public float AfterburnVolume = .25f;
+    [SerializeField] public float AfterburnSmoothness = .25f;
 
 
     //Hidden Attributes
@@ -70,8 +78,9 @@ public class ShipSettings : MonoBehaviour
     [HideInInspector] public bool hitInAss = false; //this is important information, for a lot of reasons.
     EngineFlare[] engineFlares;
     Material billboardMat;
-
-
+    [HideInInspector] public AudioSource EngineSFX;
+    [HideInInspector] public AudioSource AfterburnSFX;
+    [HideInInspector] public float AfterburnBlend = 0f;
     public class DamageComponents
     {
         public float IonDrive = 0f;
@@ -118,8 +127,8 @@ public class ShipSettings : MonoBehaviour
     [HideInInspector] public int lastHitID;
 
     GameObject Boom;
-    Vector3 DeathDir = Vector3.zero;
-    float DeathVel;
+    [HideInInspector] public Vector3 DeathDir = Vector3.zero;
+    [HideInInspector] public float DeathVel;
     Vector3 DeathSpin;
     int DeathType;
     float DeathLength;
@@ -169,6 +178,50 @@ public class ShipSettings : MonoBehaviour
         CoreMax = _CoreStrength;
         //grab the display part of the billboard, for futher modification
         GetBillboardMat();
+        //Init SFX
+        EngineSFX = gameObject.AddComponent<AudioSource>();
+        AfterburnSFX = gameObject.AddComponent<AudioSource>();
+        //Set up SFX
+        EngineSFX.clip = EngineSound;
+        EngineSFX.playOnAwake = true;
+        EngineSFX.loop = true;
+        EngineSFX.volume = MinMaxThrottleVolume.x;
+        EngineSFX.spatialBlend = 1f;
+        EngineSFX.dopplerLevel = 2f;
+        EngineSFX.maxDistance = 60f;
+        EngineSFX.minDistance = 1f;
+        EngineSFX.rolloffMode = AudioRolloffMode.Linear;
+        EngineSFX.Play();
+
+        AfterburnSFX.clip = AfterburnSound;
+        AfterburnSFX.playOnAwake = true;
+        AfterburnSFX.loop = true;
+        AfterburnSFX.volume = AfterburnSFX.volume;
+        AfterburnSFX.spatialBlend = 1f;
+        AfterburnSFX.dopplerLevel = 2f;
+        AfterburnSFX.pitch = AfterburnPitch;
+        AfterburnSFX.maxDistance = 60f;
+        AfterburnSFX.minDistance = 1f;
+        AfterburnSFX.rolloffMode = AudioRolloffMode.Linear;
+        
+        AfterburnSFX.Play();
+    }
+
+    void DoSFX() 
+    {
+        EngineSFX.volume = Mathf.Lerp(MinMaxThrottleVolume.x, MinMaxThrottleVolume.y, throttle);
+        EngineSFX.pitch = Mathf.Lerp(MinMaxThrottlePitch.x, MinMaxThrottlePitch.y, throttle);
+        if(isAfterburning)
+        {
+            AfterburnBlend = 1f;
+        }
+        else 
+        {
+            AfterburnBlend = 0f;
+        }
+        AfterburnSFX.volume = Mathf.Lerp(AfterburnSFX.volume, AfterburnBlend* AfterburnVolume, AfterburnSmoothness);
+
+
     }
     public void SetId()
     {
@@ -629,7 +682,6 @@ public class ShipSettings : MonoBehaviour
                 lagMove.initVel = DeathVel;
             }
             //tell the game manager we need to respawn the player
-            GameObjTracker.playerNeedsRespawn = true;
             GameObjTracker.oldUI = playerUI.gameObject;
             playerUIDisconnected = true;
         }
@@ -909,6 +961,7 @@ public class ShipSettings : MonoBehaviour
         {
             DoBounce(.75f, shipRadius / 64f);
         }
+        DoSFX();
     }
 
 }

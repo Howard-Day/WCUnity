@@ -25,7 +25,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2289861989968530047}
-  m_LocalRotation: {x: 0.25600818, y: 0.45109892, z: -0.13683935, w: 0.8439459}
+  m_LocalRotation: {x: -0, y: -1, z: -0, w: 0.000000111758695}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 18, y: 18, z: 18}
   m_ConstrainProportionsScale: 0
@@ -192,6 +192,13 @@ MonoBehaviour:
   timeToCloak: 2
   turrets: []
   projWeapons: []
+  EngineSound: {fileID: 8300000, guid: 7cc2135b1b0c54445b4ad6b2ee14fb1d, type: 3}
+  MinMaxThrottlePitch: {x: 0.5, y: 1.25}
+  MinMaxThrottleVolume: {x: 0.4, y: 0.5}
+  AfterburnSound: {fileID: 8300000, guid: f4f931c10891c234b82af35f43df102d, type: 3}
+  AfterburnPitch: 2
+  AfterburnVolume: 0.35
+  AfterburnSmoothness: 0.25
   isPlayer: 0
   playerUI: {fileID: 0}
   shipRadius: 0
@@ -199,6 +206,9 @@ MonoBehaviour:
   _ShieldMax: {x: 0, y: 0}
   CoreMax: 0
   hitInAss: 0
+  EngineSFX: {fileID: 0}
+  AfterburnSFX: {fileID: 0}
+  AfterburnBlend: 0
   _CoreStrength: 0
   _Fuel: 0
   ShipID: 0
@@ -223,6 +233,8 @@ MonoBehaviour:
   BouncePush: 0
   lastHit: 0
   lastHitID: 0
+  DeathDir: {x: 0, y: 0, z: 0}
+  DeathVel: 0
   oldRot: {x: 0, y: 0, z: 0, w: 0}
   rotDelta: {x: 0, y: 0, z: 0}
   throttle: 0
@@ -247,7 +259,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   messageHandler: {fileID: 0}
   ActiveAIState: 5
-  AISkillLevel: 1
+  AISkillLevel: 2
   PatrolPoints: []
   logDebug: 0
   doDebugOrient: 0

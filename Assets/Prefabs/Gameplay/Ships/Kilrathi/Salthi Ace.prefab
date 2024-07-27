@@ -42,6 +42,51 @@ PrefabInstance:
       propertyPath: DisplayName
       value: Salthi Ace
       objectReference: {fileID: 0}
+    - target: {fileID: 2289861991765167608, guid: cfb7a2335576985479485947cc9f59f8,
+        type: 3}
+      propertyPath: EngineSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 7cc2135b1b0c54445b4ad6b2ee14fb1d, type: 3}
+    - target: {fileID: 2289861991765167608, guid: cfb7a2335576985479485947cc9f59f8,
+        type: 3}
+      propertyPath: AfterburnPitch
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2289861991765167608, guid: cfb7a2335576985479485947cc9f59f8,
+        type: 3}
+      propertyPath: AfterburnSound
+      value: 
+      objectReference: {fileID: 8300000, guid: f4f931c10891c234b82af35f43df102d, type: 3}
+    - target: {fileID: 2289861991765167608, guid: cfb7a2335576985479485947cc9f59f8,
+        type: 3}
+      propertyPath: AfterburnVolume
+      value: 0.35
+      objectReference: {fileID: 0}
+    - target: {fileID: 2289861991765167608, guid: cfb7a2335576985479485947cc9f59f8,
+        type: 3}
+      propertyPath: AfterburnSmoothness
+      value: 0.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 2289861991765167608, guid: cfb7a2335576985479485947cc9f59f8,
+        type: 3}
+      propertyPath: MinMaxThrottlePitch.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2289861991765167608, guid: cfb7a2335576985479485947cc9f59f8,
+        type: 3}
+      propertyPath: MinMaxThrottlePitch.y
+      value: 1.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 2289861991765167608, guid: cfb7a2335576985479485947cc9f59f8,
+        type: 3}
+      propertyPath: MinMaxThrottleVolume.x
+      value: 0.15
+      objectReference: {fileID: 0}
+    - target: {fileID: 2289861991765167608, guid: cfb7a2335576985479485947cc9f59f8,
+        type: 3}
+      propertyPath: MinMaxThrottleVolume.y
+      value: 0.25
+      objectReference: {fileID: 0}
     - target: {fileID: 2289861991765167609, guid: cfb7a2335576985479485947cc9f59f8,
         type: 3}
       propertyPath: m_Enabled

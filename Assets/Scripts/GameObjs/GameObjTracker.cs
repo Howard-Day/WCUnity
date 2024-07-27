@@ -33,6 +33,7 @@ public class GameObjTracker : MonoBehaviour
 
     void Start()
     {
+        Application.targetFrameRate = 60;
         Tracker = gameObject;
         RegisterAllShips();
         RegisterTeams();
@@ -106,7 +107,7 @@ public class GameObjTracker : MonoBehaviour
             averageLoc = averageLoc / foundShipCount;
             hasSetRandomLook = false;
         }
-        return averageLoc;        
+        return averageLoc;
     }
 
     public static void RegisterTeams()
@@ -138,10 +139,19 @@ public class GameObjTracker : MonoBehaviour
         bracketRefreshNeeded = true;
         //print("Radar Refresh is: "+ radarRefreshNeeded);
     }
-
+    void KillAllShips() 
+    {
+        if (Input.GetKeyDown(KeyCode.K))
+        {
+            foreach (ShipSettings ship in Ships)
+            {
+                ship._CoreStrength = 0f;
+            }
+        }
+    }
     void SpawnExtraShips()
     {
-        if (KilrathiShips.Count < MaxShipsPerSideToSpawn && frames % 2400 == 0)
+        if (KilrathiShips.Count < MaxShipsPerSideToSpawn && frames % 240 == 0)
         {
             int spawnIndex = Random.Range(0, KilrathiSpawn.Length);
             GameObject ship = Instantiate(KilrathiSpawn[spawnIndex], Random.onUnitSphere * 1200f, Quaternion.identity);
@@ -149,7 +159,7 @@ public class GameObjTracker : MonoBehaviour
             radarRefreshNeeded = true;
             bracketRefreshNeeded = true;
         }
-        if (ConfedShips.Count < MaxShipsPerSideToSpawn && frames % 2400 == 0)
+        if (ConfedShips.Count < MaxShipsPerSideToSpawn && frames % 240 == 0)
         {
             int spawnIndex = Random.Range(0, ConfedSpawn.Length);
             GameObject ship = Instantiate(ConfedSpawn[spawnIndex], Random.onUnitSphere * 1200f, Quaternion.identity);
@@ -157,7 +167,7 @@ public class GameObjTracker : MonoBehaviour
             radarRefreshNeeded = true;
             bracketRefreshNeeded = true;
         }
-        if (PirateShips.Count < MaxShipsPerSideToSpawn && frames % 2400 == 0)
+        if (PirateShips.Count < MaxShipsPerSideToSpawn && frames % 240 == 0)
         {
             int spawnIndex = Random.Range(0, PirateSpawn.Length);
             GameObject ship = Instantiate(PirateSpawn[spawnIndex], Random.onUnitSphere * 1200f, Quaternion.identity);
@@ -165,7 +175,7 @@ public class GameObjTracker : MonoBehaviour
             radarRefreshNeeded = true;
             bracketRefreshNeeded = true;
         }
-        if (playerNeedsRespawn && frames % 2400 == 0)
+        if (playerNeedsRespawn)
         {
             Destroy(oldUI);
             int RandomIndex = Mathf.RoundToInt(Random.Range(0, PlayerSpawn.Length));
@@ -186,5 +196,6 @@ public class GameObjTracker : MonoBehaviour
         frames++;
         CheckDestroyedEnemies();
         SpawnExtraShips();
+        KillAllShips();
     }
 }

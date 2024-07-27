@@ -25,14 +25,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4136052188531549729}
-  m_LocalRotation: {x: 0, y: -0.7071068, z: 0.7071068, w: 0}
+  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 24, y: 24, z: 24}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4136052188945113505}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 90, y: -180, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!33 &4136052188531549734
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -194,6 +194,13 @@ MonoBehaviour:
   timeToCloak: 2
   turrets: []
   projWeapons: []
+  EngineSound: {fileID: 8300000, guid: 7cc2135b1b0c54445b4ad6b2ee14fb1d, type: 3}
+  MinMaxThrottlePitch: {x: 0.5, y: 1.25}
+  MinMaxThrottleVolume: {x: 0.15, y: 0.25}
+  AfterburnSound: {fileID: 8300000, guid: f4f931c10891c234b82af35f43df102d, type: 3}
+  AfterburnPitch: 2
+  AfterburnVolume: 0.35
+  AfterburnSmoothness: 0.25
   isPlayer: 0
   playerUI: {fileID: 0}
   shipRadius: 11
@@ -201,6 +208,9 @@ MonoBehaviour:
   _ShieldMax: {x: 6, y: 6}
   CoreMax: 7.6666665
   hitInAss: 0
+  EngineSFX: {fileID: 0}
+  AfterburnSFX: {fileID: 0}
+  AfterburnBlend: 0
   _CoreStrength: 7.6666665
   _Fuel: 2856.1665
   ShipID: 11974
@@ -225,6 +235,8 @@ MonoBehaviour:
   BouncePush: 0
   lastHit: 0
   lastHitID: 0
+  DeathDir: {x: 0, y: 0, z: 0}
+  DeathVel: 0
   oldRot: {x: 0, y: 0, z: 0, w: 0}
   rotDelta: {x: 0.88069504, y: 0.51214796, z: 0.24729522}
   throttle: 2.312224
@@ -546,12 +558,12 @@ PrefabInstance:
     - target: {fileID: 7989437017167104985, guid: 2097a4efc6d07894fad7c4356faa2704,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 0.2
       objectReference: {fileID: 0}
     - target: {fileID: 7989437017167104985, guid: 2097a4efc6d07894fad7c4356faa2704,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -14
+      value: -13.15
       objectReference: {fileID: 0}
     - target: {fileID: 7989437017167104985, guid: 2097a4efc6d07894fad7c4356faa2704,
         type: 3}
@@ -711,12 +723,12 @@ PrefabInstance:
     - target: {fileID: 7989437017167104985, guid: 2097a4efc6d07894fad7c4356faa2704,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 0.2
       objectReference: {fileID: 0}
     - target: {fileID: 7989437017167104985, guid: 2097a4efc6d07894fad7c4356faa2704,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -14
+      value: -13.15
       objectReference: {fileID: 0}
     - target: {fileID: 7989437017167104985, guid: 2097a4efc6d07894fad7c4356faa2704,
         type: 3}

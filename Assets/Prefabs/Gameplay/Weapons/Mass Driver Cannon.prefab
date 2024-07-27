@@ -49,9 +49,13 @@ MonoBehaviour:
     type: 3}
   muzzleflashPrefab: {fileID: 400538386877157162, guid: 83c57107cc299d34cb1bd3f829391fa9,
     type: 3}
+  fireSFX: {fileID: 8300000, guid: ede48d3afa470934d9390f680fb49226, type: 3}
   fireRate: 0.5
   powerDrain: 1.2
   gunRange: 360
   index: 0
   fire: 0
   GunId: 0
+  speed: 0
+  SFX: {fileID: 0}
+  hasFired: 0
