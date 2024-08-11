@@ -177,9 +177,9 @@ MonoBehaviour:
   deltaSmooth: 0.05
   capacitorSize: 20
   rechargeRate: 5
-  Armor: {x: 4.5, y: 3.5, z: 3, w: 3}
+  Armor: {x: 4.5, y: 3.5, z: 2, w: 2}
   Shield: {x: 5, y: 5}
-  shieldRechargeRate: 4.5
+  shieldRechargeRate: 4
   DeathVFX:
   - {fileID: 7789471376337144576, guid: 00b8cbe808eda81448b2786984607fcd, type: 3}
   DeathTrailVFX: {fileID: 3707795204099303826, guid: d2bce69b83d3773418e13260152f0018,
@@ -192,15 +192,20 @@ MonoBehaviour:
     type: 3}
   hasCloak: 1
   timeToCloak: 2
+  cloakPower: 20
+  cloakDrain: 4
+  cloakCapacitorLevel: 0
   turrets: []
   projWeapons: []
   EngineSound: {fileID: 8300000, guid: 7cc2135b1b0c54445b4ad6b2ee14fb1d, type: 3}
   MinMaxThrottlePitch: {x: 0.5, y: 1.25}
-  MinMaxThrottleVolume: {x: 0.15, y: 0.25}
+  MinMaxThrottleVolume: {x: 0.25, y: 0.5}
   AfterburnSound: {fileID: 8300000, guid: f4f931c10891c234b82af35f43df102d, type: 3}
   AfterburnPitch: 2
   AfterburnVolume: 0.35
   AfterburnSmoothness: 0.25
+  CloakOnSound: {fileID: 8300000, guid: 3ac747661ac3f6d409ba64fa27215905, type: 3}
+  CloakOffSound: {fileID: 8300000, guid: c0d4c3240d7b82a4596edec01f8bfe79, type: 3}
   isPlayer: 0
   playerUI: {fileID: 0}
   shipRadius: 0
@@ -210,6 +215,7 @@ MonoBehaviour:
   hitInAss: 0
   EngineSFX: {fileID: 0}
   AfterburnSFX: {fileID: 0}
+  CloakSFX: {fileID: 0}
   AfterburnBlend: 0
   _CoreStrength: 0
   _Fuel: 0
@@ -244,6 +250,7 @@ MonoBehaviour:
   Cloak: 0
   isCloaked: 0
   isCloaking: 0
+  cloakedAmount: 0
   lastPos: {x: 0, y: 0, z: 0}
   currentPos: {x: 0, y: 0, z: 0}
   velocity: {x: 0, y: 0, z: 0}
@@ -838,17 +845,17 @@ PrefabInstance:
     - target: {fileID: 8183780097333578743, guid: 25aa2b8dc2c23ac468e2c4e8bd236172,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: 0.01
       objectReference: {fileID: 0}
     - target: {fileID: 8183780097333578743, guid: 25aa2b8dc2c23ac468e2c4e8bd236172,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: -3
+      value: 4.71
       objectReference: {fileID: 0}
     - target: {fileID: 8183780097333578743, guid: 25aa2b8dc2c23ac468e2c4e8bd236172,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 3
+      value: 1.73
       objectReference: {fileID: 0}
     - target: {fileID: 8183780097333578743, guid: 25aa2b8dc2c23ac468e2c4e8bd236172,
         type: 3}

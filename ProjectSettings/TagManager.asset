@@ -9,6 +9,7 @@ TagManager:
   - Projectiles
   - GamePlayObjs
   - GameCamera
+  - SceneBuffer
   layers:
   - Default
   - TransparentFX

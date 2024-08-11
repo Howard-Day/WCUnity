@@ -78,25 +78,17 @@ public class DualJoystickThrottle : MonoBehaviour
 
     void DoFeet()
     {
-        smoothThrottle = Mathf.SmoothStep(smoothThrottle, shipMain.targetSpeed / shipMain.topSpeed, 0.2f);
-
-        if (!shipMain.isAfterburning)
-        {
-            smoothBurn = Mathf.Lerp(smoothBurn, smoothThrottle * .75f, 0.3f);
-        }
-        else
-        {
-            smoothBurn = Mathf.Lerp(smoothBurn, 1, 0.1f);
-        }
-        smoothBurn = Mathf.Clamp01(smoothBurn);
-
-        //Also do Feet Throttle
-        int currentFeetFrame = Mathf.FloorToInt(smoothBurn * (feetSprites.Length - 1));
-        Feet.sprite = feetSprites[Mathf.Clamp(currentFeetFrame, 0, 15)];
+        float targetThrottle = (shipMain.targetSpeed / shipMain.topSpeed) * .75f;
         if (shipMain.isAfterburning)
         {
-            Feet.sprite = feetSprites[15];
+            targetThrottle = 1f;
         }
+        smoothThrottle = Mathf.SmoothStep(smoothThrottle, targetThrottle, 0.175f);
+        smoothBurn = Mathf.Clamp01(smoothThrottle);
+
+        //Also do Feet Throttle
+        int currentFeetFrame = Mathf.FloorToInt(smoothBurn * (feetSprites.Length));
+        Feet.sprite = feetSprites[Mathf.Clamp(currentFeetFrame, 0, 15)];
     }
     Vector3 SmoothedParallax;
     void DoParallax()

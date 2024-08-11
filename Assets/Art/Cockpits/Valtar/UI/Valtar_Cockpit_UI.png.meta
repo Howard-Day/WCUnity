@@ -132,10 +132,10 @@ TextureImporter:
       name: Valtar_Cockpit_Eject
       rect:
         serializedVersion: 2
-        x: 281
-        y: 189
-        width: 46
-        height: 10
+        x: 279
+        y: 185
+        width: 49
+        height: 15
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -153,10 +153,10 @@ TextureImporter:
       name: Valtar_Cockpit_Lock
       rect:
         serializedVersion: 2
-        x: 343
-        y: 188
-        width: 39
-        height: 11
+        x: 342
+        y: 185
+        width: 43
+        height: 14
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}

@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class CockpitViewSwitcher : MonoBehaviour
 {
-    ShipSettings shipMain;
+    [HideInInspector] public ShipSettings shipMain;
     GameObject Billboard;
     CockpitShift Shifter;
     public bool RandomSwitch = false;
@@ -78,6 +78,10 @@ public class CockpitViewSwitcher : MonoBehaviour
         shipMain.MinMaxThrottleVolume *= .25f;
         shipMain.AfterburnPitch *= .25f;
         shipMain.AfterburnVolume *= .25f;
+        //init the music! 
+        MusicController.ExteriorCam = false;
+        MusicController.SpeechDuck = false;
+        MusicController.MusicEmphasis = false;
     }
     void DoChaseCamAngles()
     {
@@ -85,7 +89,7 @@ public class CockpitViewSwitcher : MonoBehaviour
         {
             chaseCamPos = transform.position;
             chaseCamRot = transform.rotation;
-            chaseCamRot *= Quaternion.Euler(Vector3.right * ChaseAngle);
+            chaseCamRot *= Quaternion.Euler(transform.right * ChaseAngle);
             chaseCamPos += chaseCamRot * ChaseCamOffset;
         }   
     }
@@ -105,9 +109,11 @@ public class CockpitViewSwitcher : MonoBehaviour
             SpaceflightFrame.FrameActive = true;
             //Make our ship sounds default when switched to external cam
             shipMain.MinMaxThrottlePitch *= 4f;
-            shipMain.MinMaxThrottleVolume *= 4f;
+            shipMain.MinMaxThrottleVolume *= 2f;
             shipMain.AfterburnPitch *= 4f;
-            shipMain.AfterburnVolume *= 4f;
+            shipMain.AfterburnVolume *= 2f;
+            //duck and muffle the music! 
+            MusicController.ExteriorCam = true;
         }
         //disable hover UI if there's no billboard (IE, we've been destroyed)
         if (Billboard == null)
@@ -164,8 +170,9 @@ public class CockpitViewSwitcher : MonoBehaviour
             float smoothDeathTime = Mathf.SmoothStep(0,1,normalizedDeathTime);
             Vector3 smoothRotateToInterest = Vector3.Slerp(preDeathAngle, smoothedInterestAngle, smoothDeathTime);// Vector3.SmoothDamp(preDeathAngle, interestPoint, ref refAngleVel, .1f);
             transform.rotation = Quaternion.LookRotation(smoothRotateToInterest,Vector3.up);
-            if(deathTime >= deathCamTime)
+            if (deathTime >= deathCamTime)
             {
+                print("Setting Respawn Player Flag!");
                 GameObjTracker.playerNeedsRespawn = true;
             }
             deathTime += Time.deltaTime;
@@ -193,9 +200,11 @@ public class CockpitViewSwitcher : MonoBehaviour
             SpaceflightFrame.FrameActive = false;
             //Make our ship sounds more muted when switched to internal view
             shipMain.MinMaxThrottlePitch *= .25f;
-            shipMain.MinMaxThrottleVolume *= .25f;
+            shipMain.MinMaxThrottleVolume *= .5f;
             shipMain.AfterburnPitch *= .25f;
-            shipMain.AfterburnVolume *= .25f;
+            shipMain.AfterburnVolume *= .5f;
+            //un duck and restore the music! 
+            MusicController.ExteriorCam = false;
         }
         Shifter.xShift = 1 - shipMain.rotDelta.y;// .y;
         Shifter.yShift = 1 - shipMain.rotDelta.x;//.x;
@@ -214,6 +223,15 @@ public class CockpitViewSwitcher : MonoBehaviour
             RearBase.SetActive(true);
             Billboard.SetActive(false);
             HoverUI.SetActive(false);
+            //Turn off the Spaceflight cinematic Frame!
+            SpaceflightFrame.FrameActive = false;
+            //Make our ship sounds more muted when switched to internal view
+            shipMain.MinMaxThrottlePitch *= .25f;
+            shipMain.MinMaxThrottleVolume *= .5f;
+            shipMain.AfterburnPitch *= .25f;
+            shipMain.AfterburnVolume *= .5f;
+            //un duck and restore the music! 
+            MusicController.ExteriorCam = false;
         }
         Shifter.xShift = 1 - shipMain.rotDelta.y;// .y;
         Shifter.yShift = shipMain.rotDelta.x;//.x;
@@ -231,6 +249,15 @@ public class CockpitViewSwitcher : MonoBehaviour
             RearBase.SetActive(false);
             Billboard.SetActive(false);
             HoverUI.SetActive(false);
+            //Turn off the Spaceflight cinematic Frame!
+            SpaceflightFrame.FrameActive = false;
+            //Make our ship sounds more muted when switched to internal view
+            shipMain.MinMaxThrottlePitch *= .25f;
+            shipMain.MinMaxThrottleVolume *= .5f;
+            shipMain.AfterburnPitch *= .25f;
+            shipMain.AfterburnVolume *= .5f;
+            //un duck and restore the music! 
+            MusicController.ExteriorCam = false;
         }
         Shifter.xShift = 1 - shipMain.rotDelta.y;//.y;
         Shifter.yShift = 1 - shipMain.rotDelta.z;//.x;
@@ -250,6 +277,15 @@ public class CockpitViewSwitcher : MonoBehaviour
             RearBase.SetActive(false);
             Billboard.SetActive(false);
             HoverUI.SetActive(false);
+            //Turn off the Spaceflight cinematic Frame!
+            SpaceflightFrame.FrameActive = false;
+            //Make our ship sounds more muted when switched to internal view
+            shipMain.MinMaxThrottlePitch *= .25f;
+            shipMain.MinMaxThrottleVolume *= .25f;
+            shipMain.AfterburnPitch *= .25f;
+            shipMain.AfterburnVolume *= .25f;
+            //un duck and restore the music! 
+            MusicController.ExteriorCam = false;
         }
         Shifter.xShift = shipMain.rotDelta.y;// .y;
         Shifter.yShift = shipMain.rotDelta.z;//.x;
@@ -278,10 +314,12 @@ public class CockpitViewSwitcher : MonoBehaviour
                 if (activeView == View.Main)
                 {
                     activeView = View.Chase;
+                    DelaySwitchTime /= 2f;
                 }
                 else
                 {
                     activeView = View.Main;
+                    DelaySwitchTime *= 2f;
                 }
                 switchTime = 0f;
             }

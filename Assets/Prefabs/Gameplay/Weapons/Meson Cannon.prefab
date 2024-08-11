@@ -50,6 +50,7 @@ MonoBehaviour:
   muzzleflashPrefab: {fileID: 400538386877157162, guid: dce01cd50eba8504181e2ad0eaf0dae4,
     type: 3}
   fireSFX: {fileID: 8300000, guid: 2f8bf45c16d5a5c4b91ed18779eb2c1c, type: 3}
+  volume: 0.25
   fireRate: 0.375
   powerDrain: 2.35
   gunRange: 460

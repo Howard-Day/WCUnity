@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: f9a5851b34451ac44bf5fe1f956cb95c
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures:
+  - _BackFluid: {fileID: 2800000, guid: 0431467aaf846a74c93120924fd71e32, type: 3}
+  - _FrontFluid: {fileID: 2800000, guid: 0431467aaf846a74c93120924fd71e32, type: 3}
+  - _FrontBubbles: {fileID: 2800000, guid: 0431467aaf846a74c93120924fd71e32, type: 3}
+  - _Dithering: {fileID: 2800000, guid: 1dec9d0afe198024b9a43a07728f9376, type: 3}
+  nonModifiableTextures: []
+  preprocessorOverride: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

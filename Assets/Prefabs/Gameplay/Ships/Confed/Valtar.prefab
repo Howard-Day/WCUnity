@@ -150,7 +150,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   AITeam: 0
   Class: 0
-  Weight: 1
+  Weight: 0
   DisplayName: FK-04 Prototype
   isWingLead: 0
   CollidesWith:
@@ -177,7 +177,7 @@ MonoBehaviour:
   rechargeRate: 5
   Armor: {x: 3, y: 2, z: 1, w: 1}
   Shield: {x: 6, y: 5}
-  shieldRechargeRate: 6
+  shieldRechargeRate: 7
   DeathVFX:
   - {fileID: 7789471376337144576, guid: 00b8cbe808eda81448b2786984607fcd, type: 3}
   DeathTrailVFX: {fileID: 3707795204099303826, guid: d2bce69b83d3773418e13260152f0018,
@@ -190,15 +190,20 @@ MonoBehaviour:
     type: 3}
   hasCloak: 0
   timeToCloak: 2
+  cloakPower: 20
+  cloakDrain: 1
+  cloakCapacitorLevel: 0
   turrets: []
   projWeapons: []
   EngineSound: {fileID: 8300000, guid: 7cc2135b1b0c54445b4ad6b2ee14fb1d, type: 3}
   MinMaxThrottlePitch: {x: 1, y: 1.5}
-  MinMaxThrottleVolume: {x: 0.15, y: 0.25}
+  MinMaxThrottleVolume: {x: 0.25, y: 0.5}
   AfterburnSound: {fileID: 8300000, guid: f4f931c10891c234b82af35f43df102d, type: 3}
   AfterburnPitch: 2
   AfterburnVolume: 0.35
   AfterburnSmoothness: 0.25
+  CloakOnSound: {fileID: 0}
+  CloakOffSound: {fileID: 0}
   isPlayer: 0
   playerUI: {fileID: 0}
   shipRadius: 0
@@ -208,6 +213,7 @@ MonoBehaviour:
   hitInAss: 0
   EngineSFX: {fileID: 0}
   AfterburnSFX: {fileID: 0}
+  CloakSFX: {fileID: 0}
   AfterburnBlend: 0
   _CoreStrength: 0
   _Fuel: 0
@@ -242,6 +248,7 @@ MonoBehaviour:
   Cloak: 0
   isCloaked: 0
   isCloaking: 0
+  cloakedAmount: 0
   lastPos: {x: 0, y: 0, z: 0}
   currentPos: {x: 0, y: 0, z: 0}
   velocity: {x: 0, y: 0, z: 0}

@@ -9,6 +9,7 @@ public class ProjectileWeapon : MonoBehaviour
     [SerializeField] public Transform projectilePrefab = null;
     [SerializeField] public Transform muzzleflashPrefab = null;
     [SerializeField] public AudioClip fireSFX;
+    [SerializeField] public float volume = .2f;
     [SerializeField] float fireRate = .4f;
     [SerializeField] public float powerDrain = 2.1f;
     public float gunRange;
@@ -38,7 +39,8 @@ public class ProjectileWeapon : MonoBehaviour
             SFX.clip = fireSFX;
         }
         SFX.playOnAwake = false;
-        SFX.volume = .2f;
+        SFX.volume = volume;
+
         SFX.spatialBlend = 1f;
         SFX.maxDistance = 750f;
         SFX.minDistance = 50f;

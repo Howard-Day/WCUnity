@@ -56,6 +56,9 @@ public class ShipSettings : MonoBehaviour
     [Header("Special Abilities")]
     [SerializeField] public bool hasCloak = false;
     [SerializeField] public float timeToCloak = 2f;
+    [SerializeField] public float cloakPower = 20f;
+    [SerializeField] public float cloakDrain = 1f;
+    [HideInInspector] public float cloakCapacitorLevel;
     [SerializeField] public GameObject[] turrets;
     [SerializeField] public ProjectileWeapon[] projWeapons;
     [Header("SFX")]
@@ -66,7 +69,8 @@ public class ShipSettings : MonoBehaviour
     [SerializeField] public float AfterburnPitch = 1f;
     [SerializeField] public float AfterburnVolume = .25f;
     [SerializeField] public float AfterburnSmoothness = .25f;
-
+    [SerializeField] public AudioClip CloakOnSound;
+    [SerializeField] public AudioClip CloakOffSound;
 
     //Hidden Attributes
     [HideInInspector] public bool isPlayer = false;
@@ -80,6 +84,7 @@ public class ShipSettings : MonoBehaviour
     Material billboardMat;
     [HideInInspector] public AudioSource EngineSFX;
     [HideInInspector] public AudioSource AfterburnSFX;
+    [HideInInspector] public AudioSource CloakSFX;
     [HideInInspector] public float AfterburnBlend = 0f;
     public class DamageComponents
     {
@@ -146,7 +151,7 @@ public class ShipSettings : MonoBehaviour
     public bool Cloak = false;
     public bool isCloaked = false;
     public bool isCloaking = false;
-    float cloakedAmount = 0f;
+    public float cloakedAmount = 0f;
 
     [HideInInspector] public Vector3 lastPos = Vector3.zero;
     [HideInInspector] public Vector3 currentPos;
@@ -167,6 +172,7 @@ public class ShipSettings : MonoBehaviour
         engineFlares = GetComponentsInChildren<EngineFlare>();
         //Atomic Batteries to power
         capacitorLevel = capacitorSize;
+        cloakCapacitorLevel = cloakPower;
         //Turbines to speed
         //check fuel Light
         _Fuel = maxFuel;
@@ -181,6 +187,10 @@ public class ShipSettings : MonoBehaviour
         //Init SFX
         EngineSFX = gameObject.AddComponent<AudioSource>();
         AfterburnSFX = gameObject.AddComponent<AudioSource>();
+        if (hasCloak)
+        { 
+            CloakSFX = gameObject.AddComponent<AudioSource>();
+        }
         //Set up SFX
         EngineSFX.clip = EngineSound;
         EngineSFX.playOnAwake = true;
@@ -188,8 +198,8 @@ public class ShipSettings : MonoBehaviour
         EngineSFX.volume = MinMaxThrottleVolume.x;
         EngineSFX.spatialBlend = 1f;
         EngineSFX.dopplerLevel = 2f;
-        EngineSFX.maxDistance = 60f;
-        EngineSFX.minDistance = 1f;
+        EngineSFX.maxDistance = 100f;
+        EngineSFX.minDistance = 0f;
         EngineSFX.rolloffMode = AudioRolloffMode.Linear;
         EngineSFX.Play();
 
@@ -200,11 +210,23 @@ public class ShipSettings : MonoBehaviour
         AfterburnSFX.spatialBlend = 1f;
         AfterburnSFX.dopplerLevel = 2f;
         AfterburnSFX.pitch = AfterburnPitch;
-        AfterburnSFX.maxDistance = 60f;
-        AfterburnSFX.minDistance = 1f;
+        AfterburnSFX.maxDistance = 120f;
+        AfterburnSFX.minDistance = 0f;
         AfterburnSFX.rolloffMode = AudioRolloffMode.Linear;
-        
         AfterburnSFX.Play();
+
+        if (hasCloak)
+        {
+            CloakSFX.playOnAwake = false;
+            CloakSFX.loop = false;
+            CloakSFX.volume = .25f;
+            CloakSFX.spatialBlend = 1f;
+            CloakSFX.dopplerLevel = 1f;
+            CloakSFX.pitch = 1f;
+            CloakSFX.maxDistance = 120f;
+            CloakSFX.minDistance = 25f;
+            CloakSFX.rolloffMode = AudioRolloffMode.Linear;
+        }
     }
 
     void DoSFX() 
@@ -234,7 +256,7 @@ public class ShipSettings : MonoBehaviour
 
     public void GetBillboardMat() 
     {
-        billboardMat = Billboard.GetComponent<Renderer>().sharedMaterial;   
+        billboardMat = Billboard.GetComponent<Renderer>().material;   
     }
 
     void TargetManage()
@@ -279,11 +301,17 @@ public class ShipSettings : MonoBehaviour
     //Fire Guns! 
     public void FireGuns(bool fire)
     {
+        //force the guns to disable if we're still cloaked! 
+        if (cloakedAmount > .1f)
+        {
+            fire = false;
+        }
+        //loop through the guns
         foreach (ProjectileWeapon projWeapon in projWeapons)
         {
             if (capacitorLevel < projWeapon.powerDrain * (countFireIndex + 1 ))
             {
-                if (recover >= .99f && projWeapon.index != lastFireIndex && !isCloaked) // Can the ship fire? Is this gun *not* the last to fire? Are we Cloaked? 
+                if (recover >= .99f && projWeapon.index != lastFireIndex) // Can the ship fire? Is this gun *not* the last to fire? Are we Cloaked? 
                 {
                     projWeapon.fire = fire;
                     //increment through guns
@@ -669,6 +697,8 @@ public class ShipSettings : MonoBehaviour
         {
             //disconnect the UI from the ship
             playerUI.transform.parent = DecoRoot;
+            //make sure we're uncloaked
+            Cloak = false;
             //get the cockpit view control, set it to chase cam mode! 
             CockpitViewSwitcher cockpit = playerUI.GetComponentInChildren<CockpitViewSwitcher>();
             cockpit.ChaseSwitch = false;
@@ -681,7 +711,7 @@ public class ShipSettings : MonoBehaviour
                 lagMove.initDir = DeathDir;
                 lagMove.initVel = DeathVel;
             }
-            //tell the game manager we need to respawn the player
+            //tell the game manager we've done this
             GameObjTracker.oldUI = playerUI.gameObject;
             playerUIDisconnected = true;
         }
@@ -717,8 +747,10 @@ public class ShipSettings : MonoBehaviour
             DecoRoot = GameObject.Find("Deco_Objs").transform;
 
         if (_CoreStrength <= 0) //We dead, son
-        {
-            isDead = true;
+        {   isDead = true;
+            //make sure we're uncloaked
+            Cloak = false;
+            cloakedAmount = 0f;
             //Let's set up how we're going to die!
             if (DeathSpin == Vector3.zero) //this happens once, let's take advantage!
             {
@@ -803,7 +835,11 @@ public class ShipSettings : MonoBehaviour
     {
         if (capacitorLevel < capacitorSize) //Charge Them Guns
         {
-            capacitorLevel += rechargeRate * Time.deltaTime;
+            //Only charge if we're not cloaked! 
+            if (!isCloaked)
+            {
+                capacitorLevel += rechargeRate * Time.deltaTime;
+            }
         }
     }
     //Helpful Utilities
@@ -890,8 +926,13 @@ public class ShipSettings : MonoBehaviour
                 isCloaked = true;
                 isCloaking = false;
             }
+            //Force disable the cloak if we don't have enough power to engage it - but only if we're not already cloaked! 
+            if (!isCloaked && Cloak && cloakCapacitorLevel <= cloakPower * .1f)
+            {
+                Cloak = false;
+            }
             //Start Cloaking
-            if (Cloak && !isCloaked)
+            if (Cloak && !isCloaked )
             {
                 if(cloakedAmount <=1.1f)
                     cloakedAmount += Time.deltaTime / timeToCloak;
@@ -901,6 +942,10 @@ public class ShipSettings : MonoBehaviour
                     isCloaked = true;
                     GameObjTracker.radarRefreshNeeded = true;
                     GameObjTracker.bracketRefreshNeeded = true;
+                }
+                if (cloakedAmount <= 0.05)
+                {
+                    CloakSFX.PlayOneShot(CloakOnSound);
                 }
             }
             //Uncloak
@@ -915,6 +960,10 @@ public class ShipSettings : MonoBehaviour
                     GameObjTracker.radarRefreshNeeded = true;
                     GameObjTracker.bracketRefreshNeeded = true;
                 }
+                if (cloakedAmount >= .95)
+                {
+                    CloakSFX.PlayOneShot(CloakOffSound);
+                }
             }
             //Handle midway state and broadcast it
             if (cloakedAmount > .01f && cloakedAmount < .99f)
@@ -925,6 +974,31 @@ public class ShipSettings : MonoBehaviour
             {
                 isCloaking = false;
             }
+           
+
+            //if the guns are charged, recharge the Cloak, if it's not in use 
+            if (capacitorLevel >= capacitorSize && cloakCapacitorLevel < cloakPower && !isCloaked && cloakedAmount < .1f)
+            {
+                cloakCapacitorLevel += rechargeRate * Time.deltaTime;
+            }
+            //if the cloak is on, drain the cloak capacitors, then the gun capacitors
+            if (isCloaked)
+            {
+                if (cloakCapacitorLevel > 0)
+                {
+                    cloakCapacitorLevel -= cloakDrain * Time.deltaTime;
+                }
+                if (cloakCapacitorLevel <= 0 && capacitorLevel > 0)
+                {
+                    capacitorLevel -= cloakDrain * Time.deltaTime;
+                }
+                //if we've run out of power, force an uncloak! 
+                if (capacitorLevel <= 0 && cloakCapacitorLevel <= 0)
+                {
+                   Cloak = false;
+                }            
+            }
+
             //control the visual effect of the cloak
             if (Cloak && !isCloaking && !isCloaked)
             {

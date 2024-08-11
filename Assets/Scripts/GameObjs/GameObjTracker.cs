@@ -4,6 +4,12 @@ using UnityEngine;
 public class GameObjTracker : MonoBehaviour
 {
     public float speedMultiplier = 1f;
+    public float avoidMultiplier = 1f;
+    public float damageMultiplier = 1f;
+    public float armorMultiplier = 1f;
+    public float shieldMultiplier = 1f;
+    public float coreMultiplier = 1f;
+
     public int MaxShipsPerSideToSpawn = 1;
     static public List<ShipSettings> Ships;
     static public List<ShipSettings> ConfedShips;
@@ -151,7 +157,7 @@ public class GameObjTracker : MonoBehaviour
     }
     void SpawnExtraShips()
     {
-        if (KilrathiShips.Count < MaxShipsPerSideToSpawn && frames % 240 == 0)
+        if (KilrathiSpawn.Length > 0 &&  KilrathiShips.Count < MaxShipsPerSideToSpawn && frames % 240 == 0)
         {
             int spawnIndex = Random.Range(0, KilrathiSpawn.Length);
             GameObject ship = Instantiate(KilrathiSpawn[spawnIndex], Random.onUnitSphere * 1200f, Quaternion.identity);
@@ -159,7 +165,7 @@ public class GameObjTracker : MonoBehaviour
             radarRefreshNeeded = true;
             bracketRefreshNeeded = true;
         }
-        if (ConfedShips.Count < MaxShipsPerSideToSpawn && frames % 240 == 0)
+        if (ConfedSpawn.Length > 0 &&  ConfedShips.Count < MaxShipsPerSideToSpawn && frames % 240 == 0)
         {
             int spawnIndex = Random.Range(0, ConfedSpawn.Length);
             GameObject ship = Instantiate(ConfedSpawn[spawnIndex], Random.onUnitSphere * 1200f, Quaternion.identity);
@@ -167,7 +173,7 @@ public class GameObjTracker : MonoBehaviour
             radarRefreshNeeded = true;
             bracketRefreshNeeded = true;
         }
-        if (PirateShips.Count < MaxShipsPerSideToSpawn && frames % 240 == 0)
+        if (PirateSpawn.Length > 0 && PirateShips.Count < MaxShipsPerSideToSpawn && frames % 240 == 0)
         {
             int spawnIndex = Random.Range(0, PirateSpawn.Length);
             GameObject ship = Instantiate(PirateSpawn[spawnIndex], Random.onUnitSphere * 1200f, Quaternion.identity);
@@ -175,19 +181,26 @@ public class GameObjTracker : MonoBehaviour
             radarRefreshNeeded = true;
             bracketRefreshNeeded = true;
         }
+
         if (playerNeedsRespawn)
         {
-            Destroy(oldUI);
-            int RandomIndex = Mathf.RoundToInt(Random.Range(0, PlayerSpawn.Length));
-            if (!randomPlayerSpawn)
+            if (oldUI != null)
             {
-                RandomIndex = playerSpawnIndex;
+                Destroy(oldUI);
             }
-            GameObject ship = Instantiate(PlayerSpawn[RandomIndex], Random.onUnitSphere * 200f, Quaternion.identity);
-            ship.name = PlayerSpawn[RandomIndex].name;
-            radarRefreshNeeded = true;
-            bracketRefreshNeeded = true;
-            playerNeedsRespawn = false;
+            if (PlayerSpawn.Length > 0)
+            {
+                int RandomIndex = Mathf.RoundToInt(Random.Range(0, PlayerSpawn.Length));
+                if (!randomPlayerSpawn)
+                {
+                    RandomIndex = playerSpawnIndex;
+                }
+                GameObject ship = Instantiate(PlayerSpawn[RandomIndex], Random.onUnitSphere * 200f, Quaternion.identity);
+                ship.name = PlayerSpawn[RandomIndex].name;
+                radarRefreshNeeded = true;
+                bracketRefreshNeeded = true;
+                playerNeedsRespawn = false;
+            }
         }
     }
     // Update is called once per frame
@@ -195,7 +208,12 @@ public class GameObjTracker : MonoBehaviour
     {
         frames++;
         CheckDestroyedEnemies();
-        SpawnExtraShips();
         KillAllShips();
+        SpawnExtraShips();
+        if (playerNeedsRespawn)
+        {
+            print("Trying to respawn Player!");
+        }
+
     }
 }

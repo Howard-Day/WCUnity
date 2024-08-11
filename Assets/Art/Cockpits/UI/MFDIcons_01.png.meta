@@ -635,7 +635,7 @@ TextureImporter:
         width: 24
         height: 59
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -656,7 +656,7 @@ TextureImporter:
         width: 25
         height: 57
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -677,7 +677,7 @@ TextureImporter:
         width: 25
         height: 63
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -698,7 +698,7 @@ TextureImporter:
         width: 24
         height: 65
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -719,7 +719,7 @@ TextureImporter:
         width: 127
         height: 113
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -727,6 +727,48 @@ TextureImporter:
       bones: []
       spriteID: be80b1c3c1396d345b30d2d3cae305cc
       internalID: -705041706
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SYS_Strakha
+      rect:
+        serializedVersion: 2
+        x: 893
+        y: 583
+        width: 131
+        height: 65
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b2576b714ada98e4ea74a4a310d064a0
+      internalID: 1243841708
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WEAP_Laser02
+      rect:
+        serializedVersion: 2
+        x: 875
+        y: 953
+        width: 21
+        height: 59
+      alignment: 9
+      pivot: {x: 0.47619048, y: 0.55932206}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 80bd7aa27ac9d9f4795f167f9973876d
+      internalID: 197180701
       vertices: []
       indices: 
       edges: []
@@ -746,6 +788,7 @@ TextureImporter:
       SYS_Krant: -705041706
       Shield_Null: 1890584309
       WEAP_Massdriver01: -1174805025
+      SYS_Strakha: 1243841708
       TRGT_TalonE: -2145628955
       Shield_02: 8667844304088249284
       SYS_Dralthi: 3007919691619370033
@@ -765,6 +808,7 @@ TextureImporter:
       TRGT_Dralthi: -5658064665324839680
       TRGT_TalonB: -65470843
       TRGT_Strakha: -619519153
+      WEAP_Laser02: 197180701
       TRGT_Scimitar: -1162261512
       TRGT_TalonA: 1721689566
       TRGT_Hornet: 2033425799997004718

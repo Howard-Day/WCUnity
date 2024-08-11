@@ -4902,7 +4902,7 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 49eb2c5a0f21d7b4ebd67da0ea7ab6af, type: 3}
   audioRange: 500
   audioVolume: 0.3
-  audioPitchMinMax: {x: 0.8, y: 1.2}
+  audioPitchMinMax: {x: 0.4, y: 0.6}
   dopplerLevel: 0.5
   SFX: {fileID: 0}
 --- !u!1 &4559646807286594047

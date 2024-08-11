@@ -8,6 +8,7 @@ public class Fuel : MonoBehaviour
     ShipSettings shipMain;
     public Toggle lowFuelWarning;
     public Slider FuelLevel;
+    public CustomSlider FuelLevelCustom;
 
     // Start is called before the first frame update
 
@@ -30,8 +31,23 @@ public class Fuel : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        FuelLevel.normalizedValue = shipMain._Fuel / shipMain.maxFuel;
-        if (FuelLevel.normalizedValue < .2f)
+        if (!shipMain)
+        {
+            shipMain = (ShipSettings)gameObject.GetComponentInParent<ShipSettings>();
+        }
+
+        float sliderVal = shipMain._Fuel / shipMain.maxFuel;
+
+
+        if (FuelLevelCustom != null)
+        {
+            FuelLevelCustom.Fill = sliderVal;
+        }
+        else 
+        {
+            FuelLevel.normalizedValue = sliderVal;
+        }
+        if (sliderVal < .2f)
         {
             Blink(lowFuelWarning, 25);
         }

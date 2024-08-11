@@ -7,7 +7,9 @@ public class MusicController : MonoBehaviour
     public float MusicVolume = 1f;
     public enum MissionStatus { LAUNCH, START, COMBAT, SUCCESS, FAIL, LANDING };
     public MissionStatus Status = MissionStatus.START;
-
+    public static bool ExteriorCam = false;
+    public static bool SpeechDuck = false;
+    public static bool MusicEmphasis = false;
     [HideInInspector] public AudioListener Listener;
     [HideInInspector] public GameObjTracker Tracker;
 
@@ -33,7 +35,10 @@ public class MusicController : MonoBehaviour
     AudioSource Music1;
     AudioSource Music2;
     AudioSource NextMusicBlend;
-
+    float duckingMultiplier = 1f;
+    float duckingTarget = 1f;
+    float duckingPitchMultiplier = 1f;
+    float duckingPitchTarget = 1f;
     // Start is called before the first frame update
     void Start()
     {
@@ -53,6 +58,37 @@ public class MusicController : MonoBehaviour
         Music2.volume = MusicVolume;
         NextMusicBlend = Music1;
     }
+    public void MusicDucking()
+    {
+        if (ExteriorCam)
+        {
+            duckingTarget = .666f;
+            duckingPitchTarget = 1f;
+        }
+        if (SpeechDuck)
+        {
+            duckingTarget = .666f;
+            duckingPitchTarget = 1f;
+        }
+        if (MusicEmphasis)
+        {
+            duckingTarget = 2f;
+            duckingPitchTarget = 1f;
+        }
+        if (!ExteriorCam && !SpeechDuck && !MusicEmphasis)
+        {
+            duckingTarget = 1f;
+            duckingPitchTarget = 1f;
+        }
+        duckingMultiplier = Mathf.Lerp(duckingMultiplier, duckingTarget, .1f);
+        duckingPitchMultiplier = Mathf.Lerp(duckingPitchMultiplier, duckingPitchTarget, .1f);
+        Music1.volume = MusicVolume * duckingMultiplier;
+        Music2.volume = MusicVolume * duckingMultiplier;
+        Music1.pitch = duckingPitchMultiplier;
+        Music2.pitch = duckingPitchMultiplier;
+    }
+
+
     public void FadeMusic(AudioClip musicIn, float fadeTime, int beatFrame)
     {
 
@@ -84,6 +120,7 @@ public class MusicController : MonoBehaviour
     void Update()
     {
         DynamicMusic();
+        MusicDucking();
     }
 }
 

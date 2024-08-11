@@ -275,6 +275,27 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: Salthi_Cockpit_UI
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 680
+        height: 440
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1bc9a2a5cbfd0574a8f8f5c34753de51
+      internalID: 968141551
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     physicsShape: []
     bones: []
@@ -287,6 +308,7 @@ TextureImporter:
     secondaryTextures: []
     nameFileIdTable:
       Salthi_Cockpit_AutoLight: -1752002448
+      Salthi_Cockpit_UI: 968141551
       Salthi_Cockpit_Shield: -101084722
       Salthi_Cockpit_Fuel: 696885539
       Salthi_Cockpit_LockLight: 1831852830

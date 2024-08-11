@@ -111,6 +111,27 @@ public class SystemsDisplay : MonoBehaviour
                 gunIcon.GetComponent<SpriteRenderer>().material = ActiveWeapon;
                 gunIcons.Add(gunIcon);
             }
+            if (gun.Type == ProjectileWeapon.GunType.Meson)
+            {
+                GameObject gunIcon = (GameObject)Instantiate(WIcon.Meson, localPos, Quaternion.identity, shipBase.transform);
+                gunIcon.GetComponent<SpriteRenderer>().flipX = xFlip;
+                gunIcon.GetComponent<SpriteRenderer>().material = ActiveWeapon;
+                gunIcons.Add(gunIcon);
+            }
+            if (gun.Type == ProjectileWeapon.GunType.Neutron)
+            {
+                GameObject gunIcon = (GameObject)Instantiate(WIcon.Neutron, localPos, Quaternion.identity, shipBase.transform);
+                gunIcon.GetComponent<SpriteRenderer>().flipX = xFlip;
+                gunIcon.GetComponent<SpriteRenderer>().material = ActiveWeapon;
+                gunIcons.Add(gunIcon);
+            }
+            if (gun.Type == ProjectileWeapon.GunType.MassDriver)
+            {
+                GameObject gunIcon = (GameObject)Instantiate(WIcon.MassDriver, localPos, Quaternion.identity, shipBase.transform);
+                gunIcon.GetComponent<SpriteRenderer>().flipX = xFlip;
+                gunIcon.GetComponent<SpriteRenderer>().material = ActiveWeapon;
+                gunIcons.Add(gunIcon);
+            }
         }
         if (gunIcons.Count > 0)
         {
