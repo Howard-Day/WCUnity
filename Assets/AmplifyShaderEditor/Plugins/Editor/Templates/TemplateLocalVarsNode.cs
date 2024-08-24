@@ -63,7 +63,7 @@ namespace AmplifyShaderEditor
 						m_containerGraph.DeleteConnection( false , UniqueId , i , false , true );
 
 					m_headerColor = UIUtils.GetColorFromCategory( "Default" );
-					m_content.text = "None";
+					SetAdditonalTitleText( "<None>" );
 					m_additionalContent.text = string.Empty;
 					m_outputPorts[ 0 ].ChangeProperties( "None" , WirePortDataType.OBJECT , false );
 					ConfigurePorts();
@@ -102,7 +102,7 @@ namespace AmplifyShaderEditor
 				}
 
 				m_dataName = m_localVarsData[ m_currentDataIdx ].LocalVarName;
-				m_content.text = m_dataName;
+				SetAdditonalTitleText( m_dataName );
 				m_sizeIsDirty = true;
 				CheckWarningState();
 			}

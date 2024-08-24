@@ -7,6 +7,8 @@ public class KPSSpeed : MonoBehaviour
     public Text Speed;
     public string preText;
     public bool randompreText = false;
+    public bool inBase8 = false;
+
     public int minAmt;
     public int maxAmt;
     public int frameskip;
@@ -34,6 +36,19 @@ public class KPSSpeed : MonoBehaviour
             return lastGenInt;
         }
     }
+    public static string Int32ToString(int value, int toBase)
+    {
+        string result = string.Empty;
+        do
+        {
+            result = "0123456789ABCDEF"[value % toBase] + result;
+            value /= toBase;
+        }
+        while (value > 0);
+
+        return result;
+    }
+
     // Update is called once per frame
     void Update()
     {
@@ -41,13 +56,27 @@ public class KPSSpeed : MonoBehaviour
 
         int speedDisp = Mathf.FloorToInt(setSpeed * 10);
 
-        if (randompreText)
+        if (!inBase8)
         {
-            Speed.text = NumberGen(minAmt, maxAmt, frameskip).Value.ToString("D2") + speedDisp.ToString();
+            if (randompreText)
+            {
+                Speed.text = NumberGen(minAmt, maxAmt, frameskip).Value.ToString("D2") + speedDisp.ToString();
+            }
+            else
+            {
+                Speed.text = preText + speedDisp.ToString();
+            }
         }
         else
         {
-            Speed.text = preText + speedDisp.ToString();
+            if (randompreText)
+            {
+                Speed.text = NumberGen(minAmt, maxAmt, frameskip).Value.ToString("D2") + Int32ToString(speedDisp, 8);
+            }
+            else
+            {
+                Speed.text = preText + Int32ToString(speedDisp, 8);
+            }
         }
 
     }

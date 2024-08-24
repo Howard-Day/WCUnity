@@ -420,7 +420,7 @@ RectTransform:
   m_GameObject: {fileID: 975918942}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.005, y: 0.005, z: 0.01}
+  m_LocalScale: {x: 0.004, y: 0.004, z: 0.01}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 114078765}
@@ -460,8 +460,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_FontData:
-    m_Font: {fileID: 12800000, guid: d9cf7a72c5ddb27419168af5765ee898, type: 3}
-    m_FontSize: 36
+    m_Font: {fileID: 12800000, guid: 6cef4a37785e30d488c0b967d71ecbb9, type: 3}
+    m_FontSize: 20
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 0
@@ -472,7 +472,9 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: THIS is only a TEST
+  m_Text: 'THIS is only a TEST
+
+    Currently Flying a Kilrathi Salthi'
 --- !u!1 &1156358357
 GameObject:
   m_ObjectHideFlags: 0
@@ -1307,7 +1309,7 @@ MonoBehaviour:
   onValueChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_IsOn: 1
+  m_IsOn: 0
 --- !u!1 &362374175532036239
 GameObject:
   m_ObjectHideFlags: 0
@@ -2097,7 +2099,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 978263522535592073}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
   m_Name: 
@@ -2112,7 +2114,7 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: d9cf7a72c5ddb27419168af5765ee898, type: 3}
-    m_FontSize: 36
+    m_FontSize: 32
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 0
@@ -3612,7 +3614,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   shipMain: {fileID: 0}
   RandomSwitch: 0
-  ChaseSwitch: 1
+  ChaseSwitch: 0
   ChaseCam: 0
   DelaySwitchTime: 6
   activeView: 0
@@ -5629,7 +5631,7 @@ MonoBehaviour:
   onValueChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_IsOn: 1
+  m_IsOn: 0
 --- !u!1 &3642250207467819830
 GameObject:
   m_ObjectHideFlags: 0
@@ -5927,7 +5929,7 @@ MonoBehaviour:
   onValueChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_IsOn: 1
+  m_IsOn: 0
 --- !u!1 &4046018360718524055
 GameObject:
   m_ObjectHideFlags: 0
@@ -7020,7 +7022,7 @@ MonoBehaviour:
   onValueChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_IsOn: 1
+  m_IsOn: 0
 --- !u!1 &5039922508113983548
 GameObject:
   m_ObjectHideFlags: 0
@@ -8396,7 +8398,7 @@ MonoBehaviour:
   onValueChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_IsOn: 1
+  m_IsOn: 0
 --- !u!1 &6250793382285378468
 GameObject:
   m_ObjectHideFlags: 0
@@ -8482,7 +8484,7 @@ MonoBehaviour:
   onValueChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_IsOn: 1
+  m_IsOn: 0
 --- !u!1 &6297508416802669630
 GameObject:
   m_ObjectHideFlags: 0
@@ -11013,7 +11015,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8528013643444556057}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.211, y: -1.463, z: 0}
+  m_LocalPosition: {x: 2.26, y: -1.452, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

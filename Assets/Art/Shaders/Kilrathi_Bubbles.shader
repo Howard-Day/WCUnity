@@ -255,7 +255,7 @@ float4 SampleGradient( Gradient gradient, float time )
 }
 /*ASEBEGIN
 Version=19402
-Node;AmplifyShaderEditor.Vector3Node;8;-2259,-57.5;Inherit;False;Property;_MotionVectors;MotionVectors;3;0;Create;True;0;0;0;False;0;False;0,0,0;-0.9646267,0.9906785,-0.1904134;0;4;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3
+Node;AmplifyShaderEditor.Vector3Node;8;-2240,-64;Inherit;False;Property;_MotionVectors;MotionVectors;3;0;Create;True;0;0;0;False;0;False;0,0,0;-0.07440157,-0.2038426,0.6171685;0;4;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3
 Node;AmplifyShaderEditor.TextureCoordinatesNode;133;-2192,208;Inherit;False;1;-1;2;3;2;SAMPLER2D;;False;0;FLOAT2;1,1;False;1;FLOAT2;0,0;False;5;FLOAT2;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
 Node;AmplifyShaderEditor.SimpleTimeNode;21;-2160,128;Inherit;False;1;0;FLOAT;-0.5;False;1;FLOAT;0
 Node;AmplifyShaderEditor.SimpleMultiplyOpNode;26;-1968,-32;Inherit;False;2;2;0;FLOAT;-1;False;1;FLOAT;0;False;1;FLOAT;0
@@ -339,9 +339,9 @@ Node;AmplifyShaderEditor.FloorOpNode;64;1664,-48;Inherit;False;1;0;COLOR;0,0,0,0
 Node;AmplifyShaderEditor.RangedFloatNode;116;1504,448;Inherit;False;Constant;_Float6;Float 4;5;0;Create;True;0;0;0;False;0;False;3;0;0;0;0;1;FLOAT;0
 Node;AmplifyShaderEditor.LerpOp;122;1536,144;Inherit;False;3;0;COLOR;0,0,0,0;False;1;COLOR;0,0,0,0;False;2;FLOAT;0;False;1;COLOR;0
 Node;AmplifyShaderEditor.SimpleDivideOpNode;65;1776,-64;Inherit;False;2;0;COLOR;0,0,0,0;False;1;FLOAT;0;False;1;COLOR;0
-Node;AmplifyShaderEditor.GradientNode;61;1680,-176;Inherit;False;0;2;2;0,0,0,0;1,1,1,0.6882429;1,0;1,1;0;1;OBJECT;0
 Node;AmplifyShaderEditor.SimpleMultiplyOpNode;117;1664,400;Inherit;False;2;2;0;COLOR;0,0,0,0;False;1;FLOAT;0;False;1;COLOR;0
 Node;AmplifyShaderEditor.RangedFloatNode;129;1808,144;Inherit;False;Constant;_Float10;Float 10;5;0;Create;True;0;0;0;False;0;False;0.2;0;0;0;0;1;FLOAT;0
+Node;AmplifyShaderEditor.GradientNode;61;1680,-176;Inherit;False;0;2;2;0,0,0,0;1,1,1,0.6882429;1,0;1,1;0;1;OBJECT;0
 Node;AmplifyShaderEditor.GradientSampleNode;59;1952,-112;Inherit;True;2;0;OBJECT;;False;1;FLOAT;0;False;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
 Node;AmplifyShaderEditor.FloorOpNode;118;1808,400;Inherit;False;1;0;COLOR;0,0,0,0;False;1;COLOR;0
 Node;AmplifyShaderEditor.SimpleSubtractOpNode;128;2000,96;Inherit;False;2;0;COLOR;0,0,0,0;False;1;FLOAT;0;False;1;COLOR;0
@@ -497,4 +497,4 @@ WireConnection;0;3;1;0
 WireConnection;0;4;2;0
 WireConnection;0;9;120;0
 ASEEND*/
-//CHKSM=0A0E695AE0ACB93A89B0496DE31431B079F9CF26
+//CHKSM=686F7FB5C41B94EB6CB5246689800094824EF5EA

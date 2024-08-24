@@ -16,6 +16,7 @@ public class TargetComsNav : MonoBehaviour
     public Color TextColorLocked;
     public Text TargetName;
     public Text TargetDist;
+    public bool inBase8 = false;
     public Sprite GenericVDU;
     public GameObject TargetBase;
     public GameObject TargetDamaged;
@@ -52,6 +53,19 @@ public class TargetComsNav : MonoBehaviour
         DamagedFront.SetActive(false);
         textColor = TargetText.color;
     }
+    public static string Int32ToString(int value, int toBase)
+    {
+        string result = string.Empty;
+        do
+        {
+            result = "0123456789ABCDEF"[value % toBase] + result;
+            value /= toBase;
+        }
+        while (value > 0);
+
+        return result;
+    }
+
     void DoTarget()
     {
         if (shipMain.currentTarget == null)
@@ -117,8 +131,17 @@ public class TargetComsNav : MonoBehaviour
             {
                 float tarDist = Vector3.Distance(shipMain.transform.position, currentTarget.transform.position);
                 tarDist = Mathf.FloorToInt(tarDist * 10) / 10f;
+
                 TargetName.text = "Target: " + currentTarget.DisplayName;
-                TargetDist.text = "Range: " + tarDist * 2 + "m";
+
+                if (!inBase8)
+                {
+                    TargetDist.text = "Range: " + tarDist * 2 + "m";
+                }
+                else 
+                {
+                    TargetDist.text = "Range: " + Int32ToString(Mathf.FloorToInt(tarDist) * 2,8) + "m";
+                }
 
                 if (currentTarget.Armor.x < currentTarget._ArmorMax.x / 2)
                 {

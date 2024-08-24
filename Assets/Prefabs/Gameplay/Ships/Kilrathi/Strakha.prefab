@@ -175,7 +175,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 3072
   deltaSmooth: 0.05
-  capacitorSize: 20
+  capacitorSize: 30
   rechargeRate: 5
   Armor: {x: 4.5, y: 3.5, z: 2, w: 2}
   Shield: {x: 5, y: 5}

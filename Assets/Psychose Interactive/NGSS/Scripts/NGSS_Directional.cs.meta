@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 2e8c3fcb1f4c08744955e6bcca767dba
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - denoiserShader: {fileID: 4800000, guid: 5232ddcfcd38ea64c990b192c91ce0ee, type: 3}
+  - NGSS_NOISE_TEXTURE: {fileID: 2800000, guid: 7dcc3b82e99bf8542b8348c6fcd86cd1,
+      type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

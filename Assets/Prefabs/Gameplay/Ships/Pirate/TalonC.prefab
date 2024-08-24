@@ -75,7 +75,7 @@ MonoBehaviour:
     m_Bits: 3072
   Billboard: {fileID: 5695718656521392418}
   VDUImage: {fileID: 1721689566, guid: bae67950433dbf946ac049c7736e3de7, type: 3}
-  turnRate: 70
+  turnRate: 60
   maxFuel: 2400
   fuelBurnRate: 2
   bingoFuel: 0

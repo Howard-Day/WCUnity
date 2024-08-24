@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI; // Required when Using UI elements.
 public class ShieldDisplay : MonoBehaviour
 {
+    public bool inBase8 = false;
     public float minShield = 0f;
     public float maxShield = 1f;
     ShipSettings shipMain;
@@ -41,15 +42,38 @@ public class ShieldDisplay : MonoBehaviour
         shipMain = (ShipSettings)gameObject.GetComponentInParent<ShipSettings>();
     }
 
+    public static string Int32ToString(int value, int toBase)
+    {
+        string result = string.Empty;
+        do
+        {
+            result = "0123456789ABCDEF"[value % toBase] + result;
+            value /= toBase;
+        }
+        while (value > 0);
+
+        return result;
+    }
+
     // Update is called once per frame
     void Update()
     {
 
         FrontShield.normalizedValue = (shipMain.Shield.x / shipMain._ShieldMax.x) * (maxShield - minShield) + minShield;
-        ForeAmt.text = Mathf.FloorToInt(shipMain.Shield.x * 10).ToString();
+        
 
-        RearShield.normalizedValue = shipMain.Shield.y / shipMain._ShieldMax.y * (maxShield - minShield) + minShield; 
-        RearAmt.text = Mathf.FloorToInt(shipMain.Shield.y * 10).ToString();
+        RearShield.normalizedValue = shipMain.Shield.y / shipMain._ShieldMax.y * (maxShield - minShield) + minShield;
+
+        if (!inBase8)
+        {
+            ForeAmt.text = Mathf.FloorToInt(shipMain.Shield.x * 10).ToString();
+            RearAmt.text = Mathf.FloorToInt(shipMain.Shield.y * 10).ToString();
+        }
+        else 
+        {
+            ForeAmt.text = Int32ToString(Mathf.FloorToInt(shipMain.Shield.x * 10),8);
+            RearAmt.text = Int32ToString(Mathf.FloorToInt(shipMain.Shield.y * 10),8);
+        }
 
         ForeArmor.normalizedValue = shipMain.Armor.x / shipMain._ArmorMax.x;
         BackArmor.normalizedValue = shipMain.Armor.y / shipMain._ArmorMax.y;

@@ -1120,7 +1120,7 @@ namespace AmplifyShaderEditor
 					Material mat = selection as Material;
 					if( mat != null )
 					{
-						if( IOUtils.IsASEShader( mat.shader ) )
+						if( !Preferences.User.DisableMaterialMode && IOUtils.IsASEShader( mat.shader ) )
 						{
 							ASEPackageManagerHelper.SetupLateMaterial( mat );
 							return true;
@@ -1156,7 +1156,7 @@ namespace AmplifyShaderEditor
 					Material mat = selection as Material;
 					if( mat != null )
 					{
-						if( IOUtils.IsASEShader( mat.shader ) )
+						if( !Preferences.User.DisableMaterialMode && IOUtils.IsASEShader( mat.shader ) )
 						{
 							LoadMaterialToASE( mat );
 							return true;

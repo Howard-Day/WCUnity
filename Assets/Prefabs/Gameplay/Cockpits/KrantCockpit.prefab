@@ -404,6 +404,7 @@ GameObject:
   - component: {fileID: 975918943}
   - component: {fileID: 975918945}
   - component: {fileID: 975918944}
+  - component: {fileID: 1768676362}
   m_Layer: 8
   m_Name: This is a Test
   m_TagString: Untagged
@@ -420,7 +421,7 @@ RectTransform:
   m_GameObject: {fileID: 975918942}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.005, y: 0.005, z: 0.01}
+  m_LocalScale: {x: 0.004, y: 0.004, z: 0.01}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 114078765}
@@ -460,8 +461,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_FontData:
-    m_Font: {fileID: 12800000, guid: d9cf7a72c5ddb27419168af5765ee898, type: 3}
-    m_FontSize: 36
+    m_Font: {fileID: 12800000, guid: 6cef4a37785e30d488c0b967d71ecbb9, type: 3}
+    m_FontSize: 20
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 0
@@ -472,7 +473,21 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: THIS is only a TEST
+  m_Text: 'THIS is only a TEST
+
+    Currently Flying a Kilrathi Krant'
+--- !u!114 &1768676362
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 975918942}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2fc65740e4f8ec54083b7593e779edde, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1156358357
 GameObject:
   m_ObjectHideFlags: 0
@@ -1381,7 +1396,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 316024325425079083}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
   m_Name: 
@@ -1396,7 +1411,7 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: d9cf7a72c5ddb27419168af5765ee898, type: 3}
-    m_FontSize: 36
+    m_FontSize: 32
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 0

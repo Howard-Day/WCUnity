@@ -115,13 +115,13 @@ public class AIPlayer : MonoBehaviour
         {
             float tempGunSpeed = 0f;
             //loop through our guns, and add all their speeds together
-            if (logDebug) { print("the number of found weapons is " + ship.projWeapons.Length); }
+            if (logDebug) { print("the number of found weapons is " + ship.projWeapons.Count); }
             foreach (ProjectileWeapon gun in ship.projWeapons)
             {
             tempGunSpeed += gun.speed;
             }
             //return the cumulative gunspeeds by the number of guns, set the value so this only runs once.  
-            averageGunSpeed = tempGunSpeed / ship.projWeapons.Length;
+            averageGunSpeed = tempGunSpeed / ship.projWeapons.Count;
         }
     }
     //Control where we go

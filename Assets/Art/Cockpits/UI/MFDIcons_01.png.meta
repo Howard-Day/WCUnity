@@ -773,6 +773,48 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: TRGT_Grikath
+      rect:
+        serializedVersion: 2
+        x: 286
+        y: 684
+        width: 79
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5063291, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7a67011d75134074fa921baebd322c91
+      internalID: 50155692
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SYS_Grikath
+      rect:
+        serializedVersion: 2
+        x: 894
+        y: 494
+        width: 125
+        height: 73
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 316e073c5658b1f428cd6da589ad8f07
+      internalID: 1129861328
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     physicsShape: []
     bones: []
@@ -797,8 +839,10 @@ TextureImporter:
       Shield_04: -6903393406301806638
       TRGT_TalonF: -2106772318
       WEAP_Photon01: -1441559671
+      SYS_Grikath: 1129861328
       WEAP_Laser01: 5901147463307786492
       WEAP_Meson01: 892266123
+      TRGT_Grikath: 50155692
       TRGT_Valtar: -5074887530360705704
       TRGT_Salthi: -4973505997022854714
       TRGT_Krant: -1922495045691203107

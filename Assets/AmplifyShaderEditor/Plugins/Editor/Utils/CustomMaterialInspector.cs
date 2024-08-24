@@ -48,6 +48,7 @@ internal class ASEMaterialInspector : ShaderGUI
 	private Mesh m_targetMesh;
 	private Vector2 m_previewDir = new Vector2( 120f, -20f );
 	private int m_selectedMesh = 0;
+	private int m_prevSelectedMesh = 0;
 
 
 	// Reflection Fields
@@ -442,10 +443,11 @@ internal class ASEMaterialInspector : ShaderGUI
 				m_previewDirDefault = typeof( MaterialEditor ).GetField( "m_PreviewDir" , BindingFlags.Instance | BindingFlags.NonPublic );
 			}
 
-			m_selectedMesh = (int)m_selectedField.GetValue( materialEditor );
 
-			if( m_selectedMesh != 0 )
+			m_selectedMesh = (int)m_selectedField.GetValue( materialEditor );
+			if ( m_selectedMesh != m_prevSelectedMesh )
 			{
+				m_prevSelectedMesh = m_selectedMesh;
 				if( m_targetMesh != null )
 				{
 					m_targetMesh = null;
@@ -497,45 +499,70 @@ internal class ASEMaterialInspector : ShaderGUI
 			m_dragMethod = m_previewGUIType.GetMethod( "Drag2D", BindingFlags.Static | BindingFlags.Public );
 		}
 
-		if( m_modelInspectorType == null )
-		{
-			m_modelInspectorType = Type.GetType( "UnityEditor.ModelInspector, UnityEditor, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" );
+		m_previewDir = ( Vector2 )m_dragMethod.Invoke( m_previewGUIType, new object[] { m_previewDir, r } );
+
+		if ( m_modelInspectorType == null )
+		{		
+			m_modelInspectorType = Type.GetType( "UnityEditor.MeshPreview, UnityEditor, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" );
+			if ( m_modelInspectorType == null )
+			{
+				m_modelInspectorType = Type.GetType( "UnityEditor.ModelInspector, UnityEditor, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" );
+			}
 			m_renderMeshMethod = m_modelInspectorType.GetMethod( "RenderMeshPreview", BindingFlags.Static | BindingFlags.NonPublic );
 		}
 
-		m_previewDir = (Vector2)m_dragMethod.Invoke( m_previewGUIType, new object[] { m_previewDir, r } );
-
 #if UNITY_2020_1_OR_NEWER
-		if( m_previewSettingsType == null )
+		
+		m_previewDir = ( Vector2 )m_dragMethod.Invoke( m_previewGUIType, new object[] { m_previewDir, r } );
+
+		if ( m_previewSettingsType == null )
 		{
-			m_previewSettingsType = m_modelInspectorType.GetNestedType( "PreviewSettings",BindingFlags.NonPublic);
+			m_previewSettingsType = m_modelInspectorType.GetNestedType( "PreviewSettings", BindingFlags.NonPublic );
+			if ( m_previewSettingsType == null )
+			{
+				m_previewSettingsType = m_modelInspectorType.GetNestedType( "Settings", BindingFlags.NonPublic );
+			}
 		}
 
-		if( m_previewSettingsInstance == null )
+		if ( m_previewSettingsInstance == null )
 		{
 			m_previewSettingsInstance = Activator.CreateInstance( m_previewSettingsType );
-			previewDirInfo = m_previewSettingsType.GetField( "previewDir", BindingFlags.Instance | BindingFlags.Public );
+		}
+
+		if ( shadedMaterialInfo == null || activeMaterialInfo == null || previewDirInfo == null )
+		{
 			shadedMaterialInfo = m_previewSettingsType.GetField( "shadedPreviewMaterial", BindingFlags.Instance | BindingFlags.Public );
 			activeMaterialInfo = m_previewSettingsType.GetField( "activeMaterial", BindingFlags.Instance | BindingFlags.Public );
+			previewDirInfo = m_previewSettingsType.GetField( "previewDir", BindingFlags.Instance | BindingFlags.Public );
+		}
+
+		if ( shadedMaterialInfo == null || activeMaterialInfo == null || previewDirInfo == null )
+		{
+			shadedMaterialInfo = m_previewSettingsType.GetField( "m_ShadedPreviewMaterial", BindingFlags.Instance | BindingFlags.NonPublic );
+			activeMaterialInfo = m_previewSettingsType.GetField( "m_ActiveMaterial", BindingFlags.Instance | BindingFlags.NonPublic );
+			previewDirInfo = m_previewSettingsType.GetField( "m_PreviewDir", BindingFlags.Instance | BindingFlags.NonPublic );
 		}
 
 		shadedMaterialInfo.SetValue( m_previewSettingsInstance, mat );
 		activeMaterialInfo.SetValue( m_previewSettingsInstance, mat );
 		previewDirInfo.SetValue( m_previewSettingsInstance, m_previewDir );
-		
-		if( Event.current.type == EventType.Repaint )
+
+		if ( Event.current.type == EventType.Repaint )
 		{
 			m_previewRenderUtility.BeginPreview( r, background );
 			m_renderMeshMethod.Invoke( m_modelInspectorType, new object[] { m_targetMesh, m_previewRenderUtility, m_previewSettingsInstance, -1 } );
 			m_previewRenderUtility.EndAndDrawPreview( r );
 		}
+
 #else
+
 		if( Event.current.type == EventType.Repaint )
 		{
 			m_previewRenderUtility.BeginPreview( r, background );
 			m_renderMeshMethod.Invoke( m_modelInspectorType, new object[] { m_targetMesh, m_previewRenderUtility, mat, null, m_previewDir, -1 } );
 			m_previewRenderUtility.EndAndDrawPreview( r );
 		}
+
 #endif
 	}
 

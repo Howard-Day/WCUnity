@@ -46,6 +46,8 @@ Shader "Hidden/NodeMasking"
 					c = a.z;
 				else if ( _Port == 4 )
 					c = a.w;
+				else if ( _Port == 5 )
+					c = float4( a.xyz, 0 );
 
 				return c;
 			}

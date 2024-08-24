@@ -4,9 +4,8 @@
 using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
-using System.IO;
-
-using System.Globalization;
+using System;
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace AmplifyShaderEditor
@@ -215,7 +214,8 @@ namespace AmplifyShaderEditor
 		World,
 		View,
 		Tangent,
-		Clip
+		Clip,
+		Screen
 	}
 
 	public class UIUtils
@@ -3151,6 +3151,34 @@ namespace AmplifyShaderEditor
 					RenderTexture.active = temp;
 				}
 				return m_dummyPreviewRT;
+			}
+		}
+
+		static EditorGUIUtility obj = new EditorGUIUtility();
+		static MethodInfo drawColorSwatchMI = null;
+
+		public static void DrawColorSwatch( Rect position, Color color, bool showAlpha, bool hdr )
+		{
+			if ( drawColorSwatchMI == null )
+			{
+				MethodInfo[] methods = typeof( EditorGUIUtility ).GetMethods( BindingFlags.NonPublic | BindingFlags.Static );
+				foreach ( MethodInfo mi in methods )
+				{
+					if ( mi.Name == "DrawColorSwatch" && mi.GetParameters().Length == 4 )
+					{
+						drawColorSwatchMI = mi;
+						break;
+					}
+				}
+			}
+			
+			if ( drawColorSwatchMI != null )
+			{
+				drawColorSwatchMI.Invoke( obj, new object[] { position, color, showAlpha, hdr } );
+			}
+			else
+			{
+				Debug.LogError( "[AmplifyShaderEditor] Method EditorGUIUtility.DrawColorSwatch(Rect, Color, bool, bool) not found. Please contact support." );
 			}
 		}
 

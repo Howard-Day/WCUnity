@@ -1,0 +1,50 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78b2425a2284af743826c689403a4924, type: 3}
+  m_Name: CustomReflections
+  m_EditorClassIdentifier: 
+  m_functionInfo: "// Made with Amplify Shader Editor\n// Available at the Unity
+    Asset Store - http://u3d.as/y3X \n/*ASEBEGIN\nVersion=18912\n7;1132;1519;913;1399.667;690.3953;1;True;False\nNode;AmplifyShaderEditor.CustomExpressionNode;9;-1339.5,-393.4;Inherit;False;return
+    unity_SpecCube0_BoxMin@;4;Create;0;probe0BoxMin;True;False;0;;False;0;1;FLOAT4;0\nNode;AmplifyShaderEditor.SimpleMultiplyOpNode;21;154.36,-225.1343;Inherit;False;2;2;0;FLOAT3;0,0,0;False;1;FLOAT;0;False;1;FLOAT3;0\nNode;AmplifyShaderEditor.CustomExpressionNode;12;-1371.5,-185.4;Inherit;False;return
+    unity_SpecCube1_ProbePosition@;4;Create;0;probe1Pos;True;False;0;;False;0;1;FLOAT4;0\nNode;AmplifyShaderEditor.CustomExpressionNode;10;-1339.5,-329.4;Inherit;False;return
+    unity_SpecCube0_BoxMax@;3;Create;0;probe0BoxMax;True;False;0;;False;0;1;FLOAT3;0\nNode;AmplifyShaderEditor.FunctionNode;36;-576.0249,-59.2795;Inherit;False;ProbeBlending;-1;;29;e9b6e572659b30046bfe61bd83abc962;0;0;1;FLOAT;0\nNode;AmplifyShaderEditor.RangedFloatNode;22;-166.64,-88.13428;Inherit;False;Global;reflectionBrightness;reflectionBrightness;0;0;Create;True;0;0;0;False;0;False;0;2;0;0;0;1;FLOAT;0\nNode;AmplifyShaderEditor.WorldPosInputsNode;7;-1392,-592;Inherit;False;0;4;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3\nNode;AmplifyShaderEditor.LerpOp;15;-161.5586,-231.3467;Inherit;False;3;0;FLOAT3;0,0,0;False;1;FLOAT3;0,0,0;False;2;FLOAT;0;False;1;FLOAT3;0\nNode;AmplifyShaderEditor.FunctionInput;40;-933.7833,-281.7167;Inherit;False;Blur;1;1;False;1;0;FLOAT;0;False;1;FLOAT;0\nNode;AmplifyShaderEditor.WorldReflectionVector;3;-1398.234,-745.2482;Inherit;False;True;1;0;FLOAT3;0,0,0;False;4;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3\nNode;AmplifyShaderEditor.CustomExpressionNode;8;-1323.5,-457.4;Inherit;False;return
+    unity_SpecCube0_ProbePosition@;4;Create;0;probe0Pos;True;False;0;;False;0;1;FLOAT4;0\nNode;AmplifyShaderEditor.CustomExpressionNode;37;-457.3235,-236.8286;Inherit;False;return
+    Unity_GlossyEnvironment( UNITY_PASS_TEXCUBE_SAMPLER(unity_SpecCube1, unity_SpecCube0),$\t   
+    unity_SpecCube1_HDR,$\t    WorldReflection,$\t    Gloss$\t)@;3;Create;2;True;WorldReflection;FLOAT3;0,0,0;In;;Float;False;True;Gloss;FLOAT;0;In;;Inherit;False;SpecCube1_Sample;True;False;0;;False;2;0;FLOAT3;0,0,0;False;1;FLOAT;0;False;1;FLOAT3;0\nNode;AmplifyShaderEditor.FunctionNode;24;-1019.5,-521.4;Inherit;False;BoxProjection;-1;;30;2b2b8838e5cb165439e7aa3592804315;0;5;1;FLOAT3;0,0,0;False;2;FLOAT3;0,0,0;False;3;FLOAT4;0,0,0,0;False;4;FLOAT3;0,0,0;False;5;FLOAT3;0,0,0;False;1;FLOAT3;0\nNode;AmplifyShaderEditor.FunctionNode;23;-1034.5,-121.4;Inherit;False;BoxProjection;-1;;31;2b2b8838e5cb165439e7aa3592804315;0;5;1;FLOAT3;0,0,0;False;2;FLOAT3;0,0,0;False;3;FLOAT4;0,0,0,0;False;4;FLOAT3;0,0,0;False;5;FLOAT3;0,0,0;False;1;FLOAT3;0\nNode;AmplifyShaderEditor.CustomExpressionNode;14;-1387.5,-57.40001;Inherit;False;return
+    unity_SpecCube1_BoxMax@;3;Create;0;probe1BoxMax;True;False;0;;False;0;1;FLOAT3;0\nNode;AmplifyShaderEditor.SaturateNode;34;-339.155,-114.1995;Inherit;False;1;0;FLOAT;0;False;1;FLOAT;0\nNode;AmplifyShaderEditor.FunctionInput;1;-1572.335,-748.2478;Inherit;False;Normals;3;0;False;1;0;FLOAT3;0,0,0;False;1;FLOAT3;0\nNode;AmplifyShaderEditor.CustomExpressionNode;38;-458.3235,-322.8286;Inherit;False;return
+    UNITY_SAMPLE_TEXCUBE_LOD(unity_SpecCube0, WorldReflection,Gloss)@;3;Create;2;True;WorldReflection;FLOAT3;0,0,0;In;;Float;False;True;Gloss;FLOAT;0;In;;Inherit;False;SpecCube0_Sample;True;False;0;;False;2;0;FLOAT3;0,0,0;False;1;FLOAT;0;False;1;FLOAT3;0\nNode;AmplifyShaderEditor.CustomExpressionNode;13;-1387.5,-121.4;Inherit;False;return
+    unity_SpecCube1_BoxMin@;3;Create;0;probe1BoxMin;True;False;0;;False;0;1;FLOAT3;0\nNode;AmplifyShaderEditor.CustomExpressionNode;39;-719.0504,-322.648;Inherit;False;return
+    ((1.7f*Roughness)-0.7f*(Roughness*Roughness))*6@;1;Create;1;True;Roughness;FLOAT;0;In;;Inherit;False;MipConversion;True;False;0;;False;1;0;FLOAT;0;False;1;FLOAT;0\nNode;AmplifyShaderEditor.FunctionOutput;0;344.0234,-239.084;Inherit;False;True;-1;Output;0;False;1;0;FLOAT3;0,0,0;False;1;FLOAT3;0\nWireConnection;21;0;15;0\nWireConnection;21;1;22;0\nWireConnection;15;0;37;0\nWireConnection;15;1;38;0\nWireConnection;15;2;34;0\nWireConnection;3;0;1;0\nWireConnection;37;0;23;0\nWireConnection;37;1;40;0\nWireConnection;24;1;3;0\nWireConnection;24;2;7;0\nWireConnection;24;3;8;0\nWireConnection;24;4;9;0\nWireConnection;24;5;10;0\nWireConnection;23;1;3;0\nWireConnection;23;2;7;0\nWireConnection;23;3;12;0\nWireConnection;23;4;13;0\nWireConnection;23;5;14;0\nWireConnection;34;0;36;0\nWireConnection;38;0;24;0\nWireConnection;38;1;39;0\nWireConnection;39;0;40;0\nWireConnection;0;0;21;0\nASEEND*/\n//CHKSM=7F90E7867F760E4066D23BE6D879C17ECCB5AEB4"
+  m_functionName: 
+  m_description: 
+  m_additionalIncludes:
+    m_additionalIncludes: []
+    m_outsideIncludes: []
+  m_additionalPragmas:
+    m_additionalPragmas: []
+    m_outsidePragmas: []
+  m_additionalDirectives:
+    m_validData: 0
+    m_isDirty: 0
+    m_moduleName: ' Additional Directives'
+    m_independentModule: 1
+    m_customEdited: 0
+    m_additionalDirectives: []
+    m_shaderFunctionDirectives: []
+    m_nativeDirectives: []
+    m_nativeDirectivesIndex: -1
+    m_nativeDirectivesFoldout: 0
+    m_directivesSaveItems: []
+  m_nodeCategory: 3
+  m_customNodeCategory: 
+  m_previewPosition: 0
+  m_hidden: 0

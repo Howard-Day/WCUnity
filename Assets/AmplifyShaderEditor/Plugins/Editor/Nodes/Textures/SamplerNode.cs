@@ -160,7 +160,9 @@ namespace AmplifyShaderEditor
 			m_outputPortsDict.Remove( m_outputPorts[ 0 ].PortId );
 			m_outputPorts.RemoveAt( 0 );
 
-			AddOutputColorPorts( "RGBA" );
+			AddOutputColorPorts( "RGBA", addRGB: true );
+			m_sortOutputPorts = true;
+
 			m_colorPort = m_outputPorts[ 0 ];
 			m_currentParameterType = PropertyType.Property;
 			//	m_useCustomPrefix = true;
@@ -521,6 +523,7 @@ namespace AmplifyShaderEditor
 		public override void ConfigureOutputPorts()
 		{
 			m_outputPorts[ m_colorPort.PortId + 4 ].Visible = !AutoUnpackNormals;
+			m_outputPorts[ m_colorPort.PortId + 5 ].Visible = !AutoUnpackNormals;
 
 			if( !AutoUnpackNormals )
 			{

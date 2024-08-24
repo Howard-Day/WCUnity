@@ -48,9 +48,10 @@ namespace AmplifyShaderEditor
 		SV_InstanceID,
 		INTERNALTESSPOS,
 		INSTANCEID_SEMANTIC,
+		VERTEXID_SEMANTIC,
+		PRIMITIVEID_SEMANTIC,
 		BLENDWEIGHTS,
 		BLENDINDICES
-
 	}
 
 	public enum TemplateInfoOnSematics
@@ -81,7 +82,9 @@ namespace AmplifyShaderEditor
 		OTHER,
 		VFACE,
 		SHADOWCOORDS,
+		INSTANCEID,
 		VERTEXID,
+		PRIMITIVEID,
 		BLENDWEIGHTS,
 		BLENDINDICES
 	}
@@ -1785,6 +1788,35 @@ namespace AmplifyShaderEditor
 			}
 
 			return major * 10000 + minor * 100 + patch;
+		}
+
+		public static bool GetUnityBetaVersion( out int betaVersion )
+		{
+			string version = Application.unityVersion;
+			if ( !version.Contains( "b" ) )
+			{
+				betaVersion = 0;
+				return false;
+			}
+
+			var versionParts = version.Split( 'b' );
+			if ( versionParts.Length != 2 || versionParts[ 0 ].Length < 4 )
+			{
+				// @diogo: invalid Unity version format; ignore these conditionals
+				betaVersion = 0;
+				return false;
+			}
+
+			bool testBeta = int.TryParse( versionParts[ 1 ], out int beta );
+			if ( !testBeta )
+			{
+				// @diogo: invalid Unity version format; ignore these conditionals
+				betaVersion = 0;
+				return false;
+			}
+
+			betaVersion = beta;
+			return true;
 		}
 
 		public static string ProcessUnityConditionals( string body )

@@ -1,0 +1,157 @@
+Features and Changes (v2.4.2.3):
+- Fixed an issue when FrustumShadows is being used with multiple stacked cameras
+
+Features and Changes (v2.4.2.2):
+- Fixed an issue with directional light resolution not being restored to Quality Settings after manually setting it through the Directional component
+
+Features and Changes (v2.4.2.1):
+- Fixes unwanted artifacts with directional shadows caused by some variants
+- Cascades blending variant is now disabled by default (for performance reasons)
+- Removed icons from NGSS components (causes issues with Unity 2021+ versions)
+
+Features and Changes (v2.4.1):
+- Covers an edge case for local shadows where screen position is computed in the fragment shader due to missing interpolation defines
+
+Features and Changes (v2.4.0):
+- This update has major changes to NGSS, so is important to uninstall NGSS libraries before upgrading to this version
+- Overall improvements to all NGSS shadows, both quality and performance
+- Frustum shadows now fully support both forward and deferred rendering with cascades on or off
+- Removed the frustum shadows clipping pass
+- Removed frustum shadows temporal filtering. Instead a jittering is implemented to leverage projects own temporal filtering
+- Added support for spherical and linear early out for frustum shadows start distance to match directional shadows projection
+- Added multi-blur iterations for frustum shadows, allows more blurry shadows
+- Added frustum shadows resolution change
+- You don't need to install directional libraries for cascaded shadows anymore (still need to install directional libraries for non-cascaded shadows or frustum shadows)
+- Directional denoiser is now applied directly to the screen space shadows (aka cascaded shadows)
+- Added the ability to switch between hard and soft shadows without having to remove NGSS libraries, for all shadows types
+- Bias improvement for point shadows, you can now lower the bias even more (you might need to adjust your bias values if you see artifacts)
+- Shadow screen position moved to the vertex shader, less fragment computations
+- Removed shadow bias button from the installer as it creates issues with shaders that has custom ShadowCaster passes (you can still manually replace the file in the CGIncludes folder if you want)
+- Added namespace PI.NGSS as required by Unity submission guidelines. Make sure to include that namespace if you access NGSS components in your code
+- Updated documentation
+
+Features and Changes (v2.3.9.1):
+- Fixed a bug with Frustum Shadows not being shown
+
+Features and Changes (v2.3.9):
+- Fixed a bug with Directional Shadows and XR SPI
+- Added support for Frustum Shadows in forward rendering
+
+Features and Changes (v2.3.8.1):
+- Fixed a bug with PCSS Spot shadows softness. You can now tweak it again through Shadows Strength value of Light components
+
+Features and Changes (v2.3.8):
+- Fixed a bug with Directional Shadows in Hard mode
+- Added compatibility to the latest UBER version
+
+Features and Changes (v2.3.7):
+- Fixed a bug with Point Shadows or deferred rendering where optimization distance check was done with fragment direction instead of position
+- Added Hard Shadows fallback to Directional Shadows as it was causing issues with reflections assets when rendering the scene with Hard Shadows
+
+Features and Changes (v2.3.6):
+- Fixed a bug in Directional Shadows where Soft-Shadows was unintentionally disabled by a keyword
+
+Features and Changes (v2.3.5):
+- Fixed a shader keyword bug in Directional Shadows where PCSS was unintentionally disabled by PCSS keyword
+
+Features and Changes (v2.3.4):
+- Fixed a shader keyword bug in Frustum Shadows where shadows features where missing in builds
+
+Features and Changes (v2.3.3):
+- Improved noise algorithm stability. Allows for a great sampling reduction (eg: 4spp) while reducing noise shimmering over distance
+- Changed samplers reduction algorithm, now computed at world space instead of view space for a better stabilization when the camera rotates
+- Behavior change in NGSS_Local. By default the first instance of NGSS_Local is now the manager, no need to have more than one. Also display warnings if multiple instances of NGSS_Local is detected and shows the user how to correct it
+
+Features and Changes (v2.3.2):
+- Fixed Frustum Shadows opacity (value was being ignored)
+
+Features and Changes (v2.3.1):
+- Fixed NGSS library installer bug on Mac
+
+Features and Changes (v2.3.0):
+- Added a new optimization that interpolates and reduces sampling over a given distance
+- Fixed the NGSS Libraries auto-installer, it perfectly works now
+- Allow installation of NGSS Libraries from custom paths (path must be provided to the installer)
+- Addition of a new optional Shadow Bias library (must be installed through the libraries installer)
+- Denoiser can now be disabled without uninstalling the libraries
+- Fixed a bug related to a Min attribute on NGSS scripts
+- Fixed Frustum Shadows blending with Local lights
+- Improved Shadowmask blending with real-time shadows
+- NGSS scripts don't manage anymore Quality Settings and Graphics Settings (except for screen space shadows replacement)
+- Full compatibility for custom frameworks such as Alloy, UBER and AFS (you don't need to make the changes anymore, just use them)
+Note: Unity has deprecated Asset Store upload tools on Unity 5.6 which means the package can't be installed directly from the Asset Store in Unity 5.6.
+You have to download the package on a newever version of Unity and manually copy the Psychose Interactive folder in your project.
+The new Shadow Bias Library won't work with Unity 5.6 either. You can always email support if you need the compatible 5.6 version
+
+Features and Changes (v2.2.5):
+- Fixed a fade near distance bug in frustum shadows introduced in v2.2.4 (just import the package and you'll be good to go)
+
+Features and Changes (v2.2.4):
+- Added Frustum Shadows near distance property. Allows to skip and fade near-plane frustum shadows for users willing to display frustum shadows after a certain distance
+
+Features and Changes (v2.2.3):
+- Fixed an issue with frustum shadows blending with scene shadows
+- Fixed a small frustum shadows clipping bug that slipped in v2.2.0
+- Fixed the shadows displaying on top of a second camera (got re-introduced in v2.2.0)
+- Re-added the screen space / world space ray scale toggle to frustum shadows
+
+v2.2.2:
+- Fixed a dark lighting bug if NGSS_FrustumShadows script is not present in the scene
+- Added the ability to select how you want your ray length to be treated (world space or screen space)
+
+v2.2.0:
+- Frustum shadows (first iteration on Deferred only, supports all light types)
+- Macro improvements to point shadows bias
+- Removed Quality Settings global stuff on Directional component (only shadowmap size can be tweaked)
+- Updated documentation about Local shadows component
+
+V2.1.5:
+- Blue noise shadows (the default shadows now). NGSS provides various blue noise textures but you can use any noise input with any pattern you want
+- Minor tweaks to the Denoiser
+
+V2.1.1:
+- Early bailing out improvements, same shadows but faster to render
+- New improved Denoiser, faster and better with exposed options to tweak
+- Directional PCSS near & far distances behave better
+- Local PCSS near & far distances exposed on Local light component
+- Added spot & point shadows blocker search bias, also exposed on the light component
+- Removed & Replaced unnecessary conditional branches on all shadows types making them slightly faster
+- Fixed a bug with spot shadows that created weird artifacts when light range was too large
+- Minor improvements to dithering algorithm for all lights
+- Minor improvement to point light bias
+- Updated documentation
+
+V2.0.8:
+- Improved self-shadowing bias for Contact Shadows (fixed silly artifacts at sharp angles)
+- Deferred Backface Optimization. Skip fragments that are not facing the light (Improved performance a lot)
+- Deferred Backface Translucency. Let you set how the backface is lit (0 = black, 1 = no backface shadows). Deferred Backface options requires deferred rendering and Gbuffer normals.
+- Added compiler define for NGSS_Local shadows NGSS_GLOBAL_OPACITY (useful to avoid compile errors if you update/install Unity and your custom shaders have references to NGSS_GLOBAL_OPACITY)
+- Updated documentation 
+
+V2.0.7:
+- Fixed a bug with NGSS_Directional component not updating shader global values if NGSS_NO_UPDATE_ON_PLAY was enabled
+
+V2.0.6:
+- Fixed two bugs with directional shadows in Forward when Cascaded Shadows where disabled.
+One with shadows opacity and the other with the shadows softness not scaling well.
+
+V2.0.5:
+- Added coherent branching compiler defines (improves speed on some APIs/platforms)
+- Macro speed improvements to PCF, skipping couple of unneeded instructions (all shadows)
+- Ability to stop NGSS components from updating variables or receiving updates at runtime (if no needed)
+- Disabling shadows on the light will stop NGSS component from update shadows variables
+- Fixed a bug where new added local lights to the scene will override existing Global Settings
+- Added support to OpenGLCore (PCF Local Shadows and PCSS/PCF Directional shadows)
+- Added PCSS support to GLES3.0 (Directional shadows only, Local shadows still use PCF)
+- Fixed a bug with Arkit shadowprojection
+- NGSS libraries has now default minimal values (to avoid shadowed screen on install)
+- Fixed a rare bug with Spot light shadows on Mac (Metal API)
+- Removed OrderedDitheringDir array out of function (causes compilation error in PS4)
+- Removed System.Security.AccessControl and its method block code (no needed)
+- Cleaned up unneeded namespaces from NGSS components
+- Fixed Contact shadows leaking on top of the main camera (can now be used on multiple cameras game setup). Renamed the light property into a more generic one, if you don't see ContactShadows make sure the light property is not null.
+- NGSS internal libraries can now be added directly to shaders using the #include compiler directive. Useful if you can�t install the library locally, for example cloud builds (Refer to documentation)
+- Update to documentation & new video tutorial added (to reflect new changes) 
+
+V2.0.2:
+- Initial public release

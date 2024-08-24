@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78b2425a2284af743826c689403a4924, type: 3}
+  m_Name: CustomShadowSample
+  m_EditorClassIdentifier: 
+  m_functionInfo: "// Made with Amplify Shader Editor v1.9.6.3\n// Available at the
+    Unity Asset Store - http://u3d.as/y3X \n/*ASEBEGIN\nVersion=19603\nNode;AmplifyShaderEditor.CustomExpressionNode;43;-116.584,-385.1011;Inherit;False;float3
+    shadowPosition = $worldPosition -  normalize(viewDirection)$- normalize(lightDirection)@$$return
+    UnitySampleShadowmapNGSS(shadowPosition, screenDepth).x@$;1;Create;4;True;worldPosition;FLOAT3;0,0,0;In;;Float;False;True;viewDirection;FLOAT3;0,0,0;In;;Inherit;False;True;lightDirection;FLOAT3;0,0,0;In;;Inherit;False;True;screenDepth;FLOAT;0;In;;Inherit;False;Get
+    Shadows PCF 5x5;True;False;0;;False;4;0;FLOAT3;0,0,0;False;1;FLOAT3;0,0,0;False;2;FLOAT3;0,0,0;False;3;FLOAT;0;False;1;FLOAT;0\nNode;AmplifyShaderEditor.CustomExpressionNode;42;362.416,135.8989;Inherit;False;UnitySampleShadowmapNGSS;1;Create;1;True;In0;FLOAT;0;In;;Inherit;False;My
+    Custom Expression;True;False;0;;False;1;0;FLOAT;0;False;1;FLOAT;0\nNode;AmplifyShaderEditor.CustomExpressionNode;3;-70.4719,-187.9521;Inherit;False;float3
+    shadowPosition = $worldPosition -  normalize(viewDirection)$- normalize(lightDirection)@$$return
+    GetSunShadowsAttenuation_PCF5x5(shadowPosition, screenDepth, receiverPlaneDepthBias).x@$;1;Create;5;True;worldPosition;FLOAT3;0,0,0;In;;Float;False;True;viewDirection;FLOAT3;0,0,0;In;;Inherit;False;True;lightDirection;FLOAT3;0,0,0;In;;Inherit;False;True;screenDepth;FLOAT;0;In;;Inherit;False;True;receiverPlaneDepthBias;FLOAT;0;In;;Inherit;False;Get
+    Shadows PCF 5x5;True;False;0;;False;5;0;FLOAT3;0,0,0;False;1;FLOAT3;0,0,0;False;2;FLOAT3;0,0,0;False;3;FLOAT;0;False;4;FLOAT;0;False;1;FLOAT;0\nNode;AmplifyShaderEditor.RangedFloatNode;6;-527.5647,108.5806;Inherit;False;Constant;_Float2;Float
+    2;7;0;Create;True;0;0;0;False;0;False;0;0;0;0;0;1;FLOAT;0\nNode;AmplifyShaderEditor.WorldSpaceLightDirHlpNode;1;-788.9009,13.12001;Inherit;False;True;1;0;FLOAT;0;False;4;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3\nNode;AmplifyShaderEditor.PosVertexDataNode;13;-851.818,-432.4805;Inherit;False;0;0;5;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4\nNode;AmplifyShaderEditor.WorldSpaceViewDirHlpNode;37;-650.4358,-434.7451;Inherit;False;1;0;FLOAT4;0,0,0,1;False;4;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3\nNode;AmplifyShaderEditor.SimpleMinOpNode;45;-724.6655,-117.2648;Inherit;False;2;0;FLOAT;0;False;1;FLOAT;0;False;1;FLOAT;0\nNode;AmplifyShaderEditor.ScreenDepthNode;5;-931.2622,-151.9694;Inherit;False;0;True;1;0;FLOAT4;0,0,0,0;False;1;FLOAT;0\nNode;AmplifyShaderEditor.ScreenDepthNode;44;-925.6656,-80.56479;Inherit;False;0;True;1;0;FLOAT4;0,0,0,0;False;1;FLOAT;0\nNode;AmplifyShaderEditor.WorldPosInputsNode;14;-1133.323,-289.7911;Inherit;False;0;4;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3\nNode;AmplifyShaderEditor.WireNode;46;-599.7326,-138.7639;Inherit;False;1;0;FLOAT3;0,0,0;False;1;FLOAT3;0\nNode;AmplifyShaderEditor.FunctionInput;18;-643.925,282.9161;Inherit;False;DepthSampleRange;1;0;False;1;0;FLOAT;0;False;1;FLOAT;0\nNode;AmplifyShaderEditor.FunctionInput;19;-624,208;Inherit;False;VolumeSampler;4;1;False;1;0;FLOAT4;0,0,0,0;False;1;FLOAT4;0\nNode;AmplifyShaderEditor.CustomExpressionNode;16;-128,64;Inherit;False;float3
+    shadowPosition = $worldPosition -  normalize(viewDirection)$- normalize(lightDirection)@$$return
+    GetSunShadowsAttenuation_VDTx4(shadowPosition, screenDepth, receiverPlaneDepthBias,
+    volumeSample, depthToSample).x@$;1;Create;7;True;worldPosition;FLOAT3;0,0,0;In;;Float;False;True;viewDirection;FLOAT3;0,0,0;In;;Inherit;False;True;lightDirection;FLOAT3;0,0,0;In;;Inherit;False;True;screenDepth;FLOAT;0;In;;Inherit;False;True;receiverPlaneDepthBias;FLOAT;0;In;;Inherit;False;True;volumeSample;FLOAT4;0,0,0,0;In;;Inherit;False;True;depthToSample;FLOAT;0;In;;Inherit;False;Get
+    Shadows VDTx4;True;False;0;;False;7;0;FLOAT3;0,0,0;False;1;FLOAT3;0,0,0;False;2;FLOAT3;0,0,0;False;3;FLOAT;0;False;4;FLOAT;0;False;5;FLOAT4;0,0,0,0;False;6;FLOAT;0;False;1;FLOAT;0\nNode;AmplifyShaderEditor.FunctionOutput;39;443.6868,-221.7823;Inherit;False;True;-1;Output;0;False;1;0;FLOAT;0;False;1;FLOAT;0\nWireConnection;43;0;37;0\nWireConnection;43;2;1;0\nWireConnection;43;3;45;0\nWireConnection;3;0;14;0\nWireConnection;3;1;37;0\nWireConnection;3;2;1;0\nWireConnection;3;3;45;0\nWireConnection;3;4;6;0\nWireConnection;37;0;13;0\nWireConnection;45;0;5;0\nWireConnection;45;1;44;0\nWireConnection;44;0;14;0\nWireConnection;46;0;14;0\nWireConnection;16;0;46;0\nWireConnection;16;1;37;0\nWireConnection;16;2;1;0\nWireConnection;16;3;45;0\nWireConnection;16;4;6;0\nWireConnection;16;5;19;0\nWireConnection;16;6;18;0\nWireConnection;39;0;3;0\nASEEND*/\n//CHKSM=D6CCCC1BD5CF1F8BF5CDBA7731C734997F6B178E"
+  m_functionName: 
+  m_description: 
+  m_additionalIncludes:
+    m_additionalIncludes: []
+    m_outsideIncludes: []
+  m_additionalPragmas:
+    m_additionalPragmas: []
+    m_outsidePragmas: []
+  m_additionalDirectives:
+    m_validData: 0
+    m_isDirty: 0
+    m_moduleName: ' Additional Directives'
+    m_independentModule: 1
+    m_customEdited: 0
+    m_additionalDirectives: []
+    m_shaderFunctionDirectives: []
+    m_nativeDirectives: []
+    m_nativeDirectivesIndex: -1
+    m_nativeDirectivesFoldout: 0
+    m_directivesSaveItems: []
+  m_nodeCategory: 3
+  m_headerStyle: 0
+  m_headerColor: {r: 1, g: 0.4, b: 0, a: 1}
+  m_customNodeCategory: 
+  m_previewPosition: 0
+  m_hidden: 0
+  m_url: 

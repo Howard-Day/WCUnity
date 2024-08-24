@@ -9,8 +9,8 @@ namespace AmplifyShaderEditor
 	[NodeAttributes( "Vertex ID", "Vertex Data", "Indicates current vertex number" )]
 	public class VertexIdVariableNode : ParentNode
 	{
-		private const string VertexIdVarName = "ase_vertexId";
-		private const string VertexIdRegistry = "uint "+ VertexIdVarName + " : SV_VertexID;";
+		private const string VertexIdRegistry = "uint {0} : SV_VertexID;";
+
 		protected override void CommonInit( int uniqueId )
 		{
 			base.CommonInit( uniqueId );
@@ -32,21 +32,25 @@ namespace AmplifyShaderEditor
 			}
 			else
 			{
-				if( dataCollector.IsFragmentCategory )
+				string name = TemplateHelperFunctions.SemanticsDefaultName[ TemplateSemantics.SV_VertexID ];
+				if ( dataCollector.IsFragmentCategory )
 				{
-					GenerateValueInVertex( ref dataCollector, WirePortDataType.UINT, Constants.VertexShaderInputStr + "."+ VertexIdVarName, VertexIdVarName, true );
-					return Constants.InputVarStr + "."+ VertexIdVarName;
+					GenerateValueInVertex( ref dataCollector, WirePortDataType.UINT, Constants.VertexShaderInputStr + "." + name, name, true );
+					return Constants.InputVarStr + "." + name;
 				}
 				else
 				{
-					return Constants.VertexShaderInputStr + "."+ VertexIdVarName;
+					return Constants.VertexShaderInputStr + "." + name;
 				}
 			}
 		}
 		public override void PropagateNodeData( NodeData nodeData, ref MasterNodeDataCollector dataCollector )
 		{
 			if( !dataCollector.IsTemplate )
-				dataCollector.AddCustomAppData( VertexIdRegistry );
+			{
+				string name = TemplateHelperFunctions.SemanticsDefaultName[ TemplateSemantics.SV_VertexID ];
+				dataCollector.AddCustomAppData( string.Format( VertexIdRegistry, name ) );
+			}
 
 			base.PropagateNodeData( nodeData, ref dataCollector );
 		}

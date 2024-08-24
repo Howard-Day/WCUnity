@@ -46,11 +46,11 @@ namespace AmplifyShaderEditor
 			var localVarType = UIUtils.PrecisionWirePortToCgType( CurrentPrecisionType, m_outputPorts[ 0 ].DataType );
 			var localVarName = "recip" + OutputId;
 
-			dataCollector.AddLocalVariable( UniqueId, "#if ( SHADER_TARGET >= 50 )" );
+			dataCollector.AddLocalVariable( UniqueId, "#if ( SHADER_TARGET >= 50 )", true );
 			dataCollector.AddLocalVariable( UniqueId, string.Format( "{0} {1} = rcp( {2} );", localVarType, localVarName, inputValue ) );
-			dataCollector.AddLocalVariable( UniqueId, "#else" );
+			dataCollector.AddLocalVariable( UniqueId, "#else", true );
 			dataCollector.AddLocalVariable( UniqueId, string.Format( "{0} {1} = 1.0 / {2};", localVarType, localVarName, inputValue ) );
-			dataCollector.AddLocalVariable( UniqueId, "#endif" );
+			dataCollector.AddLocalVariable( UniqueId, "#endif", true );
 
 			m_outputPorts[ 0 ].SetLocalValue( localVarName, dataCollector.PortCategory );
 			return localVarName;

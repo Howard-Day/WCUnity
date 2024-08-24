@@ -226,20 +226,22 @@ namespace AmplifyShaderEditor
 							string worldNormal = dataCollector.TemplateDataCollectorInstance.GetWorldNormal( PrecisionType.Float, false, MasterNodePortCategory.Vertex );
 							dataCollector.TemplateDataCollectorInstance.RequestNewInterpolator( WirePortDataType.FLOAT4, false, "lightmapUVOrVertexSH" );
 						
-							dataCollector.AddToVertexLocalVariables( UniqueId, "OUTPUT_LIGHTMAP_UV( " + texcoord1 + ", unity_LightmapST, " + vOutName + ".lightmapUVOrVertexSH.xy );" );
+							dataCollector.AddToVertexLocalVariables( UniqueId, "OUTPUT_LIGHTMAP_UV( " + texcoord1 + ", unity_LightmapST, " + vOutName + ".lightmapUVOrVertexSH.xy );", true );
 						
 							if ( ASEPackageManagerHelper.PackageSRPVersion >= ( int )ASESRPBaseline.ASE_SRP_15 )
 							{
 								string worldPos = dataCollector.TemplateDataCollectorInstance.GetWorldPos( false, MasterNodePortCategory.Vertex );
-								dataCollector.AddToVertexLocalVariables( UniqueId, "#if !defined( OUTPUT_SH4 )" );
-								dataCollector.AddToVertexLocalVariables( UniqueId, "OUTPUT_SH( " + worldPos + ", " + worldNormal + ", GetWorldSpaceNormalizeViewDir( " + worldPos + " ), " + vOutName + ".lightmapUVOrVertexSH.xyz );" );
-								dataCollector.AddToVertexLocalVariables( UniqueId, "#else" );
-								dataCollector.AddToVertexLocalVariables( UniqueId, "OUTPUT_SH4( " + worldPos + ", " + worldNormal + ", GetWorldSpaceNormalizeViewDir( " + worldPos + " ), " + vOutName + ".lightmapUVOrVertexSH.xyz );" );
-								dataCollector.AddToVertexLocalVariables( UniqueId, "#endif" );
-							}								
+								dataCollector.AddToVertexLocalVariables( UniqueId, "#if !defined( OUTPUT_SH4 )", true );
+								dataCollector.AddToVertexLocalVariables( UniqueId, "OUTPUT_SH( " + worldPos + ", " + worldNormal + ", GetWorldSpaceNormalizeViewDir( " + worldPos + " ), " + vOutName + ".lightmapUVOrVertexSH.xyz );", true );
+								dataCollector.AddToVertexLocalVariables( UniqueId, "#elif UNITY_VERSION > 60000009", true );
+								dataCollector.AddToVertexLocalVariables( UniqueId, "OUTPUT_SH4( " + worldPos + ", " + worldNormal + ", GetWorldSpaceNormalizeViewDir( " + worldPos + " ), " + vOutName + ".lightmapUVOrVertexSH.xyz, " + vOutName + ".probeOcclusion );", true );
+								dataCollector.AddToVertexLocalVariables( UniqueId, "#else", true );
+								dataCollector.AddToVertexLocalVariables( UniqueId, "OUTPUT_SH4( " + worldPos + ", " + worldNormal + ", GetWorldSpaceNormalizeViewDir( " + worldPos + " ), " + vOutName + ".lightmapUVOrVertexSH.xyz );", true );
+								dataCollector.AddToVertexLocalVariables( UniqueId, "#endif", true );
+							}
 							else
 							{
-								dataCollector.AddToVertexLocalVariables( UniqueId, "OUTPUT_SH( " + worldNormal + ", " + vOutName + ".lightmapUVOrVertexSH.xyz );" );
+								dataCollector.AddToVertexLocalVariables( UniqueId, "OUTPUT_SH( " + worldNormal + ", " + vOutName + ".lightmapUVOrVertexSH.xyz );", true );
 							}
 						
 							dataCollector.AddToPragmas( UniqueId, "multi_compile _ DIRLIGHTMAP_COMBINED" );

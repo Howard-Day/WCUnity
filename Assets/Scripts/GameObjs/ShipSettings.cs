@@ -21,7 +21,7 @@ public class ShipSettings : MonoBehaviour
     [SerializeField] public GameObject Billboard;
     [Header("VDU Icon!")]
     [SerializeField] public Sprite VDUImage;
-    
+
     [Header("Movement Settings")]
     [SerializeField] public float turnRate = 50f;
     [SerializeField] public float maxFuel = 2500f;
@@ -60,7 +60,7 @@ public class ShipSettings : MonoBehaviour
     [SerializeField] public float cloakDrain = 1f;
     [HideInInspector] public float cloakCapacitorLevel;
     [SerializeField] public GameObject[] turrets;
-    [SerializeField] public ProjectileWeapon[] projWeapons;
+    [SerializeField] public List<ProjectileWeapon> projWeapons;
     [Header("SFX")]
     [SerializeField] public AudioClip EngineSound;
     [SerializeField] public Vector2 MinMaxThrottlePitch = Vector2.one;
@@ -162,7 +162,15 @@ public class ShipSettings : MonoBehaviour
     {
         //assign a random ID
         SetId();
+        if (Class == CLASS.FIGHTER)
+        { 
         shipRadius = GetComponent<SphereCollider>().radius;
+        }
+        else
+        {
+            shipRadius = GetComponent<MeshCollider>().bounds.size.magnitude/6;
+        }
+
         //Organize the scene
         gameObject.transform.SetParent(GameObject.FindWithTag("GamePlayObjs").transform);
         //Make sure everyone knows we're here
@@ -183,7 +191,10 @@ public class ShipSettings : MonoBehaviour
         _CoreStrength = (Armor.x + Armor.y + Armor.z + Armor.w + (Shield.x + Shield.y) / 2) / 3; //Generalized fomula for the unarmored mechanical core of the ship
         CoreMax = _CoreStrength;
         //grab the display part of the billboard, for futher modification
-        GetBillboardMat();
+        if (Class == CLASS.FIGHTER)
+        {
+            GetBillboardMat();
+        }
         //Init SFX
         EngineSFX = gameObject.AddComponent<AudioSource>();
         AfterburnSFX = gameObject.AddComponent<AudioSource>();
@@ -198,20 +209,20 @@ public class ShipSettings : MonoBehaviour
         EngineSFX.volume = MinMaxThrottleVolume.x;
         EngineSFX.spatialBlend = 1f;
         EngineSFX.dopplerLevel = 2f;
-        EngineSFX.maxDistance = 100f;
-        EngineSFX.minDistance = 0f;
+        EngineSFX.maxDistance = 80f;
+        EngineSFX.minDistance = 10f;
         EngineSFX.rolloffMode = AudioRolloffMode.Linear;
         EngineSFX.Play();
 
         AfterburnSFX.clip = AfterburnSound;
         AfterburnSFX.playOnAwake = true;
         AfterburnSFX.loop = true;
-        AfterburnSFX.volume = AfterburnSFX.volume;
+        AfterburnSFX.volume = 0f;
         AfterburnSFX.spatialBlend = 1f;
         AfterburnSFX.dopplerLevel = 2f;
         AfterburnSFX.pitch = AfterburnPitch;
         AfterburnSFX.maxDistance = 120f;
-        AfterburnSFX.minDistance = 0f;
+        AfterburnSFX.minDistance = 1f;
         AfterburnSFX.rolloffMode = AudioRolloffMode.Linear;
         AfterburnSFX.Play();
 
@@ -279,9 +290,15 @@ public class ShipSettings : MonoBehaviour
     //Find our Guns, Figure out what they are, sequence them and put them in a list! 
     void InitGuns()
     {
-        projWeapons = GetComponentsInChildren<ProjectileWeapon>();
-        foreach (ProjectileWeapon projWeapon in projWeapons)
+        ProjectileWeapon[] tempProjWeapon;
+        tempProjWeapon = GetComponentsInChildren<ProjectileWeapon>();        
+
+        foreach (ProjectileWeapon projWeapon in tempProjWeapon)
         {
+            //ignore any turret mounted weapons
+            if (!projWeapon.turretMounted)
+                projWeapons.Add(projWeapon);
+
             //Init gun index
             if (projWeapon.index == 0)
             {
@@ -737,7 +754,7 @@ public class ShipSettings : MonoBehaviour
                 }
             }
         }
-        if (_CoreStrength > 0) //We dead, son
+        if (_CoreStrength > 0)
         {
             DeathDir = transform.forward;
             DeathVel = speed;
@@ -776,9 +793,9 @@ public class ShipSettings : MonoBehaviour
 
             if (DeathType == 1)//Short burst of explosions, then Die
             {
-                var dyaw_ = Mathf.Clamp(DeathSpin.y, -1f, 1f);
-                var dpitch_ = Mathf.Clamp(DeathSpin.x, -1f, 1f);
-                var droll_ = Mathf.Clamp(DeathSpin.z, -1f, 1f);
+                float dyaw_ = Mathf.Clamp(DeathSpin.y, -1f, 1f);
+                float dpitch_ = Mathf.Clamp(DeathSpin.x, -1f, 1f);
+                float droll_ = Mathf.Clamp(DeathSpin.z, -1f, 1f);
                 dyaw_ *= turnRate * 2f * Time.deltaTime;
                 dpitch_ *= turnRate * 2f * Time.deltaTime;
                 droll_ *= turnRate * 3f * Time.deltaTime;
@@ -804,9 +821,9 @@ public class ShipSettings : MonoBehaviour
 
             if (DeathType == 2)
             {
-                var dyaw_ = Mathf.Clamp(DeathSpin.y, -1f, 1f);
-                var dpitch_ = Mathf.Clamp(DeathSpin.x, -1f, 1f);
-                var droll_ = Mathf.Clamp(DeathSpin.z, -1f, 1f);
+                float dyaw_ = Mathf.Clamp(DeathSpin.y, -1f, 1f);
+                float dpitch_ = Mathf.Clamp(DeathSpin.x, -1f, 1f);
+                float droll_ = Mathf.Clamp(DeathSpin.z, -1f, 1f);
                 dyaw_ *= turnRate * 2f * Time.deltaTime;
                 dpitch_ *= turnRate * 2f * Time.deltaTime;
                 droll_ *= turnRate * 3f * Time.deltaTime;
@@ -1022,7 +1039,14 @@ public class ShipSettings : MonoBehaviour
         }
         DoHealth();
         DoFuel();
-        AvoidObstacles(1f, shipRadius *4f);
+        if (Class == CLASS.FIGHTER)
+        {
+            AvoidObstacles(1f, shipRadius * 4f);
+        }
+        else
+        {
+            AvoidObstacles(.25f, shipRadius * 4f);
+        }
         DoCloak();
         TargetManage();
         DoVelocity();

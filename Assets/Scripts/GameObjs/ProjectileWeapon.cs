@@ -5,6 +5,7 @@ public class ProjectileWeapon : MonoBehaviour
     
     public enum GunType { Laser, Neutron, MassDriver, PhotonBlaster, Meson, Particle, ParticleCollisionEvent, TurretLaser, TurretNeutron, TurretMassDriver };
     public GunType Type;
+    public bool turretMounted = false;
     Transform mountingPoint = null;
     [SerializeField] public Transform projectilePrefab = null;
     [SerializeField] public Transform muzzleflashPrefab = null;
