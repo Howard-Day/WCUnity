@@ -36,9 +36,9 @@ public class KPSSpeed : MonoBehaviour
             return lastGenInt;
         }
     }
-    public static string Int32ToString(int value, int toBase)
+    public static int Int32ToString(int value, int toBase)
     {
-        string result = string.Empty;
+        int result = 0;
         do
         {
             result = "0123456789ABCDEF"[value % toBase] + result;
@@ -48,6 +48,7 @@ public class KPSSpeed : MonoBehaviour
 
         return result;
     }
+
 
     // Update is called once per frame
     void Update()

@@ -15,6 +15,7 @@ public class TurretSettings : MonoBehaviour
     [Header("Movement Settings")]
     [SerializeField] public float turnRate = 50f;
     [SerializeField] public float angleLimit = 60f;
+    [SerializeField] public Vector3 initialVec = Vector3.back;
     [SerializeField] public Transform traverse;
     [SerializeField] public Transform elevation;
     [Header("Rotation Delta")]
@@ -81,7 +82,10 @@ public class TurretSettings : MonoBehaviour
     //Get our Billboard Material
     public void GetBillboardMat()
     {
-        billboardMat = Billboard.GetComponent<Renderer>().material;
+        if (Billboard != null)
+        {
+            billboardMat = Billboard.GetComponent<Renderer>().material;
+        }
     }
     //Manage Targets
     void TargetManage()

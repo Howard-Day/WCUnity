@@ -25,6 +25,7 @@ public class SetSpeed : MonoBehaviour
         if (GameObjTracker.frames % skip == 0)
         {
             lastGenInt = Random.Range(min, max);
+
             return lastGenInt;
         }
         else
@@ -32,14 +33,18 @@ public class SetSpeed : MonoBehaviour
             if (lastGenInt == null)
             {
                 lastGenInt = Random.Range(min, max);
+                if (inBase8)
+                {
+                    lastGenInt = Int32ToString(lastGenInt.Value, 8);
+                }
                 return lastGenInt;
             }
             return lastGenInt;
         }
     }
-    public static string Int32ToString(int value, int toBase)
+    public static int Int32ToString(int value, int toBase)
     {
-        string result = string.Empty;
+        int result = 0;
         do
         {
             result = "0123456789ABCDEF"[value % toBase] + result;

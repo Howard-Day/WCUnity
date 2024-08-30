@@ -8,9 +8,10 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Capship_Test2
-  m_Shader: {fileID: 4800000, guid: bf7c16c308485bc4481c6b685e930faf, type: 3}
+  m_Shader: {fileID: 4800000, guid: 7324a11f3c2c2434f9602f25b8362077, type: 3}
   m_ValidKeywords: []
-  m_InvalidKeywords: []
+  m_InvalidKeywords:
+  - _EMISSIVE_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -107,23 +108,35 @@ Material:
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
+    - _Emissive: 1
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
-    - _OutlineWidth: 0.75
+    - _OutlineWidth: 1
     - _Parallax: 0.02
     - _SmoothnessTextureChannel: 0
+    - _SpecColor: 0
+    - _SpecColor1: 1
+    - _SpecColorAMount: 0
+    - _SpecGloss: 0
+    - _Specular: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _UVSec: 0
+    - _VertColorEmissive: 0
+    - _WindowBrightness: 3
     - _ZWrite: 1
     - __dirty: 0
     m_Colors:
     - _ASEOutlineColor: {r: 0, g: 0, b: 0, a: 0.02745098}
+    - _AmbientColor: {r: 0.7163636, g: 0.68799996, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _OutlineTint: {r: 0.12849633, g: 0.12492699, b: 0.16299999, a: 1}
+    - _EmissiveColor: {r: 0.241, g: 1, b: 0.66861826, a: 0}
+    - _OutlineTint: {r: 0.33585882, g: 0.32117647, b: 0.468, a: 1}
+    - _OutlineTint1: {r: 0.2808037, g: 0.2740374, b: 0.362, a: 1}
+    - _WindowColor: {r: 0, g: 1, b: 0.5272734, a: 0}
   m_BuildTextureStacks: []

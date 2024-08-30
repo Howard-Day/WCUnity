@@ -10,12 +10,13 @@ public class RandomInt : MonoBehaviour
     public int maxAmt;
     public int frameskip;
 
-    int? lastGenInt;
-    int? NumberGen(int min, int max, int skip)
+    int lastGenInt;
+    int NumberGen(int min, int max, int skip)
     {
         if (GameObjTracker.frames % skip == 0)
         {
             lastGenInt = Random.Range(min, max);
+            lastGenInt = Int32ToBaseInt(lastGenInt, 8);
             return lastGenInt;
         }
         else
@@ -23,14 +24,34 @@ public class RandomInt : MonoBehaviour
             if (lastGenInt == null)
             {
                 lastGenInt = Random.Range(min, max);
+                lastGenInt = Int32ToBaseInt(lastGenInt, 8);
                 return lastGenInt;
             }
             return lastGenInt;
         }
     }
+    public static int Int32ToBaseInt(int value, int toBase)
+    {
+        int result = 0;
+        do
+        {
+            result = "0123456789ABCDEF"[value % toBase] + result;
+            value /= toBase;
+        }
+        while (value > 0);
+
+        return result;
+    }
+
+
     // Update is called once per frame
     void Update()
     {
-        RandInt.text = NumberGen(minAmt, maxAmt, frameskip).Value.ToString("D" + leadingDigits);
+        int RandomInt = NumberGen(minAmt, maxAmt, frameskip);
+        if (RandomInt > maxAmt)
+        {
+           // RandomInt = Int32ToBaseInt(maxAmt/8, 8);
+        }
+        RandInt.text = RandomInt.ToString("D" + leadingDigits);//.ToString("D" + leadingDigits);
     }
 }

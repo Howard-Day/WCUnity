@@ -41,8 +41,16 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _Dithering:
+        m_Texture: {fileID: 2800000, guid: d5bbf78775f58b0439507a10303d2685, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _EmissionMap:
         m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _LightingShading:
+        m_Texture: {fileID: 2800000, guid: fe60219993aa89d498e544829a015454, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
@@ -57,6 +65,10 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _Normals:
+        m_Texture: {fileID: 2800000, guid: 297ff98da3df7094fbd2020f5e34caf4, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -69,6 +81,10 @@ Material:
         m_Texture: {fileID: 2800000, guid: 66a274dcc6319be4f8acc49a8aebce62, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _TextureSample1:
+        m_Texture: {fileID: 2800000, guid: 297ff98da3df7094fbd2020f5e34caf4, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _texcoord:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -76,6 +92,8 @@ Material:
     m_Ints: []
     m_Floats:
     - _BumpScale: 1
+    - _CloakAmount: 0
+    - _ColorMaskSensitivity: 0.16
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
@@ -86,6 +104,7 @@ Material:
     - _MipBias: -1
     - _Mode: 0
     - _OcclusionStrength: 1
+    - _OutlineWidth: 1
     - _Parallax: 0.02
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
@@ -96,5 +115,7 @@ Material:
     - _pixelsPerUnit: 100
     m_Colors:
     - _Color: {r: 0, g: 0, b: 0, a: 1}
+    - _ColorMask: {r: 1, g: 0.315411, b: 0, a: 0}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 0}
+    - _OutlineColor: {r: 0.11779831, g: 0.11231932, b: 0.16299999, a: 1}
   m_BuildTextureStacks: []

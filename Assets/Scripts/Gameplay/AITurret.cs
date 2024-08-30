@@ -170,7 +170,7 @@ public class AITurret : MonoBehaviour
         }
     }
     //Utility to find the nearest ship, ignoring one of the Teams, any cloaked ships, and the Ship looking
-    public ShipSettings FindNearestShip(Transform toObj, ShipSettings.TEAM ignoreTEAM)
+    public ShipSettings FindNearestShip(Transform toObj,float angle, ShipSettings.TEAM ignoreTEAM)
     {
         float distance = engageDist * 10f;
 
@@ -187,7 +187,10 @@ public class AITurret : MonoBehaviour
                 Transform shipTrans = (Transform)shipTest.gameObject.GetComponent<Transform>();
 
                 float shipDist = Vector3.Distance(shipTrans.position, toObj.position);
-                if (shipTest.AITeam != ShipSettings.TEAM.NEUTRAL && shipTest != shipMain)
+                Vector3 shipVec = Vector3.Normalize(shipTrans.position - toObj.position);
+                float shipAngle = Vector3.Angle(shipVec, transform.forward);
+
+                if (shipTest.AITeam != ShipSettings.TEAM.NEUTRAL && shipTest != shipMain && shipAngle <= angle)
                 {
                     if (shipDist < distance && shipTest.AITeam != ignoreTEAM)
                     {
@@ -255,6 +258,7 @@ public class AITurret : MonoBehaviour
     //Handle no targets
     void DoNoTargets()
     {
+        //release our target
         if (AITarget == null)
         {
             AITargetShip = null;
@@ -271,6 +275,17 @@ public class AITurret : MonoBehaviour
         if (transform.localPosition.x > 0)
         {
             turret.TryToAimAtTarget(shipMain.transform.position + shipMain.transform.right * 20f);
+        }
+        //check if our current target is out of our firing angle, if so, release it and look for others
+        if (AITarget)
+        {
+            Vector3 shipVec = Vector3.Normalize(AITarget.position - transform.position);
+            float shipAngle = Vector3.Angle(shipVec, transform.forward);
+            if (shipAngle >= turret.angleLimit)
+            {
+                AITarget = null;
+                AITargetShip = null;
+            }
         }
     }
     //Handle attacking
@@ -309,7 +324,7 @@ public class AITurret : MonoBehaviour
         //find the closest target, if we don't already have one, check at the skill level frequency
         if (!AITarget && GameObjTracker.frames % scanNewTargetFreq == 0)
         {
-            AITargetShip = FindNearestShip(gameObject.transform, shipMain.AITeam);
+            AITargetShip = FindNearestShip(gameObject.transform, turret.angleLimit, shipMain.AITeam);
             //if there is no target in range, bail
             if (!AITargetShip)
             {

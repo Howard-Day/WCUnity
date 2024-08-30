@@ -9,9 +9,13 @@ public class SpritePicker : MonoBehaviour
     [SerializeField] Texture[] textureSheets = null;
     [SerializeField] Vector2Int frames = Vector2Int.zero;
     Transform gameCamera = null;
+    Transform sunLight = null;
 
     public Transform billboard;
+    public Transform shadowBillboard;
     Material billboardMaterial;
+    Material shadowMaterial;
+    Light gameLight;
 
     void Start()
     {
@@ -19,19 +23,31 @@ public class SpritePicker : MonoBehaviour
         {
             gameCamera = Camera.main.transform;
         }
-        if(!billboard)
+        //grab the first light
+        gameLight = FindObjectOfType(typeof(Light)) as Light;
+
+        if (gameLight != null)
+        {
+            sunLight = gameLight.transform;
+        }
+
+        if (!billboard)
             billboard = transform.Find("Billboard");
-        if (Application.isPlaying)
-            billboardMaterial = billboard.GetComponent<Renderer>().material;
-        if (Application.isEditor)
-            billboardMaterial = billboard.GetComponent<Renderer>().material;
+        if (!shadowBillboard)
+            shadowBillboard = transform.Find("Shadow");
     }
 
     void Update()
     {
         if (!gameCamera && Camera.main)
             gameCamera = (Transform)Camera.main.transform;
-        if (!billboard || !billboardMaterial || frames == Vector2Int.zero || !gameCamera)
+        if (!sunLight)
+            sunLight = gameLight.transform;
+
+        billboardMaterial = billboard.GetComponent<Renderer>().material;
+        shadowMaterial = billboard.GetComponent<Renderer>().material;
+
+        if (!billboard || !billboardMaterial || frames == Vector2Int.zero || !gameCamera || !shadowBillboard)
         {
             return;
         }
@@ -41,23 +57,33 @@ public class SpritePicker : MonoBehaviour
                 gameCamera = Camera.current.transform;
         }
 
+        Vector3 viewAngle = gameCamera.position - transform.position;
+        DoAngleSpriteSelection(billboard, viewAngle);
+        DoAngleSpriteSelection(shadowBillboard, -gameLight.transform.forward);
+
+    }
+
+
+    void DoAngleSpriteSelection(Transform obj, Vector3 lookAt)
+    {
         int yaw = 0, pitch = 0;
         float theta = 0f, phi = 0f;
 
-        SpritePick(ref theta, ref phi, ref yaw, ref pitch);
-        Billboard(theta, phi);
+        SpritePick(ref theta, ref phi, ref yaw, ref pitch, lookAt);
+        Billboard(theta, phi, obj);
 
         // set correct pitch texture
-        billboardMaterial.mainTexture = textureSheets[pitch];
+        obj.GetComponent<Renderer>().material.mainTexture = textureSheets[pitch];
 
         // calculate material tiling
-        billboardMaterial.mainTextureScale = new Vector2(1f / frames.x, 1f / frames.y);
+        obj.GetComponent<Renderer>().material.mainTextureScale = new Vector2(1f / frames.x, 1f / frames.y);
 
         // and material offset
-        var offsetX = (yaw % frames.x) * billboardMaterial.mainTextureScale.x;
-        var offsetY = (1f - 1f / frames.y) - (yaw / frames.x) * billboardMaterial.mainTextureScale.y;
-        billboardMaterial.mainTextureOffset = new Vector2(offsetX, offsetY);
+        var offsetX = (yaw % frames.x) * obj.GetComponent<Renderer>().material.mainTextureScale.x;
+        var offsetY = (1f - 1f / frames.y) - (yaw / frames.x) * obj.GetComponent<Renderer>().material.mainTextureScale.y;
+        obj.GetComponent<Renderer>().material.mainTextureOffset = new Vector2(offsetX, offsetY);
     }
+
 
     void CartesianToSpherical(Vector3 v, ref float theta, ref float phi, float tolerance)
     {
@@ -79,17 +105,17 @@ public class SpritePicker : MonoBehaviour
         return output;
     }
 
-    void SpritePick(ref float theta, ref float phi, ref int yaw, ref int pitch)
+    void SpritePick(ref float theta, ref float phi, ref int yaw, ref int pitch, Vector3 amgleToTrack)
     {
-        var objectToCamera = gameCamera.position - transform.position;
-        objectToCamera.Normalize();
-
+        var objectToView = amgleToTrack;// gameCamera.position - transform.position;
+        objectToView.Normalize();
+        
         // since the ship may be rotated, we need to take that into account before converting to spherical
         // invert the world matrix and transform our d vector to put the d vector in ship-local space
         var r = DirectionVectorsToRotationMatrix(transform.forward, transform.right, transform.up);
-        objectToCamera = r.inverse.MultiplyVector(objectToCamera);
+        objectToView = r.inverse.MultiplyVector(objectToView);
 
-        CartesianToSpherical(objectToCamera, ref theta, ref phi, 0.01f);
+        CartesianToSpherical(objectToView, ref theta, ref phi, 0.01f);
 
         // some manipulation constants
         const float twoPi = Mathf.PI * 2f;
@@ -132,7 +158,7 @@ public class SpritePicker : MonoBehaviour
         phi = pitch * interval - halfPi;
     }
 
-    void Billboard(float theta, float phi)
+    void Billboard(float theta, float phi, Transform obj)
     {
         // billboard flip necessary since the sprite texture coordinates are rotated 180 degrees from what the world matrix is going to be
         var flip = Matrix4x4.TRS(Vector3.zero, Quaternion.AngleAxis(180.0f, Vector3.up), Vector3.one);
@@ -144,6 +170,6 @@ public class SpritePicker : MonoBehaviour
         // construct billboard matrix
         var world = DirectionVectorsToRotationMatrix(transform.forward, transform.right, transform.up);
         var billboardMatrix = world * view;
-        billboard.transform.rotation = Quaternion.LookRotation(billboardMatrix.GetColumn(2), billboardMatrix.GetColumn(1));
+        obj.transform.rotation = Quaternion.LookRotation(billboardMatrix.GetColumn(2), billboardMatrix.GetColumn(1));
     }
 }
