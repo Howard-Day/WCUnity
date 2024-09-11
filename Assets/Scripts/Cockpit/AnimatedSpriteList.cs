@@ -12,6 +12,7 @@ public class AnimatedSpriteList : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        Application.targetFrameRate = 60;
         sprite = GetComponent<SpriteRenderer>();
         sprite.sprite = Frames[0];
     }

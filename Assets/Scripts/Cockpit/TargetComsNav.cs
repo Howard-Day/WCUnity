@@ -72,7 +72,7 @@ public class TargetComsNav : MonoBehaviour
         {
             TargetName.text = "NO TARGET";
             TargetName.color = TextColor;
-            TargetDist.text = "Range: NONE";
+            TargetDist.text = "RANGE: NONE";
             TargetDist.color = TextColor;
             TargetBase.GetComponent<SpriteRenderer>().sprite = GenericVDU;
             TargetDamaged.GetComponent<SpriteRenderer>().sprite = GenericVDU;
@@ -111,7 +111,7 @@ public class TargetComsNav : MonoBehaviour
             {
                 currentTarget = shipMain.currentTarget;
 
-                TargetName.text = "Target: " + currentTarget.gameObject.name;
+                TargetName.text = ("Target: " + currentTarget.gameObject.name).ToUpper();
                 if (currentTarget.VDUImage != null)
                 {
                     TargetBase.GetComponent<SpriteRenderer>().sprite = currentTarget.VDUImage;
@@ -132,15 +132,15 @@ public class TargetComsNav : MonoBehaviour
                 float tarDist = Vector3.Distance(shipMain.transform.position, currentTarget.transform.position);
                 tarDist = Mathf.FloorToInt(tarDist * 10) / 10f;
 
-                TargetName.text = "Target: " + currentTarget.DisplayName;
+                TargetName.text = ("Target: " + currentTarget.DisplayName).ToUpper();
 
                 if (!inBase8)
                 {
-                    TargetDist.text = "Range: " + tarDist * 2 + "m";
+                    TargetDist.text = ( "Range: " + tarDist * 2 + "m").ToUpper();
                 }
                 else 
                 {
-                    TargetDist.text = "Range: " + Int32ToString(Mathf.FloorToInt(tarDist) * 2,8) + "m";
+                    TargetDist.text = ("Range: " + Int32ToString(Mathf.FloorToInt(tarDist) * 2,8) + "m").ToUpper();
                 }
 
                 if (currentTarget.Armor.x < currentTarget._ArmorMax.x / 2)

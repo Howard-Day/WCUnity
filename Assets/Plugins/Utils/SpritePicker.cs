@@ -60,9 +60,15 @@ public class SpritePicker : MonoBehaviour
         Vector3 viewAngle = gameCamera.position - transform.position;
         DoAngleSpriteSelection(billboard, viewAngle);
         DoAngleSpriteSelection(shadowBillboard, -gameLight.transform.forward);
-
+        OffsetShadow();
     }
 
+    void OffsetShadow()
+    {
+        Vector3 sunAngle = sunLight.gameObject.transform.forward;
+        Vector3 offset = transform.position + (shadowBillboard.transform.localScale.magnitude/2 * (sunAngle));
+        shadowBillboard.transform.position = offset;
+    }
 
     void DoAngleSpriteSelection(Transform obj, Vector3 lookAt)
     {

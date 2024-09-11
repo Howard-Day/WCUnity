@@ -124,6 +124,8 @@ Material:
     m_Colors:
     - _Color: {r: 0, g: 0, b: 0, a: 1}
     - _ColorMask: {r: 1, g: 0.315411, b: 0, a: 0}
+    - _ColorMask2: {r: 0, g: 0, b: 0, a: 0}
+    - _ColorMask3: {r: 0, g: 0, b: 0, a: 0}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 0}
     - _OutlineColor: {r: 0.11779831, g: 0.11231932, b: 0.16299999, a: 1}
   m_BuildTextureStacks: []

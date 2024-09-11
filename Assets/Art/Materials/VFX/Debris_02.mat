@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Debris_02
-  m_Shader: {fileID: 4800000, guid: 7947972ac15c39b4cbed3e5ade835464, type: 3}
+  m_Shader: {fileID: 4800000, guid: 7344a6687e3a5d84c9eec3ee00ddbd84, type: 3}
   m_ValidKeywords: []
   m_InvalidKeywords: []
   m_LightmapFlags: 0
@@ -45,7 +45,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Dithering:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 1dec9d0afe198024b9a43a07728f9376, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _EmissionMap:
@@ -57,7 +57,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _LightingShading:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 065cb2792dab7d74d9941bb9b785f165, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
@@ -113,6 +113,8 @@ Material:
     m_Colors:
     - _Color: {r: 0, g: 0, b: 0, a: 1}
     - _ColorMask: {r: 1, g: 0.315411, b: 0, a: 0}
+    - _ColorMask2: {r: 0, g: 0, b: 0, a: 0}
+    - _ColorMask3: {r: 0, g: 0, b: 0, a: 0}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _Flip: {r: 1, g: 1, b: 1, a: 1}
     - _OutlineColor: {r: 0.11764706, g: 0.11372549, b: 0.16470589, a: 1}

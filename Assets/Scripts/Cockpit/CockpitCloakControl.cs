@@ -7,6 +7,7 @@ public class CockpitCloakControl : MonoBehaviour
 
     public GameObject CockpitArt;
     public GameObject CockpitDamageArt;
+    public GameObject[] CockpitContorlArt;
     Material Scenebuffer;
     ShipSettings shipMain;
     CockpitViewSwitcher Cam;
@@ -41,6 +42,11 @@ public class CockpitCloakControl : MonoBehaviour
 
         CockpitArt.GetComponent<SpriteRenderer>().material.SetFloat("_CloakBlend", clampedCloakAmount);
         CockpitDamageArt.GetComponent<SpriteRenderer>().material.SetFloat("_CloakBlend", clampedCloakAmount);
+
+        foreach(GameObject control in CockpitContorlArt)
+        {
+            control.GetComponent<SpriteRenderer>().material.SetFloat("_CloakBlend", clampedCloakAmount);
+        }
 
         float steppedCloakAmount = Mathf.FloorToInt(clampedCloakAmount * 8f) / 8f;
 

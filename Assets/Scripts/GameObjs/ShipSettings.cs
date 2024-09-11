@@ -188,7 +188,7 @@ public class ShipSettings : MonoBehaviour
         InitGuns();
         _ArmorMax = Armor; //Give us something to compare to later on
         _ShieldMax = Shield; //same
-        _CoreStrength = (Armor.x + Armor.y + Armor.z + Armor.w + (Shield.x + Shield.y) / 2) / 3; //Generalized fomula for the unarmored mechanical core of the ship
+        _CoreStrength = (Armor.x + Armor.y + Armor.z + Armor.w + (Shield.x + Shield.y) / 2)/3; //Generalized fomula for the unarmored mechanical core of the ship
         CoreMax = _CoreStrength;
         //grab the display part of the billboard, for futher modification
         if (Class == CLASS.FIGHTER)
