@@ -106,3 +106,31 @@ Update Mode: updateDependencies
 The following packages were updated:
   com.unity.collab-proxy from version 1.17.1 to 1.17.2
   com.unity.purchasing from version 4.3.0 to 4.4.1
+
+=== Fri Sep  5 15:09:03 2025
+
+Packages were changed.
+Update Mode: updateDependencies
+
+The following packages were updated:
+  com.unity.postprocessing from version 3.2.2 to 3.4.0
+
+=== Tue Sep 16 15:22:53 2025
+
+Packages were changed.
+Update Mode: updateDependencies
+
+The following packages were added:
+  com.unity.ai.navigation@2.0.9
+  com.unity.modules.accessibility@1.0.0
+  com.unity.multiplayer.center@1.0.0
+The following packages were updated:
+  com.unity.2d.pixel-perfect from version 5.0.3 to 5.1.0
+  com.unity.ext.nunit from version 1.0.6 to 2.0.5
+  com.unity.ide.visualstudio from version 2.0.22 to 2.0.23
+  com.unity.postprocessing from version 3.4.0 to 3.5.0
+  com.unity.test-framework from version 1.4.4 to 1.5.1
+  com.unity.timeline from version 1.8.6 to 1.8.9
+  com.unity.ugui from version 1.0.0 to 2.0.0
+The following packages were removed:
+  com.unity.textmeshpro@3.0.9

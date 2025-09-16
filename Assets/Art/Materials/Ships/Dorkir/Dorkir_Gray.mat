@@ -9,6 +9,8 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: Dorkir_Gray
   m_Shader: {fileID: 4800000, guid: 7324a11f3c2c2434f9602f25b8362077, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
   m_InvalidKeywords:
   - _EMISSIVE_ON
@@ -18,6 +20,7 @@ Material:
   m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
+  m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -129,7 +132,7 @@ Material:
     - _VertColorEmissive: 0
     - _WindowBrightness: 2
     - _ZWrite: 1
-    - __dirty: 1
+    - __dirty: 0
     m_Colors:
     - _ASEOutlineColor: {r: 0, g: 0, b: 0, a: 0.02745098}
     - _AmbientColor: {r: 0.7163636, g: 0.68799996, b: 1, a: 1}
@@ -140,3 +143,4 @@ Material:
     - _OutlineTint1: {r: 0.5702382, g: 0.525, b: 1, a: 1}
     - _WindowColor: {r: 0.376, g: 1, b: 0.70390594, a: 0}
   m_BuildTextureStacks: []
+  m_AllowLocking: 1

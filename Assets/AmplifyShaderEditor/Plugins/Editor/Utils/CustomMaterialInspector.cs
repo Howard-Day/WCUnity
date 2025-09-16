@@ -341,7 +341,7 @@ internal class ASEMaterialInspector : ShaderGUI
 
 		for( int i = 0; i < properties.Length; i++ )
 		{
-			if( ( properties[ i ].flags & ( MaterialProperty.PropFlags.HideInInspector | MaterialProperty.PropFlags.PerRendererData ) ) == MaterialProperty.PropFlags.None )
+			if( ( properties[ i ].propertyFlags & ( UnityEngine.Rendering.ShaderPropertyFlags.HideInInspector | UnityEngine.Rendering.ShaderPropertyFlags.PerRendererData ) ) == UnityEngine.Rendering.ShaderPropertyFlags.None )
 			{
 				// Removed no scale offset one line texture property for consistency :( sad face
 				//if( ( properties[ i ].flags & MaterialProperty.PropFlags.NoScaleOffset ) == MaterialProperty.PropFlags.NoScaleOffset )

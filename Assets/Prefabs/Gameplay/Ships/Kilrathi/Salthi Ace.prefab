@@ -5,6 +5,7 @@ PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
+    serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 216686168421211945, guid: cfb7a2335576985479485947cc9f59f8,
@@ -19,7 +20,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 979894190675649356, guid: cfb7a2335576985479485947cc9f59f8,
         type: 3}
-      propertyPath: m_Materials.Array.data[0]
+      propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 979894190675649357, guid: cfb7a2335576985479485947cc9f59f8,
@@ -114,87 +115,87 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2289861991765167614, guid: cfb7a2335576985479485947cc9f59f8,
         type: 3}
-      propertyPath: textureSheets.Array.data[0]
+      propertyPath: 'textureSheets.Array.data[0]'
       value: 
       objectReference: {fileID: 2800000, guid: 810aec88be7601f44af883a467b05fa5, type: 3}
     - target: {fileID: 2289861991765167614, guid: cfb7a2335576985479485947cc9f59f8,
         type: 3}
-      propertyPath: textureSheets.Array.data[1]
+      propertyPath: 'textureSheets.Array.data[1]'
       value: 
       objectReference: {fileID: 2800000, guid: ba3c9e85d1dfaf04ebeb5ab693838386, type: 3}
     - target: {fileID: 2289861991765167614, guid: cfb7a2335576985479485947cc9f59f8,
         type: 3}
-      propertyPath: textureSheets.Array.data[2]
+      propertyPath: 'textureSheets.Array.data[2]'
       value: 
       objectReference: {fileID: 2800000, guid: 96e641c5153c15944a613c58724e1922, type: 3}
     - target: {fileID: 2289861991765167614, guid: cfb7a2335576985479485947cc9f59f8,
         type: 3}
-      propertyPath: textureSheets.Array.data[3]
+      propertyPath: 'textureSheets.Array.data[3]'
       value: 
       objectReference: {fileID: 2800000, guid: 5a0c4352f38c2d8498f3d1283fd41c14, type: 3}
     - target: {fileID: 2289861991765167614, guid: cfb7a2335576985479485947cc9f59f8,
         type: 3}
-      propertyPath: textureSheets.Array.data[4]
+      propertyPath: 'textureSheets.Array.data[4]'
       value: 
       objectReference: {fileID: 2800000, guid: ce45e93fa8aab2c44b57685ba782cc24, type: 3}
     - target: {fileID: 2289861991765167614, guid: cfb7a2335576985479485947cc9f59f8,
         type: 3}
-      propertyPath: textureSheets.Array.data[5]
+      propertyPath: 'textureSheets.Array.data[5]'
       value: 
       objectReference: {fileID: 2800000, guid: 5a0e995189613dc4e81d0a5452329611, type: 3}
     - target: {fileID: 2289861991765167614, guid: cfb7a2335576985479485947cc9f59f8,
         type: 3}
-      propertyPath: textureSheets.Array.data[6]
+      propertyPath: 'textureSheets.Array.data[6]'
       value: 
       objectReference: {fileID: 2800000, guid: 7b826e9d4944ecb4f9c05b5a5eac43dd, type: 3}
     - target: {fileID: 2289861991765167614, guid: cfb7a2335576985479485947cc9f59f8,
         type: 3}
-      propertyPath: textureSheets.Array.data[7]
+      propertyPath: 'textureSheets.Array.data[7]'
       value: 
       objectReference: {fileID: 2800000, guid: 58642ee56f8eee14aa0fb79dd4bf616a, type: 3}
     - target: {fileID: 2289861991765167614, guid: cfb7a2335576985479485947cc9f59f8,
         type: 3}
-      propertyPath: textureSheets.Array.data[8]
+      propertyPath: 'textureSheets.Array.data[8]'
       value: 
       objectReference: {fileID: 2800000, guid: 0da422b916c447d4e8adc49fe4eacaa6, type: 3}
     - target: {fileID: 2289861991765167614, guid: cfb7a2335576985479485947cc9f59f8,
         type: 3}
-      propertyPath: textureSheets.Array.data[9]
+      propertyPath: 'textureSheets.Array.data[9]'
       value: 
       objectReference: {fileID: 2800000, guid: b2738a78f17e3f2469fa49a453ab6b94, type: 3}
     - target: {fileID: 2289861991765167614, guid: cfb7a2335576985479485947cc9f59f8,
         type: 3}
-      propertyPath: textureSheets.Array.data[10]
+      propertyPath: 'textureSheets.Array.data[10]'
       value: 
       objectReference: {fileID: 2800000, guid: 60b14a4215f6e844f8281991ff849350, type: 3}
     - target: {fileID: 2289861991765167614, guid: cfb7a2335576985479485947cc9f59f8,
         type: 3}
-      propertyPath: textureSheets.Array.data[11]
+      propertyPath: 'textureSheets.Array.data[11]'
       value: 
       objectReference: {fileID: 2800000, guid: 08d2bc2dedf97174081bfbc1d384d82c, type: 3}
     - target: {fileID: 2289861991765167614, guid: cfb7a2335576985479485947cc9f59f8,
         type: 3}
-      propertyPath: textureSheets.Array.data[12]
+      propertyPath: 'textureSheets.Array.data[12]'
       value: 
       objectReference: {fileID: 2800000, guid: d52cd6421e0717f4bb38b6cddc4390d9, type: 3}
     - target: {fileID: 2289861991765167614, guid: cfb7a2335576985479485947cc9f59f8,
         type: 3}
-      propertyPath: textureSheets.Array.data[13]
+      propertyPath: 'textureSheets.Array.data[13]'
       value: 
       objectReference: {fileID: 2800000, guid: 984772439099706499b78086f339206a, type: 3}
     - target: {fileID: 2289861991765167614, guid: cfb7a2335576985479485947cc9f59f8,
         type: 3}
-      propertyPath: textureSheets.Array.data[14]
+      propertyPath: 'textureSheets.Array.data[14]'
       value: 
       objectReference: {fileID: 2800000, guid: f9dddb091e15ec34f86cd7b3727e90d7, type: 3}
     - target: {fileID: 2289861991765167614, guid: cfb7a2335576985479485947cc9f59f8,
         type: 3}
-      propertyPath: textureSheets.Array.data[15]
+      propertyPath: 'textureSheets.Array.data[15]'
       value: 
       objectReference: {fileID: 2800000, guid: df2a42268b2034c4888b757746f10388, type: 3}
     - target: {fileID: 2289861991765167614, guid: cfb7a2335576985479485947cc9f59f8,
         type: 3}
-      propertyPath: textureSheets.Array.data[16]
+      propertyPath: 'textureSheets.Array.data[16]'
       value: 
       objectReference: {fileID: 2800000, guid: 8158756fb7f50324aad61dec9024271e, type: 3}
     - target: {fileID: 2289861991765167615, guid: cfb7a2335576985479485947cc9f59f8,
@@ -264,4 +265,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 2844008454367371773, guid: cfb7a2335576985479485947cc9f59f8, type: 3}
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: cfb7a2335576985479485947cc9f59f8, type: 3}

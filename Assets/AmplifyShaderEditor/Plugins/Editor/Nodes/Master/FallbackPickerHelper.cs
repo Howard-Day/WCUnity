@@ -47,7 +47,7 @@ namespace AmplifyShaderEditor
 				m_dummyMaterial = new Material( Shader.Find( "Hidden/ASESShaderSelectorUnlit" ) );
 
 #pragma warning disable 0618
-			UnityEditorInternal.InternalEditorUtility.SetupShaderMenu( m_dummyMaterial );
+			//UnityEditorInternal.InternalEditorUtility.SetupShaderMenu( m_dummyMaterial ); // K.F. not functional in Unity 6
 #pragma warning restore 0618
 			EditorUtility.DisplayPopupMenu( r, ShaderPoputContext, m_dummyCommand );
 		}

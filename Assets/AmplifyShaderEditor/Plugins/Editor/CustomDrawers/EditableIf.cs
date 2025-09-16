@@ -185,15 +185,15 @@ public class EditableIf : MaterialPropertyDrawer
 		object LHSVal = null;
 
 		bool test = false;
-		switch( LHSprop.type )
+		switch( LHSprop.propertyType )
 		{
-			case MaterialProperty.PropType.Color:
-			case MaterialProperty.PropType.Vector:
-			LHSVal = LHSprop.type == MaterialProperty.PropType.Color ? (Vector4)LHSprop.colorValue : LHSprop.vectorValue;
+			case UnityEngine.Rendering.ShaderPropertyType.Color:
+			case UnityEngine.Rendering.ShaderPropertyType.Vector:
+			LHSVal = LHSprop.propertyType == UnityEngine.Rendering.ShaderPropertyType.Color ? (Vector4)LHSprop.colorValue : LHSprop.vectorValue;
 			var v4 = ExpectedValue as Vector4?;
 			v4 = v4.HasValue ? v4 : new Vector4( (System.Single)ExpectedValue, float.NegativeInfinity, float.NegativeInfinity, float.NegativeInfinity );
 
-			if( LHSprop.type == MaterialProperty.PropType.Color )
+			if( LHSprop.propertyType == UnityEngine.Rendering.ShaderPropertyType.Color )
 			{
 				test = VectorCheck( (Vector4)LHSVal, op, v4 / 255 );
 
@@ -201,12 +201,12 @@ public class EditableIf : MaterialPropertyDrawer
 			else
 				test = VectorCheck( (Vector4)LHSVal, op, v4 );
 			break;
-			case MaterialProperty.PropType.Range:
-			case MaterialProperty.PropType.Float:
+			case UnityEngine.Rendering.ShaderPropertyType.Range:
+			case UnityEngine.Rendering.ShaderPropertyType.Float:
 			LHSVal = LHSprop.floatValue;
 			test = ( Check( LHSVal, op, ExpectedValue ) );
 			break;
-			case MaterialProperty.PropType.Texture:
+			case UnityEngine.Rendering.ShaderPropertyType.Texture:
 			LHSVal = LHSprop.textureValue;
 			test = ( CheckObject( LHSVal, op, ExpectedValue ) );
 			break;
