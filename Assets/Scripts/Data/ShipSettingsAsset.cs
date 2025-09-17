@@ -7,6 +7,7 @@ public enum TEAM { CONFED, KILRATHI, NEUTRAL, PIRATE, ENV };
 public enum CLASS { FIGHTER, FRIGATE, CAPITAL, STARBASE };
 public enum WEIGHT { LIGHT, MEDIUM, HEAVY, BOMBER };
 
+[CreateAssetMenu(menuName = "Wing Commander/Ship Settings")]
 public class ShipSettingsAsset : ScriptableObject
 {
 	[Header("Choose Team, Name, and filters")]

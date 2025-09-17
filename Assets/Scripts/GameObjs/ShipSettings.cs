@@ -547,15 +547,15 @@ public class ShipSettings : MonoBehaviour
             lastHitID = 0;
         }
 
-            //Where'd the hit come from, to the center of the ship?
-            Vector3 damageAngle = hitLoc - transform.position;
+        //Where'd the hit come from, to the center of the ship?
+        Vector3 damageAngle = hitLoc - transform.position;
         //Check font/back hit of the impact, apply that to the shields
         if (Vector3.Angle(transform.forward, damageAngle) < 90) //Hit from the front
         {
-            lastHit = HitLoc.F;
             //print("hit from the front! Angle of" + Vector3.Angle(transform.forward, damageAngle));
             if (shield.Front > damage)//if shields can take the hit, let them
             {
+                lastHit = HitLoc.F;
                 shield.Front -= damage;
                 hitTracker[0] = 1;
                 return hitTracker;
@@ -568,50 +568,18 @@ public class ShipSettings : MonoBehaviour
                 //check front/left/right armor quadrants, apply damage
                 if (Vector3.Angle(transform.forward, damageAngle) <= 45) // front armor hit!
                 {
-                    if (armor.Front > damage) //can the armor take the hit? 
-                    {
-                        armor.Front -= damage;
-                        ArmorDamage(transform.position + damageAngle / 2);
-                    }
-                    else  //armor takes what it can, passes the rest onto internal damage;
-                    {
-                        damage -= armor.Front;
-                        armor.Front = 0;
-                        _CoreStrength -= damage;
-                        InternalDamage(true);
-                    }
+                    lastHit = HitLoc.F;
+                    ApplyArmorDamage(Side.Front, damage, damageAngle);
                 }
                 else if (Vector3.Angle(-transform.right, damageAngle) <= 45) // left armor hit!)
                 {
                     lastHit = HitLoc.L;
-                    if (armor.Left > damage) //can the armor take the hit? 
-                    {
-                        armor.Left -= damage;
-                        ArmorDamage(transform.position + damageAngle / 2);
-                    }
-                    else  //armor takes what it can, passes the rest onto internal damage;
-                    {
-                        damage -= armor.Left;
-                        armor.Left = 0;
-                        _CoreStrength -= damage;
-                        InternalDamage(true);
-                    }
+                    ApplyArmorDamage(Side.Left, damage, damageAngle);
                 }
                 else if (Vector3.Angle(transform.right, damageAngle) <= 45) // right armor hit!)
                 {
                     lastHit = HitLoc.R;
-                    if (armor.Right > damage) //can the armor take the hit? 
-                    {
-                        armor.Right -= damage;
-                        ArmorDamage(transform.position + damageAngle / 2);
-                    }
-                    else  //armor takes what it can, passes the rest onto internal damage;
-                    {
-                        damage -= armor.Right;
-                        armor.Right = 0;
-                        _CoreStrength -= damage;
-                        InternalDamage(true);
-                    }
+                    ApplyArmorDamage(Side.Right, damage, damageAngle);
                 }
                 else //HUH, no armor seems to have been hit. That's a dirty lie, so let's make them all suffer, plus a liiitle bit of core damage for fibbing.
                 {
@@ -632,11 +600,11 @@ public class ShipSettings : MonoBehaviour
         }
         else //Hit from the back
         {
-            lastHit = HitLoc.B;
             hitInAss = true;
             //print("hit from the back!");
             if (shield.Back > damage)//if shields can take the hit, let them
             {
+                lastHit = HitLoc.B;
                 shield.Back -= damage;
                 hitTracker[0] = 1;
                 return hitTracker;
@@ -644,58 +612,24 @@ public class ShipSettings : MonoBehaviour
             }
             else //oh no! the armor needs to take the hit, minus whatever damage the shield can absorb.
             {
-                // TODO: REFACTOR USING Side enum! ******************************
-
                 damage -= shield.Back;
                 shield.Back = 0;
                 //print("damage is now "+ damage);
                 //check front/left/right armor quadrants, apply damage
                 if (Vector3.Angle(-transform.forward, damageAngle) <= 45) // back armor hit!
                 {
-                    if (armor.Back > damage) //can the armor take the hit? 
-                    {
-                        armor.Back -= damage;
-                        ArmorDamage(transform.position + damageAngle / 2);
-                    }
-                    else  //armor takes what it can, passes the rest onto internal damage;
-                    {
-                        damage -= armor.Back;
-                        armor.Back = 0;
-                        _CoreStrength -= damage;
-                        InternalDamage(true);
-                    }
+                    lastHit = HitLoc.B;
+                    ApplyArmorDamage(Side.Back, damage, damageAngle);
                 }
                 else if (Vector3.Angle(-transform.right, damageAngle) <= 45) // left armor hit!)
                 {
                     lastHit = HitLoc.L;
-                    if (armor.Left > damage) //can the armor take the hit? 
-                    {
-                        armor.Left -= damage;
-                        ArmorDamage(transform.position + damageAngle / 2);
-                    }
-                    else  //armor takes what it can, passes the rest onto internal damage;
-                    {
-                        damage -= armor.Left;
-                        armor.Left = 0;
-                        _CoreStrength -= damage;
-                        InternalDamage(true);
-                    }
+                    ApplyArmorDamage(Side.Left, damage, damageAngle);
                 }
                 else if (Vector3.Angle(transform.right, damageAngle) <= 45) // right armor hit!)
                 {
                     lastHit = HitLoc.R;
-                    if (armor.Right > damage) //can the armor take the hit? 
-                    {
-                        armor.Right -= damage;
-                        ArmorDamage(transform.position + damageAngle / 2);
-                    }
-                    else  //armor takes what it can, passes the rest onto internal damage;
-                    {
-                        damage -= armor.Right;
-                        armor.Right = 0;
-                        _CoreStrength -= damage;
-                        InternalDamage(true);
-                    }
+                    ApplyArmorDamage(Side.Right, damage, damageAngle);
                 }
                 else //HUH, no armor seems to have been hit. That's a dirty lie, so let's make them all suffer, plus a liiitle bit of core damage for fibbing.
                 {
@@ -714,6 +648,23 @@ public class ShipSettings : MonoBehaviour
                 hitTracker[0] = 0;
                 return hitTracker;
             }
+        }
+    }
+
+    private void ApplyArmorDamage(Side side, float damage, Vector3 damageAngle)
+    {
+        float currentArmor = armor.GetValue(side);
+        if (currentArmor > damage) //can the armor take the hit? 
+        {
+            armor.SetValue(side, currentArmor - damage);
+            ArmorDamage(transform.position + damageAngle / 2);
+        }
+        else  //armor takes what it can, passes the rest onto internal damage;
+        {
+            damage -= currentArmor;
+            armor.SetValue(side, 0);
+            _CoreStrength -= damage;
+            InternalDamage(true);
         }
     }
 
