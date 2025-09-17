@@ -170,7 +170,7 @@ public class AITurret : MonoBehaviour
         }
     }
     //Utility to find the nearest ship, ignoring one of the Teams, any cloaked ships, and the Ship looking
-    public ShipSettings FindNearestShip(Transform toObj,float angle, ShipSettings.TEAM ignoreTEAM)
+    public ShipSettings FindNearestShip(Transform toObj,float angle, TEAM ignoreTEAM)
     {
         float distance = engageDist * 10f;
 
@@ -190,7 +190,7 @@ public class AITurret : MonoBehaviour
                 Vector3 shipVec = Vector3.Normalize(shipTrans.position - toObj.position);
                 float shipAngle = Vector3.Angle(shipVec, transform.forward);
 
-                if (shipTest.AITeam != ShipSettings.TEAM.NEUTRAL && shipTest != shipMain && shipAngle <= angle)
+                if (shipTest.AITeam != TEAM.NEUTRAL && shipTest != shipMain && shipAngle <= angle)
                 {
                     if (shipDist < distance && shipTest.AITeam != ignoreTEAM)
                     {
@@ -206,7 +206,7 @@ public class AITurret : MonoBehaviour
             return null;
     }
     //Utility to Get a ship by ID
-    public ShipSettings FindShipByID(int id, ShipSettings.TEAM team)
+    public ShipSettings FindShipByID(int id, TEAM team)
     {
 
         ShipSettings foundShip = GameObjTracker.GetShipByID(id);

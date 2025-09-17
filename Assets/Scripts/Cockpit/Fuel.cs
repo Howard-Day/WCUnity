@@ -36,7 +36,7 @@ public class Fuel : MonoBehaviour
             shipMain = (ShipSettings)gameObject.GetComponentInParent<ShipSettings>();
         }
 
-        float sliderVal = shipMain._Fuel / shipMain.maxFuel;
+        float sliderVal = shipMain._Fuel / shipMain.Settings.MaxFuel;
 
 
         if (FuelLevelCustom != null)

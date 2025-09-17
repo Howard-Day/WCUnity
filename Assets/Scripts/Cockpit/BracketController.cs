@@ -73,11 +73,11 @@ public class BracketController : MonoBehaviour
         //use default bracket color and sprite   
         bracketSprite.color = Color;
         bracketSprite.sprite = HUDRoot.defaultBracket;
-        if (shipMain.AITeam == ShipSettings.TEAM.CONFED)
+        if (shipMain.AITeam == TEAM.CONFED)
         {
             bracketSprite.type = Image.Type.Sliced;
         }
-        if (shipMain.AITeam == ShipSettings.TEAM.KILRATHI)
+        if (shipMain.AITeam == TEAM.KILRATHI)
         {
             bracketSprite.type = Image.Type.Tiled;
 

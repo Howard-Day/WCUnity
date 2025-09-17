@@ -78,7 +78,7 @@ public class DualJoystickThrottle : MonoBehaviour
 
     void DoFeet()
     {
-        float targetThrottle = (shipMain.targetSpeed / shipMain.topSpeed) * .75f;
+        float targetThrottle = (shipMain.targetSpeed / shipMain.Settings.TopSpeed) * .75f;
         if (shipMain.isAfterburning)
         {
             targetThrottle = 1f;

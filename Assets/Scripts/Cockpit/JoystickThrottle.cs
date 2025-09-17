@@ -34,7 +34,7 @@ public class JoystickThrottle : MonoBehaviour
     }
     void DoThrottle()
     {
-        smoothThrottle = Mathf.SmoothStep(smoothThrottle, shipMain.targetSpeed / shipMain.topSpeed, 0.2f);
+        smoothThrottle = Mathf.SmoothStep(smoothThrottle, shipMain.targetSpeed / shipMain.Settings.TopSpeed, 0.2f);
 
         if (!shipMain.isAfterburning)
         {

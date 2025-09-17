@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87e6a4c68c261074297a1ecf623f0df1, type: 3}
+  m_Name: Dorkir
+  m_EditorClassIdentifier: Assembly-CSharp::ShipSettingsAsset
+  aiTeam: 0
+  class: 2
+  weight: 1
+  displayName: Dorkir
+  turnRate: 10
+  maxFuel: 25000
+  fuelBurnRate: 2
+  topSpeed: 30
+  burnSpeed: 30
+  acceleration: 1.5
+  deceleration: 1
+  lag: 1
+  deltaSmooth: 0.2
+  capacitorSize: 50
+  weaponRechargeRate: 1
+  armor:
+    front: 12
+    back: 12
+    left: 12
+    right: 12
+  shield:
+    front: 500
+    back: 500
+  shieldRechargeRate: 1222
+  hasCloak: 0
+  timeToCloak: 2
+  cloakPower: 20
+  cloakDrain: 1

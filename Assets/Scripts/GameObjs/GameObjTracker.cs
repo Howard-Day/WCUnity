@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
+// TODO: don't use static fields for this
 public class GameObjTracker : MonoBehaviour
 {
     public float speedMultiplier = 1f;
@@ -129,15 +130,15 @@ public class GameObjTracker : MonoBehaviour
 
         foreach (ShipSettings ship in Ships)
         {
-            if (ship.AITeam == ShipSettings.TEAM.CONFED)
+            if (ship.AITeam == TEAM.CONFED)
                 ConfedShips.Add(ship);
-            if (ship.AITeam == ShipSettings.TEAM.KILRATHI)
+            if (ship.AITeam == TEAM.KILRATHI)
                 KilrathiShips.Add(ship);
-            if (ship.AITeam == ShipSettings.TEAM.NEUTRAL)
+            if (ship.AITeam == TEAM.NEUTRAL)
                 NeutralShips.Add(ship);
-            if (ship.AITeam == ShipSettings.TEAM.PIRATE)
+            if (ship.AITeam == TEAM.PIRATE)
                 PirateShips.Add(ship);
-            if (ship.AITeam == ShipSettings.TEAM.ENV)
+            if (ship.AITeam == TEAM.ENV)
                 Environmental.Add(ship);
         }
         //print("GameObj Tracker: Found "+ ConfedShips.Count + " Confed Ships, "+ KilrathiShips.Count + " Kilrathi Ships, "+ NeutralShips.Count + " Neutral Ships, and "+ PirateShips.Count + " Pirate Ships!");

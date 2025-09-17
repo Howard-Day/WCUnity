@@ -40,6 +40,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2289861991765167608, guid: cfb7a2335576985479485947cc9f59f8,
         type: 3}
+      propertyPath: settings
+      value: 
+      objectReference: {fileID: 11400000, guid: 1c912bd2c7c14a74092c6eba0507adb8,
+        type: 2}
+    - target: {fileID: 2289861991765167608, guid: cfb7a2335576985479485947cc9f59f8,
+        type: 3}
       propertyPath: turnRate
       value: 90
       objectReference: {fileID: 0}

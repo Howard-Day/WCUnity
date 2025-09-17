@@ -20,6 +20,6 @@ public class CloakLevelDisplay : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        CloakLevelCustom.Fill = Mathf.Clamp01(shipMain.cloakCapacitorLevel / shipMain.cloakPower);        
+        CloakLevelCustom.Fill = Mathf.Clamp01(shipMain.cloakCapacitorLevel / shipMain.Settings.CloakPower);
     }
 }

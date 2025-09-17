@@ -165,10 +165,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9381e042c574de1478756c7cc7a7c1e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  AITeam: 1
-  Class: 0
-  Weight: 1
-  DisplayName: Krant
+  settings: {fileID: 11400000, guid: d5bb442dbc2b44548bd78566702c6028, type: 2}
   isWingLead: 0
   CollidesWith:
     serializedVersion: 2
@@ -176,25 +173,11 @@ MonoBehaviour:
   Billboard: {fileID: 4136052188531549729}
   VDUImage: {fileID: -1922495045691203107, guid: bae67950433dbf946ac049c7736e3de7,
     type: 3}
-  turnRate: 60
-  maxFuel: 3000
-  fuelBurnRate: 2.5
-  bingoFuel: 0
-  invertYAxis: 0
-  topSpeed: 38
-  burnSpeed: 110
-  acceleration: 2.25
-  deceleration: 1.35
-  lag: 1.5
   AutoAvoids:
     serializedVersion: 2
     m_Bits: 3072
-  deltaSmooth: 0.05
-  capacitorSize: 25
-  rechargeRate: 5
-  Armor: {x: 8, y: 6, z: 7, w: 7}
-  Shield: {x: 7, y: 6}
-  shieldRechargeRate: 8
+  bingoFuel: 0
+  invertYAxis: 0
   DeathVFX:
   - {fileID: 7789471376337144576, guid: 00b8cbe808eda81448b2786984607fcd, type: 3}
   DeathTrailVFX: {fileID: 3707795204099303826, guid: d2bce69b83d3773418e13260152f0018,
@@ -205,10 +188,6 @@ MonoBehaviour:
     type: 3}
   DamageTrails: {fileID: 1507481365441476783, guid: edceb4824a5b55a43a13f2d0bd9a92b9,
     type: 3}
-  hasCloak: 0
-  timeToCloak: 2
-  cloakPower: 20
-  cloakDrain: 1
   cloakCapacitorLevel: 0
   turrets: []
   projWeapons: []
@@ -224,8 +203,6 @@ MonoBehaviour:
   isPlayer: 0
   playerUI: {fileID: 0}
   shipRadius: 11
-  _ArmorMax: {x: 4, y: 5, z: 4, w: 4}
-  _ShieldMax: {x: 6, y: 6}
   CoreMax: 7.6666665
   hitInAss: 0
   EngineSFX: {fileID: 0}

@@ -133,7 +133,7 @@ public class CockpitViewSwitcher : MonoBehaviour
 
         //print (xShift);
         TargetShift = new Vector2(Mathf.Clamp(xShift, -1f, 1f), -Mathf.Clamp(yShift, -1f, 1f));
-        if (shipMain.speed > shipMain.topSpeed)
+        if (shipMain.speed > shipMain.Settings.TopSpeed)
         {
             TargetShift += new Vector2(Random.Range(-1f, 1f), Random.Range(-1f, 1f)) * .025f;
         }

@@ -47,22 +47,22 @@ public class HUDRoot : MonoBehaviour
         }
         HUDBrackets = new List<BracketController>();
 
-        if (shipMain.AITeam == ShipSettings.TEAM.CONFED)
+        if (shipMain.AITeam == TEAM.CONFED)
         {
             MakeBrackets(GameObjTracker.KilrathiShips, srcRadar.enemyNear);
             MakeBrackets(GameObjTracker.ConfedShips, srcRadar.friendlyNear);
         }
-        if (shipMain.AITeam == ShipSettings.TEAM.KILRATHI)
+        if (shipMain.AITeam == TEAM.KILRATHI)
         {
             MakeBrackets(GameObjTracker.ConfedShips, srcRadar.enemyNear);
             MakeBrackets(GameObjTracker.KilrathiShips, srcRadar.friendlyNear);
         }
-        if (shipMain.AITeam == ShipSettings.TEAM.PIRATE)
+        if (shipMain.AITeam == TEAM.PIRATE)
         {
             MakeBrackets(GameObjTracker.ConfedShips, srcRadar.enemyNear);
             MakeBrackets(GameObjTracker.KilrathiShips, srcRadar.enemyNear);
         }
-        if (shipMain.AITeam == ShipSettings.TEAM.NEUTRAL)
+        if (shipMain.AITeam == TEAM.NEUTRAL)
         {
             MakeBrackets(GameObjTracker.ConfedShips, srcRadar.neutralNear);
             MakeBrackets(GameObjTracker.KilrathiShips, srcRadar.neutralNear);

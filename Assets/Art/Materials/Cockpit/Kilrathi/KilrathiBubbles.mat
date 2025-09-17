@@ -135,6 +135,6 @@ Material:
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _MotionVectors: {r: -0.104758576, g: -0.14159608, b: -0.068886414, a: 0}
+    - _MotionVectors: {r: 0.5340086, g: 0.12317885, b: 0.8814039, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

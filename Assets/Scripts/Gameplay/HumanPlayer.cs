@@ -40,19 +40,19 @@ public class HumanPlayer : MonoBehaviour
 
         if (afterBurnOff)
         {
-            ship.targetSpeed = ship.topSpeed / 2;
+            ship.targetSpeed = ship.Settings.TopSpeed / 2;
         }
 
         if (afterBurn)
         {
-            ship.targetSpeed = ship.burnSpeed;
+            ship.targetSpeed = ship.Settings.BurnSpeed;
         }
         else
         {
 
             if (fullSpeed)
             {
-                ship.targetSpeed = ship.topSpeed;
+                ship.targetSpeed = ship.Settings.TopSpeed;
             }
             if (fullStop)
             {
@@ -60,7 +60,7 @@ public class HumanPlayer : MonoBehaviour
             }
             else
             {
-                if (accelerate && !decelerate && ship.targetSpeed < ship.topSpeed)
+                if (accelerate && !decelerate && ship.targetSpeed < ship.Settings.TopSpeed)
                 {
                     ship.targetSpeed += speedSelectionSpeed * Time.deltaTime;
                 }

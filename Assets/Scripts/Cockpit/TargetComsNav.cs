@@ -132,7 +132,7 @@ public class TargetComsNav : MonoBehaviour
                 float tarDist = Vector3.Distance(shipMain.transform.position, currentTarget.transform.position);
                 tarDist = Mathf.FloorToInt(tarDist * 10) / 10f;
 
-                TargetName.text = ("Target: " + currentTarget.DisplayName).ToUpper();
+                TargetName.text = ("Target: " + currentTarget.Settings.DisplayName).ToUpper();
 
                 if (!inBase8)
                 {
@@ -143,24 +143,24 @@ public class TargetComsNav : MonoBehaviour
                     TargetDist.text = ("Range: " + Int32ToString(Mathf.FloorToInt(tarDist) * 2,8) + "m").ToUpper();
                 }
 
-                if (currentTarget.Armor.x < currentTarget._ArmorMax.x / 2)
+                if (currentTarget.Armor.Front < currentTarget.Settings.Armor.Front / 2)
                 {
                     DamagedFront.SetActive(true);
                 }
-                if (currentTarget.Armor.y < currentTarget._ArmorMax.y / 2)
+                if (currentTarget.Armor.Back < currentTarget.Settings.Armor.Back / 2)
                 {
                     DamagedBack.SetActive(true);
                 }
-                if (currentTarget.Armor.z < currentTarget._ArmorMax.z / 2)
+                if (currentTarget.Armor.Left < currentTarget.Settings.Armor.Left / 2)
                 {
                     DamagedLeft.SetActive(true);
                 }
-                if (currentTarget.Armor.w < currentTarget._ArmorMax.w / 2)
+                if (currentTarget.Armor.Right < currentTarget.Settings.Armor.Right / 2)
                 {
                     DamagedRight.SetActive(true);
                 }
-                int SFront = Mathf.FloorToInt((currentTarget.Shield.x / currentTarget._ShieldMax.x) * 4) - 1;
-                int SRear = Mathf.FloorToInt((currentTarget.Shield.y / currentTarget._ShieldMax.y) * 4) - 1;
+                int SFront = Mathf.FloorToInt((currentTarget.Shield.Front / currentTarget.Settings.Shield.Front) * 4) - 1;
+                int SRear = Mathf.FloorToInt((currentTarget.Shield.Back / currentTarget.Settings.Shield.Back) * 4) - 1;
 
                 SFront = Mathf.Clamp(SFront,0,3);
                 SRear = Mathf.Clamp(SRear, 0, 3);
