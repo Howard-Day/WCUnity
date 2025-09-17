@@ -34,7 +34,7 @@ public class BlipController : MonoBehaviour
             GameObjTracker.RegisterAllShips();
             GameObjTracker.RegisterTeams();       
         }
-        if (ship)
+        if (ship && shipMain)
         {
             Vector3 blipLoc = ship.transform.position;
             Vector3 blipAngle = blipLoc - shipMain.transform.position;

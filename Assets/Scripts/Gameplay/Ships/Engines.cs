@@ -86,6 +86,11 @@ public class Engines : ShipSystem
         }
     }
 
+    public void SetNormalizedTargetSpeed(float value)
+    {
+        targetSpeed = Settings.TopSpeed * Mathf.Clamp01(value);
+    }
+
     void DoThrottle()
     {
         var targetSpeed_ = Mathf.Clamp(targetSpeed, 0f, Settings.BurnSpeed);

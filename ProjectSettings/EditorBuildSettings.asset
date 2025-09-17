@@ -17,4 +17,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/SPScenes/MissionDemo.unity
     guid: a41ecf6927dc9704a833918d68251d92
-  m_configObjects: {}
+  m_configObjects:
+    com.unity.input.settings: {fileID: 11400000, guid: cb610c90436f7274ebf79f4aad42ae13,
+      type: 2}
+  m_UseUCBPForAssetBundles: 0

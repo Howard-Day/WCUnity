@@ -17,7 +17,7 @@ public class AITurret : MonoBehaviour
 
     ShipSettings shipMain;
     AIPlayer AIPilot;
-    HumanPlayer pilot;
+    PlayerController pilot;
     TurretSettings turret;
     Transform elevation;
     ShipSettings AITargetShip;
@@ -43,7 +43,7 @@ public class AITurret : MonoBehaviour
 
         shipMain = GetComponentInParent<ShipSettings>();
         AIPilot = GetComponentInParent<AIPlayer>();
-        pilot = GetComponentInParent<HumanPlayer>();
+        pilot = GetComponentInParent<PlayerController>();
         turret = GetComponent<TurretSettings>();
         elevation = transform.FindRecursive("Elevation");
         DoSkillLevels();
