@@ -32,7 +32,8 @@ public class PlayerController : MonoBehaviour
         viewSwitcher = ship.GetComponentInChildren<CockpitViewSwitcher>();
         if (viewSwitcher != null)
         {
-            viewSwitcher.enabled = false;
+            viewSwitcher.ChaseSwitch = false;
+            viewSwitcher.RandomSwitch = false;
         }
 
         // Reset ship inputs
