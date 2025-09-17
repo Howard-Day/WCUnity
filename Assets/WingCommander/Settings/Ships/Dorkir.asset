@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 87e6a4c68c261074297a1ecf623f0df1, type: 3}
   m_Name: Dorkir
   m_EditorClassIdentifier: Assembly-CSharp::ShipSettingsAsset
-  aiTeam: 0
+  aiTeam: 1
   class: 2
   weight: 1
   displayName: Dorkir
@@ -26,7 +26,7 @@ MonoBehaviour:
   lag: 1
   deltaSmooth: 0.2
   capacitorSize: 50
-  weaponRechargeRate: 1
+  rechargeRate: 1
   armor:
     front: 12
     back: 12
