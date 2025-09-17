@@ -58,7 +58,7 @@ public class ArmorStatus : IReadOnlyArmorStatus {
         else if (side == Side.Back) back = value;
         else if (side == Side.Left) left = value;
         else if (side == Side.Right) right = value;
-        throw new System.NotImplementedException("Unrecognized side " + side);
+        else throw new System.NotImplementedException("Unrecognized side " + side);
     }
 
     public ArmorStatus Clone()
