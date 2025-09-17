@@ -671,7 +671,7 @@ public class AIPlayer : MonoBehaviour
                     if (ppDist > 10)
                     {
                         SteerTo(PatrolPoints[nextPatrolPoint]);
-                        ship.targetSpeed = ship.Settings.TopSpeed * .75f; //Cruise speed! No rush, juuust loooking for baddies. 
+                        ship.Engines.TargetSpeed = ship.Settings.TopSpeed * .75f; //Cruise speed! No rush, juuust loooking for baddies. 
                     }
                     else
                     {
@@ -737,17 +737,17 @@ public class AIPlayer : MonoBehaviour
                         {
                             if (leadDist > 120)//If we're a ways off, aim right at the formation point and afterburn into position.
                             {
-                                ship.targetSpeed = ship.Settings.BurnSpeed;
+                                ship.Engines.TargetSpeed = ship.Settings.BurnSpeed;
                                 SteerTo(localFormPos);
                             }
                             if (leadDist <= 120 && leadDist > 20) //If we're a moderate distance away, set speed to the lead ship +25%, aim at the formation position.
                             {
-                                ship.targetSpeed = WingmanTo.speed + ship.Settings.TopSpeed / 4;
+                                ship.Engines.TargetSpeed = WingmanTo.speed + ship.Settings.TopSpeed / 4;
                                 SteerTo(localFormPos);
                             }
                             if (leadDist <= 20) //If we're close, Match speed, and aim at a point parallel to the direction of the lead ship
                             {
-                                ship.targetSpeed = WingmanTo.speed;
+                                ship.Engines.TargetSpeed = WingmanTo.speed;
                                 SteerTo(localFormPos + WingmanTo.transform.forward * ship.shipRadius * 4f);
                                 //A gentle push, like the avoidance system, to nudge us into place
                                 float formPush = (dirToPos.magnitude / 10) * .5f;
@@ -784,7 +784,7 @@ public class AIPlayer : MonoBehaviour
                         
                         SteerTo(AITarget.position);// + (randApproach * (Vector3.Distance(AITarget.position, transform.position) / engageDist)));
 
-                        ship.targetSpeed = ship.Settings.TopSpeed;
+                        ship.Engines.TargetSpeed = ship.Settings.TopSpeed;
 
                         if (!AITarget)
                         {
@@ -792,7 +792,7 @@ public class AIPlayer : MonoBehaviour
                         }
                         if (Vector3.Distance(AITarget.position, transform.position) > engageDist)
                         {
-                            ship.targetSpeed = ship.Settings.BurnSpeed;
+                            ship.Engines.TargetSpeed = ship.Settings.BurnSpeed;
                         }
                         if (Vector3.Distance(AITarget.position, transform.position) <= engageDist)
                         {
@@ -811,7 +811,7 @@ public class AIPlayer : MonoBehaviour
                     {
                         ActiveAIState = AIState.PATROL;
                     }
-                    //print(gameObject.name + " Is engaging! Throttle set to " + ship.targetSpeed);
+                    //print(gameObject.name + " Is engaging! Throttle set to " + ship.Engines.TargetSpeed);
                 }
                 break;
 
@@ -849,23 +849,23 @@ public class AIPlayer : MonoBehaviour
                             //If we're too far away to match speed to the target, get closer
                             if (distToTarget > followDist)
                             {
-                                ship.targetSpeed = ship.Settings.TopSpeed;
+                                ship.Engines.TargetSpeed = ship.Settings.TopSpeed;
                             }
                             //match the target's speed
                             else
                             {
-                                ship.targetSpeed = Mathf.Max(Mathf.Min(AITargetShip.targetSpeed, ship.Settings.TopSpeed), ship.Settings.TopSpeed / 4);
+                                ship.Engines.TargetSpeed = Mathf.Max(Mathf.Min(AITargetShip.Engines.TargetSpeed, ship.Settings.TopSpeed), ship.Settings.TopSpeed / 4);
                             }
                             //Try and turn toward the target! 
                             if (distToTarget > engageDist)
                             {
                                 if (angleToTarget < 60)
                                 {
-                                    ship.targetSpeed = ship.Settings.BurnSpeed;
+                                    ship.Engines.TargetSpeed = ship.Settings.BurnSpeed;
                                 }
                                 else
                                 {
-                                    ship.targetSpeed = ship.Settings.TopSpeed;
+                                    ship.Engines.TargetSpeed = ship.Settings.TopSpeed;
                                 }
                             }
                         }
@@ -961,7 +961,7 @@ public class AIPlayer : MonoBehaviour
                     {//Punch it, Chewie! 
                         ship.FireGuns(false);
 
-                        ship.targetSpeed = ship.Settings.BurnSpeed;
+                        ship.Engines.TargetSpeed = ship.Settings.BurnSpeed;
                         if (EvadeSteer == Vector3.zero)// have we chosen where to steer? 
                         {
                             EvadeSteer = new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), Random.Range(-1f, 1f));
@@ -1024,11 +1024,11 @@ public class AIPlayer : MonoBehaviour
                         }
                         if (distToTarget < 80f && distToTarget > 40f)
                         {
-                            ship.targetSpeed = ship.Settings.BurnSpeed;
+                            ship.Engines.TargetSpeed = ship.Settings.BurnSpeed;
                         }
                         else
                         {
-                            ship.targetSpeed = ship.Settings.TopSpeed;
+                            ship.Engines.TargetSpeed = ship.Settings.TopSpeed;
                         }
                         SteerTo(randPos);
                         if (Vector3.Distance(transform.position, randPos) < 20f || distToTarget > 100f)
@@ -1065,7 +1065,7 @@ public class AIPlayer : MonoBehaviour
         avoidTime = 4f;
         forceFireAngle = 30f;
         forceFireDist = engageDist / 5f;
-        ship.targetSpeed = ship.Settings.TopSpeed * .75f;
+        ship.Engines.TargetSpeed = ship.Settings.TopSpeed * .75f;
         SteerTo(new Vector3(0, 50, 200));
         RollControl(Random.Range(-4000f, 1f));
     }

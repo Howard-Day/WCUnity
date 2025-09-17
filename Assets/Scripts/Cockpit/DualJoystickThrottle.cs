@@ -28,7 +28,7 @@ public class DualJoystickThrottle : MonoBehaviour
     /// </summary>
     void Start()
     {
-        shipMain = (ShipSettings)gameObject.GetComponentInParent<ShipSettings>();
+        shipMain = gameObject.GetComponentInParent<ShipSettings>();
         initialPos = transform.localPosition;
     }
     float refSteerX;
@@ -78,8 +78,8 @@ public class DualJoystickThrottle : MonoBehaviour
 
     void DoFeet()
     {
-        float targetThrottle = (shipMain.targetSpeed / shipMain.Settings.TopSpeed) * .75f;
-        if (shipMain.isAfterburning)
+        float targetThrottle = (shipMain.Engines.TargetSpeed / shipMain.Settings.TopSpeed) * .75f;
+        if (shipMain.Engines.IsAfterburning)
         {
             targetThrottle = 1f;
         }

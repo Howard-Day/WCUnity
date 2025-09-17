@@ -29,7 +29,7 @@ public class BlipController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!ship || ship.isDead)
+        if (!ship || ship.IsDead)
         {
             GameObjTracker.RegisterAllShips();
             GameObjTracker.RegisterTeams();       

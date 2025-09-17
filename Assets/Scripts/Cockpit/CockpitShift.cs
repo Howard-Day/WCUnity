@@ -53,7 +53,7 @@ public class CockpitShift : MonoBehaviour
 
             temp_shake_intensity -= shake_decay;
         }
-        if (shipMain.isAfterburning)
+        if (shipMain.Engines.IsAfterburning)
         {
             AfterburnShake();
         }

@@ -1,12 +1,16 @@
-﻿using System.Collections;
+﻿using OneManEscapePlan.Common;
+using System.Collections;
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.Assertions;
 
 public class ShipSettings : MonoBehaviour
 {
-	[SerializeField] private ShipSettingsAsset settings;
+    #region FIELDS
+    [SerializeField] public GameObject DamageTrails;
+
+    [SerializeField, NonNull] private ShipSettingsAsset settings;
+    [SerializeField, NonNull] private Engines engines;
 
     [SerializeField] public bool isWingLead = false;
     [SerializeField] public LayerMask CollidesWith;
@@ -17,7 +21,6 @@ public class ShipSettings : MonoBehaviour
 
     [Header("Movement Settings")]
     [SerializeField] public LayerMask AutoAvoids;
-    [SerializeField] public bool bingoFuel = false;
     [SerializeField] public bool invertYAxis = false;
 
     [Header("Death Effect")]
@@ -25,7 +28,7 @@ public class ShipSettings : MonoBehaviour
     [SerializeField] public GameObject DeathTrailVFX;
     [SerializeField] public GameObject InternalDamageVFX;
     [SerializeField] public GameObject DamageVFX;
-    [SerializeField] public GameObject DamageTrails;
+
     [Header("Special Abilities")]
     [HideInInspector] public float cloakCapacitorLevel;
 
@@ -33,13 +36,6 @@ public class ShipSettings : MonoBehaviour
     [SerializeField] public List<ProjectileWeapon> projWeapons;
 
     [Header("SFX")]
-    [SerializeField] public AudioClip EngineSound;
-    [SerializeField] public Vector2 MinMaxThrottlePitch = Vector2.one;
-    [SerializeField] public Vector2 MinMaxThrottleVolume = Vector2.one;
-    [SerializeField] public AudioClip AfterburnSound;
-    [SerializeField] public float AfterburnPitch = 1f;
-    [SerializeField] public float AfterburnVolume = .25f;
-    [SerializeField] public float AfterburnSmoothness = .25f;
     [SerializeField] public AudioClip CloakOnSound;
     [SerializeField] public AudioClip CloakOffSound;
 
@@ -47,14 +43,11 @@ public class ShipSettings : MonoBehaviour
     [HideInInspector] public bool isPlayer = false;
     [HideInInspector] public GameObject playerUI;
     [HideInInspector] public float shipRadius;
-    [HideInInspector] public float CoreMax;
+    private float coreMax;
     [HideInInspector] public bool hitInAss = false; //this is important information, for a lot of reasons.
-    EngineFlare[] engineFlares;
     Material billboardMat;
-    [HideInInspector] public AudioSource EngineSFX;
-    [HideInInspector] public AudioSource AfterburnSFX;
     [HideInInspector] public AudioSource CloakSFX;
-    [HideInInspector] public float AfterburnBlend = 0f;
+    
     public class DamageComponents
     {
         public float IonDrive = 0f;
@@ -70,20 +63,17 @@ public class ShipSettings : MonoBehaviour
     }
     [HideInInspector] public DamageComponents componentDamage = new DamageComponents();
     [HideInInspector] public float _CoreStrength;
-    [SerializeField] public float _Fuel;
     [HideInInspector] public int ShipID;
     [HideInInspector] public float yaw;
     [HideInInspector] public float pitch;
     [HideInInspector] public float roll;
-    [HideInInspector] public float targetSpeed;
     [HideInInspector] public float capacitorLevel;
     [HideInInspector] public bool isFiring = false;
-    [HideInInspector] public bool isAfterburning;
     [HideInInspector] public float speed = 0f;
     [HideInInspector] GameObjTracker Tracker;
 
     [HideInInspector] public int numWingmen = 0;
-    [HideInInspector] public bool isDead = false;
+    [HideInInspector] private bool isDead = false;
     [HideInInspector] public bool isBeingShot = false;
     [HideInInspector] public bool isLocked = false;
     [HideInInspector] public ShipSettings currentTarget;
@@ -106,16 +96,11 @@ public class ShipSettings : MonoBehaviour
     Vector3 DeathSpin;
     int DeathType;
     float DeathLength;
-    GameObject Trail;
     Transform DecoRoot;
 
     [HideInInspector] public Quaternion oldRot;
     [HideInInspector] public Vector3 rotDelta;
-    Quaternion LagDir;
     Pose lastTrans;
-
-    [HideInInspector] public float throttle;
-    [HideInInspector] public float flareIntensity = 1f;
 
     public bool Cloak = false;
     public bool isCloaked = false;
@@ -128,9 +113,12 @@ public class ShipSettings : MonoBehaviour
 
     private ArmorStatus armor;
     private ShieldStatus shield;
+    #endregion
+
 
     #region PROPERTIES
     public ShipSettingsAsset Settings => settings;
+    public Engines Engines => engines;
 
     public string DisplayName => settings.DisplayName;
     public TEAM AITeam => settings.AITeam;
@@ -139,6 +127,9 @@ public class ShipSettings : MonoBehaviour
 
     public float ShieldFrontNormalized => shield.Front / settings.Shield.Front;
     public float ShieldBackNormalized => shield.Back / settings.Shield.Back;
+
+    public bool IsDead => isDead;
+    public float CoreMax => coreMax;
     #endregion
 
     private void Awake() {
@@ -171,23 +162,17 @@ public class ShipSettings : MonoBehaviour
         GameObjTracker.RegisterAllShips();
         GameObjTracker.RegisterTeams();
 
-        //grab the sub-object engine flares to control them
-        engineFlares = GetComponentsInChildren<EngineFlare>();
         //Atomic Batteries to power
         capacitorLevel = settings.CapacitorSize;
         cloakCapacitorLevel = settings.CloakPower;
         //Turbines to speed
-        //check fuel Light
-        _Fuel = settings.MaxFuel;
         //Power Weapons
         InitGuns();
 
         _CoreStrength = (settings.Armor.Sum + (settings.Shield.Sum) / 2f)/3f; //Generalized fomula for the unarmored mechanical core of the ship
-        CoreMax = _CoreStrength;
+        coreMax = _CoreStrength;
 
         //Init SFX
-        InitEngineSFX();
-        InitAfterburnSFX();
         if (settings.HasCloak)
         {
             InitCloakSFX();
@@ -197,21 +182,6 @@ public class ShipSettings : MonoBehaviour
     // TODO: these settings shouldn't be hardcoded. AudioSources should be part
     // of the prefabs, rather than instantiated at runtime.
     #region SFX INIT
-    private void InitEngineSFX()
-    {
-        EngineSFX = gameObject.AddComponent<AudioSource>();
-        EngineSFX.clip = EngineSound;
-        EngineSFX.playOnAwake = true;
-        EngineSFX.loop = true;
-        EngineSFX.volume = MinMaxThrottleVolume.x;
-        EngineSFX.spatialBlend = 1f;
-        EngineSFX.dopplerLevel = 2f;
-        EngineSFX.maxDistance = 80f;
-        EngineSFX.minDistance = 10f;
-        EngineSFX.rolloffMode = AudioRolloffMode.Linear;
-        EngineSFX.Play();
-    }
-
     private void InitCloakSFX()
     {
         CloakSFX = gameObject.AddComponent<AudioSource>();
@@ -225,40 +195,8 @@ public class ShipSettings : MonoBehaviour
         CloakSFX.minDistance = 25f;
         CloakSFX.rolloffMode = AudioRolloffMode.Linear;
     }
-
-    private void InitAfterburnSFX()
-    {
-        AfterburnSFX = gameObject.AddComponent<AudioSource>();
-        AfterburnSFX.clip = AfterburnSound;
-        AfterburnSFX.playOnAwake = true;
-        AfterburnSFX.loop = true;
-        AfterburnSFX.volume = 0f;
-        AfterburnSFX.spatialBlend = 1f;
-        AfterburnSFX.dopplerLevel = 2f;
-        AfterburnSFX.pitch = AfterburnPitch;
-        AfterburnSFX.maxDistance = 120f;
-        AfterburnSFX.minDistance = 1f;
-        AfterburnSFX.rolloffMode = AudioRolloffMode.Linear;
-        AfterburnSFX.Play();
-    }
     #endregion
 
-    void DoSFX() 
-    {
-        EngineSFX.volume = Mathf.Lerp(MinMaxThrottleVolume.x, MinMaxThrottleVolume.y, throttle);
-        EngineSFX.pitch = Mathf.Lerp(MinMaxThrottlePitch.x, MinMaxThrottlePitch.y, throttle);
-        if(isAfterburning)
-        {
-            AfterburnBlend = 1f;
-        }
-        else 
-        {
-            AfterburnBlend = 0f;
-        }
-        AfterburnSFX.volume = Mathf.Lerp(AfterburnSFX.volume, AfterburnBlend* AfterburnVolume, AfterburnSmoothness);
-
-
-    }
     public void SetId()
     {
         ShipID = Random.Range(-32000, 32000);
@@ -368,28 +306,7 @@ public class ShipSettings : MonoBehaviour
             }
         }
     }
-    //Handle our Fuel Levels
-    void DoFuel()
-    {
-        var normalizedThrottle = Mathf.Clamp01(speed / settings.TopSpeed);
-        if (_Fuel > 0) //WE've got fuel, let's go! 
-        {
-            if (!isAfterburning)
-            {//Do normal fuel drain based on throttle
-                _Fuel -= normalizedThrottle * Time.deltaTime * 4f;
-            }
-            else// Now we're burning fuel to GO VERY FAST
-            {
-                _Fuel -= settings.FuelBurnRate * Time.deltaTime * 5f;
-            }
-        }
-        else //Fuck, basically just a max coasting speed. Good fucking luck, cowboy
-        {
-            bingoFuel = true;
-            speed = Mathf.Min(targetSpeed, settings.TopSpeed * .666f);
-            isAfterburning = false;
-        }
-    }
+   
     //Handle Internal Damage
     void InternalDamage(bool doComponentDamage)
     {
@@ -710,16 +627,6 @@ public class ShipSettings : MonoBehaviour
         if (shield.Back < settings.Shield.Back)
             shield.Back += settings.ShieldRechargeRate * Time.deltaTime * RECHARGE_RATE_FACTOR;
         //Should do component damage here when the corestrength is low. Ignore for now
-        if (_CoreStrength < CoreMax * .666f)
-        {
-            if (!Trail)
-            {
-                foreach (EngineFlare flare in engineFlares)
-                {
-                    Trail = Instantiate(DamageTrails, flare.gameObject.transform.position + flare.gameObject.transform.forward * 4, Quaternion.identity, flare.gameObject.transform);
-                }
-            }
-        }
         if (_CoreStrength > 0)
         {
             DeathDir = transform.forward;
@@ -864,38 +771,6 @@ public class ShipSettings : MonoBehaviour
 
         DeltaRot();
     }
-    //Handle our Speed and Acceleration
-    void DoThrottle()
-    {
-        var targetSpeed_ = Mathf.Clamp(targetSpeed, 0f, settings.BurnSpeed);
-
-        if (speed < targetSpeed_)
-        // accelerating
-        {
-            speed = Mathf.Lerp(speed, targetSpeed_, settings.Acceleration * Time.deltaTime);
-        }
-        else if (speed > targetSpeed_)
-        // decelerating
-        {
-            speed = Mathf.Lerp(speed, targetSpeed_, settings.Deceleration * Time.deltaTime);
-        }
-
-        LagDir = Quaternion.Slerp(LagDir, transform.rotation, .15f * (settings.Lag + (settings.BurnSpeed / speed) * settings.Lag));
-
-        transform.position += LagDir * Vector3.forward * speed * Time.deltaTime;
-
-        //set Afterburning flag
-        if (targetSpeed > settings.TopSpeed + .1f)
-        { isAfterburning = true; }
-        else
-        { isAfterburning = false; }
-        // also set the visible flare throttles
-        foreach (EngineFlare flare in engineFlares)
-        {
-            flare.FlareThrottle = (speed / (settings.TopSpeed))*flareIntensity;
-        }
-        throttle = speed / settings.TopSpeed;
-    }
 
     //Handle our cloaking device, if we have one!
     public void DoCloak()
@@ -989,8 +864,6 @@ public class ShipSettings : MonoBehaviour
         }
         //handle the Billboard material animation
         billboardMat.SetFloat("_CloakAmount", cloakedAmount);
-        //handle dimming the engines! 
-        flareIntensity = (1 - cloakedAmount * 1.1f);
     }
 
     // late update to give human or AI player scripts a chance to set values first
@@ -999,11 +872,9 @@ public class ShipSettings : MonoBehaviour
         if (!isDead)
         {
             Steer();
-            DoThrottle();
             Power();
         }
         DoHealth();
-        DoFuel();
         if (settings.Class == CLASS.FIGHTER)
         {
             AvoidObstacles(1f, shipRadius * 4f);
@@ -1015,28 +886,18 @@ public class ShipSettings : MonoBehaviour
         if (settings.HasCloak) DoCloak();
         TargetManage();
         DoVelocity();
-        //Collision Detecting, but make sure the full collision is only being used if the ship is afterburning, simple manuvers won't do it as much.
-        if (isAfterburning)
-        {
-            DoBounce(.5f, shipRadius / 64f);
-        }
-        else
-        {
-            DoBounce(.75f, shipRadius / 64f);
-        }
-        DoSFX();
     }
 
 #if UNITY_EDITOR
-    /*
     [UnityEditor.CustomEditor(typeof(ShipSettings))]
     public class ShipSettingsEditor : UnityEditor.Editor {
         public override void OnInspectorGUI() {
             base.OnInspectorGUI();
 
+            var instance = (ShipSettings)target;
+            /*
             if (GUILayout.Button("Create settings asset")) {
-                var instance = (ShipSettings)target;
-
+               
                 var asset = ScriptableObject.CreateInstance<ShipSettingsAsset>();
                 asset.aiTeam = instance.AITeam;
                 asset.@class = instance.Class;
@@ -1068,9 +929,23 @@ public class ShipSettings : MonoBehaviour
                 var name = instance.DisplayName + ".asset";
                 string path = System.IO.Path.Join("Assets", "WingCommander/Settings/Ships", name);
                 AssetDatabase.CreateAsset(asset, path);
-			}
+            }*/
+            /*
+            if (GUILayout.Button("Add engines"))
+            {
+                var engines = instance.gameObject.AddComponent<Engines>();
+                engines.ship = instance;
+                engines.damageTrails = instance.DamageTrails;
+                engines.minMaxThrottlePitch = instance.MinMaxThrottlePitch;
+                engines.minMaxThrottleVolume = instance.MinMaxThrottleVolume;
+                engines.afterburnPitch = instance.AfterburnPitch;
+                engines.afterburnSmoothness = instance.AfterburnSmoothness;
+                engines.afterburnVolume = instance.AfterburnVolume;
+                instance.engines = engines;
+                UnityEditor.EditorUtility.SetDirty(instance.gameObject);
+                UnityEditor.EditorUtility.SetDirty(target);
+            }*/
         }
     }
-    */
 #endif
 }

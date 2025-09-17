@@ -38,35 +38,37 @@ public class HumanPlayer : MonoBehaviour
         var accelerate = Input.GetKey(KeyCode.Equals) || Input.GetKey(KeyCode.KeypadPlus); // KeyCode.Equals is the plus key without modifier
         var decelerate = Input.GetKey(KeyCode.Minus) || Input.GetKey(KeyCode.KeypadMinus);
 
+        var engines = ship.Engines;
+
         if (afterBurnOff)
         {
-            ship.targetSpeed = ship.Settings.TopSpeed / 2;
+            engines.TargetSpeed = ship.Settings.TopSpeed / 2;
         }
 
         if (afterBurn)
         {
-            ship.targetSpeed = ship.Settings.BurnSpeed;
+            engines.TargetSpeed = ship.Settings.BurnSpeed;
         }
         else
         {
 
             if (fullSpeed)
             {
-                ship.targetSpeed = ship.Settings.TopSpeed;
+                engines.TargetSpeed = ship.Settings.TopSpeed;
             }
             if (fullStop)
             {
-                ship.targetSpeed = 0f;
+                engines.TargetSpeed = 0f;
             }
             else
             {
-                if (accelerate && !decelerate && ship.targetSpeed < ship.Settings.TopSpeed)
+                if (accelerate && !decelerate && engines.TargetSpeed < ship.Settings.TopSpeed)
                 {
-                    ship.targetSpeed += speedSelectionSpeed * Time.deltaTime;
+                    engines.TargetSpeed += speedSelectionSpeed * Time.deltaTime;
                 }
-                else if (decelerate && !accelerate && ship.targetSpeed > 0f)
+                else if (decelerate && !accelerate && engines.TargetSpeed > 0f)
                 {
-                    ship.targetSpeed -= speedSelectionSpeed * Time.deltaTime;
+                    engines.TargetSpeed -= speedSelectionSpeed * Time.deltaTime;
                 }
             }
         }

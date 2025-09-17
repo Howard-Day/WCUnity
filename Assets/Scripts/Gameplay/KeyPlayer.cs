@@ -30,12 +30,12 @@ public class KeyPlayer : MonoBehaviour
     {
         if (isAfterburning)
         {
-            ship.isAfterburning = isAfterburning;
-            ship.targetSpeed = ship.Settings.BurnSpeed;
+            ship.Engines.IsAfterburning = isAfterburning;
+            ship.Engines.TargetSpeed = ship.Settings.BurnSpeed;
         }
         if (!isAfterburning)
         {
-            ship.isAfterburning = isAfterburning;
+            ship.Engines.IsAfterburning = isAfterburning;
             //ship.targetSpeed = ship.burnSpeed;
         }
     }
@@ -46,7 +46,7 @@ public class KeyPlayer : MonoBehaviour
         ship.pitch = _pitch;
         ship.yaw = _yaw;
         ship.roll = _roll;
-        ship.targetSpeed = Mathf.Lerp(0, ship.Settings.TopSpeed, _targetthrottle);
+        ship.Engines.TargetSpeed = Mathf.Lerp(0, ship.Settings.TopSpeed, _targetthrottle);
         DoBurn(afterBurn);
         FireGuns(fireGuns);
     }

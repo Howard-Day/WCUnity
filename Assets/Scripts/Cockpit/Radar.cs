@@ -104,7 +104,7 @@ public class Radar : MonoBehaviour
         {
             foreach (ShipSettings ship in Ships) //Go through a list of ships, add them 
             {
-                if (ship != shipMain && !ship.isDead) //But only if we're not looking at ourselves! Or they're not dead. :P
+                if (ship != shipMain && !ship.IsDead) //But only if we're not looking at ourselves! Or they're not dead. :P
                 {
                     GameObject blipObj = new GameObject();
                     BlipController blip = blipObj.AddComponent<BlipController>() as BlipController;

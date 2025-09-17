@@ -52,7 +52,7 @@ public class GameObjTracker : MonoBehaviour
         foreach (Transform child in GameObject.FindGameObjectWithTag("GamePlayObjs").transform)
         {
             ShipSettings ship = child.GetComponent<ShipSettings>();
-            if (ship != null && !ship.isDead)
+            if (ship != null && !ship.IsDead)
             {
                 Ships.Add(ship);
             }
@@ -65,7 +65,7 @@ public class GameObjTracker : MonoBehaviour
     {
         foreach (ShipSettings ship in Ships)
         {
-            if (ship.isDead)
+            if (ship.IsDead)
             {
                 radarRefreshNeeded = true;
                 bracketRefreshNeeded = true;

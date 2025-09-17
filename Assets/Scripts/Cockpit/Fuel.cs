@@ -5,7 +5,7 @@ using UnityEngine.UI; // Required when Using UI elements.
 
 public class Fuel : MonoBehaviour
 {
-    ShipSettings shipMain;
+    Engines engines;
     public Toggle lowFuelWarning;
     public Slider FuelLevel;
     public CustomSlider FuelLevelCustom;
@@ -25,18 +25,13 @@ public class Fuel : MonoBehaviour
 
     void Start()
     {
-        shipMain = (ShipSettings)gameObject.GetComponentInParent<ShipSettings>();
+        engines = gameObject.GetComponentInParent<Engines>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (!shipMain)
-        {
-            shipMain = (ShipSettings)gameObject.GetComponentInParent<ShipSettings>();
-        }
-
-        float sliderVal = shipMain._Fuel / shipMain.Settings.MaxFuel;
+        float sliderVal = engines.Fuel / engines.MaxFuel;
 
 
         if (FuelLevelCustom != null)

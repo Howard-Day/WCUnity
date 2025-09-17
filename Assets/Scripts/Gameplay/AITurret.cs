@@ -348,7 +348,7 @@ public class AITurret : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!shipMain.isDead)
+        if (!shipMain.IsDead)
         {
             DoGunSpeed();
             DoNoTargets();
