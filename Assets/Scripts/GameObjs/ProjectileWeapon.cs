@@ -56,14 +56,14 @@ public class ProjectileWeapon : MonoBehaviour
 
         cooldown = Mathf.Max(cooldown - Time.deltaTime, 0f);
 
-        if (fire && cooldown <= 0f && MainShip.capacitorLevel > powerDrain)
+        if (fire && cooldown <= 0f && MainShip.MainCapacitor.CurrentCharge > powerDrain)
         {
             Transform Proj = Instantiate(projectilePrefab, mountingPoint.position, mountingPoint.rotation);
             Instantiate(muzzleflashPrefab, mountingPoint.position, mountingPoint.rotation, transform.parent);
 
             //Set the Projectile ID to the GunID, and thus the ShipID. No shooting yourself.
             Proj.gameObject.GetComponent<Projectile>().ProjID = GunId;
-            MainShip.capacitorLevel -= powerDrain;
+            MainShip.MainCapacitor.CurrentCharge -= powerDrain;
             //Do SFX, if it exists 
             if (fireSFX)
             {

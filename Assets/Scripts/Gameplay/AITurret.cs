@@ -147,9 +147,9 @@ public class AITurret : MonoBehaviour
     //Handle Gun Cooldown wait
     void DoGunCooldown(float waitTime, float minCapacitorLevel)
     {
-        float normalizedCapacitorLevel = turret.capacitorLevel / turret.capacitorSize;
+        float normalizedCapacitorLevel = turret.MainCapacitor.CurrentChargeNormalized;
         // if the capacitors are low, add wait time
-        if (turret.capacitorLevel < .1f && !cooldownWaiting)
+        if (normalizedCapacitorLevel < .1f && !cooldownWaiting)
         {
             cooldownWait += Time.deltaTime * 10;
         }

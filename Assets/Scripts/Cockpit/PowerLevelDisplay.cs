@@ -24,11 +24,11 @@ public class PowerLevelDisplay : MonoBehaviour
     {
         if (!PowerLevelCustom)
         {
-            PowerLevel.value = Mathf.Clamp01(shipMain.capacitorLevel / shipMain.Settings.CapacitorSize);
+            PowerLevel.value = Mathf.Clamp01(shipMain.MainCapacitor.CurrentChargeNormalized);
         }
         else         
         {
-            PowerLevelCustom.Fill = Mathf.Clamp01(shipMain.capacitorLevel / shipMain.Settings.CapacitorSize);
+            PowerLevelCustom.Fill = Mathf.Clamp01(shipMain.MainCapacitor.CurrentChargeNormalized);
         }
     }
 }

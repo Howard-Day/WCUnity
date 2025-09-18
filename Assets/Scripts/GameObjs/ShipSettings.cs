@@ -30,8 +30,6 @@ public class ShipSettings : MonoBehaviour
     [SerializeField] public GameObject DamageVFX;
 
     [Header("Special Abilities")]
-    [HideInInspector] public float cloakCapacitorLevel;
-
     [SerializeField] public GameObject[] turrets;
     [SerializeField] public List<ProjectileWeapon> projWeapons;
 
@@ -47,7 +45,10 @@ public class ShipSettings : MonoBehaviour
     [HideInInspector] public bool hitInAss = false; //this is important information, for a lot of reasons.
     Material billboardMat;
     [HideInInspector] public AudioSource CloakSFX;
-    
+
+    private Capacitor mainCapacitor;
+    private Capacitor cloakCapacitor;
+
     public class DamageComponents
     {
         public float IonDrive = 0f;
@@ -61,13 +62,14 @@ public class ShipSettings : MonoBehaviour
         public float RepairSys = 0f;
         public float Jets = 0f;
     }
+
     [HideInInspector] public DamageComponents componentDamage = new DamageComponents();
     [HideInInspector] public float _CoreStrength;
     [HideInInspector] public int ShipID;
     [HideInInspector] public float yaw;
     [HideInInspector] public float pitch;
     [HideInInspector] public float roll;
-    [HideInInspector] public float capacitorLevel;
+    
     [HideInInspector] public bool isFiring = false;
     [HideInInspector] public float speed = 0f;
     [HideInInspector] GameObjTracker Tracker;
@@ -102,6 +104,7 @@ public class ShipSettings : MonoBehaviour
     [HideInInspector] public Vector3 rotDelta;
     Pose lastTrans;
 
+    //TODO: what's the difference between Cloak and isCloaked?
     public bool Cloak = false;
     public bool isCloaked = false;
     public bool isCloaking = false;
@@ -119,6 +122,8 @@ public class ShipSettings : MonoBehaviour
     #region PROPERTIES
     public ShipSettingsAsset Settings => settings;
     public Engines Engines => engines;
+    public Capacitor MainCapacitor => mainCapacitor;
+    public Capacitor CloakCapacitor => cloakCapacitor;
 
     public string DisplayName => settings.DisplayName;
     public TEAM AITeam => settings.AITeam;
@@ -163,8 +168,8 @@ public class ShipSettings : MonoBehaviour
         GameObjTracker.RegisterTeams();
 
         //Atomic Batteries to power
-        capacitorLevel = settings.CapacitorSize;
-        cloakCapacitorLevel = settings.CloakPower;
+        mainCapacitor = new Capacitor(settings.CapacitorSize, false);
+        cloakCapacitor = new Capacitor(settings.CloakPower, false);
         //Turbines to speed
         //Power Weapons
         InitGuns();
@@ -267,7 +272,7 @@ public class ShipSettings : MonoBehaviour
         //loop through the guns
         foreach (ProjectileWeapon projWeapon in projWeapons)
         {
-            if (capacitorLevel < projWeapon.powerDrain * (countFireIndex + 1 ))
+            if (mainCapacitor.CurrentCharge < projWeapon.powerDrain * (countFireIndex + 1 ))
             {
                 if (recover >= .99f && projWeapon.index != lastFireIndex) // Can the ship fire? Is this gun *not* the last to fire? Are we Cloaked? 
                 {
@@ -723,12 +728,12 @@ public class ShipSettings : MonoBehaviour
     //Handle Power Management
     void Power()
     {
-        if (capacitorLevel < settings.CapacitorSize) //Charge Them Guns
+        if (mainCapacitor.CurrentCharge < settings.CapacitorSize) //Charge Them Guns
         {
             //Only charge if we're not cloaked! 
             if (!isCloaked)
             {
-                capacitorLevel += settings.RechargeRate * Time.deltaTime;
+                mainCapacitor.CurrentCharge += settings.RechargeRate * Time.deltaTime;
             }
         }
     }
@@ -785,7 +790,7 @@ public class ShipSettings : MonoBehaviour
             isCloaking = false;
         }
         //Force disable the cloak if we don't have enough power to engage it - but only if we're not already cloaked! 
-        if (!isCloaked && Cloak && cloakCapacitorLevel <= settings.CloakPower * .1f)
+        if (!isCloaked && Cloak && cloakCapacitor.CurrentChargeNormalized <= .1f)
         {
             Cloak = false;
         }
@@ -835,23 +840,23 @@ public class ShipSettings : MonoBehaviour
 
 
         //if the guns are charged, recharge the Cloak, if it's not in use 
-        if (capacitorLevel >= settings.CapacitorSize && cloakCapacitorLevel < settings.CloakPower && !isCloaked && cloakedAmount < .1f)
+        if (mainCapacitor.IsFull && !cloakCapacitor.IsFull && !isCloaked && cloakedAmount < .1f)
         {
-            cloakCapacitorLevel += settings.RechargeRate * Time.deltaTime;
+            cloakCapacitor.CurrentCharge += settings.RechargeRate * Time.deltaTime;
         }
         //if the cloak is on, drain the cloak capacitors, then the gun capacitors
         if (isCloaked)
         {
-            if (cloakCapacitorLevel > 0)
+            if (!cloakCapacitor.IsEmpty)
             {
-                cloakCapacitorLevel -= settings.CloakDrain * Time.deltaTime;
+                cloakCapacitor.CurrentCharge -= settings.CloakDrain * Time.deltaTime;
             }
-            if (cloakCapacitorLevel <= 0 && capacitorLevel > 0)
+            if (cloakCapacitor.IsEmpty && !mainCapacitor.IsEmpty)
             {
-                capacitorLevel -= settings.CloakDrain * Time.deltaTime;
+                mainCapacitor.CurrentCharge -= settings.CloakDrain * Time.deltaTime;
             }
             //if we've run out of power, force an uncloak! 
-            if (capacitorLevel <= 0 && cloakCapacitorLevel <= 0)
+            if (mainCapacitor.IsEmpty && cloakCapacitor.IsEmpty)
             {
                 Cloak = false;
             }

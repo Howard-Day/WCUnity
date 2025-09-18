@@ -430,9 +430,9 @@ public class AIPlayer : MonoBehaviour
     //Handle Gun Cooldown wait
     void DoGunCooldown(float waitTime, float minCapacitorLevel)
     {
-        float normalizedCapacitorLevel = ship.capacitorLevel / ship.Settings.CapacitorSize;
+        float normalizedCapacitorLevel = ship.MainCapacitor.CurrentChargeNormalized;
         // if the capacitors are low, add wait time
-        if (ship.capacitorLevel < .1f && !cooldownWaiting)
+        if (normalizedCapacitorLevel < .1f && !cooldownWaiting)
         {
             cooldownWait += Time.deltaTime * 10;
         }
@@ -511,19 +511,22 @@ public class AIPlayer : MonoBehaviour
         if (AITarget)
         {
             float distToTarget = Vector3.Distance(AITarget.position, transform.position);
-            if (ship.capacitorLevel <= 2f) //if the AI can't shoot full blasts, increase impatience
+            if (ship.MainCapacitor.CurrentCharge <= 2f) //if the AI can't shoot full blasts, increase impatience
             {
                 impatience += Time.deltaTime * howImpatient * 4;
             }
-            if (distToTarget < 60 && ship.capacitorLevel >= ship.Settings.CapacitorSize / 4) //If we're close to oue close to our target, but CANT fire, increase Impatience, albiet at a slower rate 
+            // TODO: should this be <= ?
+            if (distToTarget < 60 && ship.MainCapacitor.CurrentChargeNormalized >= .25f) //If we're close to oue close to our target, but CANT fire, increase Impatience, albiet at a slower rate
             {
                 impatience += Time.deltaTime * howImpatient;
             }
-            if (distToTarget < engageDist / 2 && angleToTarget < 10f && ship.capacitorLevel / ship.Settings.CapacitorSize >= .666f)
+            // TODO: should this be <= ?
+            if (distToTarget < engageDist / 2 && angleToTarget < 10f && ship.MainCapacitor.CurrentChargeNormalized > .666f)
             {
                 impatience += Time.deltaTime * howImpatient * 2;
             }
-            if (impatience >= maxImpatience && ship.capacitorLevel > ship.Settings.CapacitorSize / 3) //had enough, break off 
+            // TODO: should this be <= ?
+            if (impatience >= maxImpatience && ship.MainCapacitor.CurrentChargeNormalized > .333f) //had enough, break off 
             {
                 impatience = 0f; //We did something about it, calm down
                 ActiveAIState = AIState.REPOSITION;

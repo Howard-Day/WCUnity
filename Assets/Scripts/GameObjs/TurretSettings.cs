@@ -37,7 +37,6 @@ public class TurretSettings : MonoBehaviour
     [HideInInspector] public float _CoreStrength;
     [HideInInspector] public int ShipID;
     [HideInInspector] public float targetSpeed;
-    [HideInInspector] public float capacitorLevel;
     [HideInInspector] public bool isFiring = false;
     [HideInInspector] GameObjTracker Tracker;
     [HideInInspector] public bool isDead = false;
@@ -50,6 +49,11 @@ public class TurretSettings : MonoBehaviour
     public Vector3 localRot;
     Pose lastTrans;
 
+    private Capacitor mainCapacitor;
+
+    #region PROPERTIES
+    public Capacitor MainCapacitor => mainCapacitor;
+    #endregion
     // Start is called before the first frame update
     void Start()
     {
@@ -59,7 +63,7 @@ public class TurretSettings : MonoBehaviour
         //Get our ID
         GetId();
         //Atomic Batteries to power
-        capacitorLevel = capacitorSize;
+        mainCapacitor = new Capacitor(capacitorSize, false);
         //Power Weapons
         InitGuns();
         _ArmorMax = Armor; //Give us something to compare to later on
@@ -125,7 +129,7 @@ public class TurretSettings : MonoBehaviour
         //loop through the guns
         foreach (ProjectileWeapon projWeapon in projWeapons)
         {
-            if (capacitorLevel < projWeapon.powerDrain * (countFireIndex + 1))
+            if (mainCapacitor.CurrentCharge < projWeapon.powerDrain * (countFireIndex + 1))
             {
                 if (shipMain.recover >= .99f && projWeapon.index != lastFireIndex) // Can the ship fire? Is this gun *not* the last to fire? Are we Cloaked? 
                 {
@@ -164,14 +168,16 @@ public class TurretSettings : MonoBehaviour
             }
         }
     }
+
     //Handle Power Management
     void Power()
     {
-        if (capacitorLevel < capacitorSize) //Charge Them Guns
+        if (mainCapacitor.CurrentCharge < capacitorSize) //Charge Them Guns
         {
-            capacitorLevel += rechargeRate * Time.deltaTime;
+            mainCapacitor.CurrentCharge += rechargeRate * Time.deltaTime;
         }
     }
+
     //Helpful Utilities
     public static float GetSignedAngle(Quaternion A, Quaternion B, Vector3 axis)
     {
