@@ -30,23 +30,12 @@ public class TurretSettings : MonoBehaviour
     [SerializeField] public GameObject[] DeathVFX;
 
     //Hidden Attributes
-    [HideInInspector] public float _ArmorMax;
-    [HideInInspector] public float CoreMax;
-    [HideInInspector] Material billboardMat;
     [HideInInspector] ShipSettings shipMain;
-    [HideInInspector] public float _CoreStrength;
     [HideInInspector] public int ShipID;
-    [HideInInspector] public float targetSpeed;
     [HideInInspector] public bool isFiring = false;
-    [HideInInspector] GameObjTracker Tracker;
-    [HideInInspector] public bool isDead = false;
-    [HideInInspector] public ShipSettings currentTarget;
-    [HideInInspector] public bool currentLocked = false;
-    [HideInInspector] public bool hitInternal = false;
     [HideInInspector] public Quaternion oldRot;
     [HideInInspector] public Vector3 rotDelta;
     [HideInInspector] public Quaternion initialRot;
-    public Vector3 localRot;
     Pose lastTrans;
 
     private Capacitor mainCapacitor;
@@ -66,13 +55,6 @@ public class TurretSettings : MonoBehaviour
         mainCapacitor = new Capacitor(capacitorSize, false);
         //Power Weapons
         InitGuns();
-        _ArmorMax = Armor; //Give us something to compare to later on
-        _CoreStrength = Armor / 3; //Generalized fomula for the unarmored mechanical core of the turret
-        CoreMax = _CoreStrength;
-        //grab the display part of the billboard, for futher modification
-        GetBillboardMat();
-        
-        //oldRot = Quaternion.Euler(transform.forward);
     }
     //Get the ShipId of the craft we're attached to
     public void GetId()
