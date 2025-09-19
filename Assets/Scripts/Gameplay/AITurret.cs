@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 public class AITurret : MonoBehaviour
 {
@@ -21,6 +22,7 @@ public class AITurret : MonoBehaviour
     TurretSettings turret;
     Transform elevation;
     ShipSettings AITargetShip;
+    WeaponsSystem weaponsSystem;
 
     float cooldownWait;
     bool cooldownWaiting = false;
@@ -45,6 +47,8 @@ public class AITurret : MonoBehaviour
         AIPilot = GetComponentInParent<AIPlayer>();
         pilot = GetComponentInParent<PlayerController>();
         turret = GetComponent<TurretSettings>();
+        weaponsSystem = GetComponent<WeaponsSystem>();
+        Assert.IsNotNull(weaponsSystem);
         elevation = transform.FindRecursive("Elevation");
         DoSkillLevels();
     }
@@ -134,13 +138,13 @@ public class AITurret : MonoBehaviour
         {
             float tempGunSpeed = 0f;
             //loop through our guns, and add all their speeds together
-            if (logDebug) { print("the number of found weapons is " + turret.projWeapons.Length); }
-            foreach (ProjectileWeapon gun in turret.projWeapons)
+            if (logDebug) { print("the number of found weapons is " + weaponsSystem.projWeapons.Count); }
+            foreach (ProjectileWeapon gun in weaponsSystem.projWeapons)
             {
                 tempGunSpeed += gun.speed;
             }
             //return the cumulative gunspeeds by the number of guns, set the value so this only runs once. Modify by skill level  
-            averageGunSpeed = tempGunSpeed / turret.projWeapons.Length * leadAMount;
+            averageGunSpeed = tempGunSpeed / weaponsSystem.projWeapons.Count * leadAMount;
         }
     }
 
@@ -161,7 +165,7 @@ public class AITurret : MonoBehaviour
         //cooldown mode, disable firing till the capacitors are to a minimum level
         if (cooldownWaiting)
         {
-            turret.FireGuns(false);
+            weaponsSystem.StopFiring();
             if (normalizedCapacitorLevel >= minCapacitorLevel)
             {
                 cooldownWait = 0;
@@ -190,9 +194,9 @@ public class AITurret : MonoBehaviour
                 Vector3 shipVec = Vector3.Normalize(shipTrans.position - toObj.position);
                 float shipAngle = Vector3.Angle(shipVec, transform.forward);
 
-                if (shipTest.AITeam != TEAM.NEUTRAL && shipTest != shipMain && shipAngle <= angle)
+                if (shipTest.Team != TEAM.NEUTRAL && shipTest != shipMain && shipAngle <= angle)
                 {
-                    if (shipDist < distance && shipTest.AITeam != ignoreTEAM)
+                    if (shipDist < distance && shipTest.Team != ignoreTEAM)
                     {
                         distance = shipDist;
                         nearestShip = shipTest;
@@ -210,7 +214,7 @@ public class AITurret : MonoBehaviour
     {
 
         ShipSettings foundShip = GameObjTracker.GetShipByID(id);
-        if (foundShip != null && foundShip.AITeam != team)
+        if (foundShip != null && foundShip.Team != team)
         {
             return foundShip;
         }
@@ -308,12 +312,11 @@ public class AITurret : MonoBehaviour
             
             if (angleToTarget < aimAccuracyAngle)
             {
-                turret.FireGuns(true);
+                weaponsSystem.FireGuns();
                 //Debug.Log("trying to fire");
-
             }
             else {
-                turret.FireGuns(false);
+                weaponsSystem.StopFiring();
             }
         }
         DoGunCooldown(1f, .2f);
@@ -324,7 +327,7 @@ public class AITurret : MonoBehaviour
         //find the closest target, if we don't already have one, check at the skill level frequency
         if (!AITarget && GameObjTracker.frames % scanNewTargetFreq == 0)
         {
-            AITargetShip = FindNearestShip(gameObject.transform, turret.angleLimit, shipMain.AITeam);
+            AITargetShip = FindNearestShip(gameObject.transform, turret.angleLimit, shipMain.Team);
             //if there is no target in range, bail
             if (!AITargetShip)
             {
@@ -340,10 +343,6 @@ public class AITurret : MonoBehaviour
             AITarget = AITargetShip.gameObject.transform;
         }
     }
-
-
-    
-
 
     // Update is called once per frame
     void Update()

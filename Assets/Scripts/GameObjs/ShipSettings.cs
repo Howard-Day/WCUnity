@@ -12,6 +12,7 @@ public class ShipSettings : Unit, IPowerSource
 
     [SerializeField, NonNull] private ShipSettingsAsset settings;
     [SerializeField, NonNull] private Engines engines;
+    [SerializeField, NonNull] private WeaponsSystem weaponsSystem;
 
     [SerializeField] public bool isWingLead = false;
     [SerializeField] public LayerMask CollidesWith;
@@ -32,7 +33,6 @@ public class ShipSettings : Unit, IPowerSource
 
     [Header("Special Abilities")]
     [SerializeField] public GameObject[] turrets;
-    [SerializeField] public List<ProjectileWeapon> projWeapons;
 
     [Header("SFX")]
     [SerializeField] public AudioClip CloakOnSound;
@@ -140,7 +140,8 @@ public class ShipSettings : Unit, IPowerSource
 
     private void Awake() {
         Assert.IsNotNull(settings);
-	}
+        Assert.IsNotNull(weaponsSystem);
+    }
 
 	void Start()
     {
@@ -171,9 +172,8 @@ public class ShipSettings : Unit, IPowerSource
         //Atomic Batteries to power
         mainCapacitor = new Capacitor(settings.CapacitorSize, false);
         cloakCapacitor = new Capacitor(settings.CloakPower, false);
-        //Turbines to speed
-        //Power Weapons
-        InitGuns();
+
+        weaponsSystem.Capacitor = mainCapacitor;
 
         _CoreStrength = (settings.Armor.Sum + (settings.Shield.Sum) / 2f)/3f; //Generalized fomula for the unarmored mechanical core of the ship
         coreMax = _CoreStrength;
@@ -232,85 +232,12 @@ public class ShipSettings : Unit, IPowerSource
         }
     }
 
-    int countFireIndex = 0;
-    int lastFireIndex = 0;
-    //Find our Guns, Figure out what they are, sequence them and put them in a list! 
-    void InitGuns()
-    {
-        ProjectileWeapon[] tempProjWeapon;
-        tempProjWeapon = GetComponentsInChildren<ProjectileWeapon>();        
-
-        foreach (ProjectileWeapon projWeapon in tempProjWeapon)
-        {
-            //ignore any turret mounted weapons
-            if (!projWeapon.turretMounted)
-                projWeapons.Add(projWeapon);
-
-            //Init gun index
-            if (projWeapon.index == 0)
-            {
-                projWeapon.index = countFireIndex;
-                countFireIndex++;
-            }
-        }
-
-    }
     //Do Velocity calculation
     void DoVelocity()
     {
         currentPos = transform.position;
         velocity = (currentPos - lastPos) /Time.deltaTime;
         lastPos = transform.position;
-    }
-    //Fire Guns! 
-    public void FireGuns(bool fire)
-    {
-        //force the guns to disable if we're still cloaked! 
-        if (cloakedAmount > .1f)
-        {
-            fire = false;
-        }
-        //loop through the guns
-        foreach (ProjectileWeapon projWeapon in projWeapons)
-        {
-            if (mainCapacitor.CurrentCharge < projWeapon.powerDrain * (countFireIndex + 1 ))
-            {
-                if (recover >= .99f && projWeapon.index != lastFireIndex) // Can the ship fire? Is this gun *not* the last to fire? Are we Cloaked? 
-                {
-                    projWeapon.fire = fire;
-                    //increment through guns
-                    
-                    // if(logDebug){print("aactually setting state to " + fire);}
-                    //are we firing?
-                    isFiring = fire; //Make sure our broadcast flag is set! 
-                }
-                if (recover >= .99f && projWeapon.index == lastFireIndex) // Can the ship fire? Is this gun the last to fire? 
-                {
-                    projWeapon.fire = false;
-                }
-                if (recover < .75f) //wait for recharge or return of control! 
-                {
-                    projWeapon.fire = false;
-                    isFiring = false;
-                }
-            }
-            else if (recover >= .99f)
-            {
-                projWeapon.fire = fire;
-                isFiring = fire;
-            }
-
-            if (fire == false)
-            {
-                projWeapon.fire = fire;
-                isFiring = fire;
-            }
-
-            if (projWeapon.hasFired)
-            {
-                lastFireIndex = projWeapon.index;
-            }
-        }
     }
    
     //Handle Internal Damage

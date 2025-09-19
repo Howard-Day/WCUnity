@@ -461,6 +461,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5783950365692186461}
   - component: {fileID: 5783950365692186459}
+  - component: {fileID: 7846930433083890416}
   - component: {fileID: 5783950365692186458}
   m_Layer: 0
   m_Name: Dorkir_Turret (2)
@@ -497,8 +498,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c16dc434b67eaaa488121da4c0725a52, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  weaponsSystem: {fileID: 7846930433083890416}
   AITeam: 0
-  DisplayName: 
+  displayName: 
   Billboard: {fileID: 0}
   VDUImage: {fileID: 0}
   turnRate: 25
@@ -509,24 +511,27 @@ MonoBehaviour:
   deltaSmooth: 0.2
   capacitorSize: 5
   rechargeRate: 2
-  projWeapons: []
   Armor: 0
   DeathVFX: []
-  _ArmorMax: 0
-  CoreMax: 0
-  _CoreStrength: 0
   ShipID: 0
-  targetSpeed: 0
-  capacitorLevel: 0
   isFiring: 0
-  isDead: 0
-  currentTarget: {fileID: 0}
-  currentLocked: 0
-  hitInternal: 0
   oldRot: {x: 0, y: 0, z: 0, w: 0}
   rotDelta: {x: 0, y: 0, z: 0}
   initialRot: {x: 0, y: 0, z: 0, w: 0}
-  localRot: {x: 0, y: 0, z: 0}
+--- !u!114 &7846930433083890416
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5783950365692186460}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 84b91eef01bc41e498d1bfd0010e2ceb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponsSystem
+  ship: {fileID: 5783950367720458200}
+  projWeapons: []
 --- !u!114 &5783950365692186458
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5541,6 +5546,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5783950366311813536}
   - component: {fileID: 5783950366311813550}
+  - component: {fileID: 6596596238518860044}
   - component: {fileID: 5783950366311813537}
   m_Layer: 0
   m_Name: Dorkir_Turret (1)
@@ -5577,8 +5583,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c16dc434b67eaaa488121da4c0725a52, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  weaponsSystem: {fileID: 6596596238518860044}
   AITeam: 0
-  DisplayName: 
+  displayName: 
   Billboard: {fileID: 0}
   VDUImage: {fileID: 0}
   turnRate: 25
@@ -5589,24 +5596,27 @@ MonoBehaviour:
   deltaSmooth: 0.2
   capacitorSize: 5
   rechargeRate: 2
-  projWeapons: []
   Armor: 0
   DeathVFX: []
-  _ArmorMax: 0
-  CoreMax: 0
-  _CoreStrength: 0
   ShipID: 0
-  targetSpeed: 0
-  capacitorLevel: 0
   isFiring: 0
-  isDead: 0
-  currentTarget: {fileID: 0}
-  currentLocked: 0
-  hitInternal: 0
   oldRot: {x: 0, y: 0, z: 0, w: 0}
   rotDelta: {x: 0, y: 0, z: 0}
   initialRot: {x: 0, y: 0, z: 0, w: 0}
-  localRot: {x: 0, y: 0, z: 0}
+--- !u!114 &6596596238518860044
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5783950366311813539}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 84b91eef01bc41e498d1bfd0010e2ceb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponsSystem
+  ship: {fileID: 5783950367720458200}
+  projWeapons: []
 --- !u!114 &5783950366311813537
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11024,6 +11034,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6195791579104644315}
   - component: {fileID: 6195791579104644313}
+  - component: {fileID: 58154213196027733}
   - component: {fileID: 5843973252470337187}
   m_Layer: 0
   m_Name: Dorkir_Turret
@@ -11060,8 +11071,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c16dc434b67eaaa488121da4c0725a52, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  weaponsSystem: {fileID: 58154213196027733}
   AITeam: 0
-  DisplayName: 
+  displayName: 
   Billboard: {fileID: 0}
   VDUImage: {fileID: 0}
   turnRate: 25
@@ -11072,24 +11084,27 @@ MonoBehaviour:
   deltaSmooth: 0.2
   capacitorSize: 5
   rechargeRate: 2
-  projWeapons: []
   Armor: 0
   DeathVFX: []
-  _ArmorMax: 0
-  CoreMax: 0
-  _CoreStrength: 0
   ShipID: 0
-  targetSpeed: 0
-  capacitorLevel: 0
   isFiring: 0
-  isDead: 0
-  currentTarget: {fileID: 0}
-  currentLocked: 0
-  hitInternal: 0
   oldRot: {x: 0, y: 0, z: 0, w: 0}
   rotDelta: {x: 0, y: 0, z: 0}
   initialRot: {x: 0, y: 0, z: 0, w: 0}
-  localRot: {x: 0, y: 0, z: 0}
+--- !u!114 &58154213196027733
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6195791579104644316}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 84b91eef01bc41e498d1bfd0010e2ceb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponsSystem
+  ship: {fileID: 5783950367720458200}
+  projWeapons: []
 --- !u!114 &5843973252470337187
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11119,6 +11134,7 @@ GameObject:
   - component: {fileID: 6326995951517205420}
   - component: {fileID: 5783950367720458148}
   - component: {fileID: 5783950367720458200}
+  - component: {fileID: 9086988019754725946}
   - component: {fileID: 3763176291640415220}
   - component: {fileID: 5783950367720458150}
   m_Layer: 10
@@ -11184,6 +11200,7 @@ MonoBehaviour:
     type: 3}
   settings: {fileID: 11400000, guid: 1e6daaaff27fa7241af17c6da2d9e27b, type: 2}
   engines: {fileID: 3763176291640415220}
+  weaponsSystem: {fileID: 9086988019754725946}
   isWingLead: 0
   CollidesWith:
     serializedVersion: 2
@@ -11202,31 +11219,20 @@ MonoBehaviour:
     type: 3}
   DamageVFX: {fileID: 8971199709986266853, guid: efb0988cabbfbee41983eeecbdabf406,
     type: 3}
-  cloakCapacitorLevel: 0
   turrets: []
   projWeapons: []
-  EngineSound: {fileID: 0}
-  MinMaxThrottlePitch: {x: 1, y: 1}
-  MinMaxThrottleVolume: {x: 1, y: 1}
-  AfterburnSound: {fileID: 0}
-  AfterburnPitch: 1
-  AfterburnVolume: 0.25
-  AfterburnSmoothness: 0.25
   CloakOnSound: {fileID: 0}
   CloakOffSound: {fileID: 0}
   isPlayer: 0
   playerUI: {fileID: 0}
   shipRadius: 0
   hitInAss: 0
-  EngineSFX: {fileID: 0}
-  AfterburnSFX: {fileID: 0}
   CloakSFX: {fileID: 0}
   _CoreStrength: 0
   ShipID: 0
   yaw: 0
   pitch: 0
   roll: 0
-  capacitorLevel: 0
   isFiring: 0
   speed: 0
   numWingmen: 0
@@ -11252,6 +11258,20 @@ MonoBehaviour:
   lastPos: {x: 0, y: 0, z: 0}
   currentPos: {x: 0, y: 0, z: 0}
   velocity: {x: 0, y: 0, z: 0}
+--- !u!114 &9086988019754725946
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6666965614855510294}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 84b91eef01bc41e498d1bfd0010e2ceb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponsSystem
+  ship: {fileID: 5783950367720458200}
+  projWeapons: []
 --- !u!114 &3763176291640415220
 MonoBehaviour:
   m_ObjectHideFlags: 0

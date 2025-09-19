@@ -1,13 +1,20 @@
+using OneManEscapePlan.Common;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Assertions;
+using UnityEngine.Serialization;
 
 public class TurretSettings : Unit
 {
+    #region FIELDS
+    [SerializeField, NonNull] private WeaponsSystem weaponsSystem;
+
     // TODO: move some settings into a new scriptable object
     [Header("Choose Team, Name, and filters")]
     [SerializeField] public TEAM AITeam = TEAM.CONFED;
-    [SerializeField] public string DisplayName;
+    [FormerlySerializedAs("DisplayName")]
+    [SerializeField] public string displayName;
     [Header("Billboard")]
     [SerializeField] public GameObject Billboard;
     [Header("VDU Icon!")]
@@ -23,7 +30,6 @@ public class TurretSettings : Unit
     [Header("Weapon Settings")]
     [SerializeField] public float capacitorSize = 50f;
     [SerializeField] float rechargeRate = 1f;
-    [SerializeField] public ProjectileWeapon[] projWeapons;
     [Header("Health Settings")]
     [SerializeField] public float Armor;
     [Header("Death Effect")]
@@ -39,12 +45,19 @@ public class TurretSettings : Unit
     Pose lastTrans;
 
     private Capacitor mainCapacitor;
+    #endregion
 
     #region PROPERTIES
     public Capacitor MainCapacitor => mainCapacitor;
     public override string DisplayName => displayName;
     public override TEAM Team => AITeam;
     #endregion
+
+    private void Awake()
+    {
+        Assert.IsNotNull(weaponsSystem);
+    }
+
     // Start is called before the first frame update
     void Start()
     {
@@ -55,102 +68,13 @@ public class TurretSettings : Unit
         GetId();
         //Atomic Batteries to power
         mainCapacitor = new Capacitor(capacitorSize, false);
-        //Power Weapons
-        InitGuns();
+        weaponsSystem.Capacitor = mainCapacitor;
     }
+
     //Get the ShipId of the craft we're attached to
     public void GetId()
     {
         ShipID = shipMain.ShipID;
-        while (ShipID == 0)
-        {
-            ShipID = shipMain.ShipID;
-        }
-    }
-    //Get our Billboard Material
-    public void GetBillboardMat()
-    {
-        if (Billboard != null)
-        {
-            billboardMat = Billboard.GetComponent<Renderer>().material;
-        }
-    }
-    //Manage Targets
-    void TargetManage()
-    {
-        if (currentTarget != null)
-        {
-            if (currentTarget.isLocked)
-            {
-                currentLocked = true;
-            }
-            else
-            {
-                currentLocked = false;
-            }
-        }
-    }
-    int countFireIndex = 0;
-    int lastFireIndex = 0;
-    //Find our Guns, Figure out what they are, sequence them and put them in a list! 
-    void InitGuns()
-    {
-        projWeapons = GetComponentsInChildren<ProjectileWeapon>();
-        foreach (ProjectileWeapon projWeapon in projWeapons)
-        {
-            //Init gun index
-            if (projWeapon.index == 0)
-            {
-                projWeapon.index = countFireIndex;
-                countFireIndex++;
-            }
-        }
-
-    }
-    //Fire Guns! 
-    public void FireGuns(bool fire)
-    {
-        //loop through the guns
-        foreach (ProjectileWeapon projWeapon in projWeapons)
-        {
-            if (mainCapacitor.CurrentCharge < projWeapon.powerDrain * (countFireIndex + 1))
-            {
-                if (shipMain.recover >= .99f && projWeapon.index != lastFireIndex) // Can the ship fire? Is this gun *not* the last to fire? Are we Cloaked? 
-                {
-                    projWeapon.fire = fire;
-                    //increment through guns
-
-                    // if(logDebug){print("aactually setting state to " + fire);}
-                    //are we firing?
-                    isFiring = fire; //Make sure our broadcast flag is set! 
-                }
-                if (shipMain.recover >= .99f && projWeapon.index == lastFireIndex) // Can the ship fire? Is this gun the last to fire? 
-                {
-                    projWeapon.fire = false;
-                }
-                if (shipMain.recover < .75f) //wait for recharge or return of control! 
-                {
-                    projWeapon.fire = false;
-                    isFiring = false;
-                }
-            }
-            else if (shipMain.recover >= .99f)
-            {
-                projWeapon.fire = fire;
-                isFiring = fire;
-            }
-
-            if (fire == false)
-            {
-                projWeapon.fire = fire;
-                isFiring = fire;
-            }
-
-            if (projWeapon.hasFired)
-            {
-                lastFireIndex = projWeapon.index;
-            }
-        }
     }
 
     //Handle Power Management
@@ -292,12 +216,7 @@ public class TurretSettings : Unit
     // Update is called once per frame
     void Update()
     {
-        //LimitedAimAit(Camera.main.transform.position);
-        //TryToAimAtTarget(Camera.main.transform.position);
-        if (projWeapons.Length == 0)
-            InitGuns();
         Power();
         DeltaRot();
-
     }
 }

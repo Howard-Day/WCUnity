@@ -70,22 +70,22 @@ public class Radar : MonoBehaviour
         }
         RadarBlips = new List<BlipController>();
         
-        if (shipMain.AITeam == TEAM.CONFED)
+        if (shipMain.Team == TEAM.CONFED)
         {
             MakeBlips(GameObjTracker.KilrathiShips, enemyNear, enemyFar);
             MakeBlips(GameObjTracker.ConfedShips, friendlyNear, friendlyFar);
         }
-        if (shipMain.AITeam == TEAM.KILRATHI)
+        if (shipMain.Team == TEAM.KILRATHI)
         {
             MakeBlips(GameObjTracker.ConfedShips, enemyNear, enemyFar);
             MakeBlips(GameObjTracker.KilrathiShips, friendlyNear, friendlyFar);
         }
-        if (shipMain.AITeam == TEAM.PIRATE)
+        if (shipMain.Team == TEAM.PIRATE)
         {
             MakeBlips(GameObjTracker.ConfedShips, enemyNear, enemyFar);
             MakeBlips(GameObjTracker.KilrathiShips, enemyNear, enemyFar);
         }
-        if (shipMain.AITeam == TEAM.NEUTRAL)
+        if (shipMain.Team == TEAM.NEUTRAL)
         {
             MakeBlips(GameObjTracker.ConfedShips, neutralNear, neutralFar);
             MakeBlips(GameObjTracker.KilrathiShips, neutralNear, neutralFar);

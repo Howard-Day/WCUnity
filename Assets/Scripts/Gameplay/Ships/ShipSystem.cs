@@ -1,11 +1,10 @@
-using NUnit.Framework;
 using OneManEscapePlan.Common;
 using UnityEngine;
+using UnityEngine.Assertions;
 
-[RequireComponent(typeof(ShipSettings))]
 public class ShipSystem : MonoBehaviour
 {
-    [SerializeField, NonNull] public ShipSettings ship;
+    [SerializeField] public ShipSettings ship;
 
     public ShipSettings Ship => ship;
 
@@ -13,6 +12,7 @@ public class ShipSystem : MonoBehaviour
 
     virtual protected void Awake()
     {
+        if (ship == null) ship = GetComponentInParent<ShipSettings>();
         Assert.IsNotNull(ship);
     }
 }

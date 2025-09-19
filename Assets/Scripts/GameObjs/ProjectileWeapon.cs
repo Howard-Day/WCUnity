@@ -23,6 +23,9 @@ public class ProjectileWeapon : MonoBehaviour
     [HideInInspector] public float speed = 0;
     [HideInInspector] public AudioSource SFX;
     public bool hasFired = false; //has the gun actually fired?
+
+    public Capacitor Capacitor { get; set; }
+
     /// <summary>
     /// Start is called on the frame when a script is enabled just before
     /// any of the Update methods is called the first time.
@@ -56,14 +59,14 @@ public class ProjectileWeapon : MonoBehaviour
 
         cooldown = Mathf.Max(cooldown - Time.deltaTime, 0f);
 
-        if (fire && cooldown <= 0f && MainShip.MainCapacitor.CurrentCharge > powerDrain)
+        if (fire && cooldown <= 0f && Capacitor.CurrentCharge > powerDrain)
         {
             Transform Proj = Instantiate(projectilePrefab, mountingPoint.position, mountingPoint.rotation);
             Instantiate(muzzleflashPrefab, mountingPoint.position, mountingPoint.rotation, transform.parent);
 
             //Set the Projectile ID to the GunID, and thus the ShipID. No shooting yourself.
             Proj.gameObject.GetComponent<Projectile>().ProjID = GunId;
-            MainShip.MainCapacitor.CurrentCharge -= powerDrain;
+            Capacitor.CurrentCharge -= powerDrain;
             //Do SFX, if it exists 
             if (fireSFX)
             {

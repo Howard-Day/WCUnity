@@ -130,15 +130,15 @@ public class GameObjTracker : MonoBehaviour
 
         foreach (ShipSettings ship in Ships)
         {
-            if (ship.AITeam == TEAM.CONFED)
+            if (ship.Team == TEAM.CONFED)
                 ConfedShips.Add(ship);
-            if (ship.AITeam == TEAM.KILRATHI)
+            if (ship.Team == TEAM.KILRATHI)
                 KilrathiShips.Add(ship);
-            if (ship.AITeam == TEAM.NEUTRAL)
+            if (ship.Team == TEAM.NEUTRAL)
                 NeutralShips.Add(ship);
-            if (ship.AITeam == TEAM.PIRATE)
+            if (ship.Team == TEAM.PIRATE)
                 PirateShips.Add(ship);
-            if (ship.AITeam == TEAM.ENV)
+            if (ship.Team == TEAM.ENV)
                 Environmental.Add(ship);
         }
         //print("GameObj Tracker: Found "+ ConfedShips.Count + " Confed Ships, "+ KilrathiShips.Count + " Kilrathi Ships, "+ NeutralShips.Count + " Neutral Ships, and "+ PirateShips.Count + " Pirate Ships!");

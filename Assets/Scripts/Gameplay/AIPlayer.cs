@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.Assertions.Must;
 
 [RequireComponent(typeof(ShipSettings))]
@@ -33,6 +34,7 @@ public class AIPlayer : MonoBehaviour
 
     //Internal settings and flags
     ShipSettings ship;
+    private WeaponsSystem weaponsSystem;
 
     float averageGunSpeed = 0f;
 
@@ -93,6 +95,8 @@ public class AIPlayer : MonoBehaviour
     void Start()
     {
         ship = GetComponent<ShipSettings>();
+        weaponsSystem = GetComponent<WeaponsSystem>();
+        Assert.IsNotNull(weaponsSystem);
         ForceRegister();
     }
      //Make sure the game knows we're here!
@@ -110,13 +114,13 @@ public class AIPlayer : MonoBehaviour
         {
             float tempGunSpeed = 0f;
             //loop through our guns, and add all their speeds together
-            if (logDebug) { print("the number of found weapons is " + ship.projWeapons.Count); }
-            foreach (ProjectileWeapon gun in ship.projWeapons)
+            if (logDebug) { print("the number of found weapons is " + weaponsSystem.projWeapons.Count); }
+            foreach (ProjectileWeapon gun in weaponsSystem.projWeapons)
             {
-            tempGunSpeed += gun.speed;
+                tempGunSpeed += gun.speed;
             }
             //return the cumulative gunspeeds by the number of guns, set the value so this only runs once.  
-            averageGunSpeed = tempGunSpeed / ship.projWeapons.Count;
+            averageGunSpeed = tempGunSpeed / weaponsSystem.projWeapons.Count;
         }
     }
     //Control where we go
@@ -293,7 +297,7 @@ public class AIPlayer : MonoBehaviour
             {
                 if (AngleTo(AITargetShip.transform.position) <= forceFireAngle)
                 {
-                    ship.FireGuns(true);
+                    weaponsSystem.FireGuns();
                     if (logDebug) { print(ship.DisplayName + " is forcing fire!"); }
                 }
             }
@@ -323,7 +327,7 @@ public class AIPlayer : MonoBehaviour
                 {
                     ShipSettings hitShip = hit.transform.gameObject.GetComponent<ShipSettings>();
                     //check if the hit object is a friendly
-                    if (hitShip && hitShip.AITeam == ship.AITeam)
+                    if (hitShip && hitShip.Team == ship.Team)
                     {
                         //increment the Reposition Timer
                         if (logDebug) { print(ship.DisplayName + " is avoiding friendly fire!"); }
@@ -336,7 +340,7 @@ public class AIPlayer : MonoBehaviour
             //if any of the rays hit, disable our guns!
             if (holdFire)
             {
-                ship.FireGuns(false);
+                weaponsSystem.StopFiring();
             }
             //if we don't hit anything, decrease the timer! 
             else
@@ -364,19 +368,19 @@ public class AIPlayer : MonoBehaviour
         if (ship.isBeingShot)
         {
             //check if the last shot was from a ship other than our target, and *Isn't* a friendly.
-            if (shootingShip !=  null && shootingShip != AITargetShip && shootingShip.AITeam != ship.AITeam)
+            if (shootingShip !=  null && shootingShip != AITargetShip && shootingShip.Team != ship.Team)
             {
                 CheckIfShieldsLow(shootingShip, 1 / 3f, 200);
             }
         }
         //if we're not deliberately being shot, check for that and then lower the threashold for action 
         //check if the last shot was from a ship other than our target, and *Isn't* a friendly.
-        if (shootingShip != null && shootingShip != AITargetShip && shootingShip.AITeam != ship.AITeam)
+        if (shootingShip != null && shootingShip != AITargetShip && shootingShip.Team != ship.Team)
         {
             CheckIfShieldsLow(shootingShip, 1 / 5f, 200);
         }
         //check if the last shot was from a ship other than our target, and *Is* a friendly. Higher threshold for a reposition.
-        if (shootingShip != null && shootingShip != AITargetShip && shootingShip.AITeam == ship.AITeam)
+        if (shootingShip != null && shootingShip != AITargetShip && shootingShip.Team == ship.Team)
         {
             //check if our shields are low
             const float LOW_FACTOR = 1 / 2f;
@@ -411,7 +415,7 @@ public class AIPlayer : MonoBehaviour
     {
         if (AITarget && AITargetShip && AITargetShip.isCloaked)
         {
-            AITargetShip = FindNearestShip(gameObject.transform, ship.AITeam);
+            AITargetShip = FindNearestShip(gameObject.transform, ship.Team);
             if (AITargetShip != null)
             {
                 AITarget = AITargetShip.gameObject.GetComponent<Transform>();
@@ -444,7 +448,7 @@ public class AIPlayer : MonoBehaviour
         //cooldown mode, disable firing till the capacitors are to a minimum level
         if (cooldownWaiting)
         {
-            ship.FireGuns(false);
+            weaponsSystem.StopFiring();
             if (normalizedCapacitorLevel >= minCapacitorLevel)
             {
                 cooldownWait = 0;
@@ -470,9 +474,9 @@ public class AIPlayer : MonoBehaviour
                 Transform shipTrans = (Transform)shipTest.gameObject.GetComponent<Transform>();
 
                 float shipDist = Vector3.Distance(shipTrans.position, toObj.position);
-                if (shipTest.AITeam != TEAM.NEUTRAL && shipTest != ship)
+                if (shipTest.Team != TEAM.NEUTRAL && shipTest != ship)
                 {
-                    if (shipDist < distance && shipTest.AITeam != ignoreTEAM)
+                    if (shipDist < distance && shipTest.Team != ignoreTEAM)
                     {
                         distance = shipDist;
                         nearestShip = shipTest;
@@ -490,7 +494,7 @@ public class AIPlayer : MonoBehaviour
     {
 
         ShipSettings foundShip = GameObjTracker.GetShipByID(id);
-        if (foundShip != null && foundShip.AITeam != team)
+        if (foundShip != null && foundShip.Team != team)
         {
             return foundShip;
         }
@@ -630,7 +634,7 @@ public class AIPlayer : MonoBehaviour
             }
             //Okay, check if we're still null, and if the ship we've found is *AKTUALLY* friendly, and looking for wingmen
             //AND isn't ourselves, AND doesn't already have 4 wingmen.
-            if (friendly != null && friendly.isWingLead && friendly.AITeam == ship.AITeam && friendly != ship && friendly.numWingmen <= 4)
+            if (friendly != null && friendly.isWingLead && friendly.Team == ship.Team && friendly != ship && friendly.numWingmen <= 4)
             {
                 //print("Found a Wingleader in the scene! His name is:" + friendly.name);
                 Transform friendlyTrans = (Transform)friendly.gameObject.GetComponent<Transform>();
@@ -657,7 +661,7 @@ public class AIPlayer : MonoBehaviour
             case AIState.PATROL:
                 {
                     //stop firing, if we are
-                    ship.FireGuns(false);
+                    weaponsSystem.StopFiring();
                     //Check to see if we've got any patrol points assigned already! 
                     if (PatrolPoints.Count == 0)
                     {
@@ -695,7 +699,7 @@ public class AIPlayer : MonoBehaviour
                     //It's an Ambush! 
                     if (AITarget && AITargetShip && ship.lastHitID != 0)
                     {
-                        AITargetShip = FindShipByID(ship.lastHitID, ship.AITeam);
+                        AITargetShip = FindShipByID(ship.lastHitID, ship.Team);
                         if (AITargetShip)
                         {
                             AITarget = AITargetShip.gameObject.GetComponent<Transform>();
@@ -775,6 +779,7 @@ public class AIPlayer : MonoBehaviour
                     }
                 }
                 break;
+
             case AIState.ENGAGE:
                 {
                     if (AITarget && AITargetShip)
@@ -905,13 +910,13 @@ public class AIPlayer : MonoBehaviour
                         {
                             if (logDebug) { print("attempting to fire"); }
                             AITargetShip.isBeingShot = true;
-                            ship.FireGuns(true);
+                            weaponsSystem.FireGuns();
                         }
                         //otherwise, stop firing
                         else 
                         {
                             AITargetShip.isBeingShot = false;
-                            ship.FireGuns(false);
+                            weaponsSystem.StopFiring();
 
                             //unless we're *very* close, take the chance!
                             if (distToTarget < engageDist / 8)
@@ -920,27 +925,27 @@ public class AIPlayer : MonoBehaviour
                                 {
                                     AITargetShip.isBeingShot = true;
                                     if (logDebug) { print("attempting to fire"); }
-                                    ship.FireGuns(true);
+                                    weaponsSystem.FireGuns();
                                 }
                                 //disable firing
                                 else
                                 {
                                     AITargetShip.isBeingShot = false;
-                                    ship.FireGuns(false);
+                                    weaponsSystem.StopFiring();
                                 }
                             }
                             //disable firing
                             else
                             {
                                 AITargetShip.isBeingShot = false;
-                                ship.FireGuns(false);
+                                weaponsSystem.StopFiring();
                             }
                         }
                         //Too far away to shoot, or the angle is too much!
                         if (distToTarget > engageDist * 2 || AngleTo(AITarget.position) > 180)
                         {
                             AITargetShip.isBeingShot = false;
-                            ship.FireGuns(false);
+                            weaponsSystem.StopFiring();
                         }
                         //we've gotten too far away, go back into engage mode
                         if (distToTarget > engageDist * 1.5f)
@@ -956,13 +961,11 @@ public class AIPlayer : MonoBehaviour
                 }
                 break;
 
-
-
             case AIState.EVADE:
                 {
                     if (evadeTimer == 0) //We're starting to evade
                     {//Punch it, Chewie! 
-                        ship.FireGuns(false);
+                        weaponsSystem.StopFiring();
 
                         ship.Engines.TargetSpeed = ship.Settings.BurnSpeed;
                         if (EvadeSteer == Vector3.zero)// have we chosen where to steer? 
@@ -1018,7 +1021,7 @@ public class AIPlayer : MonoBehaviour
                         float distToTarget = Vector3.Distance(AITarget.position, transform.position);
 
                         //No shootie
-                        ship.FireGuns(false);
+                        weaponsSystem.StopFiring();
 
                         randPos = Vector3.zero;
                         if (randPos.magnitude == 0)
@@ -1047,7 +1050,7 @@ public class AIPlayer : MonoBehaviour
                 {
                     if (AISkillLevel != AILevel.CHUMP || AISkillLevel != AILevel.NOVICE)
                     {
-                        ship.FireGuns(false);
+                        weaponsSystem.StopFiring();
                     }
                 }
                 break;
@@ -1095,7 +1098,7 @@ public class AIPlayer : MonoBehaviour
         }
         if (!AITargetShip)
         {
-            AITargetShip = FindNearestShip(gameObject.transform, ship.AITeam);
+            AITargetShip = FindNearestShip(gameObject.transform, ship.Team);
         }
         if (AITargetShip != null)
         {
@@ -1156,7 +1159,7 @@ public class AIPlayer : MonoBehaviour
         }
         if (!AITargetShip)
         {
-            AITargetShip = FindNearestShip(gameObject.transform, ship.AITeam);
+            AITargetShip = FindNearestShip(gameObject.transform, ship.Team);
         }
         if (AITargetShip != null)
         {
@@ -1216,7 +1219,7 @@ public class AIPlayer : MonoBehaviour
         }
         if (!AITargetShip)
         {
-            AITargetShip = FindNearestShip(gameObject.transform, ship.AITeam);
+            AITargetShip = FindNearestShip(gameObject.transform, ship.Team);
         }
         if (AITargetShip != null)
         {
@@ -1298,5 +1301,38 @@ public class AIPlayer : MonoBehaviour
         DoFriendlyFire();
     }
 
+#if UNITY_EDITOR
+    private void OnDrawGizmos()
+    {
+        if (AITarget != null)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawLine(transform.position, AITarget.position);
+        }
+    }
 
+    [UnityEditor.CustomEditor(typeof(AIPlayer))]
+    private class AIPlayerEditor : UnityEditor.Editor
+    {
+        public override void OnInspectorGUI()
+        {
+            base.OnInspectorGUI();
+
+            if (Application.isPlaying)
+            {
+                var instance = (AIPlayer)target;
+                
+                using (var hlayout = new UnityEditor.EditorGUILayout.HorizontalScope())
+                {
+                    UnityEditor.EditorGUILayout.LabelField("Target", GUILayout.Width(100));
+                    string name = (instance.AITarget == null) ? "None" : instance.AITarget.name;
+                    if (GUILayout.Button(name))
+                    {
+                        UnityEditor.Selection.activeObject = instance.AITarget;
+                    }
+                }
+            }
+        }
+    }
+#endif
 }

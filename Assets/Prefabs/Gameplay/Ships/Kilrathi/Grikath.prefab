@@ -100,6 +100,7 @@ GameObject:
   - component: {fileID: 2715742581761265261}
   - component: {fileID: 4212968074560693222}
   - component: {fileID: 2715742581761265258}
+  - component: {fileID: -1426586324830252017}
   - component: {fileID: 4510807555008149650}
   - component: {fileID: 2715742581761265259}
   - component: {fileID: 2715742581761265260}
@@ -174,6 +175,7 @@ MonoBehaviour:
     type: 3}
   settings: {fileID: 11400000, guid: 41e1111682cae8940b3abc76a93eb07c, type: 2}
   engines: {fileID: 4510807555008149650}
+  weaponsSystem: {fileID: -1426586324830252017}
   isWingLead: 0
   CollidesWith:
     serializedVersion: 2
@@ -192,10 +194,8 @@ MonoBehaviour:
     type: 3}
   DamageVFX: {fileID: 8971199709986266853, guid: efb0988cabbfbee41983eeecbdabf406,
     type: 3}
-  cloakCapacitorLevel: 0
   turrets:
   - {fileID: 6524031761299494526}
-  projWeapons: []
   CloakOnSound: {fileID: 8300000, guid: 3ac747661ac3f6d409ba64fa27215905, type: 3}
   CloakOffSound: {fileID: 8300000, guid: c0d4c3240d7b82a4596edec01f8bfe79, type: 3}
   isPlayer: 0
@@ -208,7 +208,6 @@ MonoBehaviour:
   yaw: 0
   pitch: 0
   roll: 0
-  capacitorLevel: 0
   isFiring: 0
   speed: 0
   numWingmen: 0
@@ -234,6 +233,23 @@ MonoBehaviour:
   lastPos: {x: 0, y: 0, z: 0}
   currentPos: {x: 0, y: 0, z: 0}
   velocity: {x: 0, y: 0, z: 0}
+--- !u!114 &-1426586324830252017
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2715742581761265262}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 84b91eef01bc41e498d1bfd0010e2ceb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponsSystem
+  ship: {fileID: 2715742581761265258}
+  projWeapons:
+  - {fileID: 4779405087320885730}
+  - {fileID: 6292781324475527481}
+  - {fileID: 6133520546611484459}
 --- !u!114 &4510807555008149650
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -486,6 +502,18 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 976535348534922802}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &6292781324475527481 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6546310811933622027, guid: 2eaf127825a00914c92c259066028be3,
+    type: 3}
+  m_PrefabInstance: {fileID: 976535348534922802}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 090bc13d9b91431459a5b0dcd1a3689f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &1137034177339484192
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -570,6 +598,18 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 1137034177339484192}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &6133520546611484459 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6546310811933622027, guid: 2eaf127825a00914c92c259066028be3,
+    type: 3}
+  m_PrefabInstance: {fileID: 1137034177339484192}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 090bc13d9b91431459a5b0dcd1a3689f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &1233710924253696184
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -578,6 +618,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2715742581761265261}
     m_Modifications:
+    - target: {fileID: 2845008086186973519, guid: 5baf7c889aa21b44ba3565310f4f1482,
+        type: 3}
+      propertyPath: ship
+      value: 
+      objectReference: {fileID: 2715742581761265258}
     - target: {fileID: 5446261380056762049, guid: 5baf7c889aa21b44ba3565310f4f1482,
         type: 3}
       propertyPath: m_RootOrder
@@ -638,6 +683,11 @@ PrefabInstance:
       propertyPath: angleLimit
       value: 120
       objectReference: {fileID: 0}
+    - target: {fileID: 5446261380056762051, guid: 5baf7c889aa21b44ba3565310f4f1482,
+        type: 3}
+      propertyPath: weaponsSystem
+      value: 
+      objectReference: {fileID: 3919392040338639351}
     - target: {fileID: 5446261380056762054, guid: 5baf7c889aa21b44ba3565310f4f1482,
         type: 3}
       propertyPath: m_Name
@@ -683,6 +733,18 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5baf7c889aa21b44ba3565310f4f1482, type: 3}
+--- !u!114 &3919392040338639351 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2845008086186973519, guid: 5baf7c889aa21b44ba3565310f4f1482,
+    type: 3}
+  m_PrefabInstance: {fileID: 1233710924253696184}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6524031761299494526}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 84b91eef01bc41e498d1bfd0010e2ceb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponsSystem
 --- !u!4 &6524031761299494521 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5446261380056762049, guid: 5baf7c889aa21b44ba3565310f4f1482,
@@ -859,6 +921,18 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 1768491220426749673}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &4779405087320885730 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6546310811933622027, guid: 2eaf127825a00914c92c259066028be3,
+    type: 3}
+  m_PrefabInstance: {fileID: 1768491220426749673}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 090bc13d9b91431459a5b0dcd1a3689f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &3098233006117452491
 PrefabInstance:
   m_ObjectHideFlags: 0

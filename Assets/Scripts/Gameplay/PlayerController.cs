@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
@@ -9,7 +10,7 @@ public class PlayerController : MonoBehaviour
 
     ShipSettings ship;
     CockpitViewSwitcher viewSwitcher;
-    ProjectileWeapon[] laserCannons;
+    WeaponsSystem weaponsSystem;
 
     bool lastSteerInputWasMouse = false;
 
@@ -19,7 +20,8 @@ public class PlayerController : MonoBehaviour
     void Awake()
     {
         ship = GetComponentInParent<ShipSettings>();
-        laserCannons = ship.GetComponentsInChildren<ProjectileWeapon>();
+        weaponsSystem = ship.GetComponent<WeaponsSystem>();
+        Assert.IsNotNull(weaponsSystem);
 
         // Remove AI.
         var aiPlayer = ship.GetComponent<AIPlayer>();
@@ -119,11 +121,13 @@ public class PlayerController : MonoBehaviour
 
     private void SetFiring(bool value)
     {
-        foreach (ProjectileWeapon laserCannon in laserCannons)
+        if (value)
         {
-            laserCannon.fire = value;
+            weaponsSystem.FireGuns();
+        } else
+        {
+            weaponsSystem.StopFiring();
         }
-        ship.isFiring = value;
     }
 
     void Steer()

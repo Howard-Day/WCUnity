@@ -9,11 +9,12 @@ public class CockpitFlash : MonoBehaviour
     public Color darkColor;
     public float fadeTime = .25f;
 
+    private WeaponsSystem weaponsSystem;
     ProjectileWeapon gun;
-    ShipSettings ship;
     public float brightness;
     Texture baseArt;
     Material flashMat;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -26,20 +27,17 @@ public class CockpitFlash : MonoBehaviour
         flashMat.SetColor("_BrightColor", brightColor);
         flashMat.SetColor("_DarkColor", darkColor);
         flashMat.SetFloat("_Brightness", brightness);
+
+        weaponsSystem = GetComponentInParent<WeaponsSystem>();
     }
     int frameDelay = 0;
 
     // Update is called once per frame
     void Update()
     {
-        //Run checks to make sure we've gotten the objects needed
-        if (ship == null)
-        {
-            ship = GetComponentInParent<ShipSettings>();
-        }
-        if (gun == null && ship.projWeapons.Count > 0 )
+        if (gun == null && weaponsSystem != null && weaponsSystem.projWeapons.Count > 0)
         {            
-            gun = ship.projWeapons[index];
+            gun = weaponsSystem.projWeapons[index];
         }
         if (!gun)
             Debug.Log("failed to find a gun the index of " + index);
