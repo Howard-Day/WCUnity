@@ -2,9 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TurretSettings : MonoBehaviour
+public class TurretSettings : Unit
 {
-    public enum TEAM { CONFED, KILRATHI, NEUTRAL, PIRATE, ENV };
+    // TODO: move some settings into a new scriptable object
     [Header("Choose Team, Name, and filters")]
     [SerializeField] public TEAM AITeam = TEAM.CONFED;
     [SerializeField] public string DisplayName;
@@ -42,6 +42,8 @@ public class TurretSettings : MonoBehaviour
 
     #region PROPERTIES
     public Capacitor MainCapacitor => mainCapacitor;
+    public override string DisplayName => displayName;
+    public override TEAM Team => AITeam;
     #endregion
     // Start is called before the first frame update
     void Start()

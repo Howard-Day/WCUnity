@@ -4,7 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
 
-public class ShipSettings : MonoBehaviour
+// TODO: rename to something like "Ship"
+public class ShipSettings : Unit, IPowerSource
 {
     #region FIELDS
     [SerializeField] public GameObject DamageTrails;
@@ -125,8 +126,8 @@ public class ShipSettings : MonoBehaviour
     public Capacitor MainCapacitor => mainCapacitor;
     public Capacitor CloakCapacitor => cloakCapacitor;
 
-    public string DisplayName => settings.DisplayName;
-    public TEAM AITeam => settings.AITeam;
+    override public string DisplayName => settings.DisplayName;
+    override public TEAM Team => settings.AITeam;
     public IReadOnlyArmorStatus Armor => armor;
     public IReadOnlyShieldStatus Shield => shield;
 
