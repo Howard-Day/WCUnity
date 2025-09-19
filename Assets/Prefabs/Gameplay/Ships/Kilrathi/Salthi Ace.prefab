@@ -23,11 +23,6 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 0}
-    - target: {fileID: 979894190675649357, guid: cfb7a2335576985479485947cc9f59f8,
-        type: 3}
-      propertyPath: m_Mesh
-      value: 
-      objectReference: {fileID: 0}
     - target: {fileID: 979894190675649394, guid: cfb7a2335576985479485947cc9f59f8,
         type: 3}
       propertyPath: m_IsActive
@@ -38,6 +33,12 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 2289861991765167608, guid: cfb7a2335576985479485947cc9f59f8,
+        type: 3}
+      propertyPath: settings
+      value: 
+      objectReference: {fileID: 11400000, guid: 1c912bd2c7c14a74092c6eba0507adb8,
+        type: 2}
     - target: {fileID: 2289861991765167608, guid: cfb7a2335576985479485947cc9f59f8,
         type: 3}
       propertyPath: turnRate

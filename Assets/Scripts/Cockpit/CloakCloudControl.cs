@@ -5,6 +5,7 @@ using UnityEngine;
 public class CloakCloudControl : MonoBehaviour
 {
     ShipSettings shipMain;
+    Engines engines;
     Material Clouds;
     Material CloudsDistort;
     Vector3 RefShift;
@@ -23,7 +24,8 @@ public class CloakCloudControl : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        shipMain = (ShipSettings)gameObject.GetComponentInParent<ShipSettings>();
+        shipMain = gameObject.GetComponentInParent<ShipSettings>();
+        engines = gameObject.GetComponentInParent<Engines>();
         initialPos = transform.localPosition;
         Clouds = gameObject.GetComponent<MeshRenderer>().materials[0];
         CloudsDistort = gameObject.GetComponent<MeshRenderer>().materials[1];
@@ -61,7 +63,7 @@ public class CloakCloudControl : MonoBehaviour
         float steerY = 1 - Mathf.Clamp01(refSteerY);
         float steerZ = refSteerZ - .5f;
 
-        throttleAnim += shipMain.throttle/100f;
+        throttleAnim += engines.Throttle/100f;
 
         smoothedCloakAmount = Mathf.Lerp(smoothedCloakAmount, shipMain.cloakedAmount, .125f) * 1.05f; 
 

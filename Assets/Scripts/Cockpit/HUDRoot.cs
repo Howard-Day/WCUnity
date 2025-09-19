@@ -47,22 +47,22 @@ public class HUDRoot : MonoBehaviour
         }
         HUDBrackets = new List<BracketController>();
 
-        if (shipMain.AITeam == ShipSettings.TEAM.CONFED)
+        if (shipMain.Team == TEAM.CONFED)
         {
             MakeBrackets(GameObjTracker.KilrathiShips, srcRadar.enemyNear);
             MakeBrackets(GameObjTracker.ConfedShips, srcRadar.friendlyNear);
         }
-        if (shipMain.AITeam == ShipSettings.TEAM.KILRATHI)
+        if (shipMain.Team == TEAM.KILRATHI)
         {
             MakeBrackets(GameObjTracker.ConfedShips, srcRadar.enemyNear);
             MakeBrackets(GameObjTracker.KilrathiShips, srcRadar.friendlyNear);
         }
-        if (shipMain.AITeam == ShipSettings.TEAM.PIRATE)
+        if (shipMain.Team == TEAM.PIRATE)
         {
             MakeBrackets(GameObjTracker.ConfedShips, srcRadar.enemyNear);
             MakeBrackets(GameObjTracker.KilrathiShips, srcRadar.enemyNear);
         }
-        if (shipMain.AITeam == ShipSettings.TEAM.NEUTRAL)
+        if (shipMain.Team == TEAM.NEUTRAL)
         {
             MakeBrackets(GameObjTracker.ConfedShips, srcRadar.neutralNear);
             MakeBrackets(GameObjTracker.KilrathiShips, srcRadar.neutralNear);
@@ -81,7 +81,7 @@ public class HUDRoot : MonoBehaviour
         {
             foreach (ShipSettings ship in Ships) //Go through a list of ships, add them 
             {
-                if (ship != shipMain && !ship.isDead && !ship.isCloaked ) //But only if we're not looking at ourselves! Or they're not dead or cloaked. :P
+                if (ship != shipMain && !ship.IsDead && !ship.isCloaked ) //But only if we're not looking at ourselves! Or they're not dead or cloaked. :P
                 {
                     GameObject bracketObj = new GameObject();
                     BracketController bracket = bracketObj.AddComponent<BracketController>() as BracketController;
@@ -118,7 +118,7 @@ public class HUDRoot : MonoBehaviour
         //}
         foreach (BracketController bracket in HUDBrackets)
         {
-            if (bracket.ship.isDead)
+            if (bracket.ship.IsDead)
             {
                 RegisterBrackets();
             }

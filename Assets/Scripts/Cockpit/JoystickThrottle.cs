@@ -29,14 +29,14 @@ public class JoystickThrottle : MonoBehaviour
     /// </summary>
     void Start()
     {
-        shipMain = (ShipSettings)gameObject.GetComponentInParent<ShipSettings>();
+        shipMain = gameObject.GetComponentInParent<ShipSettings>();
         initialPos = transform.localPosition;
     }
     void DoThrottle()
     {
-        smoothThrottle = Mathf.SmoothStep(smoothThrottle, shipMain.targetSpeed / shipMain.topSpeed, 0.2f);
+        smoothThrottle = Mathf.SmoothStep(smoothThrottle, shipMain.Engines.TargetSpeed / shipMain.Settings.TopSpeed, 0.2f);
 
-        if (!shipMain.isAfterburning)
+        if (!shipMain.Engines.IsAfterburning)
         {
             smoothBurn = Mathf.SmoothStep(smoothBurn, smoothThrottle * .75f, 0.3f);
         }
@@ -47,10 +47,8 @@ public class JoystickThrottle : MonoBehaviour
         smoothBurn = Mathf.Clamp01(smoothBurn);
         Throttle.sprite = throttleSprites[Mathf.Clamp(Mathf.FloorToInt(smoothBurn * (throttleSprites.Length - 1)), 0, 31)];
         //throttlestickAnim.SetCurrentFrame((int)((currentForwardAcceleration / forwardTopSpeed) * throttlestickAnim.totalCells));
-
-
-
     }
+
     float refSteerX;
     float refSteerY;
     float refSteerZ;

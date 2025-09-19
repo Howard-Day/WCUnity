@@ -70,22 +70,22 @@ public class Radar : MonoBehaviour
         }
         RadarBlips = new List<BlipController>();
         
-        if (shipMain.AITeam == ShipSettings.TEAM.CONFED)
+        if (shipMain.Team == TEAM.CONFED)
         {
             MakeBlips(GameObjTracker.KilrathiShips, enemyNear, enemyFar);
             MakeBlips(GameObjTracker.ConfedShips, friendlyNear, friendlyFar);
         }
-        if (shipMain.AITeam == ShipSettings.TEAM.KILRATHI)
+        if (shipMain.Team == TEAM.KILRATHI)
         {
             MakeBlips(GameObjTracker.ConfedShips, enemyNear, enemyFar);
             MakeBlips(GameObjTracker.KilrathiShips, friendlyNear, friendlyFar);
         }
-        if (shipMain.AITeam == ShipSettings.TEAM.PIRATE)
+        if (shipMain.Team == TEAM.PIRATE)
         {
             MakeBlips(GameObjTracker.ConfedShips, enemyNear, enemyFar);
             MakeBlips(GameObjTracker.KilrathiShips, enemyNear, enemyFar);
         }
-        if (shipMain.AITeam == ShipSettings.TEAM.NEUTRAL)
+        if (shipMain.Team == TEAM.NEUTRAL)
         {
             MakeBlips(GameObjTracker.ConfedShips, neutralNear, neutralFar);
             MakeBlips(GameObjTracker.KilrathiShips, neutralNear, neutralFar);
@@ -104,7 +104,7 @@ public class Radar : MonoBehaviour
         {
             foreach (ShipSettings ship in Ships) //Go through a list of ships, add them 
             {
-                if (ship != shipMain && !ship.isDead) //But only if we're not looking at ourselves! Or they're not dead. :P
+                if (ship != shipMain && !ship.IsDead) //But only if we're not looking at ourselves! Or they're not dead. :P
                 {
                     GameObject blipObj = new GameObject();
                     BlipController blip = blipObj.AddComponent<BlipController>() as BlipController;

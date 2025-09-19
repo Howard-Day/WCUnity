@@ -59,11 +59,11 @@ public class SetSpeed : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        float setSpeed = shipMain.targetSpeed;
-        if (setSpeed >= shipMain.topSpeed)
-            setSpeed = shipMain.topSpeed;
-        if (shipMain.isAfterburning)
-            setSpeed = shipMain.burnSpeed;
+        float setSpeed = shipMain.Engines.TargetSpeed;
+        if (setSpeed >= shipMain.Settings.TopSpeed)
+            setSpeed = shipMain.Settings.TopSpeed;
+        if (shipMain.Engines.IsAfterburning)
+            setSpeed = shipMain.Settings.BurnSpeed;
 
         int speedDisp = Mathf.FloorToInt(setSpeed * 10);
         if (!inBase8)

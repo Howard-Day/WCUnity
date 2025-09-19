@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87e6a4c68c261074297a1ecf623f0df1, type: 3}
+  m_Name: Scimitar
+  m_EditorClassIdentifier: Assembly-CSharp::ShipSettingsAsset
+  aiTeam: 0
+  class: 0
+  weight: 1
+  displayName: Scimitar
+  turnRate: 66
+  maxFuel: 3200
+  fuelBurnRate: 3
+  topSpeed: 36
+  burnSpeed: 112
+  acceleration: 2
+  deceleration: 1.25
+  lag: 1.5
+  deltaSmooth: 0.05
+  capacitorSize: 30
+  weaponRechargeRate: 2
+  armor:
+    front: 8.5
+    back: 8
+    left: 6.5
+    right: 6.5
+  shield:
+    front: 6
+    back: 6
+  shieldRechargeRate: 6
+  hasCloak: 0
+  timeToCloak: 2
+  cloakPower: 20
+  cloakDrain: 1

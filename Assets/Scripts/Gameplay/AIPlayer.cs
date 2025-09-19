@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.Assertions.Must;
 
 [RequireComponent(typeof(ShipSettings))]
@@ -33,11 +34,7 @@ public class AIPlayer : MonoBehaviour
 
     //Internal settings and flags
     ShipSettings ship;
-    //ProjectileWeapon[] projWeapons;
-    Vector3 smoothDir = Vector3.zero;
-    Vector3 refDir = Vector3.zero;
-    Quaternion refRot = Quaternion.identity;
-    Quaternion refForm = Quaternion.identity;
+    private WeaponsSystem weaponsSystem;
 
     float averageGunSpeed = 0f;
 
@@ -98,6 +95,8 @@ public class AIPlayer : MonoBehaviour
     void Start()
     {
         ship = GetComponent<ShipSettings>();
+        weaponsSystem = GetComponent<WeaponsSystem>();
+        Assert.IsNotNull(weaponsSystem);
         ForceRegister();
     }
      //Make sure the game knows we're here!
@@ -115,13 +114,13 @@ public class AIPlayer : MonoBehaviour
         {
             float tempGunSpeed = 0f;
             //loop through our guns, and add all their speeds together
-            if (logDebug) { print("the number of found weapons is " + ship.projWeapons.Count); }
-            foreach (ProjectileWeapon gun in ship.projWeapons)
+            if (logDebug) { print("the number of found weapons is " + weaponsSystem.projWeapons.Count); }
+            foreach (ProjectileWeapon gun in weaponsSystem.projWeapons)
             {
-            tempGunSpeed += gun.speed;
+                tempGunSpeed += gun.speed;
             }
             //return the cumulative gunspeeds by the number of guns, set the value so this only runs once.  
-            averageGunSpeed = tempGunSpeed / ship.projWeapons.Count;
+            averageGunSpeed = tempGunSpeed / weaponsSystem.projWeapons.Count;
         }
     }
     //Control where we go
@@ -191,7 +190,7 @@ public class AIPlayer : MonoBehaviour
             barrelRef = Mathf.Lerp(barrelRef, 0f, .05f);
             rolling = false;
         }
-        barrelRoll += barrelRef * ship.turnRate * Time.deltaTime;
+        barrelRoll += barrelRef * ship.Settings.TurnRate * Time.deltaTime;
     }
     //Stop Rolling the ship
     void StopRoll()
@@ -273,7 +272,7 @@ public class AIPlayer : MonoBehaviour
         }
         if (avoidBurn == 1 && avoidTimer > avoidTime/3 && avoidTimer < avoidTime *.9f)
         {
-            ship.speed = ship.burnSpeed;
+            ship.speed = ship.Settings.BurnSpeed;
         }
         if (isAvoiding && avoidTimer <= avoidTime)
         {
@@ -298,7 +297,7 @@ public class AIPlayer : MonoBehaviour
             {
                 if (AngleTo(AITargetShip.transform.position) <= forceFireAngle)
                 {
-                    ship.FireGuns(true);
+                    weaponsSystem.FireGuns();
                     if (logDebug) { print(ship.DisplayName + " is forcing fire!"); }
                 }
             }
@@ -328,7 +327,7 @@ public class AIPlayer : MonoBehaviour
                 {
                     ShipSettings hitShip = hit.transform.gameObject.GetComponent<ShipSettings>();
                     //check if the hit object is a friendly
-                    if (hitShip && hitShip.AITeam == ship.AITeam)
+                    if (hitShip && hitShip.Team == ship.Team)
                     {
                         //increment the Reposition Timer
                         if (logDebug) { print(ship.DisplayName + " is avoiding friendly fire!"); }
@@ -341,7 +340,7 @@ public class AIPlayer : MonoBehaviour
             //if any of the rays hit, disable our guns!
             if (holdFire)
             {
-                ship.FireGuns(false);
+                weaponsSystem.StopFiring();
             }
             //if we don't hit anything, decrease the timer! 
             else
@@ -369,42 +368,23 @@ public class AIPlayer : MonoBehaviour
         if (ship.isBeingShot)
         {
             //check if the last shot was from a ship other than our target, and *Isn't* a friendly.
-            if (shootingShip !=  null && shootingShip != AITargetShip && shootingShip.AITeam != ship.AITeam)
+            if (shootingShip !=  null && shootingShip != AITargetShip && shootingShip.Team != ship.Team)
             {
-                //check if our shields are low
-                if (ship.Shield.x < ship._ShieldMax.x / 3 || ship.Shield.y < ship._ShieldMax.y / 3)
-                {
-                    //check if the firing ship is behind us!
-                    if (AngleTo(shootingShip.transform.position) > 200f)
-                    {
-                        //change our target over to the firing ship! 
-                        AITarget = shootingShip.transform;
-                        AITargetShip = shootingShip;
-                    }
-                }
+                CheckIfShieldsLow(shootingShip, 1 / 3f, 200);
             }
         }
         //if we're not deliberately being shot, check for that and then lower the threashold for action 
         //check if the last shot was from a ship other than our target, and *Isn't* a friendly.
-        if (shootingShip != null && shootingShip != AITargetShip && shootingShip.AITeam != ship.AITeam)
+        if (shootingShip != null && shootingShip != AITargetShip && shootingShip.Team != ship.Team)
         {
-            //check if our shields are low
-            if (ship.Shield.x < ship._ShieldMax.x / 5 || ship.Shield.y < ship._ShieldMax.y / 5)
-            {
-                //check if the firing ship is behind us!
-                if (AngleTo(shootingShip.transform.position) > 200f)
-                {
-                    //change our target over to the firing ship! 
-                    AITarget = shootingShip.transform;
-                    AITargetShip = shootingShip;
-                }
-            }
+            CheckIfShieldsLow(shootingShip, 1 / 5f, 200);
         }
         //check if the last shot was from a ship other than our target, and *Is* a friendly. Higher threshold for a reposition.
-        if (shootingShip != null && shootingShip != AITargetShip && shootingShip.AITeam == ship.AITeam)
+        if (shootingShip != null && shootingShip != AITargetShip && shootingShip.Team == ship.Team)
         {
             //check if our shields are low
-            if (ship.Shield.x < ship._ShieldMax.x / 2 || ship.Shield.y < ship._ShieldMax.y / 2)
+            const float LOW_FACTOR = 1 / 2f;
+            if (ship.ShieldFrontNormalized <  LOW_FACTOR || ship.ShieldBackNormalized < LOW_FACTOR)
             {
                 //check if the firing ship is behind us!
                 if (AngleTo(shootingShip.transform.position) > 200f)
@@ -416,12 +396,26 @@ public class AIPlayer : MonoBehaviour
         }
     }
 
+    private void CheckIfShieldsLow(ShipSettings shootingShip, float shieldThreshold, float behindUsAngle)
+    {
+        if (ship.ShieldFrontNormalized < shieldThreshold || ship.ShieldBackNormalized < shieldThreshold)
+        {
+            //check if the firing ship is behind us!
+            if (AngleTo(shootingShip.transform.position) > behindUsAngle)
+            {
+                //change our target over to the firing ship! 
+                AITarget = shootingShip.transform;
+                AITargetShip = shootingShip;
+            }
+        }
+    }
+
     //Handle Target Cloaking
     void DoCloakedTarget()
     {
         if (AITarget && AITargetShip && AITargetShip.isCloaked)
         {
-            AITargetShip = FindNearestShip(gameObject.transform, ship.AITeam);
+            AITargetShip = FindNearestShip(gameObject.transform, ship.Team);
             if (AITargetShip != null)
             {
                 AITarget = AITargetShip.gameObject.GetComponent<Transform>();
@@ -440,9 +434,9 @@ public class AIPlayer : MonoBehaviour
     //Handle Gun Cooldown wait
     void DoGunCooldown(float waitTime, float minCapacitorLevel)
     {
-        float normalizedCapacitorLevel = ship.capacitorLevel / ship.capacitorSize;
+        float normalizedCapacitorLevel = ship.MainCapacitor.CurrentChargeNormalized;
         // if the capacitors are low, add wait time
-        if (ship.capacitorLevel < .1f && !cooldownWaiting)
+        if (normalizedCapacitorLevel < .1f && !cooldownWaiting)
         {
             cooldownWait += Time.deltaTime * 10;
         }
@@ -454,7 +448,7 @@ public class AIPlayer : MonoBehaviour
         //cooldown mode, disable firing till the capacitors are to a minimum level
         if (cooldownWaiting)
         {
-            ship.FireGuns(false);
+            weaponsSystem.StopFiring();
             if (normalizedCapacitorLevel >= minCapacitorLevel)
             {
                 cooldownWait = 0;
@@ -463,7 +457,7 @@ public class AIPlayer : MonoBehaviour
         }
     }
     //Utility to find the nearest ship, ignoring one of the Teams, any cloaked ships, and the Ship looking
-    public ShipSettings FindNearestShip(Transform toObj, ShipSettings.TEAM ignoreTEAM)
+    public ShipSettings FindNearestShip(Transform toObj, TEAM ignoreTEAM)
     {
         float distance = engageDist * 10f;
 
@@ -480,9 +474,9 @@ public class AIPlayer : MonoBehaviour
                 Transform shipTrans = (Transform)shipTest.gameObject.GetComponent<Transform>();
 
                 float shipDist = Vector3.Distance(shipTrans.position, toObj.position);
-                if (shipTest.AITeam != ShipSettings.TEAM.NEUTRAL && shipTest != ship)
+                if (shipTest.Team != TEAM.NEUTRAL && shipTest != ship)
                 {
-                    if (shipDist < distance && shipTest.AITeam != ignoreTEAM)
+                    if (shipDist < distance && shipTest.Team != ignoreTEAM)
                     {
                         distance = shipDist;
                         nearestShip = shipTest;
@@ -496,11 +490,11 @@ public class AIPlayer : MonoBehaviour
             return null;
     }
     //Utility to Get a ship by ID
-    public ShipSettings FindShipByID(int id, ShipSettings.TEAM team)
+    public ShipSettings FindShipByID(int id, TEAM team)
     {
 
         ShipSettings foundShip = GameObjTracker.GetShipByID(id);
-        if (foundShip != null && foundShip.AITeam != team)
+        if (foundShip != null && foundShip.Team != team)
         {
             return foundShip;
         }
@@ -521,19 +515,22 @@ public class AIPlayer : MonoBehaviour
         if (AITarget)
         {
             float distToTarget = Vector3.Distance(AITarget.position, transform.position);
-            if (ship.capacitorLevel <= 2f) //if the AI can't shoot full blasts, increase impatience
+            if (ship.MainCapacitor.CurrentCharge <= 2f) //if the AI can't shoot full blasts, increase impatience
             {
                 impatience += Time.deltaTime * howImpatient * 4;
             }
-            if (distToTarget < 60 && ship.capacitorLevel >= ship.capacitorSize / 4) //If we're close to oue close to our target, but CANT fire, increase Impatience, albiet at a slower rate 
+            // TODO: should this be <= ?
+            if (distToTarget < 60 && ship.MainCapacitor.CurrentChargeNormalized >= .25f) //If we're close to oue close to our target, but CANT fire, increase Impatience, albiet at a slower rate
             {
                 impatience += Time.deltaTime * howImpatient;
             }
-            if (distToTarget < engageDist / 2 && angleToTarget < 10f && ship.capacitorLevel / ship.capacitorSize >= .666f)
+            // TODO: should this be <= ?
+            if (distToTarget < engageDist / 2 && angleToTarget < 10f && ship.MainCapacitor.CurrentChargeNormalized > .666f)
             {
                 impatience += Time.deltaTime * howImpatient * 2;
             }
-            if (impatience >= maxImpatience && ship.capacitorLevel > ship.capacitorSize / 3) //had enough, break off 
+            // TODO: should this be <= ?
+            if (impatience >= maxImpatience && ship.MainCapacitor.CurrentChargeNormalized > .333f) //had enough, break off 
             {
                 impatience = 0f; //We did something about it, calm down
                 ActiveAIState = AIState.REPOSITION;
@@ -637,7 +634,7 @@ public class AIPlayer : MonoBehaviour
             }
             //Okay, check if we're still null, and if the ship we've found is *AKTUALLY* friendly, and looking for wingmen
             //AND isn't ourselves, AND doesn't already have 4 wingmen.
-            if (friendly != null && friendly.isWingLead && friendly.AITeam == ship.AITeam && friendly != ship && friendly.numWingmen <= 4)
+            if (friendly != null && friendly.isWingLead && friendly.Team == ship.Team && friendly != ship && friendly.numWingmen <= 4)
             {
                 //print("Found a Wingleader in the scene! His name is:" + friendly.name);
                 Transform friendlyTrans = (Transform)friendly.gameObject.GetComponent<Transform>();
@@ -664,7 +661,7 @@ public class AIPlayer : MonoBehaviour
             case AIState.PATROL:
                 {
                     //stop firing, if we are
-                    ship.FireGuns(false);
+                    weaponsSystem.StopFiring();
                     //Check to see if we've got any patrol points assigned already! 
                     if (PatrolPoints.Count == 0)
                     {
@@ -681,7 +678,7 @@ public class AIPlayer : MonoBehaviour
                     if (ppDist > 10)
                     {
                         SteerTo(PatrolPoints[nextPatrolPoint]);
-                        ship.targetSpeed = ship.topSpeed * .75f; //Cruise speed! No rush, juuust loooking for baddies. 
+                        ship.Engines.TargetSpeed = ship.Settings.TopSpeed * .75f; //Cruise speed! No rush, juuust loooking for baddies. 
                     }
                     else
                     {
@@ -702,7 +699,7 @@ public class AIPlayer : MonoBehaviour
                     //It's an Ambush! 
                     if (AITarget && AITargetShip && ship.lastHitID != 0)
                     {
-                        AITargetShip = FindShipByID(ship.lastHitID, ship.AITeam);
+                        AITargetShip = FindShipByID(ship.lastHitID, ship.Team);
                         if (AITargetShip)
                         {
                             AITarget = AITargetShip.gameObject.GetComponent<Transform>();
@@ -747,17 +744,17 @@ public class AIPlayer : MonoBehaviour
                         {
                             if (leadDist > 120)//If we're a ways off, aim right at the formation point and afterburn into position.
                             {
-                                ship.targetSpeed = ship.burnSpeed;
+                                ship.Engines.TargetSpeed = ship.Settings.BurnSpeed;
                                 SteerTo(localFormPos);
                             }
                             if (leadDist <= 120 && leadDist > 20) //If we're a moderate distance away, set speed to the lead ship +25%, aim at the formation position.
                             {
-                                ship.targetSpeed = WingmanTo.speed + ship.topSpeed / 4;
+                                ship.Engines.TargetSpeed = WingmanTo.speed + ship.Settings.TopSpeed / 4;
                                 SteerTo(localFormPos);
                             }
                             if (leadDist <= 20) //If we're close, Match speed, and aim at a point parallel to the direction of the lead ship
                             {
-                                ship.targetSpeed = WingmanTo.speed;
+                                ship.Engines.TargetSpeed = WingmanTo.speed;
                                 SteerTo(localFormPos + WingmanTo.transform.forward * ship.shipRadius * 4f);
                                 //A gentle push, like the avoidance system, to nudge us into place
                                 float formPush = (dirToPos.magnitude / 10) * .5f;
@@ -782,6 +779,7 @@ public class AIPlayer : MonoBehaviour
                     }
                 }
                 break;
+
             case AIState.ENGAGE:
                 {
                     if (AITarget && AITargetShip)
@@ -794,7 +792,7 @@ public class AIPlayer : MonoBehaviour
                         
                         SteerTo(AITarget.position);// + (randApproach * (Vector3.Distance(AITarget.position, transform.position) / engageDist)));
 
-                        ship.targetSpeed = ship.topSpeed;
+                        ship.Engines.TargetSpeed = ship.Settings.TopSpeed;
 
                         if (!AITarget)
                         {
@@ -802,7 +800,7 @@ public class AIPlayer : MonoBehaviour
                         }
                         if (Vector3.Distance(AITarget.position, transform.position) > engageDist)
                         {
-                            ship.targetSpeed = ship.burnSpeed;
+                            ship.Engines.TargetSpeed = ship.Settings.BurnSpeed;
                         }
                         if (Vector3.Distance(AITarget.position, transform.position) <= engageDist)
                         {
@@ -810,7 +808,7 @@ public class AIPlayer : MonoBehaviour
                             ActiveAIState = AIState.HUNT;
                         }
                         //Does the ship have a cloaking device? If so, engage it!
-                        if (ship.hasCloak)
+                        if (ship.Settings.HasCloak)
                         {
                             ship.Cloak = true;
                         }
@@ -821,7 +819,7 @@ public class AIPlayer : MonoBehaviour
                     {
                         ActiveAIState = AIState.PATROL;
                     }
-                    //print(gameObject.name + " Is engaging! Throttle set to " + ship.targetSpeed);
+                    //print(gameObject.name + " Is engaging! Throttle set to " + ship.Engines.TargetSpeed);
                 }
                 break;
 
@@ -835,7 +833,7 @@ public class AIPlayer : MonoBehaviour
                     else
                     {
                         //Does the ship have a cloaking device? If so, disengage it!
-                        if (ship.hasCloak)
+                        if (ship.Settings.HasCloak)
                         {
                             if (ship.isCloaked)
                             {
@@ -859,23 +857,23 @@ public class AIPlayer : MonoBehaviour
                             //If we're too far away to match speed to the target, get closer
                             if (distToTarget > followDist)
                             {
-                                ship.targetSpeed = ship.topSpeed;
+                                ship.Engines.TargetSpeed = ship.Settings.TopSpeed;
                             }
                             //match the target's speed
                             else
                             {
-                                ship.targetSpeed = Mathf.Max(Mathf.Min(AITargetShip.targetSpeed, ship.topSpeed), ship.topSpeed / 4);
+                                ship.Engines.TargetSpeed = Mathf.Max(Mathf.Min(AITargetShip.Engines.TargetSpeed, ship.Settings.TopSpeed), ship.Settings.TopSpeed / 4);
                             }
                             //Try and turn toward the target! 
                             if (distToTarget > engageDist)
                             {
                                 if (angleToTarget < 60)
                                 {
-                                    ship.targetSpeed = ship.burnSpeed;
+                                    ship.Engines.TargetSpeed = ship.Settings.BurnSpeed;
                                 }
                                 else
                                 {
-                                    ship.targetSpeed = ship.topSpeed;
+                                    ship.Engines.TargetSpeed = ship.Settings.TopSpeed;
                                 }
                             }
                         }
@@ -912,13 +910,13 @@ public class AIPlayer : MonoBehaviour
                         {
                             if (logDebug) { print("attempting to fire"); }
                             AITargetShip.isBeingShot = true;
-                            ship.FireGuns(true);
+                            weaponsSystem.FireGuns();
                         }
                         //otherwise, stop firing
                         else 
                         {
                             AITargetShip.isBeingShot = false;
-                            ship.FireGuns(false);
+                            weaponsSystem.StopFiring();
 
                             //unless we're *very* close, take the chance!
                             if (distToTarget < engageDist / 8)
@@ -927,27 +925,27 @@ public class AIPlayer : MonoBehaviour
                                 {
                                     AITargetShip.isBeingShot = true;
                                     if (logDebug) { print("attempting to fire"); }
-                                    ship.FireGuns(true);
+                                    weaponsSystem.FireGuns();
                                 }
                                 //disable firing
                                 else
                                 {
                                     AITargetShip.isBeingShot = false;
-                                    ship.FireGuns(false);
+                                    weaponsSystem.StopFiring();
                                 }
                             }
                             //disable firing
                             else
                             {
                                 AITargetShip.isBeingShot = false;
-                                ship.FireGuns(false);
+                                weaponsSystem.StopFiring();
                             }
                         }
                         //Too far away to shoot, or the angle is too much!
                         if (distToTarget > engageDist * 2 || AngleTo(AITarget.position) > 180)
                         {
                             AITargetShip.isBeingShot = false;
-                            ship.FireGuns(false);
+                            weaponsSystem.StopFiring();
                         }
                         //we've gotten too far away, go back into engage mode
                         if (distToTarget > engageDist * 1.5f)
@@ -963,21 +961,19 @@ public class AIPlayer : MonoBehaviour
                 }
                 break;
 
-
-
             case AIState.EVADE:
                 {
                     if (evadeTimer == 0) //We're starting to evade
                     {//Punch it, Chewie! 
-                        ship.FireGuns(false);
+                        weaponsSystem.StopFiring();
 
-                        ship.targetSpeed = ship.burnSpeed;
+                        ship.Engines.TargetSpeed = ship.Settings.BurnSpeed;
                         if (EvadeSteer == Vector3.zero)// have we chosen where to steer? 
                         {
                             EvadeSteer = new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), Random.Range(-1f, 1f));
                         }
                         //Does the ship have a cloaking device? If so, engage it!
-                        if (ship.hasCloak)
+                        if (ship.Settings.HasCloak)
                         {
                             ship.Cloak = true;
                         }
@@ -990,7 +986,7 @@ public class AIPlayer : MonoBehaviour
                     ship.yaw = Mathf.Lerp(ship.yaw, EvadeSteer.y * evadeAmt, .001f);
                     ship.roll = Mathf.Lerp(ship.roll, EvadeSteer.z * evadeAmt, .001f);
                     //count down the time to return to normal combat. If we have a cloaking device, increase the wait time to be extra sneaky! 
-                    if (!ship.hasCloak)
+                    if (!ship.Settings.HasCloak)
                     {
                         evadeTimer += Time.deltaTime;
                     }
@@ -1025,7 +1021,7 @@ public class AIPlayer : MonoBehaviour
                         float distToTarget = Vector3.Distance(AITarget.position, transform.position);
 
                         //No shootie
-                        ship.FireGuns(false);
+                        weaponsSystem.StopFiring();
 
                         randPos = Vector3.zero;
                         if (randPos.magnitude == 0)
@@ -1034,11 +1030,11 @@ public class AIPlayer : MonoBehaviour
                         }
                         if (distToTarget < 80f && distToTarget > 40f)
                         {
-                            ship.targetSpeed = ship.burnSpeed;
+                            ship.Engines.TargetSpeed = ship.Settings.BurnSpeed;
                         }
                         else
                         {
-                            ship.targetSpeed = ship.topSpeed;
+                            ship.Engines.TargetSpeed = ship.Settings.TopSpeed;
                         }
                         SteerTo(randPos);
                         if (Vector3.Distance(transform.position, randPos) < 20f || distToTarget > 100f)
@@ -1054,20 +1050,13 @@ public class AIPlayer : MonoBehaviour
                 {
                     if (AISkillLevel != AILevel.CHUMP || AISkillLevel != AILevel.NOVICE)
                     {
-                        ship.FireGuns(false);
+                        weaponsSystem.StopFiring();
                     }
-
-
-
-
                 }
                 break;
 
-
-
             default:
                 {
-
                 }
                 break;
         }
@@ -1082,7 +1071,7 @@ public class AIPlayer : MonoBehaviour
         avoidTime = 4f;
         forceFireAngle = 30f;
         forceFireDist = engageDist / 5f;
-        ship.targetSpeed = ship.topSpeed * .75f;
+        ship.Engines.TargetSpeed = ship.Settings.TopSpeed * .75f;
         SteerTo(new Vector3(0, 50, 200));
         RollControl(Random.Range(-4000f, 1f));
     }
@@ -1109,7 +1098,7 @@ public class AIPlayer : MonoBehaviour
         }
         if (!AITargetShip)
         {
-            AITargetShip = FindNearestShip(gameObject.transform, ship.AITeam);
+            AITargetShip = FindNearestShip(gameObject.transform, ship.Team);
         }
         if (AITargetShip != null)
         {
@@ -1123,7 +1112,8 @@ public class AIPlayer : MonoBehaviour
                     ActiveAIState = AIState.HUNT;
                 }
             }
-            if (ship.hitInAss && ship.Shield.y <= .5f && ship.lastHit == ShipSettings.HitLoc.B) //WE're being hit from behind, shields low, HOLY SHIT, EVADE!
+            //TODO: this looks like a mistake:
+            if (ship.hitInAss && ship.Shield.Back <= .5f && ship.lastHit == ShipSettings.HitLoc.B) //WE're being hit from behind, shields low, HOLY SHIT, EVADE!
             {
 
                 ship.hitInAss = false;
@@ -1169,7 +1159,7 @@ public class AIPlayer : MonoBehaviour
         }
         if (!AITargetShip)
         {
-            AITargetShip = FindNearestShip(gameObject.transform, ship.AITeam);
+            AITargetShip = FindNearestShip(gameObject.transform, ship.Team);
         }
         if (AITargetShip != null)
         {
@@ -1182,7 +1172,8 @@ public class AIPlayer : MonoBehaviour
                     ActiveAIState = AIState.HUNT;
                 }
             }
-            if (ship.hitInAss && ship.Shield.y <= .6f && ship.lastHit == ShipSettings.HitLoc.B) //WE're being hit from behind, shields low, HOLY SHIT, EVADE!
+            //TODO: this looks like a mistake:
+            if (ship.hitInAss && ship.Shield.Back <= .6f && ship.lastHit == ShipSettings.HitLoc.B) //WE're being hit from behind, shields low, HOLY SHIT, EVADE!
             {
                 ship.hitInAss = false;
                 if (AngleTo(AITarget.position) > 20)  //If our target is in front of us , just reposition, otherwise evade
@@ -1228,7 +1219,7 @@ public class AIPlayer : MonoBehaviour
         }
         if (!AITargetShip)
         {
-            AITargetShip = FindNearestShip(gameObject.transform, ship.AITeam);
+            AITargetShip = FindNearestShip(gameObject.transform, ship.Team);
         }
         if (AITargetShip != null)
         {
@@ -1242,7 +1233,8 @@ public class AIPlayer : MonoBehaviour
                     ActiveAIState = AIState.HUNT;
                 }
             }
-            if (ship.hitInAss && ship.Shield.y <= .9f && ship.lastHit == ShipSettings.HitLoc.B) //WE're being hit from behind, shields low, HOLY SHIT, EVADE!
+            //TODO: this looks like a mistake:
+            if (ship.hitInAss && ship.Shield.Back <= .9f && ship.lastHit == ShipSettings.HitLoc.B) //WE're being hit from behind, shields low, HOLY SHIT, EVADE!
             {
                 ship.hitInAss = false;
                 if (AngleTo(AITarget.position) > 15)  //If our target is in front of us , just reposition, otherwise evade
@@ -1309,5 +1301,38 @@ public class AIPlayer : MonoBehaviour
         DoFriendlyFire();
     }
 
+#if UNITY_EDITOR
+    private void OnDrawGizmos()
+    {
+        if (AITarget != null)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawLine(transform.position, AITarget.position);
+        }
+    }
 
+    [UnityEditor.CustomEditor(typeof(AIPlayer))]
+    private class AIPlayerEditor : UnityEditor.Editor
+    {
+        public override void OnInspectorGUI()
+        {
+            base.OnInspectorGUI();
+
+            if (Application.isPlaying)
+            {
+                var instance = (AIPlayer)target;
+                
+                using (var hlayout = new UnityEditor.EditorGUILayout.HorizontalScope())
+                {
+                    UnityEditor.EditorGUILayout.LabelField("Target", GUILayout.Width(100));
+                    string name = (instance.AITarget == null) ? "None" : instance.AITarget.name;
+                    if (GUILayout.Button(name))
+                    {
+                        UnityEditor.Selection.activeObject = instance.AITarget;
+                    }
+                }
+            }
+        }
+    }
+#endif
 }

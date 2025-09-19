@@ -63,7 +63,7 @@ public class BracketController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!ship || ship.isDead)
+        if (!ship || ship.IsDead)
         {
             GameObjTracker.RegisterAllShips();
             GameObjTracker.RegisterTeams();
@@ -73,11 +73,11 @@ public class BracketController : MonoBehaviour
         //use default bracket color and sprite   
         bracketSprite.color = Color;
         bracketSprite.sprite = HUDRoot.defaultBracket;
-        if (shipMain.AITeam == ShipSettings.TEAM.CONFED)
+        if (shipMain.Team == TEAM.CONFED)
         {
             bracketSprite.type = Image.Type.Sliced;
         }
-        if (shipMain.AITeam == ShipSettings.TEAM.KILRATHI)
+        if (shipMain.Team == TEAM.KILRATHI)
         {
             bracketSprite.type = Image.Type.Tiled;
 

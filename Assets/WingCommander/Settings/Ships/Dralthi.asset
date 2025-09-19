@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87e6a4c68c261074297a1ecf623f0df1, type: 3}
+  m_Name: Dralthi
+  m_EditorClassIdentifier: Assembly-CSharp::ShipSettingsAsset
+  aiTeam: 1
+  class: 0
+  weight: 1
+  displayName: Dralthi
+  turnRate: 65
+  maxFuel: 2750
+  fuelBurnRate: 2.25
+  topSpeed: 40
+  burnSpeed: 120
+  acceleration: 2.5
+  deceleration: 1.5
+  lag: 1
+  deltaSmooth: 0.05
+  capacitorSize: 20
+  weaponRechargeRate: 5
+  armor:
+    front: 4.5
+    back: 3.5
+    left: 3
+    right: 3
+  shield:
+    front: 5
+    back: 5
+  shieldRechargeRate: 4.5
+  hasCloak: 0
+  timeToCloak: 2
+  cloakPower: 20
+  cloakDrain: 1

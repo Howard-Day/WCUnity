@@ -105,10 +105,12 @@ public class CockpitDamage : MonoBehaviour
             DoDamage();
         }
         //add screen distortion to damaged components
-        DamagedScreenCore.GetComponent<MeshRenderer>().material.SetFloat("_DmgAmt", 1 - (shipMain._CoreStrength / shipMain.CoreMax));
-        DamagedScreenComp.GetComponent<MeshRenderer>().material.SetFloat("_DmgAmt", Mathf.Max((1 - (shipMain._CoreStrength / shipMain.CoreMax)) / 10, shipMain.componentDamage.CompSys));
-        DamagedScreenRadar.GetComponent<MeshRenderer>().material.SetFloat("_DmgAmt", Mathf.Max((1 - (shipMain._CoreStrength / shipMain.CoreMax)) / 10, shipMain.componentDamage.Track));
-        DamagedScreenVDU1.GetComponent<MeshRenderer>().material.SetFloat("_DmgAmt", Mathf.Max((1 - (shipMain._CoreStrength / shipMain.CoreMax)) / 10, shipMain.componentDamage.CompSys));
-        DamagedScreenVDU2.GetComponent<MeshRenderer>().material.SetFloat("_DmgAmt", Mathf.Max((1 - (shipMain._CoreStrength / shipMain.CoreMax)) / 10, shipMain.componentDamage.CompSys / 2, shipMain.componentDamage.Track / 2, shipMain.componentDamage.ComUnit));
+        float damageAmount = 1 - (shipMain._CoreStrength / shipMain.CoreMax);
+        float damageAmountOver10 = damageAmount / 10f;
+        DamagedScreenCore.GetComponent<MeshRenderer>().material.SetFloat("_DmgAmt", damageAmount);
+        DamagedScreenComp.GetComponent<MeshRenderer>().material.SetFloat("_DmgAmt", Mathf.Max(damageAmountOver10, shipMain.componentDamage.CompSys));
+        DamagedScreenRadar.GetComponent<MeshRenderer>().material.SetFloat("_DmgAmt", Mathf.Max(damageAmountOver10, shipMain.componentDamage.Track));
+        DamagedScreenVDU1.GetComponent<MeshRenderer>().material.SetFloat("_DmgAmt", Mathf.Max(damageAmountOver10, shipMain.componentDamage.CompSys));
+        DamagedScreenVDU2.GetComponent<MeshRenderer>().material.SetFloat("_DmgAmt", Mathf.Max(damageAmountOver10, shipMain.componentDamage.CompSys / 2, shipMain.componentDamage.Track / 2, shipMain.componentDamage.ComUnit));
     }
 }

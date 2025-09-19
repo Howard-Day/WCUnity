@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87e6a4c68c261074297a1ecf623f0df1, type: 3}
+  m_Name: Talon
+  m_EditorClassIdentifier: Assembly-CSharp::ShipSettingsAsset
+  aiTeam: 3
+  class: 0
+  weight: 1
+  displayName: Pirate
+  turnRate: 60
+  maxFuel: 2400
+  fuelBurnRate: 2
+  topSpeed: 38
+  burnSpeed: 115
+  acceleration: 2.25
+  deceleration: 1.5
+  lag: 1
+  deltaSmooth: 0.05
+  capacitorSize: 25
+  weaponRechargeRate: 3
+  armor:
+    front: 4
+    back: 3
+    left: 3.5
+    right: 3.5
+  shield:
+    front: 4
+    back: 3
+  shieldRechargeRate: 3.5
+  hasCloak: 0
+  timeToCloak: 2
+  cloakPower: 20
+  cloakDrain: 1

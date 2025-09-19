@@ -74,10 +74,10 @@ public class CockpitViewSwitcher : MonoBehaviour
         Billboard.SetActive(false);
         hud = HoverUI.GetComponent<HUDRoot>();
         //Make our ship sounds more muted to start
-        shipMain.MinMaxThrottlePitch *= .25f;
-        shipMain.MinMaxThrottleVolume *= .25f;
-        shipMain.AfterburnPitch *= .25f;
-        shipMain.AfterburnVolume *= .25f;
+        shipMain.Engines.MinMaxThrottlePitch *= .25f;
+        shipMain.Engines.MinMaxThrottleVolume *= .25f;
+        shipMain.Engines.AfterburnPitch *= .25f;
+        shipMain.Engines.AfterburnVolume *= .25f;
         //init the music! 
         MusicController.ExteriorCam = false;
         MusicController.SpeechDuck = false;
@@ -108,10 +108,10 @@ public class CockpitViewSwitcher : MonoBehaviour
             //Turn on the Spaceflight cinematic Frame!
             SpaceflightFrame.FrameActive = true;
             //Make our ship sounds default when switched to external cam
-            shipMain.MinMaxThrottlePitch *= 4f;
-            shipMain.MinMaxThrottleVolume *= 2f;
-            shipMain.AfterburnPitch *= 4f;
-            shipMain.AfterburnVolume *= 2f;
+            shipMain.Engines.MinMaxThrottlePitch *= 4f;
+            shipMain.Engines.MinMaxThrottleVolume *= 2f;
+            shipMain.Engines.AfterburnPitch *= 4f;
+            shipMain.Engines.AfterburnVolume *= 2f;
             //duck and muffle the music! 
             MusicController.ExteriorCam = true;
         }
@@ -133,7 +133,7 @@ public class CockpitViewSwitcher : MonoBehaviour
 
         //print (xShift);
         TargetShift = new Vector2(Mathf.Clamp(xShift, -1f, 1f), -Mathf.Clamp(yShift, -1f, 1f));
-        if (shipMain.speed > shipMain.topSpeed)
+        if (shipMain.speed > shipMain.Settings.TopSpeed)
         {
             TargetShift += new Vector2(Random.Range(-1f, 1f), Random.Range(-1f, 1f)) * .025f;
         }
@@ -199,10 +199,10 @@ public class CockpitViewSwitcher : MonoBehaviour
             //Turn off the Spaceflight cinematic Frame!
             SpaceflightFrame.FrameActive = false;
             //Make our ship sounds more muted when switched to internal view
-            shipMain.MinMaxThrottlePitch *= .25f;
-            shipMain.MinMaxThrottleVolume *= .5f;
-            shipMain.AfterburnPitch *= .25f;
-            shipMain.AfterburnVolume *= .5f;
+            shipMain.Engines.MinMaxThrottlePitch *= .25f;
+            shipMain.Engines.MinMaxThrottleVolume *= .5f;
+            shipMain.Engines.AfterburnPitch *= .25f;
+            shipMain.Engines.AfterburnVolume *= .5f;
             //un duck and restore the music! 
             MusicController.ExteriorCam = false;
         }
@@ -226,10 +226,10 @@ public class CockpitViewSwitcher : MonoBehaviour
             //Turn off the Spaceflight cinematic Frame!
             SpaceflightFrame.FrameActive = false;
             //Make our ship sounds more muted when switched to internal view
-            shipMain.MinMaxThrottlePitch *= .25f;
-            shipMain.MinMaxThrottleVolume *= .5f;
-            shipMain.AfterburnPitch *= .25f;
-            shipMain.AfterburnVolume *= .5f;
+            shipMain.Engines.MinMaxThrottlePitch *= .25f;
+            shipMain.Engines.MinMaxThrottleVolume *= .5f;
+            shipMain.Engines.AfterburnPitch *= .25f;
+            shipMain.Engines.AfterburnVolume *= .5f;
             //un duck and restore the music! 
             MusicController.ExteriorCam = false;
         }
@@ -252,10 +252,10 @@ public class CockpitViewSwitcher : MonoBehaviour
             //Turn off the Spaceflight cinematic Frame!
             SpaceflightFrame.FrameActive = false;
             //Make our ship sounds more muted when switched to internal view
-            shipMain.MinMaxThrottlePitch *= .25f;
-            shipMain.MinMaxThrottleVolume *= .5f;
-            shipMain.AfterburnPitch *= .25f;
-            shipMain.AfterburnVolume *= .5f;
+            shipMain.Engines.MinMaxThrottlePitch *= .25f;
+            shipMain.Engines.MinMaxThrottleVolume *= .5f;
+            shipMain.Engines.AfterburnPitch *= .25f;
+            shipMain.Engines.AfterburnVolume *= .5f;
             //un duck and restore the music! 
             MusicController.ExteriorCam = false;
         }
@@ -280,10 +280,10 @@ public class CockpitViewSwitcher : MonoBehaviour
             //Turn off the Spaceflight cinematic Frame!
             SpaceflightFrame.FrameActive = false;
             //Make our ship sounds more muted when switched to internal view
-            shipMain.MinMaxThrottlePitch *= .25f;
-            shipMain.MinMaxThrottleVolume *= .25f;
-            shipMain.AfterburnPitch *= .25f;
-            shipMain.AfterburnVolume *= .25f;
+            shipMain.Engines.MinMaxThrottlePitch *= .25f;
+            shipMain.Engines.MinMaxThrottleVolume *= .25f;
+            shipMain.Engines.AfterburnPitch *= .25f;
+            shipMain.Engines.AfterburnVolume *= .25f;
             //un duck and restore the music! 
             MusicController.ExteriorCam = false;
         }

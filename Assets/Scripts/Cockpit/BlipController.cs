@@ -29,12 +29,12 @@ public class BlipController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!ship || ship.isDead)
+        if (!ship || ship.IsDead)
         {
             GameObjTracker.RegisterAllShips();
             GameObjTracker.RegisterTeams();       
         }
-        if (ship)
+        if (ship && shipMain)
         {
             Vector3 blipLoc = ship.transform.position;
             Vector3 blipAngle = blipLoc - shipMain.transform.position;

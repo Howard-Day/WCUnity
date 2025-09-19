@@ -59,33 +59,32 @@ public class ShieldDisplay : MonoBehaviour
     void Update()
     {
 
-        FrontShield.normalizedValue = (shipMain.Shield.x / shipMain._ShieldMax.x) * (maxShield - minShield) + minShield;
-        
-
-        RearShield.normalizedValue = shipMain.Shield.y / shipMain._ShieldMax.y * (maxShield - minShield) + minShield;
+        var shield = shipMain.Shield;
+        FrontShield.normalizedValue = (shield.Front / shipMain.Settings.Shield.Front) * (maxShield - minShield) + minShield;
+        RearShield.normalizedValue = shield.Back / shipMain.Settings.Shield.Back * (maxShield - minShield) + minShield;
 
         if (!inBase8)
         {
-            ForeAmt.text = Mathf.FloorToInt(shipMain.Shield.x * 10).ToString();
-            RearAmt.text = Mathf.FloorToInt(shipMain.Shield.y * 10).ToString();
+            ForeAmt.text = Mathf.FloorToInt(shield.Front * 10).ToString();
+            RearAmt.text = Mathf.FloorToInt(shield.Back * 10).ToString();
         }
         else 
         {
-            ForeAmt.text = Int32ToString(Mathf.FloorToInt(shipMain.Shield.x * 10),8);
-            RearAmt.text = Int32ToString(Mathf.FloorToInt(shipMain.Shield.y * 10),8);
+            ForeAmt.text = Int32ToString(Mathf.FloorToInt(shield.Front * 10),8);
+            RearAmt.text = Int32ToString(Mathf.FloorToInt(shield.Back * 10),8);
         }
 
-        ForeArmor.normalizedValue = shipMain.Armor.x / shipMain._ArmorMax.x;
-        BackArmor.normalizedValue = shipMain.Armor.y / shipMain._ArmorMax.y;
-        LeftArmor.normalizedValue = shipMain.Armor.z / shipMain._ArmorMax.z;
-        RightArmor.normalizedValue = shipMain.Armor.w / shipMain._ArmorMax.w;
+        ForeArmor.normalizedValue = shipMain.Armor.Front / shipMain.Settings.Armor.Front;
+        BackArmor.normalizedValue = shipMain.Armor.Back / shipMain.Settings.Armor.Back;
+        LeftArmor.normalizedValue = shipMain.Armor.Left / shipMain.Settings.Armor.Left;
+        RightArmor.normalizedValue = shipMain.Armor.Right / shipMain.Settings.Armor.Right;
 
-        if (shipMain.Shield.x < shipMain._ShieldMax.x)
+        if (shield.Front < shipMain.Settings.Shield.Front)
         {
             Blink(ForeLight, 25);
         }
         else { ForeLight.isOn = false; }
-        if (shipMain.Shield.y < shipMain._ShieldMax.y)
+        if (shield.Back < shipMain.Settings.Shield.Back)
         {
             Blink(RearLight, 25);
         }
