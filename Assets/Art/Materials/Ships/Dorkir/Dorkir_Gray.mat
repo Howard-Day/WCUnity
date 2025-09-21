@@ -132,7 +132,7 @@ Material:
     - _VertColorEmissive: 0
     - _WindowBrightness: 2
     - _ZWrite: 1
-    - __dirty: 0
+    - __dirty: 1
     m_Colors:
     - _ASEOutlineColor: {r: 0, g: 0, b: 0, a: 0.02745098}
     - _AmbientColor: {r: 0.7163636, g: 0.68799996, b: 1, a: 1}
