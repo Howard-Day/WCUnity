@@ -44,9 +44,11 @@ namespace OneManEscapePlan.SpaceRailShooter.Scripts.Effects {
 		[Tooltip("Set a custom material to use for the blitting process (not required; I recommend leaving this null)")]
 		[SerializeField] protected Material renderMaterial;
 		protected RenderTexture rt;
-
 		new Camera camera;
 
+		public SRSRenderSettings RenderSettings => renderSettings;
+		public Camera Camera => camera;
+		
 		// Use this for initialization
 		void Start() {
 			if (Application.isPlaying) {

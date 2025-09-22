@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using OneManEscapePlan.SpaceRailShooter.Scripts.Effects;
+using UnityEngine;
 using UnityEngine.Analytics;
 using UnityEngine.UI;
 
@@ -7,13 +8,12 @@ public class BracketController : MonoBehaviour
     public HUDRoot HUDRoot;
     public ShipSettings ship;
     public ShipSettings shipMain;
-    public Camera hudCamera;
+    public PixelCamera pixelCamera;
     public Color Color;
     public Vector2 clipDist;
     public float clipAngle;
-    //private int pixelsPerUnit = 100;
+    
     Image bracketSprite;
-    Vector3 newLocalPosition;
 
     /// <summary>
     /// Start is called on the frame when a script is enabled just before
@@ -26,7 +26,6 @@ public class BracketController : MonoBehaviour
     RectTransform bracketRect;
     float angleTo;
     float distTo;
-    Vector2 screenRes;
 
     void Start()
     {
@@ -42,23 +41,7 @@ public class BracketController : MonoBehaviour
         bracketRect.anchoredPosition = Vector2.one / 2;
         bracketSprite.color = Color;
         bracketRect.sizeDelta = Vector2.zero;
-        screenRes.y = Screen.height;
-        screenRes.x = Screen.width;
     }
-
-    public static Vector3 GetScreenPosition(Camera mainCamera, Vector3 targetPosition, float depth, Vector2 screenRes)
-    {
-        Vector3 screenPosition = mainCamera.WorldToScreenPoint(targetPosition);
-        screenPosition.x -= screenRes.x / 2;
-        screenPosition.x /= 100;
-        screenPosition.y -= screenRes.y / 2;
-        screenPosition.y /= 100;
-
-
-        screenPosition.z = depth;
-        return screenPosition;
-    }
-
 
     // Update is called once per frame
     void Update()
@@ -83,8 +66,8 @@ public class BracketController : MonoBehaviour
 
         }
         bracketSprite.pixelsPerUnitMultiplier = 50;
-        angleTo = Vector3.Angle(hudCamera.transform.forward, ship.transform.position - hudCamera.transform.position);
-        distTo = Vector3.Distance(hudCamera.transform.position, ship.transform.position);
+        angleTo = Vector3.Angle(this.pixelCamera.transform.forward, ship.transform.position - this.pixelCamera.transform.position);
+        distTo = Vector3.Distance(this.pixelCamera.transform.position, ship.transform.position);
 
         //unless the target is the current target!
         if (ship == shipMain.currentTarget )
@@ -169,33 +152,53 @@ public class BracketController : MonoBehaviour
         var collider = ship.GetComponent<Collider>();
         Vector3 cen = collider.bounds.center;
         Vector3 ext = collider.bounds.extents;
+        var screenRes = new Vector2(Screen.width, Screen.height);
         Vector2[] extentPoints = new Vector2[8]
         {
-         GetScreenPosition(hudCamera, new Vector3(cen.x-ext.x, cen.y-ext.y, cen.z-ext.z),1.8f,screenRes),
-         GetScreenPosition(hudCamera, new Vector3(cen.x+ext.x, cen.y-ext.y, cen.z-ext.z),1.8f,screenRes),
-         GetScreenPosition(hudCamera, new Vector3(cen.x-ext.x, cen.y-ext.y, cen.z+ext.z),1.8f,screenRes),
-         GetScreenPosition(hudCamera, new Vector3(cen.x+ext.x, cen.y-ext.y, cen.z+ext.z),1.8f,screenRes),
-         GetScreenPosition(hudCamera, new Vector3(cen.x-ext.x, cen.y+ext.y, cen.z-ext.z),1.8f,screenRes),
-         GetScreenPosition(hudCamera, new Vector3(cen.x+ext.x, cen.y+ext.y, cen.z-ext.z),1.8f,screenRes),
-         GetScreenPosition(hudCamera, new Vector3(cen.x-ext.x, cen.y+ext.y, cen.z+ext.z),1.8f,screenRes),
-         GetScreenPosition(hudCamera, new Vector3(cen.x+ext.x, cen.y+ext.y, cen.z+ext.z),1.8f,screenRes)
+            GetScreenPosition(pixelCamera, new Vector3(cen.x- ext.x, cen.y- ext.y, cen.z- ext.z), 1.8f, screenRes),
+            GetScreenPosition(pixelCamera, new Vector3(cen.x+ ext.x, cen.y- ext.y, cen.z- ext.z), 1.8f, screenRes),
+            GetScreenPosition(pixelCamera, new Vector3(cen.x- ext.x, cen.y- ext.y, cen.z+ ext.z), 1.8f, screenRes),
+            GetScreenPosition(pixelCamera, new Vector3(cen.x+ ext.x, cen.y- ext.y, cen.z+ ext.z), 1.8f, screenRes),
+            GetScreenPosition(pixelCamera, new Vector3(cen.x- ext.x, cen.y+ ext.y, cen.z- ext.z), 1.8f, screenRes),
+            GetScreenPosition(pixelCamera, new Vector3(cen.x+ ext.x, cen.y+ ext.y, cen.z- ext.z), 1.8f, screenRes),
+            GetScreenPosition(pixelCamera, new Vector3(cen.x- ext.x, cen.y+ ext.y, cen.z+ ext.z), 1.8f, screenRes),
+            GetScreenPosition(pixelCamera, new Vector3(cen.x+ ext.x, cen.y+ ext.y, cen.z+ ext.z), 1.8f, screenRes)
         };
+
         Vector2 min = extentPoints[0];
         Vector2 max = extentPoints[0];
         foreach (Vector2 v in extentPoints)
         {
-
             min = new Vector2(Mathf.Min(min.x, v.x), Mathf.Min(min.y, v.y));
-            max = new Vector2(Mathf.Max(max.x, v.x), Mathf.Max(max.y, v.y));
-            
+            max = new Vector2(Mathf.Max(max.x, v.x), Mathf.Max(max.y, v.y));         
         }
-        Vector2 posSize = new Vector2((max.x - min.x), (max.y - min.y));
 
         RectTransform rectTrans = gameObject.transform as RectTransform;
-        rectTrans.localPosition = GetScreenPosition(hudCamera, ship.gameObject.transform.position, 1.8f, new Vector2(640, 400));
+        var screenPos = GetScreenPosition(pixelCamera, ship.gameObject.transform.position, 1.8f, screenRes);
+        var renderTextureRes = new Vector2(pixelCamera.RenderSettings.RenderTexture.width, pixelCamera.RenderSettings.RenderTexture.height);
+        Vector2 scaleFactor = new Vector2(renderTextureRes.x / screenRes.x, renderTextureRes.y / screenRes.y);
+        var finalScreenPos = screenPos;
+        finalScreenPos.x *= scaleFactor.x;
+        finalScreenPos.y *= scaleFactor.y;
+
+        Vector2 posSize = new Vector2((max.x - min.x), (max.y - min.y));
+        posSize.x *= scaleFactor.x;
+        posSize.y *= scaleFactor.y;
         rectTrans.sizeDelta = Vector2.Min(Vector2.Max(Vector2.one * .085f, posSize * .75f), Vector2.one);
 
+        rectTrans.localPosition = finalScreenPos;
+    }
 
+    public static Vector3 GetScreenPosition(PixelCamera mainCamera, Vector3 targetPosition, float depth, Vector2 screenRes)
+    {
+        Vector3 screenPosition = mainCamera.Camera.WorldToScreenPoint(targetPosition);
+        screenPosition.x -= screenRes.x / 2;
+        screenPosition.x /= 100;
+        screenPosition.y -= screenRes.y / 2;
+        screenPosition.y /= 100;
 
+        screenPosition.z = depth;
+
+        return screenPosition;
     }
 }

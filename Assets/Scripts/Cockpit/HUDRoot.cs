@@ -1,11 +1,14 @@
+using NUnit.Framework;
+using OneManEscapePlan.SpaceRailShooter.Scripts.Effects;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+[RequireComponent(typeof(RectTransform))]
 public class HUDRoot : MonoBehaviour
 {
     public Radar srcRadar;
-    public Camera hudCamera;
+    public PixelCamera hudCamera;
     public Sprite defaultBracket;
     public Sprite targetBracket;
     public Sprite lockedBracket;
@@ -91,7 +94,7 @@ public class HUDRoot : MonoBehaviour
                     bracketObj.transform.parent = RootHUD.transform;
                     bracketObj.transform.localPosition = Vector3.zero;
                     bracketObj.transform.localScale = Vector3.one;
-                    bracket.hudCamera = hudCamera;
+                    bracket.pixelCamera = hudCamera;
                     bracket.ship = ship;
                     bracket.clipDist = nearFarClip;
                     bracket.clipAngle = angleClip;

@@ -12250,7 +12250,12 @@ PrefabInstance:
         type: 3}
       propertyPath: hudCamera
       value: 
-      objectReference: {fileID: 2187516062442110015}
+      objectReference: {fileID: 291342669339957547}
+    - target: {fileID: 1367409019244655026, guid: 0d893415df6e8f54e9c48f5315ec6adc,
+        type: 3}
+      propertyPath: pixelCamera
+      value: 
+      objectReference: {fileID: 4897318589593490446}
     - target: {fileID: 6120171224924825439, guid: 0d893415df6e8f54e9c48f5315ec6adc,
         type: 3}
       propertyPath: m_Name
@@ -12311,6 +12316,36 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0d893415df6e8f54e9c48f5315ec6adc, type: 3}
+--- !u!114 &2469480495811535617 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2583375766835474866, guid: 0d893415df6e8f54e9c48f5315ec6adc,
+    type: 3}
+  m_PrefabInstance: {fileID: 116150208312545971}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c7a93b1708445f84d93759bd83e7a58a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &4897318589593490446 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4785743865878251197, guid: 0d893415df6e8f54e9c48f5315ec6adc,
+    type: 3}
+  m_PrefabInstance: {fileID: 116150208312545971}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b76aff7fbd81bc74ea21fa0d1a7d2e85, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::OneManEscapePlan.SpaceRailShooter.Scripts.Effects.PixelCamera
+--- !u!1 &6353711636484266085 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6462752250105662166, guid: 0d893415df6e8f54e9c48f5315ec6adc,
+    type: 3}
+  m_PrefabInstance: {fileID: 116150208312545971}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &6560207941576127597 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6527457083981948638, guid: 0d893415df6e8f54e9c48f5315ec6adc,
@@ -12591,7 +12626,7 @@ PrefabInstance:
         type: 3}
       propertyPath: HoverUI
       value: 
-      objectReference: {fileID: 3851733709107372875}
+      objectReference: {fileID: 6353711636484266085}
     - target: {fileID: 5367464449014171701, guid: c9e3c76e0b9699f4db3e4053b3283319,
         type: 3}
       propertyPath: LeftBase
@@ -12631,7 +12666,7 @@ PrefabInstance:
         type: 3}
       propertyPath: SpaceflightFrame
       value: 
-      objectReference: {fileID: 7848969048882328781}
+      objectReference: {fileID: 2469480495811535617}
     - target: {fileID: 6260215684717189771, guid: c9e3c76e0b9699f4db3e4053b3283319,
         type: 3}
       propertyPath: m_Name
@@ -12642,6 +12677,18 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c9e3c76e0b9699f4db3e4053b3283319, type: 3}
+--- !u!114 &291342669339957547 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8560468157992124448, guid: c9e3c76e0b9699f4db3e4053b3283319,
+    type: 3}
+  m_PrefabInstance: {fileID: 8270837566023260427}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b76aff7fbd81bc74ea21fa0d1a7d2e85, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::OneManEscapePlan.SpaceRailShooter.Scripts.Effects.PixelCamera
 --- !u!4 &9194979164557452580 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 962866690433317935, guid: c9e3c76e0b9699f4db3e4053b3283319,
