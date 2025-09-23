@@ -46,13 +46,8 @@ public class BracketController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!ship || ship.IsDead)
-        {
-            GameObjTracker.RegisterAllShips();
-            GameObjTracker.RegisterTeams();
-            //Destroy(this.gameObject);
-            //return;
-        }
+        if (ship == null || pixelCamera == null) return;
+
         //use default bracket color and sprite   
         bracketSprite.color = Color;
         bracketSprite.sprite = HUDRoot.defaultBracket;
@@ -63,7 +58,6 @@ public class BracketController : MonoBehaviour
         if (shipMain.Team == TEAM.KILRATHI)
         {
             bracketSprite.type = Image.Type.Tiled;
-
         }
         bracketSprite.pixelsPerUnitMultiplier = 50;
         angleTo = Vector3.Angle(this.pixelCamera.transform.forward, ship.transform.position - this.pixelCamera.transform.position);
@@ -73,7 +67,7 @@ public class BracketController : MonoBehaviour
         if (ship == shipMain.currentTarget )
         {
             bracketSprite.sprite = HUDRoot.targetBracket;
-            if (GameObjTracker.frames % 15 == 0)
+            if (GameObjTracker.Instance.CurrentFrame % 15 == 0)
             {
                 if (blink == 0)
                 {
@@ -108,7 +102,7 @@ public class BracketController : MonoBehaviour
         if (ship.isCloaking)
         {
             bracketSprite.sprite = HUDRoot.targetBracket;
-            if (GameObjTracker.frames % 15 == 0)
+            if (GameObjTracker.Instance.CurrentFrame % 15 == 0)
             {
                 if (blink == 0)
                 {
@@ -170,7 +164,8 @@ public class BracketController : MonoBehaviour
         foreach (Vector2 v in extentPoints)
         {
             min = new Vector2(Mathf.Min(min.x, v.x), Mathf.Min(min.y, v.y));
-            max = new Vector2(Mathf.Max(max.x, v.x), Mathf.Max(max.y, v.y));         
+            max = new Vector2(Mathf.Max(max.x, v.x), Mathf.Max(max.y, v.y));
+
         }
 
         RectTransform rectTrans = gameObject.transform as RectTransform;

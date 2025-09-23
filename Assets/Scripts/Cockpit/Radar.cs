@@ -62,6 +62,7 @@ public class Radar : MonoBehaviour
     }
 
     //radarRefreshNeeded
+    // TODO: use a pooling system
     public void RegisterBlips()
     {
         foreach (BlipController blip in RadarBlips)
@@ -72,33 +73,33 @@ public class Radar : MonoBehaviour
         
         if (shipMain.Team == TEAM.CONFED)
         {
-            MakeBlips(GameObjTracker.KilrathiShips, enemyNear, enemyFar);
-            MakeBlips(GameObjTracker.ConfedShips, friendlyNear, friendlyFar);
+            MakeBlips(GameObjTracker.Instance.KilrathiShips, enemyNear, enemyFar);
+            MakeBlips(GameObjTracker.Instance.ConfedShips, friendlyNear, friendlyFar);
         }
         if (shipMain.Team == TEAM.KILRATHI)
         {
-            MakeBlips(GameObjTracker.ConfedShips, enemyNear, enemyFar);
-            MakeBlips(GameObjTracker.KilrathiShips, friendlyNear, friendlyFar);
+            MakeBlips(GameObjTracker.Instance.ConfedShips, enemyNear, enemyFar);
+            MakeBlips(GameObjTracker.Instance.KilrathiShips, friendlyNear, friendlyFar);
         }
         if (shipMain.Team == TEAM.PIRATE)
         {
-            MakeBlips(GameObjTracker.ConfedShips, enemyNear, enemyFar);
-            MakeBlips(GameObjTracker.KilrathiShips, enemyNear, enemyFar);
+            MakeBlips(GameObjTracker.Instance.ConfedShips, enemyNear, enemyFar);
+            MakeBlips(GameObjTracker.Instance.KilrathiShips, enemyNear, enemyFar);
         }
         if (shipMain.Team == TEAM.NEUTRAL)
         {
-            MakeBlips(GameObjTracker.ConfedShips, neutralNear, neutralFar);
-            MakeBlips(GameObjTracker.KilrathiShips, neutralNear, neutralFar);
+            MakeBlips(GameObjTracker.Instance.ConfedShips, neutralNear, neutralFar);
+            MakeBlips(GameObjTracker.Instance.KilrathiShips, neutralNear, neutralFar);
         }
-        MakeBlips(GameObjTracker.PirateShips, enemyNear, enemyFar);
-        MakeBlips(GameObjTracker.NeutralShips, neutralNear, neutralFar);
-        MakeBlips(GameObjTracker.Environmental, envNear, envFar);
-        GameObjTracker.radarRefreshNeeded = false;
+        MakeBlips(GameObjTracker.Instance.PirateShips, enemyNear, enemyFar);
+        MakeBlips(GameObjTracker.Instance.NeutralShips, neutralNear, neutralFar);
+        MakeBlips(GameObjTracker.Instance.EnvironmentalShips, envNear, envFar);
+        GameObjTracker.Instance.RadarRefreshNeeded = false;
         //print("Radar Refresh is: "+ GameObjTracker.radarRefreshNeeded);
 
     }
 
-    void MakeBlips(List<ShipSettings> Ships, Color Near, Color Far)
+    void MakeBlips(IReadOnlyList<ShipSettings> Ships, Color Near, Color Far)
     {        
         if (Ships != null && Ships.Count > 0)
         {
@@ -127,11 +128,11 @@ public class Radar : MonoBehaviour
 
     void DoHitFlash() //Show incoming fire on the radar! 
     {
-        if (GameObjTracker.frames % 120 == 0 || Camera.main == null) // Every 2 sec (approx) reset the hit history, or if the cockpit has been destroyed. 
+        if (GameObjTracker.Instance.CurrentFrame % 120 == 0 || Camera.main == null) // Every 2 sec (approx) reset the hit history, or if the cockpit has been destroyed. 
         {
             shipMain.lastHit = ShipSettings.HitLoc.NULL;
         }
-        if (GameObjTracker.frames % 30 == 0 || Camera.main == null) //every sec (approx) reset the hit flashes to off
+        if (GameObjTracker.Instance.CurrentFrame % 30 == 0 || Camera.main == null) //every sec (approx) reset the hit flashes to off
         {
             HitFore.isOn = false;
             HitRight.isOn = false;
@@ -171,7 +172,7 @@ public class Radar : MonoBehaviour
     void LateUpdate()
     {
         DoHitFlash();
-        if (GameObjTracker.radarRefreshNeeded == true)
+        if (GameObjTracker.Instance.RadarRefreshNeeded)
         {
             RegisterBlips();
         }

@@ -5,6 +5,7 @@ public class GameplayDebuggingController : MonoBehaviour
 {
     public InputAction possessCurrentShipAction = new InputAction(binding: "<Keyboard>/enter");
     public InputAction freezeAllAction = new InputAction(binding: "<Keyboard>/end");
+    public InputAction killAllAction = new InputAction(binding: "<Keyboard>/k");
 
     public PlayerController playerControllerPrefab;
 
@@ -14,6 +15,21 @@ public class GameplayDebuggingController : MonoBehaviour
     {
         possessCurrentShipAction.performed += PossessCurrentShipAction_performed;
         freezeAllAction.performed += FreezeAllAction_performed;
+        killAllAction.performed += KillAllAction_performed;
+    }
+
+    void OnEnable()
+    {
+        possessCurrentShipAction.Enable();
+        freezeAllAction.Enable();
+        killAllAction.Enable();
+    }
+
+    private void OnDisable()
+    {
+        possessCurrentShipAction.Disable();
+        freezeAllAction.Disable();
+        killAllAction.Disable();
     }
 
     private void PossessCurrentShipAction_performed(InputAction.CallbackContext obj)
@@ -57,18 +73,15 @@ public class GameplayDebuggingController : MonoBehaviour
                 ai.enabled = false;
             }
         }
-    }
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void OnEnable()
-    {
-        possessCurrentShipAction.Enable();
         freezeAllAction.Enable();
     }
 
-    private void OnDisable()
+    private void KillAllAction_performed(InputAction.CallbackContext obj)
     {
-        possessCurrentShipAction.Disable();
+        foreach (ShipSettings ship in GameObjTracker.Instance.Ships)
+        {
+            ship._CoreStrength = 0f;
+        }
         freezeAllAction.Disable();
     }
 }

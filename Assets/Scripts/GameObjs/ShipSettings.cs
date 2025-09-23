@@ -3,6 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.Events;
+
+[System.Serializable] public class ShipEvent : UnityEvent<ShipSettings> { }
 
 // TODO: rename to something like "Ship"
 public class ShipSettings : Unit, IPowerSource
@@ -164,10 +167,7 @@ public class ShipSettings : Unit, IPowerSource
         //Organize the scene
         gameObject.transform.SetParent(GameObject.FindWithTag("GamePlayObjs").transform);
 
-        //Make sure everyone knows we're here
-        // TODO: this is extremely inefficient.
-        GameObjTracker.RegisterAllShips();
-        GameObjTracker.RegisterTeams();
+        GameObjTracker.Instance.AddShip(this);
 
         //Atomic Batteries to power
         mainCapacitor = new Capacitor(settings.CapacitorSize, false);
@@ -182,6 +182,15 @@ public class ShipSettings : Unit, IPowerSource
         if (settings.HasCloak)
         {
             InitCloakSFX();
+        }
+    }
+
+    void OnDestroy()
+    {
+        // If we're not already dead, remove ourself from GameObjTracker.
+        if (!isDead)
+        {
+            if (GameObjTracker.HasInstance) GameObjTracker.Instance.RemoveShip(this);
         }
     }
 
@@ -392,7 +401,7 @@ public class ShipSettings : Unit, IPowerSource
         hitTracker[1] = ShipID;
         lastHitID = hitID;
         //reset Last hitID periodically
-        if (GameObjTracker.frames % 30 == 0)
+        if (GameObjTracker.Instance.CurrentFrame % 30 == 0)
         {
             lastHitID = 0;
         }
@@ -543,7 +552,7 @@ public class ShipSettings : Unit, IPowerSource
                 lagMove.initVel = DeathVel;
             }
             //tell the game manager we've done this
-            GameObjTracker.oldUI = playerUI.gameObject;
+            GameObjTracker.Instance.OldUI = playerUI.gameObject;
             playerUIDisconnected = true;
         }
 
@@ -570,89 +579,99 @@ public class ShipSettings : Unit, IPowerSource
             DecoRoot = GameObject.Find("Deco_Objs").transform;
 
         if (_CoreStrength <= 0) //We dead, son
-        {   isDead = true;
-            //make sure we're uncloaked
-            Cloak = false;
-            cloakedAmount = 0f;
-            //Let's set up how we're going to die!
-            if (DeathSpin == Vector3.zero) //this happens once, let's take advantage!
-            {
-                DeathDir = transform.forward;
-                DeathVel = speed;
-                DeathSpin = new Vector3(Random.Range(-3f, 3f), Random.Range(-3f, 3f), Random.Range(-3f, 3f));
-                DeathType = Random.Range(0, 2); //we've got three current deaths - immediate, short spin, and death tumble!
-                DeathLength = Random.Range(2f, 4f);
-            }
-            if (DeathType == 0) //Die Immediately.
-            {
-                if (!Boom)
-                {
-                    Boom = Instantiate(DeathVFX[Random.Range(0, DeathVFX.Length - 1)], transform.position, Quaternion.identity, DecoRoot);
-                    Boom.GetComponent<DampInitVelocity>().initDir = DeathDir;
-                    Boom.GetComponent<DampInitVelocity>().initVel = DeathVel;
+        {
+            Kill();
+        }
+    }
 
-                }
+    void Kill()
+    {
+        isDead = true;
+        GameObjTracker.Instance.RemoveShip(this);
+
+        _CoreStrength = 0;
+        //make sure we're uncloaked
+        Cloak = false;
+        cloakedAmount = 0f;
+        //Let's set up how we're going to die!
+        if (DeathSpin == Vector3.zero) //this happens once, let's take advantage!
+        {
+            DeathDir = transform.forward;
+            DeathVel = speed;
+            DeathSpin = new Vector3(Random.Range(-3f, 3f), Random.Range(-3f, 3f), Random.Range(-3f, 3f));
+            DeathType = Random.Range(0, 2); //we've got three current deaths - immediate, short spin, and death tumble!
+            DeathLength = Random.Range(2f, 4f);
+        }
+        if (DeathType == 0) //Die Immediately.
+        {
+            if (!Boom)
+            {
+                Boom = Instantiate(DeathVFX[Random.Range(0, DeathVFX.Length - 1)], transform.position, Quaternion.identity, DecoRoot);
+                Boom.GetComponent<DampInitVelocity>().initDir = DeathDir;
+                Boom.GetComponent<DampInitVelocity>().initVel = DeathVel;
+
+            }
+            DoPlayerUIDisconnect();
+            Destroy(gameObject, .25f);
+            transform.position += DeathDir * DeathVel * Time.deltaTime;
+        }
+
+        if (DeathType == 1)//Short burst of explosions, then Die
+        {
+            float dyaw_ = Mathf.Clamp(DeathSpin.y, -1f, 1f);
+            float dpitch_ = Mathf.Clamp(DeathSpin.x, -1f, 1f);
+            float droll_ = Mathf.Clamp(DeathSpin.z, -1f, 1f);
+            dyaw_ *= settings.TurnRate * 2f * Time.deltaTime;
+            dpitch_ *= settings.TurnRate * 2f * Time.deltaTime;
+            droll_ *= settings.TurnRate * 3f * Time.deltaTime;
+            transform.localRotation *= Quaternion.AngleAxis(droll_, Vector3.forward) * Quaternion.AngleAxis(dyaw_, Vector3.up) * Quaternion.AngleAxis(dpitch_, invertYAxis ? Vector3.right : Vector3.left);
+            transform.position += DeathDir * DeathVel * Time.deltaTime;
+            speed = 0f;
+            DeathLength -= Time.deltaTime * 5.5f;
+            if (DeathLength > .5f)
+            {
+                GameObject DeathTrail = Instantiate(DeathTrailVFX, transform.position, Quaternion.identity, DecoRoot);
+                DeathTrail.GetComponent<DampInitVelocity>().initDir = DeathDir;
+                DeathTrail.GetComponent<DampInitVelocity>().initVel = DeathVel / 8;
+            }
+            if (DeathLength <= 0 && !Boom)
+            {
+                Boom = Instantiate(DeathVFX[Random.Range(0, DeathVFX.Length - 1)], transform.position, Quaternion.identity, DecoRoot);
+                Boom.GetComponent<DampInitVelocity>().initDir = DeathDir;
+                Boom.GetComponent<DampInitVelocity>().initVel = DeathVel;
                 DoPlayerUIDisconnect();
                 Destroy(gameObject, .25f);
-                transform.position += DeathDir * DeathVel * Time.deltaTime;
             }
+        }
 
-            if (DeathType == 1)//Short burst of explosions, then Die
+        if (DeathType == 2)
+        {
+            float dyaw_ = Mathf.Clamp(DeathSpin.y, -1f, 1f);
+            float dpitch_ = Mathf.Clamp(DeathSpin.x, -1f, 1f);
+            float droll_ = Mathf.Clamp(DeathSpin.z, -1f, 1f);
+            dyaw_ *= settings.TurnRate * 2f * Time.deltaTime;
+            dpitch_ *= settings.TurnRate * 2f * Time.deltaTime;
+            droll_ *= settings.TurnRate * 3f * Time.deltaTime;
+            transform.localRotation *= Quaternion.AngleAxis(droll_, Vector3.forward) * Quaternion.AngleAxis(dyaw_, Vector3.up) * Quaternion.AngleAxis(dpitch_, invertYAxis ? Vector3.right : Vector3.left);
+            transform.position += DeathDir * DeathVel * Time.deltaTime;
+            DeathLength -= Time.deltaTime;
+            if (DeathLength > .25f)
             {
-                float dyaw_ = Mathf.Clamp(DeathSpin.y, -1f, 1f);
-                float dpitch_ = Mathf.Clamp(DeathSpin.x, -1f, 1f);
-                float droll_ = Mathf.Clamp(DeathSpin.z, -1f, 1f);
-                dyaw_ *= settings.TurnRate * 2f * Time.deltaTime;
-                dpitch_ *= settings.TurnRate * 2f * Time.deltaTime;
-                droll_ *= settings.TurnRate * 3f * Time.deltaTime;
-                transform.localRotation *= Quaternion.AngleAxis(droll_, Vector3.forward) * Quaternion.AngleAxis(dyaw_, Vector3.up) * Quaternion.AngleAxis(dpitch_, invertYAxis ? Vector3.right : Vector3.left);
-                transform.position += DeathDir * DeathVel * Time.deltaTime;
-                speed = 0f;
-                DeathLength -= Time.deltaTime * 5.5f;
-                if (DeathLength > .5f)
-                {
-                    GameObject DeathTrail = Instantiate(DeathTrailVFX, transform.position, Quaternion.identity, DecoRoot);
-                    DeathTrail.GetComponent<DampInitVelocity>().initDir = DeathDir;
-                    DeathTrail.GetComponent<DampInitVelocity>().initVel = DeathVel / 8;
-                }
-                if (DeathLength <= 0 && !Boom)
-                {
-                    Boom = Instantiate(DeathVFX[Random.Range(0, DeathVFX.Length - 1)], transform.position, Quaternion.identity, DecoRoot);
-                    Boom.GetComponent<DampInitVelocity>().initDir = DeathDir;
-                    Boom.GetComponent<DampInitVelocity>().initVel = DeathVel;
-                    DoPlayerUIDisconnect();
-                    Destroy(gameObject, .25f);
-                }
+                GameObject DeathTrail = Instantiate(DeathTrailVFX, transform.position, Quaternion.identity, DecoRoot);
+                DeathTrail.GetComponent<DampInitVelocity>().initDir = DeathDir;
+                DeathTrail.GetComponent<DampInitVelocity>().initVel = DeathVel / 8;
             }
-
-            if (DeathType == 2)
+            if (DeathLength <= 0 && !Boom)
             {
-                float dyaw_ = Mathf.Clamp(DeathSpin.y, -1f, 1f);
-                float dpitch_ = Mathf.Clamp(DeathSpin.x, -1f, 1f);
-                float droll_ = Mathf.Clamp(DeathSpin.z, -1f, 1f);
-                dyaw_ *= settings.TurnRate * 2f * Time.deltaTime;
-                dpitch_ *= settings.TurnRate * 2f * Time.deltaTime;
-                droll_ *= settings.TurnRate * 3f * Time.deltaTime;
-                transform.localRotation *= Quaternion.AngleAxis(droll_, Vector3.forward) * Quaternion.AngleAxis(dyaw_, Vector3.up) * Quaternion.AngleAxis(dpitch_, invertYAxis ? Vector3.right : Vector3.left);
-                transform.position += DeathDir * DeathVel * Time.deltaTime;
-                DeathLength -= Time.deltaTime;
-                if (DeathLength > .25f)
-                {
-                    GameObject DeathTrail = Instantiate(DeathTrailVFX, transform.position, Quaternion.identity, DecoRoot);
-                    DeathTrail.GetComponent<DampInitVelocity>().initDir = DeathDir;
-                    DeathTrail.GetComponent<DampInitVelocity>().initVel = DeathVel / 8;
-                }
-                if (DeathLength <= 0 && !Boom)
-                {
-                    Boom = Instantiate(DeathVFX[Random.Range(0, DeathVFX.Length - 1)], transform.position, Quaternion.identity, DecoRoot);
-                    Boom.GetComponent<DampInitVelocity>().initDir = DeathDir;
-                    Boom.GetComponent<DampInitVelocity>().initVel = DeathVel;
-                    DoPlayerUIDisconnect();
-                    Destroy(gameObject, .25f);
-                }
+                Boom = Instantiate(DeathVFX[Random.Range(0, DeathVFX.Length - 1)], transform.position, Quaternion.identity, DecoRoot);
+                Boom.GetComponent<DampInitVelocity>().initDir = DeathDir;
+                Boom.GetComponent<DampInitVelocity>().initVel = DeathVel;
+                DoPlayerUIDisconnect();
+                Destroy(gameObject, .25f);
             }
         }
     }
+
     //Handle Power Management
     void Power()
     {
@@ -731,8 +750,7 @@ public class ShipSettings : Unit, IPowerSource
             {
                 cloakedAmount = 1f;
                 isCloaked = true;
-                GameObjTracker.radarRefreshNeeded = true;
-                GameObjTracker.bracketRefreshNeeded = true;
+                GameObjTracker.Instance.SetRefreshNeeded();
             }
             if (cloakedAmount <= 0.05)
             {
@@ -748,8 +766,7 @@ public class ShipSettings : Unit, IPowerSource
             {
                 cloakedAmount = 0f;
                 isCloaked = false;
-                GameObjTracker.radarRefreshNeeded = true;
-                GameObjTracker.bracketRefreshNeeded = true;
+                GameObjTracker.Instance.SetRefreshNeeded();
             }
             if (cloakedAmount >= .95)
             {

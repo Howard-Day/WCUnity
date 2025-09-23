@@ -27,7 +27,7 @@ public class RandomSliders : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (GameObjTracker.frames % frameSkip == 0)
+        if (GameObjTracker.Instance.CurrentFrame % frameSkip == 0)
         {
             int chooseRand = Random.Range(0, Sliders.Length);
             SlidersTarget[chooseRand] = Random.Range(0, SlidersMax[chooseRand]);

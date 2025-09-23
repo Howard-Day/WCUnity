@@ -13,7 +13,7 @@ public class RandomInt : MonoBehaviour
     int lastGenInt;
     int NumberGen(int min, int max, int skip)
     {
-        if (GameObjTracker.frames % skip == 0)
+        if (GameObjTracker.Instance.CurrentFrame % skip == 0)
         {
             lastGenInt = Random.Range(min, max);
             lastGenInt = Int32ToBaseInt(lastGenInt, 8);
