@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 672c44a3abfb87042927242f2001630f, type: 3}
+  m_Name: Ship AI Skill Novice
+  m_EditorClassIdentifier: Assembly-CSharp::AIShipSkillSettings
+  skillLevel: 1
+  avoidAngle: 15
+  avoidDistance: 75
+  avoidSpeed: 0.125
+  avoidTime: 3
+  turnSpeed: 0.05
+  leadAmount: 1
+  engageDistance: 150
+  aimAccuracy: 6
+  aimUpdate: 20
+  evadeLength: 0.25
+  evadeAmount: 1
+  forceFireAngle: 20
+  forceFireDistanceDivisor: 5
+  turretSkillSettings: {fileID: 11400000, guid: 0e1aebaf172a63c40b5d71a588168188,
+    type: 2}

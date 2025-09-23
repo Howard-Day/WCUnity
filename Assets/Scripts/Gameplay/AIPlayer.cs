@@ -2,30 +2,24 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
-using UnityEngine.Assertions.Must;
 
+// TODO: rename to AIShip
 [RequireComponent(typeof(ShipSettings))]
-public class AIPlayer : MonoBehaviour
+public class AIPlayer : AIUnit
 {
-
-    public enum AIState { PATROL, BREAK, SEARCH, WINGMAN, ENGAGE, HUNT, EVADE, PROTECT, REPOSITION, FLEE, DEATH, VICTORY };
-    public enum AILevel { CHUMP, NOVICE, DEFAULT, SKILLED, ACE, MASTER };
-
-
+    #region FIELDS
     [Header("Settings")]
+    [SerializeField] private AIShipSkillSettings skillSettings;
     public MessageHandler messageHandler;
     public AIState ActiveAIState = AIState.PATROL;
-    public AILevel AISkillLevel = AILevel.CHUMP;
 
     [Header("Patrol Pattern")]
     public List<Vector3> PatrolPoints;
 
     [Header("Debug Options")]
-    public bool logDebug = false;
     public bool doDebugOrient = false;
     public GameObject debugOrient;
 
-    [HideInInspector] public Transform AITarget;
     [HideInInspector] public GameObjTracker Tracker;
     [HideInInspector] public ShipSettings WingmanTo;
     [HideInInspector] float barrelRoll;
@@ -34,27 +28,14 @@ public class AIPlayer : MonoBehaviour
 
     //Internal settings and flags
     ShipSettings ship;
-    private WeaponsSystem weaponsSystem;
-
-    float averageGunSpeed = 0f;
 
     Vector3 smoothAimAt = Vector3.forward;
-    Vector3 smoothVel = Vector3.forward;
 
-    float turnSpeed = .05f;
-    float engageDist = 150f;
-    float aimAccuracy = 30f;
-    int aimIterations = 3;
-    int aimUpdate = 60;
     float followDist;
-    float bloodThirst;
     Vector3 randPos = Vector3.zero;
 
     ShipSettings AITargetShip;
     Vector3 formationPos;
-    float evadeLength;
-    float evadeAmt;
-    float AILeadAmt = 1f;
 
     bool rolling = false;
     float rollStart;
@@ -62,15 +43,8 @@ public class AIPlayer : MonoBehaviour
     float rollLength;
     float barrelRef = 0f;
 
-    float avoidAngle;
-    float avoidDist;
-    float avoidSpeed;
     bool isAvoiding = false;
     float avoidTimer = 0f;
-    float avoidTime;
-
-    float forceFireAngle;
-    float forceFireDist;
 
     float friendlyFireAvoidAngle;
     float friendlyFireTime;
@@ -83,13 +57,22 @@ public class AIPlayer : MonoBehaviour
     int nextPatrolPoint = 0;
     float evadeTimer = 0f;
 
-    float cooldownWait;
-    bool cooldownWaiting = false;
     Vector3 patrolPoint = Vector3.zero;
 
     Vector3 randDist = Vector3.zero;
 
     Vector3 currentTargetPos;
+    #endregion
+
+    #region PROPERTIES
+    public AIShipSkillSettings SkillSettings
+    {
+        get => skillSettings;
+        set => skillSettings = value;
+    } 
+
+    protected override Capacitor MainCapacitor => ship.MainCapacitor;
+    #endregion
 
     //Initial Conditions
     void Start()
@@ -106,23 +89,7 @@ public class AIPlayer : MonoBehaviour
         GameObjTracker.RegisterAllShips();
         GameObjTracker.RegisterTeams();
     }
-    //Figure out the average velocity of our guns, for predictive aiming
-    void DoGunSpeed()
-    {
-        //loop through our guns, if they're initialized, and we haven't figured this out yet
-        if (averageGunSpeed == 0)
-        {
-            float tempGunSpeed = 0f;
-            //loop through our guns, and add all their speeds together
-            if (logDebug) { print("the number of found weapons is " + weaponsSystem.projWeapons.Count); }
-            foreach (ProjectileWeapon gun in weaponsSystem.projWeapons)
-            {
-                tempGunSpeed += gun.speed;
-            }
-            //return the cumulative gunspeeds by the number of guns, set the value so this only runs once.  
-            averageGunSpeed = tempGunSpeed / weaponsSystem.projWeapons.Count;
-        }
-    }
+
     //Control where we go
     void SteerTo(Vector3 aimAt)
     {       //Vector3 rollAdjust = Quaternion.AngleAxis(Time.time * 12f, Vector3.up).eulerAngles;
@@ -156,9 +123,9 @@ public class AIPlayer : MonoBehaviour
         if (!isAvoiding)
         {
             //turnSpeed = 1f;
-            ship.yaw = Mathf.Lerp(ship.yaw, newYawDest, turnSpeed);//Mathf.SmoothStep(ship.yaw,0f,.1f);
-            ship.pitch = Mathf.Lerp(ship.pitch, newPitchDest, turnSpeed);//Mathf.SmoothStep(ship.pitch,0f,.1f);
-            ship.roll = Mathf.Lerp(ship.roll, newRollDest, turnSpeed);
+            ship.yaw = Mathf.Lerp(ship.yaw, newYawDest, skillSettings.TurnSpeed);//Mathf.SmoothStep(ship.yaw,0f,.1f);
+            ship.pitch = Mathf.Lerp(ship.pitch, newPitchDest, skillSettings.TurnSpeed);//Mathf.SmoothStep(ship.pitch,0f,.1f);
+            ship.roll = Mathf.Lerp(ship.roll, newRollDest, skillSettings.TurnSpeed);
         }
 
 
@@ -239,10 +206,10 @@ public class AIPlayer : MonoBehaviour
             {
                 Vector3 targetShip = tarShip.gameObject.transform.position;
                 //Cull by distance and Ourselves!
-                if (Vector3.Distance(targetShip, ship.transform.position) <= avoidDist*.5f && tarShip != ship)
+                if ((Vector3.Distance(targetShip, ship.transform.position) <= skillSettings.AvoidDistance * .5f) && tarShip != ship)
                 {
                     //Cull by forward angle from the AI's ship
-                    if (AngleTo(targetShip) < avoidAngle)
+                    if (AngleTo(targetShip) < skillSettings.AvoidAngle)
                     {
                         //Cull by only if the targetShip is coming towards the AI
                         if (CustomAngleTo(tarShip.transform.forward, ship.transform.position) <= 90f)
@@ -270,20 +237,23 @@ public class AIPlayer : MonoBehaviour
                 avoidBurn = 2;
             }
         }
-        if (avoidBurn == 1 && avoidTimer > avoidTime/3 && avoidTimer < avoidTime *.9f)
+        if (avoidBurn == 1 && (avoidTimer > skillSettings.AvoidTime / 3) && (avoidTimer < skillSettings.AvoidTime * .9f))
         {
             ship.speed = ship.Settings.BurnSpeed;
         }
-        if (isAvoiding && avoidTimer <= avoidTime)
+        if (isAvoiding)
         {
-            avoidTimer += Time.deltaTime;
-            SteerTo(ship.transform.position - (tarShipDir * 4f));
-        }
-        if (isAvoiding && avoidTimer > avoidTime)
-        {
-            isAvoiding = false;
-            avoidBurn = 0;
-            avoidTimer = 0f;
+            if (avoidTimer <= skillSettings.AvoidTime)
+            {
+                avoidTimer += Time.deltaTime;
+                SteerTo(ship.transform.position - (tarShipDir * 4f));
+            }
+            else
+            {
+                isAvoiding = false;
+                avoidBurn = 0;
+                avoidTimer = 0f;
+            }
         }
     }
     //Force firing if we're within close range, within specified angle
@@ -293,9 +263,9 @@ public class AIPlayer : MonoBehaviour
         if (AITargetShip && AITarget)
         {
             //check if the target is within the forward vector angle and distance
-            if (Vector3.Distance(ship.transform.position, AITargetShip.transform.position) <= forceFireDist)
+            if (Vector3.Distance(ship.transform.position, AITargetShip.transform.position) <= skillSettings.ForceFireDistance)
             {
-                if (AngleTo(AITargetShip.transform.position) <= forceFireAngle)
+                if (AngleTo(AITargetShip.transform.position) <= skillSettings.ForceFireAngle)
                 {
                     weaponsSystem.FireGuns();
                     if (logDebug) { print(ship.DisplayName + " is forcing fire!"); }
@@ -431,35 +401,11 @@ public class AIPlayer : MonoBehaviour
             ActiveAIState = AIState.PATROL;
         }
     }
-    //Handle Gun Cooldown wait
-    void DoGunCooldown(float waitTime, float minCapacitorLevel)
-    {
-        float normalizedCapacitorLevel = ship.MainCapacitor.CurrentChargeNormalized;
-        // if the capacitors are low, add wait time
-        if (normalizedCapacitorLevel < .1f && !cooldownWaiting)
-        {
-            cooldownWait += Time.deltaTime * 10;
-        }
-        //if the wait time has triggered, go into cooldown mode
-        if (cooldownWait > waitTime && !cooldownWaiting)
-        {
-            cooldownWaiting = true;
-        }
-        //cooldown mode, disable firing till the capacitors are to a minimum level
-        if (cooldownWaiting)
-        {
-            weaponsSystem.StopFiring();
-            if (normalizedCapacitorLevel >= minCapacitorLevel)
-            {
-                cooldownWait = 0;
-                cooldownWaiting = false;
-            }
-        }
-    }
+
     //Utility to find the nearest ship, ignoring one of the Teams, any cloaked ships, and the Ship looking
     public ShipSettings FindNearestShip(Transform toObj, TEAM ignoreTEAM)
     {
-        float distance = engageDist * 10f;
+        float distance = skillSettings.EngageDistance * 10f;
 
         ShipSettings nearestShip = null;
         foreach (ShipSettings shipTest in GameObjTracker.Ships)
@@ -489,26 +435,7 @@ public class AIPlayer : MonoBehaviour
         else
             return null;
     }
-    //Utility to Get a ship by ID
-    public ShipSettings FindShipByID(int id, TEAM team)
-    {
 
-        ShipSettings foundShip = GameObjTracker.GetShipByID(id);
-        if (foundShip != null && foundShip.Team != team)
-        {
-            return foundShip;
-        }
-        else
-        {
-            return null;
-        }
-    }
-    //Utility to do a Simple Distance Calc
-    public float DistanceTo(GameObject obj)
-    {
-        float dist = Vector3.Distance(obj.transform.position, transform.position);
-        return dist;
-    }
     //Ai frustration and wait-for-gun recharge
     public void DoImpatience(float maxImpatience, float howImpatient, float waitTime)
     {
@@ -525,7 +452,7 @@ public class AIPlayer : MonoBehaviour
                 impatience += Time.deltaTime * howImpatient;
             }
             // TODO: should this be <= ?
-            if (distToTarget < engageDist / 2 && angleToTarget < 10f && ship.MainCapacitor.CurrentChargeNormalized > .666f)
+            if ((distToTarget < skillSettings.EngageDistance / 2) && angleToTarget < 10f && ship.MainCapacitor.CurrentChargeNormalized > .666f)
             {
                 impatience += Time.deltaTime * howImpatient * 2;
             }
@@ -557,22 +484,7 @@ public class AIPlayer : MonoBehaviour
         }
         return randDist;
     }
-    //Handy thing -since the cockpits can have offset pitches to line up the reticles, we need to adust our forward angle if it's a player ship.
-    public float AngleTo(Vector3 target)
-    {
-        if (target == null)
-            return 0f;
-        Vector3 tempForward;
-        tempForward = transform.forward;
-        return Vector3.Angle(tempForward, target - transform.position);
-    }
-    //Custom Angle-to-Target test
-    public float CustomAngleTo(Vector3 testVec, Vector3 target)
-    {
-        if (target == null)
-            return 0f;
-        return Vector3.Angle(testVec, target - transform.position);
-    }
+
     //Handle angle to Aim at
     public Vector3 DoAim(float aimRand)
     {
@@ -692,7 +604,7 @@ public class AIPlayer : MonoBehaviour
                         nextPatrolPoint = 0;
                     }
                     //AITarget is already the closest known enemy - let's use that! 
-                    if (AITarget != null && DistanceTo(AITarget.gameObject) <= engageDist * 1.5f)
+                    if (AITarget != null && DistanceTo(AITarget.gameObject) <= skillSettings.EngageDistance * 1.5f)
                     {//If we're withing the engage envelope, let's go check it out! 
                         ActiveAIState = AIState.ENGAGE;
                     }
@@ -767,7 +679,7 @@ public class AIPlayer : MonoBehaviour
                                 ship.roll = WingmanTo.roll;
                             }
                             //AITarget is already the closest known enemy - let's use that! 
-                            if (AITarget != null && Vector3.Distance(AITarget.position, transform.position) <= engageDist * .333f)
+                            if (AITarget != null && Vector3.Distance(AITarget.position, transform.position) <= skillSettings.EngageDistance * .333f)
                             {//hold formation until we're very close
                                 ActiveAIState = AIState.REPOSITION;
                             }
@@ -798,11 +710,11 @@ public class AIPlayer : MonoBehaviour
                         {
                             ActiveAIState = AIState.PATROL;
                         }
-                        if (Vector3.Distance(AITarget.position, transform.position) > engageDist)
+                        if (Vector3.Distance(AITarget.position, transform.position) > skillSettings.EngageDistance)
                         {
                             ship.Engines.TargetSpeed = ship.Settings.BurnSpeed;
                         }
-                        if (Vector3.Distance(AITarget.position, transform.position) <= engageDist)
+                        if (Vector3.Distance(AITarget.position, transform.position) <= skillSettings.EngageDistance)
                         {
                             randApproach = Vector3.zero;
                             ActiveAIState = AIState.HUNT;
@@ -845,7 +757,7 @@ public class AIPlayer : MonoBehaviour
 
                         if (randApproach.magnitude == 0)
                         {
-                            randApproach = Random.onUnitSphere * AITargetShip.shipRadius * aimAccuracy;
+                            randApproach = Random.onUnitSphere * AITargetShip.shipRadius * skillSettings.AimAccuracy;
                         }
 
                         float angleToTarget = AngleTo(AITarget.position);
@@ -865,7 +777,7 @@ public class AIPlayer : MonoBehaviour
                                 ship.Engines.TargetSpeed = Mathf.Max(Mathf.Min(AITargetShip.Engines.TargetSpeed, ship.Settings.TopSpeed), ship.Settings.TopSpeed / 4);
                             }
                             //Try and turn toward the target! 
-                            if (distToTarget > engageDist)
+                            if (distToTarget > skillSettings.EngageDistance)
                             {
                                 if (angleToTarget < 60)
                                 {
@@ -886,7 +798,7 @@ public class AIPlayer : MonoBehaviour
 
 
                         //Get the target's velocity, adding a miss possibility
-                        Vector3 shootAt = DoRandomOffset(aimAccuracy, aimUpdate);
+                        Vector3 shootAt = DoRandomOffset(skillSettings.AimAccuracy, skillSettings.AimUpdate);
                         currentTargetPos = AITarget.position;// + shootAt;
                         Vector3 targetVelocity = AITargetShip.velocity;
 
@@ -906,7 +818,7 @@ public class AIPlayer : MonoBehaviour
                         float angleToShoot = AngleTo(aimPoint);
 
                         //if we're within the aim accuracy angle start firing!
-                        if (angleToShoot < aimAccuracy *2f )
+                        if (angleToShoot < skillSettings.AimAccuracy * 2f )
                         {
                             if (logDebug) { print("attempting to fire"); }
                             AITargetShip.isBeingShot = true;
@@ -919,9 +831,9 @@ public class AIPlayer : MonoBehaviour
                             weaponsSystem.StopFiring();
 
                             //unless we're *very* close, take the chance!
-                            if (distToTarget < engageDist / 8)
+                            if (distToTarget < skillSettings.EngageDistance / 8f)
                             {
-                                if (angleToShoot < aimAccuracy * 4f)
+                                if (angleToShoot < skillSettings.AimAccuracy * 4f)
                                 {
                                     AITargetShip.isBeingShot = true;
                                     if (logDebug) { print("attempting to fire"); }
@@ -942,13 +854,13 @@ public class AIPlayer : MonoBehaviour
                             }
                         }
                         //Too far away to shoot, or the angle is too much!
-                        if (distToTarget > engageDist * 2 || AngleTo(AITarget.position) > 180)
+                        if (distToTarget > skillSettings.EngageDistance * 2 || AngleTo(AITarget.position) > 180)
                         {
                             AITargetShip.isBeingShot = false;
                             weaponsSystem.StopFiring();
                         }
                         //we've gotten too far away, go back into engage mode
-                        if (distToTarget > engageDist * 1.5f)
+                        if (distToTarget > skillSettings.EngageDistance * 1.5f)
                         {
                             ActiveAIState = AIState.ENGAGE;
                         }
@@ -982,9 +894,9 @@ public class AIPlayer : MonoBehaviour
                     {
                         EvadeSteer = new Vector3(Random.Range(-2f, 2f), Random.Range(-2f, 2f), Random.Range(-2f, 2f));
                     }
-                    ship.pitch = Mathf.Lerp(ship.pitch, EvadeSteer.x * evadeAmt, .001f);
-                    ship.yaw = Mathf.Lerp(ship.yaw, EvadeSteer.y * evadeAmt, .001f);
-                    ship.roll = Mathf.Lerp(ship.roll, EvadeSteer.z * evadeAmt, .001f);
+                    ship.pitch = Mathf.Lerp(ship.pitch, EvadeSteer.x * skillSettings.EvadeAmount, .001f);
+                    ship.yaw = Mathf.Lerp(ship.yaw, EvadeSteer.y * skillSettings.EvadeAmount, .001f);
+                    ship.roll = Mathf.Lerp(ship.roll, EvadeSteer.z * skillSettings.EvadeAmount, .001f);
                     //count down the time to return to normal combat. If we have a cloaking device, increase the wait time to be extra sneaky! 
                     if (!ship.Settings.HasCloak)
                     {
@@ -994,7 +906,7 @@ public class AIPlayer : MonoBehaviour
                     {
                         evadeTimer += Time.deltaTime / 4f;
                     }
-                    if (evadeTimer >= evadeLength)
+                    if (evadeTimer >= skillSettings.EvadeLength)
                     {
                         EvadeSteer = Vector3.zero;
                         ActiveAIState = AIState.HUNT;
@@ -1026,7 +938,7 @@ public class AIPlayer : MonoBehaviour
                         randPos = Vector3.zero;
                         if (randPos.magnitude == 0)
                         {
-                            randPos = transform.position + Random.onUnitSphere * engageDist;
+                            randPos = transform.position + Random.onUnitSphere * skillSettings.EngageDistance;
                         }
                         if (distToTarget < 80f && distToTarget > 40f)
                         {
@@ -1048,7 +960,7 @@ public class AIPlayer : MonoBehaviour
 
             case AIState.VICTORY:
                 {
-                    if (AISkillLevel != AILevel.CHUMP || AISkillLevel != AILevel.NOVICE)
+                    if (skillSettings.SkillLevel > AILevel.NOVICE)
                     {
                         weaponsSystem.StopFiring();
                     }
@@ -1065,12 +977,6 @@ public class AIPlayer : MonoBehaviour
     //Dumb as rocks AI
     void ChumpAI()
     {
-        avoidAngle = 10f;
-        avoidDist = 20f;
-        avoidSpeed = .05f;
-        avoidTime = 4f;
-        forceFireAngle = 30f;
-        forceFireDist = engageDist / 5f;
         ship.Engines.TargetSpeed = ship.Settings.TopSpeed * .75f;
         SteerTo(new Vector3(0, 50, 200));
         RollControl(Random.Range(-4000f, 1f));
@@ -1078,19 +984,6 @@ public class AIPlayer : MonoBehaviour
     //Novice AI Settings
     void NoviceAI()
     {
-        avoidAngle = 15f;
-        avoidDist = 75f;
-        avoidSpeed = .125f;
-        avoidTime = 3f;
-        AILeadAmt = 1f;
-        engageDist = 150f;
-        aimAccuracy = 6f;
-        aimUpdate = 20;
-        evadeLength = .25f;
-        evadeAmt = 1f;
-        forceFireAngle = 20f;
-        forceFireDist = engageDist / 5f;
-
         if (followDist == 0)
         {
             followDist = Random.Range(75f, 125f);
@@ -1141,18 +1034,6 @@ public class AIPlayer : MonoBehaviour
     //Default AI Settings!
     void DefaultAI()
     {
-        avoidAngle = 15f;
-        avoidDist = 50f;
-        avoidSpeed = .15f;
-        avoidTime = 2.5f;
-        AILeadAmt = 1.25f;
-        engageDist = 175;
-        aimAccuracy = 4f;
-        aimUpdate = 10;
-        evadeLength = .5f;
-        evadeAmt = 1.5f;
-        forceFireAngle = 17.5f;
-        forceFireDist = engageDist / 4.5f;
         if (followDist == 0)
         {
             followDist = Random.Range(65f, 100f);
@@ -1200,19 +1081,6 @@ public class AIPlayer : MonoBehaviour
     //Ace AI Settings!
     void AceAI()
     {
-        avoidAngle = 20f;
-        avoidDist = 40f;
-        avoidSpeed = .2f;
-
-        avoidTime = 2f;
-        AILeadAmt = 1.5f;
-        engageDist = 200;
-        aimAccuracy = 3f;
-        aimUpdate = 2;
-        evadeLength = 2f;
-        evadeAmt = 3f;
-        forceFireAngle = 15f;
-        forceFireDist = engageDist / 4f;
         if (followDist == 0)
         {
             followDist = Random.Range(55f, 80f);
@@ -1270,7 +1138,7 @@ public class AIPlayer : MonoBehaviour
     void Update()
     {
         DoGunSpeed();
-        switch (AISkillLevel)
+        switch (skillSettings.SkillLevel)
         {
             case (AILevel.CHUMP):
                 {
@@ -1291,6 +1159,9 @@ public class AIPlayer : MonoBehaviour
                 {
                     AceAI();
                 }
+                break;
+            default:
+                Debug.LogError($"Unsupported skill level {skillSettings.SkillLevel}");
                 break;
         }
         DoCloakedTarget();

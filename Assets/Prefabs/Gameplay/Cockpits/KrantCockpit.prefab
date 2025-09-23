@@ -8615,7 +8615,7 @@ MonoBehaviour:
   SpawnParent: {fileID: 4136052188945113506, guid: 34bbc602d431e194290feb3c8b095248,
     type: 3}
   isPlayer: 0
-  aiLevel: 2
+  aiSkillSettings: {fileID: 11400000, guid: b0f3f07fb9149bf49bcea551643104fd, type: 2}
   messageOverride: {fileID: 0}
 --- !u!1 &5529994658116229591
 GameObject:

@@ -282,14 +282,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9a786fafaafa36f45a2047a82a97b822, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AISkillLevel: 1
+  logDebug: 0
+  skillSettings: {fileID: 11400000, guid: cf2e97c0f6771ab42bb6cf23ebdb3e38, type: 2}
   messageHandler: {fileID: 0}
   ActiveAIState: 5
-  AISkillLevel: 1
   PatrolPoints: []
-  logDebug: 0
   doDebugOrient: 0
   debugOrient: {fileID: 0}
-  AITarget: {fileID: 0}
   Tracker: {fileID: 0}
   WingmanTo: {fileID: 0}
   impatience: 0

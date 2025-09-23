@@ -124,6 +124,12 @@ PrefabInstance:
       propertyPath: AISkillLevel
       value: 4
       objectReference: {fileID: 0}
+    - target: {fileID: 2289861991765167609, guid: 4cb3a1366b7e311418b2f13dcbd2c1f1,
+        type: 3}
+      propertyPath: skillSettings
+      value: 
+      objectReference: {fileID: 11400000, guid: c7c108b106eee3540ac1f063af9637ee,
+        type: 2}
     - target: {fileID: 2289861991765167612, guid: 4cb3a1366b7e311418b2f13dcbd2c1f1,
         type: 3}
       propertyPath: m_Name
