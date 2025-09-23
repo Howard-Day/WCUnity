@@ -6,7 +6,8 @@ using UnityEngine.Assertions;
 public class AITurret : AIUnit
 {
     //public enum AILevel { CHUMP, NOVICE, DEFAULT, SKILLED, ACE, MASTER };
-    public bool autoSkillLevel = true;
+    [SerializeField] private AITurretSkillSettings skillSettings;
+    [SerializeField] private bool autoSkillLevel = true;
 
     [HideInInspector] public GameObjTracker Tracker; 
     [HideInInspector] public ShipSettings WingmanTo;
@@ -17,15 +18,6 @@ public class AITurret : AIUnit
     TurretSettings turret;
     Transform elevation;
     ShipSettings AITargetShip;
-
-    float engageDist = 150f;
-
-    //Combat modifiers 
-    float leadAmount = 1f;
-    float rotationSpeed = 1f;
-    float aimAccuracyAngle = 15f;
-    int scanNewTargetFreq;
-    bool alwaysTargetPrimary;
 
     Vector3 currentTargetPos;
 
@@ -52,81 +44,29 @@ public class AITurret : AIUnit
         //if we're set to auto-match skill levels, do so
         if (autoSkillLevel && AIPilot != null)
         {
-            AISkillLevel = AIPilot.AISkillLevel;
+            skillSettings = AIPilot.SkillSettings.TurretSkillSettings;
         }
         //If we're on a human piloted ship, auto set skill level! 
         if (autoSkillLevel && pilot != null)
         {
-            AISkillLevel = AILevel.ACE;
+            // NOTE: formerly, we automatically applied ACE skill level here, but
+            // that isn't possible after moving AI skill settings into their own
+            // files. Now, the turret skill settings should be selected and applied
+            // by the script that spawns the player.
+            OMEPLogger.Log(this, $"Using skill level {skillSettings.SkillLevel} for {gameObject.name} on player ship {shipMain.name}");
         }
 
-        switch (AISkillLevel)
-        {
-            case (AILevel.CHUMP):
-                {
-                    leadAmount = .5f;
-                    rotationSpeed = .5f;
-                    scanNewTargetFreq = 120;
-                    aimAccuracyAngle = 15f;
-                    alwaysTargetPrimary = false;
-                }
-                break;
-            case (AILevel.NOVICE):
-                {
-                    leadAmount = .75f;
-                    rotationSpeed = .85f;
-                    scanNewTargetFreq = 90;
-                    aimAccuracyAngle = 10f;
-                    alwaysTargetPrimary = false;
-                }
-                break;
-            case (AILevel.DEFAULT):
-                {
-                    leadAmount = .9f;
-                    rotationSpeed = .9f;
-                    scanNewTargetFreq = 60;
-                    aimAccuracyAngle = 8f;
-                    alwaysTargetPrimary = false;
-                }
-                break;
-            case (AILevel.SKILLED):
-                {
-                    leadAmount = .95f;
-                    rotationSpeed = 1f;
-                    scanNewTargetFreq = 50;
-                    aimAccuracyAngle = 5f;
-                    alwaysTargetPrimary = false;
-                }
-                break;
-            case (AILevel.ACE):
-                {
-                    leadAmount = 1f;
-                    rotationSpeed = 1.25f;
-                    scanNewTargetFreq = 20;
-                    aimAccuracyAngle = 3f;
-                    alwaysTargetPrimary = false;
-                }
-                break;
-            case (AILevel.MASTER):
-                {
-                    leadAmount = 1f;
-                    rotationSpeed = 1.35f;
-                    scanNewTargetFreq = 10;
-                    aimAccuracyAngle = 4f;
-                    alwaysTargetPrimary = false;
-                }
-                break;
+        Assert.IsNotNull(skillSettings);
 
-        }
         //apply rotation modifiers 
-        turret.turnRate *= rotationSpeed;
+        turret.turnRate *= skillSettings.RotationSpeed;
     }
 
     // Utility to find the nearest ship, ignoring one of the Teams, any cloaked ships, and the Ship looking.
     // Note this includes some extra logic that isn't found in AIPlayer.
     public ShipSettings FindNearestShip(Transform toObj,float angle, TEAM ignoreTEAM)
     {
-        float distance = engageDist * 10f;
+        float distance = skillSettings.EngageDistance * 10f;
 
         ShipSettings nearestShip = null;
         foreach (ShipSettings shipTest in GameObjTracker.Ships)
@@ -170,7 +110,7 @@ public class AITurret : AIUnit
     {
         float dist = Vector3.Distance(muzzlePos, targetPos);
         float timeToTarget = dist / bulletVelocity;
-        Vector3 aimAt = targetPos + (targetVelocity * timeToTarget * leadAmount);
+        Vector3 aimAt = targetPos + (targetVelocity * timeToTarget * skillSettings.LeadAmount);
 
         return aimAt;
     }
@@ -225,7 +165,7 @@ public class AITurret : AIUnit
             float angleToTarget = CustomAngleTo(elevation.transform.forward, aimPoint);
             //Debug.Log(angleToTarget + " is the current angle-to-target!");
             
-            if (angleToTarget < aimAccuracyAngle)
+            if (angleToTarget < skillSettings.AimAccuracyAngle)
             {
                 weaponsSystem.FireGuns();
                 //Debug.Log("trying to fire");
@@ -240,7 +180,7 @@ public class AITurret : AIUnit
     void DoTargets()
     {
         //find the closest target, if we don't already have one, check at the skill level frequency
-        if (!AITarget && GameObjTracker.frames % scanNewTargetFreq == 0)
+        if (!AITarget && GameObjTracker.frames % skillSettings.ScanNewTargetFreq == 0)
         {
             AITargetShip = FindNearestShip(gameObject.transform, turret.angleLimit, shipMain.Team);
             //if there is no target in range, bail
@@ -249,7 +189,7 @@ public class AITurret : AIUnit
                 return;
             }
             //if the target ship is out of engagement range, ignore it! 
-            if (DistanceTo(AITargetShip.gameObject) > engageDist)
+            if (DistanceTo(AITargetShip.gameObject) > skillSettings.EngageDistance)
             {
                 AITargetShip = null;
                 return;

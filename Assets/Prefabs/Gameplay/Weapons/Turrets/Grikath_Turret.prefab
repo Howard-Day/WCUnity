@@ -169,9 +169,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   AISkillLevel: 0
-  autoSkillLevel: 1
   logDebug: 0
-  AITarget: {fileID: 0}
+  skillSettings: {fileID: 11400000, guid: cf7ecfb7bff5560419dc3b6279128d77, type: 2}
+  autoSkillLevel: 1
   Tracker: {fileID: 0}
   WingmanTo: {fileID: 0}
 --- !u!114 &2845008086186973519

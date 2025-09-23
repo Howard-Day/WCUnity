@@ -10,7 +10,6 @@ public enum AILevel { CHUMP, NOVICE, DEFAULT, SKILLED, ACE, MASTER };
 
 abstract public class AIUnit : MonoBehaviour
 {
-    public AILevel AISkillLevel = AILevel.CHUMP;
     [Header("Debug Options")]
     public bool logDebug = false;
 
