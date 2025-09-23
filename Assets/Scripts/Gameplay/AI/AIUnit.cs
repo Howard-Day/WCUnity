@@ -26,7 +26,7 @@ abstract public class AIUnit : MonoBehaviour
     public ShipSettings FindShipByID(int id, TEAM team)
     {
 
-        ShipSettings foundShip = GameObjTracker.GetShipByID(id);
+        ShipSettings foundShip = GameObjTracker.Instance.GetShipByID(id);
         if (foundShip != null && foundShip.Team != team)
         {
             return foundShip;

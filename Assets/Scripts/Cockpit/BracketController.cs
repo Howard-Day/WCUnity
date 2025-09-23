@@ -63,13 +63,8 @@ public class BracketController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!ship || ship.IsDead)
-        {
-            GameObjTracker.RegisterAllShips();
-            GameObjTracker.RegisterTeams();
-            //Destroy(this.gameObject);
-            //return;
-        }
+        if (ship == null) return;
+
         //use default bracket color and sprite   
         bracketSprite.color = Color;
         bracketSprite.sprite = HUDRoot.defaultBracket;
@@ -80,7 +75,6 @@ public class BracketController : MonoBehaviour
         if (shipMain.Team == TEAM.KILRATHI)
         {
             bracketSprite.type = Image.Type.Tiled;
-
         }
         bracketSprite.pixelsPerUnitMultiplier = 50;
         angleTo = Vector3.Angle(hudCamera.transform.forward, ship.transform.position - hudCamera.transform.position);
@@ -90,7 +84,7 @@ public class BracketController : MonoBehaviour
         if (ship == shipMain.currentTarget )
         {
             bracketSprite.sprite = HUDRoot.targetBracket;
-            if (GameObjTracker.frames % 15 == 0)
+            if (GameObjTracker.Instance.CurrentFrame % 15 == 0)
             {
                 if (blink == 0)
                 {
@@ -125,7 +119,7 @@ public class BracketController : MonoBehaviour
         if (ship.isCloaking)
         {
             bracketSprite.sprite = HUDRoot.targetBracket;
-            if (GameObjTracker.frames % 15 == 0)
+            if (GameObjTracker.Instance.CurrentFrame % 15 == 0)
             {
                 if (blink == 0)
                 {
@@ -187,15 +181,12 @@ public class BracketController : MonoBehaviour
 
             min = new Vector2(Mathf.Min(min.x, v.x), Mathf.Min(min.y, v.y));
             max = new Vector2(Mathf.Max(max.x, v.x), Mathf.Max(max.y, v.y));
-            
+
         }
         Vector2 posSize = new Vector2((max.x - min.x), (max.y - min.y));
 
         RectTransform rectTrans = gameObject.transform as RectTransform;
         rectTrans.localPosition = GetScreenPosition(hudCamera, ship.gameObject.transform.position, 1.8f, new Vector2(640, 400));
         rectTrans.sizeDelta = Vector2.Min(Vector2.Max(Vector2.one * .085f, posSize * .75f), Vector2.one);
-
-
-
     }
 }

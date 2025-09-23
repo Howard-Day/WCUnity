@@ -10,7 +10,7 @@ public class Lock : MonoBehaviour
     // Start is called before the first frame update
     void Blink(Toggle thing, int frameLength)
     {
-        if (GameObjTracker.frames % frameLength == 0)
+        if (GameObjTracker.Instance.CurrentFrame % frameLength == 0)
         {
             if (thing.isOn)
                 thing.isOn = false;

@@ -86,8 +86,6 @@ public class AIPlayer : AIUnit
     void ForceRegister()
     {
         gameObject.transform.SetParent(GameObject.FindWithTag("GamePlayObjs").transform);
-        GameObjTracker.RegisterAllShips();
-        GameObjTracker.RegisterTeams();
     }
 
     //Control where we go
@@ -199,7 +197,7 @@ public class AIPlayer : AIUnit
     {
         Vector3 tarShipDir = Vector3.up;
         //loop through ships
-        foreach (ShipSettings tarShip in GameObjTracker.Ships)
+        foreach (ShipSettings tarShip in GameObjTracker.Instance.Ships)
         {
             //verify the reference isnt null
             if (tarShip != null)
@@ -333,7 +331,7 @@ public class AIPlayer : AIUnit
     void DoBeingShot()
     {
         //track who's been shooting at us
-        ShipSettings shootingShip = GameObjTracker.GetShipByID(ship.lastHitID);
+        ShipSettings shootingShip = GameObjTracker.Instance.GetShipByID(ship.lastHitID);
         //check if we're being deliberately shot at!
         if (ship.isBeingShot)
         {
@@ -408,24 +406,19 @@ public class AIPlayer : AIUnit
         float distance = skillSettings.EngageDistance * 10f;
 
         ShipSettings nearestShip = null;
-        foreach (ShipSettings shipTest in GameObjTracker.Ships)
+        foreach (ShipSettings ship in GameObjTracker.Instance.Ships)
         {
-            if (shipTest == null) //SOMEONE MUSTA DIED...  pick a new target!
+            if (ship != null && !ship.isCloaked)
             {
-                GameObjTracker.RegisterAllShips();
-                GameObjTracker.RegisterTeams();
-            }
-            if (shipTest != null && !shipTest.isCloaked)
-            {
-                Transform shipTrans = (Transform)shipTest.gameObject.GetComponent<Transform>();
+                Transform shipTrans = (Transform)ship.gameObject.GetComponent<Transform>();
 
                 float shipDist = Vector3.Distance(shipTrans.position, toObj.position);
-                if (shipTest.Team != TEAM.NEUTRAL && shipTest != ship)
+                if (ship.Team != TEAM.NEUTRAL && ship != this.ship)
                 {
-                    if (shipDist < distance && shipTest.Team != ignoreTEAM)
+                    if (shipDist < distance && ship.Team != ignoreTEAM)
                     {
                         distance = shipDist;
-                        nearestShip = shipTest;
+                        nearestShip = ship;
                     }
                 }
             }
@@ -478,7 +471,7 @@ public class AIPlayer : AIUnit
     //Handle Randonm offset Aiming at a target
     public Vector3 DoRandomOffset(float Accuracy, float Update)
     {
-        if (GameObjTracker.frames % Update == 5)
+        if (GameObjTracker.Instance.CurrentFrame % Update == 5)
         {
             randDist = Random.insideUnitSphere * Accuracy;
         }
@@ -536,15 +529,9 @@ public class AIPlayer : AIUnit
     {
         float distance = 100000f;
         ShipSettings wingMan = null;
-        foreach (ShipSettings friendly in GameObjTracker.Ships)
+        foreach (ShipSettings friendly in GameObjTracker.Instance.Ships)
         {
-            if (friendly == null) //SOMEONE MUSTA DIED
-            {
-                // print("Someone Died");
-                GameObjTracker.RegisterAllShips();
-                GameObjTracker.RegisterTeams();
-            }
-            //Okay, check if we're still null, and if the ship we've found is *AKTUALLY* friendly, and looking for wingmen
+            //Okay, check if we're still null, and if the ship we've found is *ACTUALLY* friendly, and looking for wingmen
             //AND isn't ourselves, AND doesn't already have 4 wingmen.
             if (friendly != null && friendly.isWingLead && friendly.Team == ship.Team && friendly != ship && friendly.numWingmen <= 4)
             {
@@ -890,7 +877,7 @@ public class AIPlayer : AIUnit
                             ship.Cloak = true;
                         }
                     }
-                    if (GameObjTracker.frames % Random.Range(60, 120) == 0) // every few second jerk around wildly! 
+                    if (GameObjTracker.Instance.CurrentFrame % Random.Range(60, 120) == 0) // every few second jerk around wildly! 
                     {
                         EvadeSteer = new Vector3(Random.Range(-2f, 2f), Random.Range(-2f, 2f), Random.Range(-2f, 2f));
                     }

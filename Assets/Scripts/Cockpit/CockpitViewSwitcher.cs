@@ -154,7 +154,7 @@ public class CockpitViewSwitcher : MonoBehaviour
             //Grab an interest angle to look at, and set the transform to the last chaseCam. Then set up a damping velocity controller
             if (!deathCamActive)
             {
-                interestPoint = GameObjTracker.GetAverageShipLocInRange(transform.position, deathCamActiveRange, shipMain.ShipID);
+                interestPoint = GameObjTracker.Instance.GetAverageShipLocInRange(transform.position, deathCamActiveRange, shipMain.ShipID);
                 interestAngle = interestPoint - transform.position;
                 transform.position = chaseCamPos;
                 transform.rotation = chaseCamRot;
@@ -173,7 +173,7 @@ public class CockpitViewSwitcher : MonoBehaviour
             if (deathTime >= deathCamTime)
             {
                 print("Setting Respawn Player Flag!");
-                GameObjTracker.playerNeedsRespawn = true;
+                GameObjTracker.Instance.PlayerNeedsRespawn = true;
             }
             deathTime += Time.deltaTime;
         }
@@ -302,14 +302,14 @@ public class CockpitViewSwitcher : MonoBehaviour
 
         if (RandomSwitch)
         {
-            if (GameObjTracker.frames % Random.Range(120, 180) == 0)
+            if (GameObjTracker.Instance.CurrentFrame % Random.Range(120, 180) == 0)
             {
                 activeView = (View)Random.Range(0, System.Enum.GetValues(typeof(View)).Length);
             }
         }
         if (ChaseSwitch)
         {
-            if (GameObjTracker.frames % Random.Range(120, 180) == 0 && switchTime > DelaySwitchTime)
+            if (GameObjTracker.Instance.CurrentFrame % Random.Range(120, 180) == 0 && switchTime > DelaySwitchTime)
             {
                 if (activeView == View.Main)
                 {

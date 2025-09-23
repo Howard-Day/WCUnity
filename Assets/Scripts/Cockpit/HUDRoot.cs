@@ -49,33 +49,34 @@ public class HUDRoot : MonoBehaviour
 
         if (shipMain.Team == TEAM.CONFED)
         {
-            MakeBrackets(GameObjTracker.KilrathiShips, srcRadar.enemyNear);
-            MakeBrackets(GameObjTracker.ConfedShips, srcRadar.friendlyNear);
+            MakeBrackets(GameObjTracker.Instance.KilrathiShips, srcRadar.enemyNear);
+            MakeBrackets(GameObjTracker.Instance.ConfedShips, srcRadar.friendlyNear);
         }
         if (shipMain.Team == TEAM.KILRATHI)
         {
-            MakeBrackets(GameObjTracker.ConfedShips, srcRadar.enemyNear);
-            MakeBrackets(GameObjTracker.KilrathiShips, srcRadar.friendlyNear);
+            MakeBrackets(GameObjTracker.Instance.ConfedShips, srcRadar.enemyNear);
+            MakeBrackets(GameObjTracker.Instance.KilrathiShips, srcRadar.friendlyNear);
         }
         if (shipMain.Team == TEAM.PIRATE)
         {
-            MakeBrackets(GameObjTracker.ConfedShips, srcRadar.enemyNear);
-            MakeBrackets(GameObjTracker.KilrathiShips, srcRadar.enemyNear);
+            MakeBrackets(GameObjTracker.Instance.ConfedShips, srcRadar.enemyNear);
+            MakeBrackets(GameObjTracker.Instance.KilrathiShips, srcRadar.enemyNear);
         }
         if (shipMain.Team == TEAM.NEUTRAL)
         {
-            MakeBrackets(GameObjTracker.ConfedShips, srcRadar.neutralNear);
-            MakeBrackets(GameObjTracker.KilrathiShips, srcRadar.neutralNear);
+            MakeBrackets(GameObjTracker.Instance.ConfedShips, srcRadar.neutralNear);
+            MakeBrackets(GameObjTracker.Instance.KilrathiShips, srcRadar.neutralNear);
         }
-        MakeBrackets(GameObjTracker.PirateShips, srcRadar.enemyNear);
-        MakeBrackets(GameObjTracker.NeutralShips, srcRadar.neutralNear);
-        MakeBrackets(GameObjTracker.Environmental, srcRadar.envNear);
-        GameObjTracker.bracketRefreshNeeded = false;
+        MakeBrackets(GameObjTracker.Instance.PirateShips, srcRadar.enemyNear);
+        MakeBrackets(GameObjTracker.Instance.NeutralShips, srcRadar.neutralNear);
+        MakeBrackets(GameObjTracker.Instance.EnvironmentalShips, srcRadar.envNear);
+        GameObjTracker.Instance.BracketRefreshNeeded = false;
         //print("Radar Refresh is: "+ GameObjTracker.radarRefreshNeeded);
 
     }
 
-    void MakeBrackets(List<ShipSettings> Ships, Color Color)
+    // TODO: Use pooling
+    void MakeBrackets(IReadOnlyList<ShipSettings> Ships, Color Color)
     {
         if (Ships != null && Ships.Count > 0 )
         {
@@ -108,7 +109,7 @@ public class HUDRoot : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (GameObjTracker.bracketRefreshNeeded == true)
+        if (GameObjTracker.Instance.BracketRefreshNeeded)
         {
             RegisterBrackets();
         }

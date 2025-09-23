@@ -22,7 +22,7 @@ public class SetSpeed : MonoBehaviour
     int? lastGenInt;
     int? NumberGen(int min, int max, int skip)
     {
-        if (GameObjTracker.frames % skip == 0)
+        if (GameObjTracker.Instance.CurrentFrame % skip == 0)
         {
             lastGenInt = Random.Range(min, max);
 

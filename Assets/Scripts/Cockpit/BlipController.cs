@@ -12,13 +12,14 @@ public class BlipController : MonoBehaviour
     private int pixelsPerUnit = 100;
     Image blipSprite;
     Vector3 newLocalPosition;
+
     /// <summary>
     /// Start is called on the frame when a script is enabled just before
     /// any of the Update methods is called the first time.
     /// </summary>
     void Start()
     {
-        blipSprite = (Image)gameObject.AddComponent<Image>();
+        blipSprite = gameObject.AddComponent<Image>();
         blipSprite.material = radarRoot.blipMat;
         transform.localScale = Vector3.one * .00075f;
         blipSprite.color = new Color(0, 0, 0, 1);
@@ -29,11 +30,6 @@ public class BlipController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!ship || ship.IsDead)
-        {
-            GameObjTracker.RegisterAllShips();
-            GameObjTracker.RegisterTeams();       
-        }
         if (ship && shipMain)
         {
             Vector3 blipLoc = ship.transform.position;
@@ -59,7 +55,7 @@ public class BlipController : MonoBehaviour
                 //unless the target is the current target!
                 if (ship == shipMain.currentTarget)
                 {
-                    if (GameObjTracker.frames % 10 == 0)
+                    if (GameObjTracker.Instance.CurrentFrame % 10 == 0)
                     {
                         if (blink == 0)
                         {
@@ -94,7 +90,7 @@ public class BlipController : MonoBehaviour
             if (ship.isCloaking)
             {
                 
-                if (GameObjTracker.frames % 5 == 0)
+                if (GameObjTracker.Instance.CurrentFrame % 5 == 0)
                 {
                     if (blink == 0)
                     {

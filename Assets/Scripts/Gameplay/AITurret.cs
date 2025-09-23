@@ -69,13 +69,8 @@ public class AITurret : AIUnit
         float distance = skillSettings.EngageDistance * 10f;
 
         ShipSettings nearestShip = null;
-        foreach (ShipSettings shipTest in GameObjTracker.Ships)
+        foreach (ShipSettings shipTest in GameObjTracker.Instance.Ships)
         {
-            if (shipTest == null) //SOMEONE MUSTA DIED...  pick a new target!
-            {
-                GameObjTracker.RegisterAllShips();
-                GameObjTracker.RegisterTeams();
-            }
             if (shipTest != null && !shipTest.isCloaked)
             {
                 Transform shipTrans = shipTest.gameObject.GetComponent<Transform>();
@@ -180,7 +175,7 @@ public class AITurret : AIUnit
     void DoTargets()
     {
         //find the closest target, if we don't already have one, check at the skill level frequency
-        if (!AITarget && GameObjTracker.frames % skillSettings.ScanNewTargetFreq == 0)
+        if (!AITarget && GameObjTracker.Instance.CurrentFrame % skillSettings.ScanNewTargetFreq == 0)
         {
             AITargetShip = FindNearestShip(gameObject.transform, turret.angleLimit, shipMain.Team);
             //if there is no target in range, bail

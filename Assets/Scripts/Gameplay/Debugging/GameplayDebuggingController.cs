@@ -4,6 +4,8 @@ using UnityEngine.InputSystem;
 public class GameplayDebuggingController : MonoBehaviour
 {
     public InputAction possessCurrentShipAction = new InputAction(binding: "<Keyboard>/enter");
+    public InputAction freezeAllAction = new InputAction(binding: "<Keyboard>/end");
+    public InputAction killAllAction = new InputAction(binding: "<Keyboard>/k");
 
     public PlayerController playerControllerPrefab;
 
@@ -12,6 +14,22 @@ public class GameplayDebuggingController : MonoBehaviour
     private void Start()
     {
         possessCurrentShipAction.performed += PossessCurrentShipAction_performed;
+        freezeAllAction.performed += FreezeAllAction_performed;
+        killAllAction.performed += KillAllAction_performed;
+    }
+
+    void OnEnable()
+    {
+        possessCurrentShipAction.Enable();
+        freezeAllAction.Enable();
+        killAllAction.Enable();
+    }
+
+    private void OnDisable()
+    {
+        possessCurrentShipAction.Disable();
+        freezeAllAction.Disable();
+        killAllAction.Disable();
     }
 
     private void PossessCurrentShipAction_performed(InputAction.CallbackContext obj)
@@ -27,14 +45,38 @@ public class GameplayDebuggingController : MonoBehaviour
         }
     }
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void OnEnable()
+    private void FreezeAllAction_performed(InputAction.CallbackContext obj)
     {
-        possessCurrentShipAction.Enable();
+        if (obj.phase == InputActionPhase.Performed)
+        {
+            OMEPLogger.Log(this, null);
+            var ais = GameObject.FindObjectsByType<AIPlayer>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            foreach (AIPlayer ai in ais)
+            {
+                ai.GetComponentInChildren<Engines>().enabled = false;
+                var ship = ai.GetComponentInChildren<ShipSettings>();
+                if (ship != null)
+                {
+                    ship.pitch = 0;
+                    ship.yaw = 0;
+                    ship.roll = 0;
+                }
+                ai.enabled = false;
+            }
+
+            var turretAIs = GameObject.FindObjectsByType<AITurret>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            foreach (var ai in turretAIs)
+            {
+                ai.enabled = false;
+            }
+        }
     }
 
-    private void OnDisable()
+    private void KillAllAction_performed(InputAction.CallbackContext obj)
     {
-        possessCurrentShipAction.Disable();
+        foreach (ShipSettings ship in GameObjTracker.Instance.Ships)
+        {
+            ship._CoreStrength = 0f;
+        }
     }
 }
