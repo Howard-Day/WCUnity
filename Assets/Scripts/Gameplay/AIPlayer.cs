@@ -2,30 +2,21 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
-using UnityEngine.Assertions.Must;
 
 [RequireComponent(typeof(ShipSettings))]
-public class AIPlayer : MonoBehaviour
+public class AIPlayer : AIUnit
 {
-
-    public enum AIState { PATROL, BREAK, SEARCH, WINGMAN, ENGAGE, HUNT, EVADE, PROTECT, REPOSITION, FLEE, DEATH, VICTORY };
-    public enum AILevel { CHUMP, NOVICE, DEFAULT, SKILLED, ACE, MASTER };
-
-
     [Header("Settings")]
     public MessageHandler messageHandler;
     public AIState ActiveAIState = AIState.PATROL;
-    public AILevel AISkillLevel = AILevel.CHUMP;
 
     [Header("Patrol Pattern")]
     public List<Vector3> PatrolPoints;
 
     [Header("Debug Options")]
-    public bool logDebug = false;
     public bool doDebugOrient = false;
     public GameObject debugOrient;
 
-    [HideInInspector] public Transform AITarget;
     [HideInInspector] public GameObjTracker Tracker;
     [HideInInspector] public ShipSettings WingmanTo;
     [HideInInspector] float barrelRoll;
@@ -34,27 +25,21 @@ public class AIPlayer : MonoBehaviour
 
     //Internal settings and flags
     ShipSettings ship;
-    private WeaponsSystem weaponsSystem;
-
-    float averageGunSpeed = 0f;
 
     Vector3 smoothAimAt = Vector3.forward;
-    Vector3 smoothVel = Vector3.forward;
 
+    float AILeadAmt;
     float turnSpeed = .05f;
     float engageDist = 150f;
     float aimAccuracy = 30f;
-    int aimIterations = 3;
     int aimUpdate = 60;
     float followDist;
-    float bloodThirst;
     Vector3 randPos = Vector3.zero;
 
     ShipSettings AITargetShip;
     Vector3 formationPos;
     float evadeLength;
     float evadeAmt;
-    float AILeadAmt = 1f;
 
     bool rolling = false;
     float rollStart;
@@ -83,13 +68,13 @@ public class AIPlayer : MonoBehaviour
     int nextPatrolPoint = 0;
     float evadeTimer = 0f;
 
-    float cooldownWait;
-    bool cooldownWaiting = false;
     Vector3 patrolPoint = Vector3.zero;
 
     Vector3 randDist = Vector3.zero;
 
     Vector3 currentTargetPos;
+
+    protected override Capacitor MainCapacitor => ship.MainCapacitor;
 
     //Initial Conditions
     void Start()
@@ -106,23 +91,7 @@ public class AIPlayer : MonoBehaviour
         GameObjTracker.RegisterAllShips();
         GameObjTracker.RegisterTeams();
     }
-    //Figure out the average velocity of our guns, for predictive aiming
-    void DoGunSpeed()
-    {
-        //loop through our guns, if they're initialized, and we haven't figured this out yet
-        if (averageGunSpeed == 0)
-        {
-            float tempGunSpeed = 0f;
-            //loop through our guns, and add all their speeds together
-            if (logDebug) { print("the number of found weapons is " + weaponsSystem.projWeapons.Count); }
-            foreach (ProjectileWeapon gun in weaponsSystem.projWeapons)
-            {
-                tempGunSpeed += gun.speed;
-            }
-            //return the cumulative gunspeeds by the number of guns, set the value so this only runs once.  
-            averageGunSpeed = tempGunSpeed / weaponsSystem.projWeapons.Count;
-        }
-    }
+
     //Control where we go
     void SteerTo(Vector3 aimAt)
     {       //Vector3 rollAdjust = Quaternion.AngleAxis(Time.time * 12f, Vector3.up).eulerAngles;
@@ -431,31 +400,7 @@ public class AIPlayer : MonoBehaviour
             ActiveAIState = AIState.PATROL;
         }
     }
-    //Handle Gun Cooldown wait
-    void DoGunCooldown(float waitTime, float minCapacitorLevel)
-    {
-        float normalizedCapacitorLevel = ship.MainCapacitor.CurrentChargeNormalized;
-        // if the capacitors are low, add wait time
-        if (normalizedCapacitorLevel < .1f && !cooldownWaiting)
-        {
-            cooldownWait += Time.deltaTime * 10;
-        }
-        //if the wait time has triggered, go into cooldown mode
-        if (cooldownWait > waitTime && !cooldownWaiting)
-        {
-            cooldownWaiting = true;
-        }
-        //cooldown mode, disable firing till the capacitors are to a minimum level
-        if (cooldownWaiting)
-        {
-            weaponsSystem.StopFiring();
-            if (normalizedCapacitorLevel >= minCapacitorLevel)
-            {
-                cooldownWait = 0;
-                cooldownWaiting = false;
-            }
-        }
-    }
+
     //Utility to find the nearest ship, ignoring one of the Teams, any cloaked ships, and the Ship looking
     public ShipSettings FindNearestShip(Transform toObj, TEAM ignoreTEAM)
     {
@@ -489,26 +434,7 @@ public class AIPlayer : MonoBehaviour
         else
             return null;
     }
-    //Utility to Get a ship by ID
-    public ShipSettings FindShipByID(int id, TEAM team)
-    {
 
-        ShipSettings foundShip = GameObjTracker.GetShipByID(id);
-        if (foundShip != null && foundShip.Team != team)
-        {
-            return foundShip;
-        }
-        else
-        {
-            return null;
-        }
-    }
-    //Utility to do a Simple Distance Calc
-    public float DistanceTo(GameObject obj)
-    {
-        float dist = Vector3.Distance(obj.transform.position, transform.position);
-        return dist;
-    }
     //Ai frustration and wait-for-gun recharge
     public void DoImpatience(float maxImpatience, float howImpatient, float waitTime)
     {
@@ -557,22 +483,7 @@ public class AIPlayer : MonoBehaviour
         }
         return randDist;
     }
-    //Handy thing -since the cockpits can have offset pitches to line up the reticles, we need to adust our forward angle if it's a player ship.
-    public float AngleTo(Vector3 target)
-    {
-        if (target == null)
-            return 0f;
-        Vector3 tempForward;
-        tempForward = transform.forward;
-        return Vector3.Angle(tempForward, target - transform.position);
-    }
-    //Custom Angle-to-Target test
-    public float CustomAngleTo(Vector3 testVec, Vector3 target)
-    {
-        if (target == null)
-            return 0f;
-        return Vector3.Angle(testVec, target - transform.position);
-    }
+
     //Handle angle to Aim at
     public Vector3 DoAim(float aimRand)
     {

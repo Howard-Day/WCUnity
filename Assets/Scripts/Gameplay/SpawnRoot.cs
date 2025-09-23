@@ -6,7 +6,7 @@ public class SpawnRoot : MonoBehaviour
 {
     public GameObject SpawnParent;
     public bool isPlayer;
-    public AIPlayer.AILevel aiLevel;
+    public AILevel aiLevel;
     public MessageHandler messageOverride;
     // Start is called before the first frame update
     void Start()
