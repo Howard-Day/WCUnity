@@ -54,11 +54,9 @@ public class BracketController : MonoBehaviour
         screenPosition.y -= screenRes.y / 2;
         screenPosition.y /= 100;
 
-
         screenPosition.z = depth;
         return screenPosition;
     }
-
 
     // Update is called once per frame
     void Update()
