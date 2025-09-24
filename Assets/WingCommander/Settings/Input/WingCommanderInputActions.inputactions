@@ -16,10 +16,28 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "Steering",
+                    "name": "Pitch",
                     "type": "Value",
                     "id": "5a2953bf-29f8-4fae-a3f5-777eabfafa90",
-                    "expectedControlType": "Vector2",
+                    "expectedControlType": "Axis",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "Roll",
+                    "type": "Value",
+                    "id": "908c1175-3a0a-4735-bd3c-29f0fb59a044",
+                    "expectedControlType": "Axis",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "Yaw",
+                    "type": "Value",
+                    "id": "97f64c99-fa23-4297-b5e0-f8d76e0dc2b2",
+                    "expectedControlType": "Axis",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": true
@@ -46,6 +64,15 @@
                     "name": "ToggleView",
                     "type": "Button",
                     "id": "0ce6e764-30fb-43f7-9b7c-adf669c5a437",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Afterburn",
+                    "type": "Button",
+                    "id": "3228d01a-836a-40c2-b010-86646f325c78",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -100,22 +127,22 @@
                 {
                     "name": "",
                     "id": "876c5220-c5fd-4b36-b920-8a0bd891fbca",
-                    "path": "<Gamepad>/leftStick",
+                    "path": "<Gamepad>/leftStick/y",
                     "interactions": "",
                     "processors": "",
                     "groups": ";Gamepad",
-                    "action": "Steering",
+                    "action": "Pitch",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
                 {
                     "name": "",
                     "id": "4cabad57-94b9-4be3-9a5b-1ddc19c44f7e",
-                    "path": "<Joystick>/stick",
+                    "path": "<Joystick>/stick/y",
                     "interactions": "",
                     "processors": "",
                     "groups": ";Joystick",
-                    "action": "Steering",
+                    "action": "Pitch",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -191,8 +218,52 @@
                     "path": "<Gamepad>/buttonNorth",
                     "interactions": "",
                     "processors": "",
-                    "groups": "",
+                    "groups": ";Gamepad",
                     "action": "ToggleView",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "94b2e5ee-f612-48ec-aeb8-cc52cff56353",
+                    "path": "<Gamepad>/leftTrigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Gamepad",
+                    "action": "Afterburn",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "73d2cf48-c8d7-48d7-8018-0b7b618e1723",
+                    "path": "<Gamepad>/leftStick/x",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Gamepad",
+                    "action": "Roll",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "9c6a36ff-840f-4fe0-8417-aaed06ba950a",
+                    "path": "<Joystick>/stick/x",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Joystick",
+                    "action": "Roll",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "f449d02d-0077-4e98-bec3-95e2286404d6",
+                    "path": "<Gamepad>/rightStick/x",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Yaw",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

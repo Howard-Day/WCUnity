@@ -26,17 +26,14 @@ public class KeyPlayer : MonoBehaviour
             laserCannon.fire = fire;
         }
     }
-    void DoBurn(bool isAfterburning)
+    void DoThrottle()
     {
-        if (isAfterburning)
+        if (afterBurn)
         {
-            ship.Engines.IsAfterburning = isAfterburning;
             ship.Engines.TargetSpeed = ship.Settings.BurnSpeed;
-        }
-        if (!isAfterburning)
+        } else 
         {
-            ship.Engines.IsAfterburning = isAfterburning;
-            //ship.targetSpeed = ship.burnSpeed;
+            ship.Engines.SetNormalizedTargetSpeed(_targetthrottle);
         }
     }
 
@@ -46,8 +43,7 @@ public class KeyPlayer : MonoBehaviour
         ship.pitch = _pitch;
         ship.yaw = _yaw;
         ship.roll = _roll;
-        ship.Engines.TargetSpeed = Mathf.Lerp(0, ship.Settings.TopSpeed, _targetthrottle);
-        DoBurn(afterBurn);
+        DoThrottle();
         FireGuns(fireGuns);
     }
 }

@@ -92,8 +92,8 @@ MonoBehaviour:
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 6491563668834754534}
-        m_TargetAssemblyTypeName: HumanPlayer, Assembly-CSharp
-        m_MethodName: OnSteer
+        m_TargetAssemblyTypeName: PlayerController, Assembly-CSharp
+        m_MethodName: OnPitch
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -124,8 +124,8 @@ MonoBehaviour:
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 6491563668834754534}
-        m_TargetAssemblyTypeName: HumanPlayer, Assembly-CSharp
-        m_MethodName: OnPressFireButton
+        m_TargetAssemblyTypeName: PlayerController, Assembly-CSharp
+        m_MethodName: OnPressFire
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -153,6 +153,54 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: 0ce6e764-30fb-43f7-9b7c-adf669c5a437
     m_ActionName: 'Gameplay/ToggleView[/Keyboard/v,/XInputControllerWindows/buttonNorth]'
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 6491563668834754534}
+        m_TargetAssemblyTypeName: PlayerController, Assembly-CSharp
+        m_MethodName: OnRoll
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 908c1175-3a0a-4735-bd3c-29f0fb59a044
+    m_ActionName: 'Gameplay/Roll[/XInputControllerWindows/leftStick/x]'
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 6491563668834754534}
+        m_TargetAssemblyTypeName: PlayerController, Assembly-CSharp
+        m_MethodName: OnYaw
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 97f64c99-fa23-4297-b5e0-f8d76e0dc2b2
+    m_ActionName: 'Gameplay/Yaw[/XInputControllerWindows/rightStick/x]'
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 6491563668834754534}
+        m_TargetAssemblyTypeName: PlayerController, Assembly-CSharp
+        m_MethodName: OnPressAfterburn
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 3228d01a-836a-40c2-b010-86646f325c78
+    m_ActionName: 'Gameplay/Afterburn[/XInputControllerWindows/leftTrigger]'
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Gameplay
