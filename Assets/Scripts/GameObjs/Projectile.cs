@@ -32,23 +32,25 @@ public class Projectile : MonoBehaviour
         if (Physics.Linecast(transform.position, transform.position + (transform.forward * speed * Time.deltaTime), out Hit, shootMask, QueryTriggerInteraction.Collide))
         {
             //print("Hit Detected at "+ Hit.point + Hit.collider);
-            ShipSettings shipHit = Hit.transform.gameObject.GetComponent<ShipSettings>();
-            if (shipHit.ShipID != ProjID)
+            ShipSettings shipHit = Hit.transform.GetComponent<ShipSettings>();
+            if (shipHit != null)
             {
-                if (shipHit.DoDamage(Hit.point, damage, ProjID)[0] == 1)
+                if (shipHit.ShipID != ProjID)
                 {
-                    Instantiate(hitShield, Hit.point, Quaternion.identity, shipHit.transform); ///Shield hits follow the ship that's hit
+                    if (shipHit.DoDamage(Hit.point, damage, ProjID)[0] == 1)
+                    {
+                        Instantiate(hitShield, Hit.point, Quaternion.identity, shipHit.transform); ///Shield hits follow the ship that's hit
+                    }
+                    else
+                    {
+                        Instantiate(hitHull, Hit.point, Quaternion.identity, gameObject.transform.parent); //Hull Hits do not
+                    }
+                    Destroy(gameObject);
                 }
                 else
                 {
-                    Instantiate(hitHull, Hit.point, Quaternion.identity, gameObject.transform.parent); //Hull Hits do not
                 }
-                Destroy(gameObject);
             }
-            else
-            {
-            }
-
         }
     }
 
