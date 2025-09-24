@@ -13,6 +13,7 @@ public class PlayerController : MonoBehaviour
     WeaponsSystem weaponsSystem;
 
     bool lastSteerInputWasMouse = false;
+    Vector2 lastStickInput;
 
     float mousePitchDecayVelocity;
     float mouseYawDecayVelocity;
@@ -62,9 +63,11 @@ public class PlayerController : MonoBehaviour
         if (context.phase == InputActionPhase.Performed)
         {
             var input = context.ReadValue<Vector2>();
-            ship.yaw = input.x;
-            ship.pitch = input.y;
+            lastStickInput = input;
             lastSteerInputWasMouse = false;
+        } else if (context.phase == InputActionPhase.Canceled)
+        {
+            lastStickInput = Vector2.zero;
         }
     }
 
@@ -137,6 +140,10 @@ public class PlayerController : MonoBehaviour
         {
             ship.pitch = Mathf.SmoothDamp(ship.pitch, 0, ref mousePitchDecayVelocity, mouseSteerDecayTime);
             ship.yaw = Mathf.SmoothDamp(ship.yaw, 0, ref mouseYawDecayVelocity, mouseSteerDecayTime);
+        } else
+        {
+            ship.yaw = lastStickInput.x;
+            ship.pitch = lastStickInput.y;
         }
     }
 }
