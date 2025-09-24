@@ -2,6 +2,7 @@ using NUnit.Framework;
 using OneManEscapePlan.SpaceRailShooter.Scripts.Effects;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Pool;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(RectTransform))]
@@ -17,38 +18,48 @@ public class HUDRoot : MonoBehaviour
 
     public Reticle reticle;
 
-    ShipSettings shipMain;
-    public Vector2 nearFarClip;
-    public float angleClip;
-    [HideInInspector]
-    public List<BracketController> HUDBrackets;
-    GameObject RootHUD;
+    [SerializeField] private Vector2 nearFarClip;
+    [SerializeField] private float angleClip;
 
+    private List<BracketController> hudBrackets;
+    private GameObject RootHUD;
+    private ShipSettings shipMain;
+    private ObjectPool<BracketController> bracketsPool;
+
+    private void Awake()
+    {
+        bracketsPool = new WCObjectPool<BracketController>(CreateBracket);
+    }
 
     // Start is called before the first frame update
     void Start()
     {
         //Find our Ship Root! 
-        HUDBrackets = new List<BracketController>();
-        shipMain = (ShipSettings)gameObject.GetComponentInParent<ShipSettings>();
+        shipMain = gameObject.GetComponentInParent<ShipSettings>();
         RootHUD = new GameObject();
         RootHUD.name = "HUDRoot";
         RootHUD.transform.parent = gameObject.transform;
         RootHUD.transform.localPosition = Vector3.zero;
         RootHUD.transform.localScale = Vector3.one;
+
         RegisterBrackets();
     }
 
+    private void OnDestroy()
+    {
+        bracketsPool.Dispose();
+    }
 
-
-    //radarRefreshNeeded
     public void RegisterBrackets()
     {
-        foreach (BracketController bracket in HUDBrackets)
+        if (hudBrackets == null) hudBrackets = new List<BracketController>(20);
+
+        for (int i = 0; i < hudBrackets.Count; i++)
         {
-            Destroy(bracket.gameObject);
+            BracketController bracket = hudBrackets[i];
+            bracketsPool.Release(bracket);
         }
-        HUDBrackets = new List<BracketController>();
+        hudBrackets.Clear();
 
         if (shipMain.Team == TEAM.CONFED)
         {
@@ -78,7 +89,24 @@ public class HUDRoot : MonoBehaviour
 
     }
 
-    // TODO: Use pooling
+    BracketController CreateBracket()
+    {
+        GameObject bracketObj = new GameObject();
+        BracketController bracket = bracketObj.AddComponent<BracketController>();
+        //RectTransform rect = bracketObj.AddComponent<RectTransform>() as RectTransform;
+        bracketObj.name = "bracket";
+        bracketObj.layer = 8;
+        bracketObj.transform.parent = RootHUD.transform;
+        bracketObj.transform.localPosition = Vector3.zero;
+        bracketObj.transform.localScale = Vector3.one;
+        bracket.pixelCamera = hudCamera;
+        bracket.clipDist = nearFarClip;
+        bracket.clipAngle = angleClip;
+        bracket.HUDRoot = this;
+        bracket.shipMain = shipMain;
+        return bracket;
+    }
+
     void MakeBrackets(IReadOnlyList<ShipSettings> Ships, Color Color)
     {
         if (Ships != null && Ships.Count > 0 )
@@ -87,23 +115,11 @@ public class HUDRoot : MonoBehaviour
             {
                 if (ship != shipMain && !ship.IsDead && !ship.isCloaked ) //But only if we're not looking at ourselves! Or they're not dead or cloaked. :P
                 {
-                    GameObject bracketObj = new GameObject();
-                    BracketController bracket = bracketObj.AddComponent<BracketController>() as BracketController;
-                    //RectTransform rect = bracketObj.AddComponent<RectTransform>() as RectTransform;
-                    bracketObj.name = "bracket";
-                    bracketObj.layer = 8;
-                    bracketObj.transform.parent = RootHUD.transform;
-                    bracketObj.transform.localPosition = Vector3.zero;
-                    bracketObj.transform.localScale = Vector3.one;
-                    bracket.pixelCamera = hudCamera;
+                    BracketController bracket = bracketsPool.Get();
                     bracket.ship = ship;
-                    bracket.clipDist = nearFarClip;
-                    bracket.clipAngle = angleClip;
                     bracket.Color = Color;
-                    bracket.HUDRoot = gameObject.GetComponent<HUDRoot>();
-                    bracket.shipMain = shipMain;
                     //bracket.Init();
-                    HUDBrackets.Add(bracket);
+                    hudBrackets.Add(bracket);
                 }
             }
         }
@@ -116,17 +132,5 @@ public class HUDRoot : MonoBehaviour
         {
             RegisterBrackets();
         }
-        //if (HUDBrackets.Count != GameObjTracker.Ships.Count)
-        //{
-            //RegisterBrackets();
-        //}
-        foreach (BracketController bracket in HUDBrackets)
-        {
-            if (bracket.ship.IsDead)
-            {
-                RegisterBrackets();
-            }
-        }
-
     }
 }

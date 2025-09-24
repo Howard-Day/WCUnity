@@ -35,8 +35,8 @@ public class Engines : ShipSystem
     public float MaxFuel => Settings.MaxFuel;
     public float Speed => speed;
     public float TargetSpeed { get => targetSpeed; set => targetSpeed = value; }
-    public float Throttle { get => throttle; set => throttle = value; }
-    public bool IsAfterburning { get => isAfterburning; set => isAfterburning = value; }
+    public float Throttle => throttle;
+    public bool IsAfterburning { get => isAfterburning; }
     public Vector2 MinMaxThrottleVolume { get => minMaxThrottleVolume; set => minMaxThrottlePitch = value; }
     public Vector2 MinMaxThrottlePitch { get => minMaxThrottlePitch; set => minMaxThrottlePitch = value; }
     public float AfterburnPitch { get => afterburnPitch; set => afterburnPitch = value; }
@@ -112,9 +112,13 @@ public class Engines : ShipSystem
 
         //set Afterburning flag
         if (targetSpeed > Settings.TopSpeed + .1f)
-        { isAfterburning = true; }
+        { 
+            isAfterburning = true; 
+        }
         else
-        { isAfterburning = false; }
+        { 
+            isAfterburning = false; 
+        }
         // also set the visible flare throttles
         foreach (EngineFlare flare in engineFlares)
         {

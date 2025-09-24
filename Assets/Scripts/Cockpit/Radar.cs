@@ -1,13 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Pool;
 using UnityEngine.UI; // Required when Using UI elements.
 
 public class Radar : MonoBehaviour
 {
-
+    #region FIELDS
     ShipSettings shipMain;
-    public Vector2 nearFarClip;
+    [SerializeField] private Vector2 nearFarClip;
     public float radarMapXScale = .33f, radarMapYScale = .33f;
     public Color friendlyNear;
     public Color friendlyFar;
@@ -25,31 +26,37 @@ public class Radar : MonoBehaviour
 
     public Material blipMat;
 
-
     public Sprite[] fighterBlips;
     public Sprite[] capitalBlips;
     public Sprite[] EnvBlips;
 
-    public Toggle HitFore;
-    public Toggle HitRight;
-    public Toggle HitLeft;
-    public Toggle HitUp;
-    public Toggle HitDown;
-    public Toggle HitBack;
-    [HideInInspector]
-    public List<BlipController> RadarBlips;
-    GameObject BlipRoot;
+    [SerializeField] private Toggle HitFore;
+    [SerializeField] private Toggle HitRight;
+    [SerializeField] private Toggle HitLeft;
+    [SerializeField] private Toggle HitUp;
+    [SerializeField] private Toggle HitDown;
+    [SerializeField] private Toggle HitBack;
+
+    private List<BlipController> radarBlips;
+    private GameObject blipRoot;
+    private ObjectPool<BlipController> blipPool;
+
+    #endregion
+    private void Awake()
+    {
+        blipPool = new WCObjectPool<BlipController>(CreateBlip);
+    }
 
     // Start is called before the first frame update
     void Start()
-    {   //Find our Ship Root! 
-        RadarBlips = new List<BlipController>();
+    {   
+        //Find our Ship Root! 
         shipMain = (ShipSettings)gameObject.GetComponentInParent<ShipSettings>();
-        BlipRoot = new GameObject();
-        BlipRoot.name = "BlipRoot";
-        BlipRoot.transform.parent = gameObject.transform;
-        BlipRoot.transform.localPosition = Vector3.zero;
-        BlipRoot.transform.localScale = Vector3.one;
+        blipRoot = new GameObject();
+        blipRoot.name = "BlipRoot";
+        blipRoot.transform.parent = gameObject.transform;
+        blipRoot.transform.localPosition = Vector3.zero;
+        blipRoot.transform.localScale = Vector3.one;
         RegisterBlips();
         shipMain.lastHit = ShipSettings.HitLoc.NULL;
 
@@ -61,15 +68,21 @@ public class Radar : MonoBehaviour
         HitBack.isOn = false;
     }
 
-    //radarRefreshNeeded
-    // TODO: use a pooling system
+    private void OnDestroy()
+    {
+        blipPool.Dispose();
+    }
+
     public void RegisterBlips()
     {
-        foreach (BlipController blip in RadarBlips)
+        if (radarBlips == null) radarBlips = new List<BlipController>(20);
+
+        for (int i = 0; i < radarBlips.Count; i++)
         {
-            Destroy(blip.gameObject);
+            BlipController blip = radarBlips[i];
+            blipPool.Release(blip);
         }
-        RadarBlips = new List<BlipController>();
+        radarBlips.Clear();
         
         if (shipMain.Team == TEAM.CONFED)
         {
@@ -96,7 +109,6 @@ public class Radar : MonoBehaviour
         MakeBlips(GameObjTracker.Instance.EnvironmentalShips, envNear, envFar);
         GameObjTracker.Instance.RadarRefreshNeeded = false;
         //print("Radar Refresh is: "+ GameObjTracker.radarRefreshNeeded);
-
     }
 
     void MakeBlips(IReadOnlyList<ShipSettings> Ships, Color Near, Color Far)
@@ -107,23 +119,28 @@ public class Radar : MonoBehaviour
             {
                 if (ship != shipMain && !ship.IsDead) //But only if we're not looking at ourselves! Or they're not dead. :P
                 {
-                    GameObject blipObj = new GameObject();
-                    BlipController blip = blipObj.AddComponent<BlipController>() as BlipController;
-                    blipObj.name = "blip";
-                    blipObj.transform.parent = BlipRoot.transform;
-                    blipObj.transform.localPosition = Vector3.zero;
-                    blipObj.transform.localScale = Vector3.one;
+                    BlipController blip = blipPool.Get();
                     blip.ship = ship;
-                    blip.clipDist = nearFarClip;
                     blip.Near = Near;
                     blip.Far = Far;
-                    blip.radarRoot = gameObject.GetComponent<Radar>();
-                    blip.shipMain = shipMain;
-                    RadarBlips.Add(blip);
+                    radarBlips.Add(blip);
                 }
             }
         }
+    }
 
+    BlipController CreateBlip()
+    {
+        GameObject blipObj = new GameObject();
+        BlipController blip = blipObj.AddComponent<BlipController>() as BlipController;
+        blipObj.name = "blip";
+        blipObj.transform.parent = blipRoot.transform;
+        blipObj.transform.localPosition = Vector3.zero;
+        blipObj.transform.localScale = Vector3.one;
+        blip.clipDist = nearFarClip;
+        blip.radarRoot = this;
+        blip.shipMain = shipMain;
+        return blip;
     }
 
     void DoHitFlash() //Show incoming fire on the radar! 

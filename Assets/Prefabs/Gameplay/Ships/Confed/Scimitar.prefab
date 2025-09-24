@@ -279,7 +279,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9a786fafaafa36f45a2047a82a97b822, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  AISkillLevel: 1
   logDebug: 0
   skillSettings: {fileID: 11400000, guid: cf2e97c0f6771ab42bb6cf23ebdb3e38, type: 2}
   messageHandler: {fileID: 11400000, guid: 577166ff29f07ec4b99e06bc300282b0, type: 2}
