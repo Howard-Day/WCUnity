@@ -78,7 +78,7 @@ public class GameplayDebuggingController : MonoBehaviour
 
     private void KillAllAction_performed(InputAction.CallbackContext obj)
     {
-        foreach (ShipSettings ship in GameObjTracker.Instance.Ships)
+        foreach (ShipSettings ship in GameObjTracker.Instance.AllShips)
         {
             ship._CoreStrength = 0f;
         }

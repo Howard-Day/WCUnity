@@ -16,6 +16,7 @@ public class ShipSettings : Unit, IPowerSource
     [SerializeField, NonNull] private ShipSettingsAsset settings;
     [SerializeField, NonNull] private Engines engines;
     [SerializeField, NonNull] private WeaponsSystem weaponsSystem;
+    [SerializeField] private TargetingSystem targetingSystem;
 
     [SerializeField] public bool isWingLead = false;
     [SerializeField] public LayerMask CollidesWith;
@@ -122,10 +123,10 @@ public class ShipSettings : Unit, IPowerSource
     private ShieldStatus shield;
     #endregion
 
-
     #region PROPERTIES
     public ShipSettingsAsset Settings => settings;
     public Engines Engines => engines;
+    public TargetingSystem TargetingSystem => targetingSystem;
     public Capacitor MainCapacitor => mainCapacitor;
     public Capacitor CloakCapacitor => cloakCapacitor;
 
@@ -182,6 +183,28 @@ public class ShipSettings : Unit, IPowerSource
         if (settings.HasCloak)
         {
             InitCloakSFX();
+        }
+    }
+
+    void OnValidate()
+    {
+        Ensure(ref engines);
+        Ensure(ref targetingSystem);
+    }
+
+    private void Ensure<T>(ref T component) where T : Component
+    {
+        if (component == null)
+        {
+            component = GetComponentInChildren<T>();
+            if (component == null)
+            {
+                OMEPLogger.Log(this, typeof(T));
+                component = gameObject.AddComponent<T>();
+#if UNITY_EDITOR
+                UnityEditor.EditorUtility.SetDirty(this);
+#endif
+            }
         }
     }
 

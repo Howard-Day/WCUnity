@@ -128,7 +128,7 @@ public class WeaponsSystem : ShipSystem
 
 #if UNITY_EDITOR
     [UnityEditor.CustomEditor(typeof(WeaponsSystem))]
-    private class WeaponsSystemEditor : UnityEditor.Editor
+    private class WeaponsSystemEditor : ShipSystemEditor
     {
         public override void OnInspectorGUI()
         {
@@ -141,8 +141,6 @@ public class WeaponsSystem : ShipSystem
                 if (GUILayout.Button("Auto-find weapons"))
                 {
                     UnityEditor.Undo.RecordObject(instance, "Auto-find weapons");
-                    instance.ship = instance.GetComponent<ShipSettings>();
-                    if (instance.ship == null) instance.ship = instance.GetComponentInParent<ShipSettings>();
                     instance.FindWeapons();
                     UnityEditor.EditorUtility.SetDirty(instance);
                 }

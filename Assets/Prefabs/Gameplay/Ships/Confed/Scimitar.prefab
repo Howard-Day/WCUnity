@@ -104,6 +104,7 @@ GameObject:
   - component: {fileID: 9029772655339637950}
   - component: {fileID: 5695718655840442020}
   - component: {fileID: 5695718655840442019}
+  - component: {fileID: 912246448094995751}
   m_Layer: 10
   m_Name: Scimitar
   m_TagString: Untagged
@@ -173,6 +174,7 @@ MonoBehaviour:
   settings: {fileID: 11400000, guid: c8b87c119f87368409c5d59332afbe54, type: 2}
   engines: {fileID: 9029772655339637950}
   weaponsSystem: {fileID: 5309908775377636934}
+  targetingSystem: {fileID: 912246448094995751}
   isWingLead: 0
   CollidesWith:
     serializedVersion: 2
@@ -324,6 +326,19 @@ MonoBehaviour:
   frames: {x: 8, y: 4}
   billboard: {fileID: 5695718656521392422}
   shadowBillboard: {fileID: 0}
+--- !u!114 &912246448094995751
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5695718655840442017}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8d5623e5f37a208449822e3069bfe03d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TargetingSystem
+  ship: {fileID: 5695718655840442021}
 --- !u!1 &5695718656521392418
 GameObject:
   m_ObjectHideFlags: 0

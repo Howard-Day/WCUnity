@@ -201,6 +201,38 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: 3228d01a-836a-40c2-b010-86646f325c78
     m_ActionName: 'Gameplay/Afterburn[/XInputControllerWindows/leftTrigger]'
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 6491563668834754534}
+        m_TargetAssemblyTypeName: PlayerController, Assembly-CSharp
+        m_MethodName: OnPressTargetForward
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 7e6ab0c8-6a69-440b-a085-a28d1f435619
+    m_ActionName: 'Gameplay/TargetForward[/XInputControllerWindows/buttonSouth,/Keyboard/t]'
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 6491563668834754534}
+        m_TargetAssemblyTypeName: PlayerController, Assembly-CSharp
+        m_MethodName: OnPressTargetNearestHostile
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: f18386e7-0781-4018-9686-bb0b538cbbcd
+    m_ActionName: 'Gameplay/TargetNearestHostile[/XInputControllerWindows/buttonEast,/Keyboard/e]'
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Gameplay

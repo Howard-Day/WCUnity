@@ -151,6 +151,22 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public void OnPressTargetNearestHostile(InputAction.CallbackContext context)
+    {
+        if (context.phase == InputActionPhase.Performed)
+        {
+            ship.currentTarget = ship.TargetingSystem.FindNearestTarget(ship.Team.GetHostileTeamsMask());
+        }
+    }
+
+    public void OnPressTargetForward(InputAction.CallbackContext context)
+    {
+        if (context.phase == InputActionPhase.Performed)
+        {
+            ship.currentTarget = ship.TargetingSystem.FindTargetForward();
+        }
+    }
+
     public void OnPressFire(InputAction.CallbackContext context)
     {
         if (context.phase == InputActionPhase.Started)

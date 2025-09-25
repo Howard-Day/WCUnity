@@ -197,7 +197,7 @@ public class AIPlayer : AIUnit
     {
         Vector3 tarShipDir = Vector3.up;
         //loop through ships
-        foreach (ShipSettings tarShip in GameObjTracker.Instance.Ships)
+        foreach (ShipSettings tarShip in GameObjTracker.Instance.AllShips)
         {
             //verify the reference isnt null
             if (tarShip != null)
@@ -386,7 +386,7 @@ public class AIPlayer : AIUnit
             AITargetShip = FindNearestShip(gameObject.transform, ship.Team);
             if (AITargetShip != null)
             {
-                AITarget = AITargetShip.gameObject.GetComponent<Transform>();
+                AITarget = AITargetShip.transform;
             }
         }
     }
@@ -406,15 +406,13 @@ public class AIPlayer : AIUnit
         float distance = skillSettings.EngageDistance * 10f;
 
         ShipSettings nearestShip = null;
-        foreach (ShipSettings ship in GameObjTracker.Instance.Ships)
+        foreach (ShipSettings ship in GameObjTracker.Instance.AllShips)
         {
             if (ship != null && !ship.isCloaked)
             {
-                Transform shipTrans = (Transform)ship.gameObject.GetComponent<Transform>();
-
-                float shipDist = Vector3.Distance(shipTrans.position, toObj.position);
                 if (ship.Team != TEAM.NEUTRAL && ship != this.ship)
                 {
+                    float shipDist = Vector3.Distance(ship.transform.position, toObj.position);
                     if (shipDist < distance && ship.Team != ignoreTEAM)
                     {
                         distance = shipDist;
@@ -529,7 +527,7 @@ public class AIPlayer : AIUnit
     {
         float distance = 100000f;
         ShipSettings wingMan = null;
-        foreach (ShipSettings friendly in GameObjTracker.Instance.Ships)
+        foreach (ShipSettings friendly in GameObjTracker.Instance.AllShips)
         {
             //Okay, check if we're still null, and if the ship we've found is *ACTUALLY* friendly, and looking for wingmen
             //AND isn't ourselves, AND doesn't already have 4 wingmen.
