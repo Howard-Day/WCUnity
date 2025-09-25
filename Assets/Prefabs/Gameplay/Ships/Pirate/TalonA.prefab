@@ -172,6 +172,7 @@ MonoBehaviour:
   settings: {fileID: 11400000, guid: ff0f9e0206bbc2a49848275189ce07dd, type: 2}
   engines: {fileID: 174816021351185252}
   weaponsSystem: {fileID: 1301849188632694584}
+  targetingSystem: {fileID: 0}
   isWingLead: 0
   CollidesWith:
     serializedVersion: 2

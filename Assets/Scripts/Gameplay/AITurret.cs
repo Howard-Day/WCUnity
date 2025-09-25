@@ -69,22 +69,20 @@ public class AITurret : AIUnit
         float distance = skillSettings.EngageDistance * 10f;
 
         ShipSettings nearestShip = null;
-        foreach (ShipSettings shipTest in GameObjTracker.Instance.Ships)
+        foreach (ShipSettings ship in GameObjTracker.Instance.AllShips)
         {
-            if (shipTest != null && !shipTest.isCloaked)
+            if (ship != null && !ship.isCloaked)
             {
-                Transform shipTrans = shipTest.gameObject.GetComponent<Transform>();
-
-                float shipDist = Vector3.Distance(shipTrans.position, toObj.position);
-                Vector3 shipVec = Vector3.Normalize(shipTrans.position - toObj.position);
+                Vector3 shipVec = Vector3.Normalize(ship.transform.position - toObj.position);
                 float shipAngle = Vector3.Angle(shipVec, transform.forward);
 
-                if (shipTest.Team != TEAM.NEUTRAL && shipTest != shipMain && shipAngle <= angle)
+                if (ship.Team != TEAM.NEUTRAL && ship != shipMain && shipAngle <= angle)
                 {
-                    if (shipDist < distance && shipTest.Team != ignoreTEAM)
+                    float shipDist = Vector3.Distance(ship.transform.position, toObj.position);
+                    if (shipDist < distance && ship.Team != ignoreTEAM)
                     {
                         distance = shipDist;
-                        nearestShip = shipTest;
+                        nearestShip = ship;
                     }
                 }
             }

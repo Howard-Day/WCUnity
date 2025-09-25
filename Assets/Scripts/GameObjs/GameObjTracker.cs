@@ -55,7 +55,7 @@ public class GameObjTracker : MonoBehaviour
     public bool RadarRefreshNeeded { get => radarRefreshNeeded; set => radarRefreshNeeded = value; }
     public bool BracketRefreshNeeded { get => bracketRefreshNeeded; set => bracketRefreshNeeded = value; }
     public bool PlayerNeedsRespawn { get => playerNeedsRespawn; set => playerNeedsRespawn = value; }
-    public IReadOnlyList<ShipSettings> Ships => ships;
+    public IReadOnlyList<ShipSettings> AllShips => ships;
     public IReadOnlyList<ShipSettings> ConfedShips => confedShips;
     public IReadOnlyList<ShipSettings> KilrathiShips => kilrathiShips;
     public IReadOnlyList<ShipSettings> NeutralShips => neutralShips;

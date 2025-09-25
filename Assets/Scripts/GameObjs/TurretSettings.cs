@@ -12,7 +12,6 @@ public class TurretSettings : Unit
 
     // TODO: move some settings into a new scriptable object
     [Header("Choose Team, Name, and filters")]
-    [SerializeField] public TEAM AITeam = TEAM.CONFED;
     [FormerlySerializedAs("DisplayName")]
     [SerializeField] public string displayName;
     [Header("Billboard")]
@@ -50,7 +49,7 @@ public class TurretSettings : Unit
     #region PROPERTIES
     public Capacitor MainCapacitor => mainCapacitor;
     public override string DisplayName => displayName;
-    public override TEAM Team => AITeam;
+    public override TEAM Team => shipMain.Team;
     #endregion
 
     private void Awake()

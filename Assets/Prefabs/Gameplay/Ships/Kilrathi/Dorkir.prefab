@@ -499,7 +499,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   weaponsSystem: {fileID: 7846930433083890416}
-  AITeam: 0
   displayName: 
   Billboard: {fileID: 0}
   VDUImage: {fileID: 0}
@@ -544,7 +543,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f352df86bc1a3b4a81645d150513437, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  AISkillLevel: 0
   logDebug: 0
   skillSettings: {fileID: 11400000, guid: cf7ecfb7bff5560419dc3b6279128d77, type: 2}
   autoSkillLevel: 1
@@ -5584,7 +5582,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   weaponsSystem: {fileID: 6596596238518860044}
-  AITeam: 0
   displayName: 
   Billboard: {fileID: 0}
   VDUImage: {fileID: 0}
@@ -5629,7 +5626,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f352df86bc1a3b4a81645d150513437, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  AISkillLevel: 0
   logDebug: 0
   skillSettings: {fileID: 11400000, guid: cf7ecfb7bff5560419dc3b6279128d77, type: 2}
   autoSkillLevel: 1
@@ -11072,7 +11068,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   weaponsSystem: {fileID: 58154213196027733}
-  AITeam: 0
   displayName: 
   Billboard: {fileID: 0}
   VDUImage: {fileID: 0}
@@ -11117,7 +11112,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f352df86bc1a3b4a81645d150513437, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  AISkillLevel: 0
   logDebug: 0
   skillSettings: {fileID: 11400000, guid: cf7ecfb7bff5560419dc3b6279128d77, type: 2}
   autoSkillLevel: 1
@@ -11201,6 +11195,7 @@ MonoBehaviour:
   settings: {fileID: 11400000, guid: 1e6daaaff27fa7241af17c6da2d9e27b, type: 2}
   engines: {fileID: 3763176291640415220}
   weaponsSystem: {fileID: 9086988019754725946}
+  targetingSystem: {fileID: 0}
   isWingLead: 0
   CollidesWith:
     serializedVersion: 2
