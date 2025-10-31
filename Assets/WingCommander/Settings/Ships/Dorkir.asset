@@ -40,3 +40,5 @@ MonoBehaviour:
   timeToCloak: 2
   cloakPower: 20
   cloakDrain: 1
+  radarRange: 9999
+  canJoinFormations: 0

@@ -121,6 +121,7 @@ public class ShipSettings : Unit, IPowerSource
 
     private ArmorStatus armor;
     private ShieldStatus shield;
+    private Formation formation;
     #endregion
 
     #region PROPERTIES
@@ -140,6 +141,15 @@ public class ShipSettings : Unit, IPowerSource
 
     public bool IsDead => isDead;
     public float CoreMax => coreMax;
+    public Formation Formation
+    {
+        get => formation;
+        set
+        {
+            Assert.IsTrue(value == null || value.Team == this.Team);
+            this.formation = value;
+        }
+    }
     #endregion
 
     private void Awake() {
@@ -607,9 +617,19 @@ public class ShipSettings : Unit, IPowerSource
         }
     }
 
+    public void LeaveFormation()
+    {
+        if (formation != null)
+        {
+            formation.RemoveShip(this);
+            formation = null;
+        }
+    }
+
     void Kill()
     {
         isDead = true;
+        LeaveFormation();
         GameObjTracker.Instance.RemoveShip(this);
 
         _CoreStrength = 0;
@@ -862,62 +882,66 @@ public class ShipSettings : Unit, IPowerSource
     }
 
 #if UNITY_EDITOR
+    void OnDrawGizmos()
+    {
+        if (formation != null)
+        {
+            var color = formation.Color;
+            color.a = .33f;
+            Gizmos.color = color;
+            Gizmos.DrawWireCube(transform.position, new Vector3(10, 10, 10));
+        }
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        if (formation != null)
+        {
+            foreach (var ship in formation)
+            {
+                if (ship != null)
+                {
+                    Gizmos.color = formation.Color;
+                    Gizmos.DrawWireCube(ship.transform.position, new Vector3(10, 10, 10));
+                    if (ship != this)
+                    {
+                        Gizmos.DrawLine(transform.position, ship.transform.position);
+                    }
+                }
+            }
+        }
+    }
+
     [UnityEditor.CustomEditor(typeof(ShipSettings))]
     public class ShipSettingsEditor : UnityEditor.Editor {
         public override void OnInspectorGUI() {
             base.OnInspectorGUI();
 
             var instance = (ShipSettings)target;
-            /*
-            if (GUILayout.Button("Create settings asset")) {
-               
-                var asset = ScriptableObject.CreateInstance<ShipSettingsAsset>();
-                asset.aiTeam = instance.AITeam;
-                asset.@class = instance.Class;
-                asset.weight = instance.Weight;
-                asset.displayName = instance.DisplayName;
-
-                asset.settings.TurnRate = instance.settings.TurnRate;
-                asset.maxFuel = instance.maxFuel;
-                asset.fuelBurnRate = instance.fuelBurnRate;
-                asset.topSpeed = instance.topSpeed;
-                asset.burnSpeed = instance.burnSpeed;
-                asset.acceleration = instance.acceleration;
-                asset.deceleration = instance.deceleration;
-                asset.lag = instance.lag;
-
-                asset.deltaSmooth = instance.deltaSmooth;
-
-                asset.capacitorSize = instance.capacitorSize;
-                asset.weaponRechargeRate = instance.rechargeRate;
-
-                asset.armor = new ArmorSettings(instance.armor.Front, instance.armor.Back, instance.armor.Left, instance.armor.Right);
-                asset.shield = new ShieldSettings(instance.shield.Front, instance.shield.Back);
-                asset.shieldRechargeRate = instance.shieldRechargeRate;
-                asset.hasCloak = instance.hasCloak;
-                asset.timeToCloak = instance.timeToCloak;
-                asset.cloakPower = instance.cloakPower;
-                asset.cloakDrain = instance.cloakDrain;
-
-                var name = instance.DisplayName + ".asset";
-                string path = System.IO.Path.Join("Assets", "WingCommander/Settings/Ships", name);
-                AssetDatabase.CreateAsset(asset, path);
-            }*/
-            /*
-            if (GUILayout.Button("Add engines"))
+            if (Application.isPlaying)
             {
-                var engines = instance.gameObject.AddComponent<Engines>();
-                engines.ship = instance;
-                engines.damageTrails = instance.DamageTrails;
-                engines.minMaxThrottlePitch = instance.MinMaxThrottlePitch;
-                engines.minMaxThrottleVolume = instance.MinMaxThrottleVolume;
-                engines.afterburnPitch = instance.AfterburnPitch;
-                engines.afterburnSmoothness = instance.AfterburnSmoothness;
-                engines.afterburnVolume = instance.AfterburnVolume;
-                instance.engines = engines;
-                UnityEditor.EditorUtility.SetDirty(instance.gameObject);
-                UnityEditor.EditorUtility.SetDirty(target);
-            }*/
+                GUILayout.Space(10);
+                UnityEditor.EditorGUILayout.LabelField("Formation", UnityEditor.EditorStyles.boldLabel);
+                UnityEditor.EditorGUILayout.LabelField("In formation", (instance.formation != null).ToString());
+                if (instance.formation != null)
+                {
+                    UnityEditor.EditorGUILayout.LabelField("Formation " + instance.formation.ID);
+                    UnityEditor.EditorGUI.indentLevel++;
+                    foreach (var ship in instance.formation)
+                    {
+                        if (ship != null)
+                        {
+                            string name = ship.DisplayName;
+                            if (ship == instance.formation.Leader) name += " (leader)";
+                            if (GUILayout.Button(name))
+                            {
+                                UnityEditor.Selection.activeObject = ship;
+                            }
+                        }
+                    }
+                    UnityEditor.EditorGUI.indentLevel--;
+                }
+            }
         }
     }
 #endif
