@@ -907,39 +907,15 @@ public class ShipSettings : Unit, IPowerSource
                     {
                         Gizmos.DrawLine(transform.position, ship.transform.position);
                     }
-                }
-            }
-        }
-    }
-
-    [UnityEditor.CustomEditor(typeof(ShipSettings))]
-    public class ShipSettingsEditor : UnityEditor.Editor {
-        public override void OnInspectorGUI() {
-            base.OnInspectorGUI();
-
-            var instance = (ShipSettings)target;
-            if (Application.isPlaying)
-            {
-                GUILayout.Space(10);
-                UnityEditor.EditorGUILayout.LabelField("Formation", UnityEditor.EditorStyles.boldLabel);
-                UnityEditor.EditorGUILayout.LabelField("In formation", (instance.formation != null).ToString());
-                if (instance.formation != null)
-                {
-                    UnityEditor.EditorGUILayout.LabelField("Formation " + instance.formation.ID);
-                    UnityEditor.EditorGUI.indentLevel++;
-                    foreach (var ship in instance.formation)
+                    if (ship == formation.Leader)
                     {
-                        if (ship != null)
-                        {
-                            string name = ship.DisplayName;
-                            if (ship == instance.formation.Leader) name += " (leader)";
-                            if (GUILayout.Button(name))
-                            {
-                                UnityEditor.Selection.activeObject = ship;
-                            }
-                        }
+                        const float T = 1; // Thickness
+                        const float D = 5; // Depth
+                        var crossCenter = ship.transform.position + new Vector3(0, 8, 0);
+                        Gizmos.DrawWireCube(crossCenter, new Vector3(D, T, T));
+                        Gizmos.DrawWireCube(crossCenter, new Vector3(T, D, T));
+                        Gizmos.DrawWireCube(crossCenter, new Vector3(T, T, D));
                     }
-                    UnityEditor.EditorGUI.indentLevel--;
                 }
             }
         }
