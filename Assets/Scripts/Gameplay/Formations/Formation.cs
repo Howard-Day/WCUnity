@@ -7,6 +7,15 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Assertions;
 
+/// <summary>
+/// A formation consists of one or more ships using a
+/// <see cref="FormationTemplate"/>. A formation has one
+/// ship designated as the Leader; other ships in the
+/// formation attempt to position themselves relative to
+/// the leader using the layout of the template. Ships
+/// can be added to or removed from the formation on the
+/// fly.
+/// </summary>
 public class Formation : IEnumerable<ShipSettings>
 {
     private static int nextID = 0;
@@ -18,6 +27,7 @@ public class Formation : IEnumerable<ShipSettings>
     private List<ShipSettings> ships;
     private int leaderIndex = 0;
     private Color color;
+    private float scale = 1f;
     #endregion
 
     #region CONSTRUCTORS
@@ -57,6 +67,18 @@ public class Formation : IEnumerable<ShipSettings>
     /// Currently only used for visualization in the Editor.
     /// </summary>
     public Color Color { get => color; set => color = value; }
+
+    /// <summary>
+    /// Multiplier used to scale the spacing of the template.
+    /// </summary>
+    public float Scale { 
+        get => scale; 
+        set
+        {
+            Assert.IsFalse(value <= 0);
+            scale = value;
+        }
+    }
 
     public FormationTemplate Template
     {
@@ -200,7 +222,7 @@ public class Formation : IEnumerable<ShipSettings>
             return new Pose(leader.transform.position, leader.transform.rotation);
         }
 
-        var localOffset = template.GetLocalOffset(leaderIndex, index);
+        var localOffset = template.GetLocalOffset(leaderIndex, index) * scale;
         Vector3 worldPosition = leader.transform.TransformPoint(localOffset);
         var worldRotation = leader.transform.rotation;
         return new Pose(worldPosition, worldRotation);

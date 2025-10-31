@@ -102,7 +102,7 @@ public class FormationTemplateEditor : Editor
             var slot = formation.Slots[i];
             if (slot != null)
             {
-                DrawWedge(slot, i);
+                FormationEditorGUI.DrawWedge(slot, i, Vector3.zero);
 
                 string groupName = "Slot " + i;
                 if (Undo.GetCurrentGroupName() != groupName)
@@ -133,38 +133,5 @@ public class FormationTemplateEditor : Editor
     {
         int result = Mathf.RoundToInt(value / increment) * increment;
         return result;
-    }
-
-    private void DrawWedge(Transform slot, int index)
-    {
-        const float LENGTH = 20; // Starfighters are big
-        const float HALF_LENGTH = LENGTH / 2f;
-        const float QUARTER_LENGTH = LENGTH / 4f;
-        Handles.color = new Color(1f, 1f, 1f, .5f);
-
-        Vector3 horizontalA = new Vector3(0, 0, HALF_LENGTH);
-        Vector3 horizontalB = new Vector3(QUARTER_LENGTH, 0, -HALF_LENGTH);
-        Vector3 horizontalC = new Vector3(-QUARTER_LENGTH, 0, -HALF_LENGTH);
-        DrawPoints(slot, horizontalA, horizontalB, horizontalC);
-
-        Vector3 vericalA = new Vector3(0, 0, HALF_LENGTH);
-        Vector3 vericalB = new Vector3(0, QUARTER_LENGTH, -HALF_LENGTH);
-        Vector3 vericalC = new Vector3(0, -QUARTER_LENGTH, -HALF_LENGTH);
-        DrawPoints(slot, vericalA, vericalB, vericalC);
-
-        if (labelStyle == null)
-        {
-            labelStyle = new GUIStyle(EditorStyles.boldLabel);
-            labelStyle.fontSize = 30;
-            labelStyle.alignment = TextAnchor.MiddleCenter;
-            labelStyle.normal.textColor = Color.white;
-        }
-
-        Handles.Label(slot.position + slot.up * 7, $"Slot {index}", labelStyle);
-    }
-
-    private void DrawPoints(Transform slot, Vector3 a, Vector3 b, Vector3 c)
-    {
-        Handles.DrawAAConvexPolygon(slot.TransformPoint(a), slot.TransformPoint(b), slot.TransformPoint(c));
     }
 }

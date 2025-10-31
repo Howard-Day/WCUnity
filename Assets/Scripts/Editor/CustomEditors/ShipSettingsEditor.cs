@@ -20,4 +20,14 @@ public class ShipSettingsEditor : Editor
             }
         }
     }
+
+    private void OnSceneGUI()
+    {
+        var instance = (ShipSettings)target;
+        if (Application.isPlaying) {
+            if (instance.Formation != null) {
+                FormationEditorGUI.DrawTemplate(instance.Formation);
+            }
+        }
+    }
 }
