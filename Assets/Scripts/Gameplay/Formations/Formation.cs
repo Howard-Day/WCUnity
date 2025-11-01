@@ -228,6 +228,18 @@ public class Formation : IEnumerable<ShipSettings>
         return new Pose(worldPosition, worldRotation);
     }
 
+    public Pose GetSlotPose(ShipSettings ship)
+    {
+        for (int i = 0; i < ships.Count; i++)
+        {
+            if (ships[i] == ship)
+            {
+                return GetSlotPose(i);
+            }
+        }
+        throw new System.ArgumentException($"{ship} is not a member of formation {this}");
+    }
+
     private void FindNewLeader()
     {
         // TODO: pick leader by skill level?

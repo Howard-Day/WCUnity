@@ -21,7 +21,6 @@ public class AIPlayer : AIUnit
     public GameObject debugOrient;
 
     [HideInInspector] public GameObjTracker Tracker;
-    [HideInInspector] public ShipSettings WingmanTo;
     [HideInInspector] float barrelRoll;
     [HideInInspector] public float impatience;
     [HideInInspector] public float angleToTarget;
@@ -35,7 +34,6 @@ public class AIPlayer : AIUnit
     Vector3 randPos = Vector3.zero;
 
     ShipSettings AITargetShip;
-    Vector3 formationPos;
 
     bool rolling = false;
     float rollStart;
@@ -52,7 +50,6 @@ public class AIPlayer : AIUnit
 
     Vector3 randApproach = Vector3.zero;
     Vector3 EvadeSteer = Vector3.zero;
-    bool hasWingLead = false;
 
     int nextPatrolPoint = 0;
     float evadeTimer = 0f;
@@ -492,63 +489,11 @@ public class AIPlayer : AIUnit
         return aimAt;
     }
 
+    private void TryJoinFormation()
+    {
+        FormationManager.Instance.TryJoinClosestFormation(ship, 10000, true);
+    }
 
-    //Init Wingman logic
-    public void InitWingman(ShipSettings wingman)
-    {
-        if (!hasWingLead)
-        {
-            wingman = FindWingMan();
-            if (wingman == null)//can't find anyone, bail
-            {//print("No Wingleaders Available"); 
-                return;
-            }
-            else //Make ourselves a slot to form up if we're just now finding a Wingleader
-            {
-                //print("Found Wingleader, setting up Params, Setting Formation Pos");
-                formationPos = ((Random.Range(-.5f, .5f) * wingman.transform.up) + (Random.Range(-1f, 1f) * wingman.transform.right)) * ship.shipRadius * 8;
-                wingman.numWingmen++;
-                hasWingLead = true;
-                WingmanTo = wingman;
-            }
-        }
-        else // If we already know who our wingleader is, assume the current relational position is the desired formation position
-        {
-            //print("Wingleader exists on Init, setting up Params, Taking Existing Formation Pos");
-            Vector3 initLoc = wingman.transform.position - transform.position;
-            formationPos = initLoc;
-            wingman.numWingmen++;
-            hasWingLead = true;
-            WingmanTo = wingman;
-        }
-    }
-    //Find Wingmen
-    public ShipSettings FindWingMan()
-    {
-        float distance = 100000f;
-        ShipSettings wingMan = null;
-        foreach (ShipSettings friendly in GameObjTracker.Instance.AllShips)
-        {
-            //Okay, check if we're still null, and if the ship we've found is *ACTUALLY* friendly, and looking for wingmen
-            //AND isn't ourselves, AND doesn't already have 4 wingmen.
-            if (friendly != null && friendly.isWingLead && friendly.Team == ship.Team && friendly != ship && friendly.numWingmen <= 4)
-            {
-                //print("Found a Wingleader in the scene! His name is:" + friendly.name);
-                Transform friendlyTrans = (Transform)friendly.gameObject.GetComponent<Transform>();
-                float shipDist = Vector3.Distance(friendlyTrans.position, transform.position);
-                //if there are multiple, find the closest wingleader.
-                if (shipDist < distance)
-                {
-                    distance = shipDist;
-                    wingMan = friendly;
-                    hasWingLead = true;
-                    //print("Wingleader " + wingMan.name + " is the closest, and current");
-                }
-            }
-        }
-        //After going through all, return the closest.
-        return wingMan;
-    }
     //Define AI States
     void DoAIStates()
     {
@@ -612,56 +557,60 @@ public class AIPlayer : AIUnit
                 break;
             case AIState.BREAK: //Break and Attack!
                 {
-                    if (WingmanTo != null && WingmanTo.currentTarget != null && AITargetShip)
+                    if (ship.Formation != null && ship.Formation.Leader.currentTarget != null && AITargetShip)
                     {
-                        AITargetShip = WingmanTo.currentTarget;
+                        AITargetShip = ship.Formation.Leader.currentTarget;
                     }
                     ActiveAIState = AIState.ENGAGE;
                 }
                 break;
             case AIState.WINGMAN:
                 {
-                    if (!hasWingLead)//Look for a wingleader in this state 
+                    if (ship.Formation == null) //Look for a wingleader in this state 
                     {
-                        InitWingman(WingmanTo);
+                        TryJoinFormation();
                     }
-                    if (WingmanTo == null) // No wingleaders? Individual patrol mode! 
+                    if (ship.Formation == null || ship.Formation.Leader == ship) // No wingleaders? Individual patrol mode!
                     {
                         ActiveAIState = AIState.PATROL;
                     }
-                    if (WingmanTo != null && hasWingLead)
+                    else // We are a wingman in a formation
                     {
-                        //See how far away and what direction we need to go
-                        var localFormPos = formationPos - (WingmanTo.transform.forward * WingmanTo.shipRadius * 5) + WingmanTo.transform.position;
-                        var leadDist = Vector3.Distance(localFormPos, transform.position);
-                        var dirToPos = (localFormPos) - transform.position;
+                        var leader = ship.Formation.Leader;
 
-                        Debug.DrawLine(gameObject.transform.position, localFormPos, Color.green, .10f);
+                        //See how far away and what direction we need to go
+                        var localFormationPose = ship.Formation.GetSlotPose(ship);
+                        var leadDist = Vector3.Distance(localFormationPose.position, transform.position);
+                        var dirToPos = localFormationPose.position - transform.position;
+
+                        Debug.DrawLine(gameObject.transform.position, localFormationPose.position, Color.green, .10f);
+
                         if (leadDist != 0)
                         {
                             if (leadDist > 120)//If we're a ways off, aim right at the formation point and afterburn into position.
                             {
                                 ship.Engines.TargetSpeed = ship.Settings.BurnSpeed;
-                                SteerTo(localFormPos);
+                                SteerTo(localFormationPose.position);
                             }
                             if (leadDist <= 120 && leadDist > 20) //If we're a moderate distance away, set speed to the lead ship +25%, aim at the formation position.
                             {
-                                ship.Engines.TargetSpeed = WingmanTo.speed + ship.Settings.TopSpeed / 4;
-                                SteerTo(localFormPos);
+                                ship.Engines.TargetSpeed = leader.Engines.Speed + ship.Settings.TopSpeed / 4;
+                                SteerTo(localFormationPose.position);
                             }
                             if (leadDist <= 20) //If we're close, Match speed, and aim at a point parallel to the direction of the lead ship
                             {
-                                ship.Engines.TargetSpeed = WingmanTo.speed;
-                                SteerTo(localFormPos + WingmanTo.transform.forward * ship.shipRadius * 4f);
+                                ship.Engines.TargetSpeed = leader.Engines.Speed;
+                                SteerTo(localFormationPose.position + leader.transform.forward * ship.shipRadius * 4f);
                                 //A gentle push, like the avoidance system, to nudge us into place
                                 float formPush = (dirToPos.magnitude / 10) * .5f;
                                 transform.position += dirToPos * formPush * Time.deltaTime;
                             }
                             if (leadDist <= 30) // attempt to match roll once we get close-ish
                             {
-                                transform.rotation = Quaternion.Lerp(transform.rotation, WingmanTo.transform.rotation, .005f);
+                                // TODO: this is hacky and affected by framerate. use ship controls to rotate instead of lerping.
+                                transform.rotation = Quaternion.Lerp(transform.rotation, localFormationPose.rotation, .005f);
                                 //QuaternionUtil.SmoothDamp(transform.rotation,WingmanTo.transform.rotation, ref refForm, .15f);
-                                ship.roll = WingmanTo.roll;
+                                ship.roll = leader.roll;
                             }
                             //AITarget is already the closest known enemy - let's use that! 
                             if (AITarget != null && Vector3.Distance(AITarget.position, transform.position) <= skillSettings.EngageDistance * .333f)
@@ -669,10 +618,6 @@ public class AIPlayer : AIUnit
                                 ActiveAIState = AIState.REPOSITION;
                             }
                         }
-                    }
-                    else
-                    {
-                        ActiveAIState = AIState.PATROL;
                     }
                 }
                 break;

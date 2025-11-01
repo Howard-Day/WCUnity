@@ -5,6 +5,16 @@ using UnityEngine.Assertions;
 
 public class FormationManager : MonoBehaviour
 {
+    private static FormationManager _instance;
+    public static FormationManager Instance
+    {
+        get
+        {
+            if (_instance == null) _instance = GameObject.FindAnyObjectByType<FormationManager>();
+            return _instance;
+        }
+    }
+
     [SerializeField, NonNull] private List<FormationTemplate> formationTemplates;
     [SerializeField] private bool verboseLogging;
 
@@ -16,6 +26,8 @@ public class FormationManager : MonoBehaviour
     void Awake()
     {
         Assert.IsFalse(formationTemplates.Count == 0);
+        Assert.IsTrue(_instance == null || _instance == this);
+        _instance = this;
     }
 
     public void OnShipAdded(ShipSettings ship)
@@ -45,6 +57,27 @@ public class FormationManager : MonoBehaviour
         }
 
         return TryJoinFormation(ship, formations, maxDistance, canCreateNewFormation, snapToPosition);
+    }
+
+    /// <summary>
+    /// Try to join the closest formation with the given criteria.
+    /// </summary>
+    /// <param name="ship"></param>
+    /// <param name="maxDistance">Only join a formation if within this distance (measured from the formation's current leader)</param>
+    /// <param name="canCreateNewFormation">Whether we can create a new formation if no valid formation is available</param>
+    /// <returns></returns>
+    public Formation TryJoinClosestFormation(ShipSettings ship, float maxDistance, bool canCreateNewFormation)
+    {
+        Assert.IsNotNull(ship);
+        Assert.IsTrue(ship.Settings.CanJoinFormations);
+        var formations = GetFormations(ship.Team);
+        if (formations == null)
+        {
+            OMEPLogger.Log(this, $"Formations are not available for team {ship.Team}");
+            return null;
+        }
+
+        return TryJoinClosestFormation(ship, formations, maxDistance, canCreateNewFormation);
     }
 
     private List<Formation> GetFormations(TEAM team)
@@ -108,6 +141,47 @@ public class FormationManager : MonoBehaviour
         {
             return null;
         }
+    }
+
+    /// <summary>
+    /// Try to join the closest formation with the given criteria.
+    /// </summary>
+    /// <param name="ship"></param>
+    /// <param name="currentFormations">All current formations for the ship's team</param>
+    /// <param name="maxDistance">Only join a formation if within this distance (measured from the formation's current leader)</param>
+    /// <param name="canCreateNewFormation">Whether we can create a new formation if no valid formation is available</param>
+    /// <returns></returns>
+    private Formation TryJoinClosestFormation(ShipSettings ship, List<Formation> currentFormations, float maxDistance, bool canCreateNewFormation)
+    {
+        if (verboseLogging) OMEPLogger.Log(this, $"{ship} {maxDistance} {canCreateNewFormation}");
+        Assert.IsNotNull(ship);
+        Assert.IsNotNull(currentFormations);
+
+        float bestDistance = maxDistance;
+        Formation bestResult = null;
+
+        foreach (var formation in currentFormations)
+        {
+            var leader = formation.Leader;
+
+            float distance = Vector3.Distance(ship.transform.position, leader.transform.position);
+            if (distance < bestDistance && !formation.IsFull)
+            {
+                bestDistance = distance;
+                bestResult = formation;
+            }
+        }
+
+        if (bestResult != null && TryJoinFormation(ship, bestResult, false))
+        {
+            return bestResult;
+        }
+        if (canCreateNewFormation)
+        {
+            return CreateFormationFor(ship);
+        }
+
+        return null;
     }
 
     /// <summary>
