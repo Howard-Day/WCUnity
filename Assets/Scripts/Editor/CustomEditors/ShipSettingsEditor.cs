@@ -13,10 +13,10 @@ public class ShipSettingsEditor : Editor
         {
             GUILayout.Space(10);
             EditorGUILayout.LabelField("Formation", EditorStyles.boldLabel);
-            EditorGUILayout.LabelField("In formation", (instance.Formation != null).ToString());
-            if (instance.Formation != null)
+            EditorGUILayout.LabelField("In Flight", (instance.Flight != null).ToString());
+            if (instance.Flight != null)
             {
-                FormationEditorGUI.DrawFormationGUI(instance.Formation);
+                FormationEditorGUI.DrawFlightGUI(instance.Flight);
             }
         }
     }
@@ -25,8 +25,8 @@ public class ShipSettingsEditor : Editor
     {
         var instance = (ShipSettings)target;
         if (Application.isPlaying) {
-            if (instance.Formation != null) {
-                FormationEditorGUI.DrawTemplate(instance.Formation);
+            if (instance.Flight != null) {
+                FormationEditorGUI.DrawTemplate(instance.Flight);
             }
         }
     }

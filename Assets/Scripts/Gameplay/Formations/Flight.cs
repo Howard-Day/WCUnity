@@ -8,15 +8,18 @@ using UnityEngine;
 using UnityEngine.Assertions;
 
 /// <summary>
-/// A formation consists of one or more ships using a
-/// <see cref="FormationTemplate"/>. A formation has one
-/// ship designated as the Leader; other ships in the
-/// formation attempt to position themselves relative to
-/// the leader using the layout of the template. Ships
-/// can be added to or removed from the formation on the
-/// fly.
+/// A Flight consists of one or more ships that fly together.
+/// Flights will fly in formation using a 
+/// <see cref="FormationTemplate"/>, but may break formation
+/// during combat. A Flight has one ship designated as the 
+/// Leader. Ships can be added to or removed from the flight
+/// at any time.
+/// 
+/// While flying in formation, other ships in the flight
+/// attempt to position themselves relative to the leader
+/// using the formation layout defined in the template. 
 /// </summary>
-public class Formation : IEnumerable<ShipSettings>
+public class Flight : IEnumerable<ShipSettings>
 {
     private static int nextID = 0;
 
@@ -44,13 +47,13 @@ public class Formation : IEnumerable<ShipSettings>
         this.Template = template;
     }
 
-    public Formation(TEAM team, FormationTemplate template, bool verboseLogging = false)
+    public Flight(TEAM team, FormationTemplate template, bool verboseLogging = false)
     {
         this.ships = new List<ShipSettings>(template.MaxShips);
         Init(team, template, verboseLogging);
     }
 
-    public Formation(TEAM team, FormationTemplate template, List<ShipSettings> ships, bool verboseLogging = false)
+    public Flight(TEAM team, FormationTemplate template, List<ShipSettings> ships, bool verboseLogging = false)
     {
         this.ships = ships ?? throw new ArgumentNullException(nameof(ships));
         Init(team, template, verboseLogging);
@@ -185,11 +188,11 @@ public class Formation : IEnumerable<ShipSettings>
     }
 
     /// <summary>
-    /// Remove the given ship from the formation, if present.
+    /// Remove the given ship from the Flight, if present.
     /// </summary>
     /// <param name="ship"></param>
     /// <returns><c>true</c> if removed, <c>false</c> if not found in
-    /// the formation.</returns>
+    /// the Flight.</returns>
     public bool RemoveShip(ShipSettings ship)
     {
         Assert.IsNotNull(ship);
@@ -260,9 +263,9 @@ public class Formation : IEnumerable<ShipSettings>
         return $"{team} {template.DisplayName} formation";
     }
 
-    public FormationShipsEnumerator GetEnumerator()
+    public FlightShipsEnumerator GetEnumerator()
     {
-        return new FormationShipsEnumerator(this);
+        return new FlightShipsEnumerator(this);
     }
 
     IEnumerator IEnumerable.GetEnumerator()
@@ -275,12 +278,12 @@ public class Formation : IEnumerable<ShipSettings>
         return GetEnumerator();
     }
 
-    public struct FormationShipsEnumerator : IEnumerator<ShipSettings>
+    public struct FlightShipsEnumerator : IEnumerator<ShipSettings>
     {
-        private Formation formation;
+        private Flight formation;
         private int currentIndex;
 
-        public FormationShipsEnumerator(Formation formation)
+        public FlightShipsEnumerator(Flight formation)
         {
             this.formation = formation;
             this.currentIndex = -1;

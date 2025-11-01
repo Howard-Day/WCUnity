@@ -120,7 +120,7 @@ public class ShipSettings : Unit, IPowerSource
 
     private ArmorStatus armor;
     private ShieldStatus shield;
-    private Formation formation;
+    private Flight flight;
     #endregion
 
     #region PROPERTIES
@@ -148,13 +148,13 @@ public class ShipSettings : Unit, IPowerSource
 
     public bool IsDead => isDead;
     public float CoreMax => coreMax;
-    public Formation Formation
+    public Flight Flight
     {
-        get => formation;
+        get => flight;
         set
         {
             Assert.IsTrue(value == null || value.Team == this.Team);
-            this.formation = value;
+            this.flight = value;
         }
     }
     #endregion
@@ -628,19 +628,19 @@ public class ShipSettings : Unit, IPowerSource
         }
     }
 
-    public void LeaveFormation()
+    public void LeaveFlight()
     {
-        if (formation != null)
+        if (flight != null)
         {
-            formation.RemoveShip(this);
-            formation = null;
+            flight.RemoveShip(this);
+            flight = null;
         }
     }
 
     void Kill()
     {
         isDead = true;
-        LeaveFormation();
+        LeaveFlight();
         GameObjTracker.Instance.RemoveShip(this);
 
         _CoreStrength = 0;
@@ -895,9 +895,9 @@ public class ShipSettings : Unit, IPowerSource
 #if UNITY_EDITOR
     void OnDrawGizmos()
     {
-        if (formation != null)
+        if (flight != null)
         {
-            var color = formation.Color;
+            var color = flight.Color;
             color.a = .33f;
             Gizmos.color = color;
             Gizmos.DrawWireCube(transform.position, new Vector3(10, 10, 10));
@@ -906,19 +906,19 @@ public class ShipSettings : Unit, IPowerSource
 
     void OnDrawGizmosSelected()
     {
-        if (formation != null)
+        if (flight != null)
         {
-            foreach (var ship in formation)
+            foreach (var ship in flight)
             {
                 if (ship != null)
                 {
-                    Gizmos.color = formation.Color;
+                    Gizmos.color = flight.Color;
                     Gizmos.DrawWireCube(ship.transform.position, new Vector3(10, 10, 10));
                     if (ship != this)
                     {
                         Gizmos.DrawLine(transform.position, ship.transform.position);
                     }
-                    if (ship == formation.Leader)
+                    if (ship == flight.Leader)
                     {
                         const float T = 1; // Thickness
                         const float D = 5; // Depth

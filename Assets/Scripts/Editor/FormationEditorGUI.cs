@@ -3,17 +3,17 @@ using UnityEngine;
 
 public static class FormationEditorGUI
 {
-    public static void DrawFormationGUI(Formation formation)
+    public static void DrawFlightGUI(Flight flight)
     {
-        EditorGUILayout.LabelField("Formation " + formation.ID);
+        EditorGUILayout.LabelField("Flight " + flight.ID);
         EditorGUI.indentLevel++;
-        formation.Scale = EditorGUILayout.Slider(formation.Scale, .5f, 3f);
-        foreach (var ship in formation)
+        flight.Scale = EditorGUILayout.Slider(flight.Scale, .5f, 3f);
+        foreach (var ship in flight)
         {
             if (ship != null)
             {
                 string name = ship.DisplayName;
-                if (ship == formation.Leader) name += " (leader)";
+                if (ship == flight.Leader) name += " (leader)";
                 if (GUILayout.Button(name))
                 {
                     UnityEditor.Selection.activeObject = ship;
@@ -24,22 +24,22 @@ public static class FormationEditorGUI
     }
 
     /// <summary>
-    /// Draw the template for the given Formation in the Scene
+    /// Draw the template for the given Flight in the Scene
     /// view, relative to the Leader.
     /// </summary>
-    /// <param name="formation"></param>
-    public static void DrawTemplate(Formation formation)
+    /// <param name="flight"></param>
+    public static void DrawTemplate(Flight flight)
     {
-        var leader = formation.Leader;
+        var leader = flight.Leader;
         if (leader != null)
         {
-            var template = formation.Template;
-            for (int i = 0; i < formation.Template.Slots.Count; i++)
+            var template = flight.Template;
+            for (int i = 0; i < flight.Template.Slots.Count; i++)
             {
-                Transform slot = formation.Template.Slots[i];
+                Transform slot = flight.Template.Slots[i];
                 if (slot != null)
                 {
-                    var offset = formation.Template.GetLocalOffset(0, i) * formation.Scale;
+                    var offset = flight.Template.GetLocalOffset(0, i) * flight.Scale;
                     DrawWedge(leader.transform, i, offset);
                 }
             }

@@ -489,9 +489,9 @@ public class AIPlayer : AIUnit
         return aimAt;
     }
 
-    private void TryJoinFormation()
+    private void TryJoinFlight()
     {
-        FormationManager.Instance.TryJoinClosestFormation(ship, 10000, true);
+        FlightManager.Instance.TryJoinClosestFlight(ship, 10000, true);
     }
 
     //Define AI States
@@ -557,29 +557,29 @@ public class AIPlayer : AIUnit
                 break;
             case AIState.BREAK: //Break and Attack!
                 {
-                    if (ship.Formation != null && ship.Formation.Leader.currentTarget != null && AITargetShip)
+                    if (ship.Flight != null && ship.Flight.Leader.currentTarget != null && AITargetShip)
                     {
-                        AITargetShip = ship.Formation.Leader.currentTarget;
+                        AITargetShip = ship.Flight.Leader.currentTarget;
                     }
                     ActiveAIState = AIState.ENGAGE;
                 }
                 break;
             case AIState.WINGMAN:
                 {
-                    if (ship.Formation == null) //Look for a wingleader in this state 
+                    if (ship.Flight == null) //Look for a wingleader in this state 
                     {
-                        TryJoinFormation();
+                        TryJoinFlight();
                     }
-                    if (ship.Formation == null || ship.Formation.Leader == ship) // No wingleaders? Individual patrol mode!
+                    if (ship.Flight == null || ship.Flight.Leader == ship) // No wingleaders? Individual patrol mode!
                     {
                         ActiveAIState = AIState.PATROL;
                     }
                     else // We are a wingman in a formation
                     {
-                        var leader = ship.Formation.Leader;
+                        var leader = ship.Flight.Leader;
 
                         //See how far away and what direction we need to go
-                        var localFormationPose = ship.Formation.GetSlotPose(ship);
+                        var localFormationPose = ship.Flight.GetSlotPose(ship);
                         var leadDist = Vector3.Distance(localFormationPose.position, transform.position);
                         var dirToPos = localFormationPose.position - transform.position;
 
