@@ -206,7 +206,6 @@ MonoBehaviour:
   pitch: 0
   roll: 0
   isFiring: 0
-  speed: 0
   numWingmen: 0
   isBeingShot: 0
   isLocked: 0
@@ -229,7 +228,6 @@ MonoBehaviour:
   cloakedAmount: 0
   lastPos: {x: 0, y: 0, z: 0}
   currentPos: {x: 0, y: 0, z: 0}
-  velocity: {x: 0, y: 0, z: 0}
 --- !u!114 &5368656086642746019
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -288,7 +286,6 @@ MonoBehaviour:
   doDebugOrient: 0
   debugOrient: {fileID: 0}
   Tracker: {fileID: 0}
-  WingmanTo: {fileID: 0}
   impatience: 0
   angleToTarget: 0
 --- !u!114 &797306069139611196
