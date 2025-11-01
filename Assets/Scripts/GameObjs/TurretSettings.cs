@@ -167,7 +167,8 @@ public class TurretSettings : Unit
 
     private void InterpolateTurretAim(Vector3 forward)
     {
-        
+        if (forward == Vector3.zero) return; // Prevent log spam about "Look Rotation viewing vector is zero"
+
         Quaternion baseRot = Quaternion.LookRotation(forward, shipMain.transform.up);
         //Set initial local rotation
         initialRot = shipMain.transform.rotation * oldRot;
@@ -177,7 +178,6 @@ public class TurretSettings : Unit
 
         // first rotate completely towards target in world space
         traverse.rotation = Quaternion.Lerp(traverse.rotation, baseRot, Time.deltaTime * turnRate);
-
 
         // reset local roll & pitch for turret base
         traverse.localRotation = Quaternion.Euler(
