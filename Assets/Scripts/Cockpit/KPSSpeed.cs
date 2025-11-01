@@ -53,7 +53,7 @@ public class KPSSpeed : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        float setSpeed = shipMain.speed;
+        float setSpeed = shipMain.Engines.Speed;
 
         int speedDisp = Mathf.FloorToInt(setSpeed * 10);
 

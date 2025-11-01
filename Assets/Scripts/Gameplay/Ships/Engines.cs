@@ -1,4 +1,5 @@
 using OneManEscapePlan.Common;
+using System;
 using UnityEngine;
 using UnityEngine.Assertions;
 
@@ -61,6 +62,7 @@ public class Engines : ShipSystem
         engineSFX.volume = minMaxThrottleVolume.x;
     }
 
+    // TODO: this should probably be done in FixedUpdate instead of Update
     void LateUpdate()
     {
         if (!ship.IsDead)
@@ -177,5 +179,14 @@ public class Engines : ShipSystem
             afterburnBlend = 0f;
         }
         afterburnSFX.volume = Mathf.Lerp(afterburnSFX.volume, afterburnBlend * afterburnVolume, afterburnSmoothness);
+    }
+
+    /// <summary>
+    /// Unrealistic; in most cases, we should set TargetSpeed instead.
+    /// </summary>
+    /// <param name="value"></param>
+    public void SetSpeedInstantly(float value)
+    {
+        speed = value;
     }
 }

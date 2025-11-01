@@ -76,7 +76,6 @@ public class ShipSettings : Unit, IPowerSource
     [HideInInspector] public float roll;
     
     [HideInInspector] public bool isFiring = false;
-    [HideInInspector] public float speed = 0f;
     [HideInInspector] GameObjTracker Tracker;
 
     [HideInInspector] public int numWingmen = 0;
@@ -117,7 +116,7 @@ public class ShipSettings : Unit, IPowerSource
 
     [HideInInspector] public Vector3 lastPos = Vector3.zero;
     [HideInInspector] public Vector3 currentPos;
-    public Vector3 velocity;
+    private Vector3 measuredVelocity;
 
     private ArmorStatus armor;
     private ShieldStatus shield;
@@ -138,6 +137,8 @@ public class ShipSettings : Unit, IPowerSource
 
     public float ShieldFrontNormalized => shield.Front / settings.Shield.Front;
     public float ShieldBackNormalized => shield.Back / settings.Shield.Back;
+    public Vector3 MeasuredVelocity => measuredVelocity;
+    public Vector3 CalculatedVelocity => transform.forward * engines.Speed;
 
     public bool IsDead => isDead;
     public float CoreMax => coreMax;
@@ -278,7 +279,7 @@ public class ShipSettings : Unit, IPowerSource
     void DoVelocity()
     {
         currentPos = transform.position;
-        velocity = (currentPos - lastPos) /Time.deltaTime;
+        measuredVelocity = (currentPos - lastPos) /Time.deltaTime;
         lastPos = transform.position;
     }
    
@@ -416,7 +417,7 @@ public class ShipSettings : Unit, IPowerSource
             pitch *= recover;
             yaw *= recover;
             roll *= recover;
-            speed *= recover;
+            engines.SetSpeedInstantly(engines.Speed * recover);
             if (recover < .025f)
             {
                 InternalDamage(false);
@@ -605,7 +606,7 @@ public class ShipSettings : Unit, IPowerSource
         if (_CoreStrength > 0)
         {
             DeathDir = transform.forward;
-            DeathVel = speed;
+            DeathVel = engines.Speed;
         }
 
         if (!DecoRoot)
@@ -640,7 +641,7 @@ public class ShipSettings : Unit, IPowerSource
         if (DeathSpin == Vector3.zero) //this happens once, let's take advantage!
         {
             DeathDir = transform.forward;
-            DeathVel = speed;
+            DeathVel = engines.Speed;
             DeathSpin = new Vector3(Random.Range(-3f, 3f), Random.Range(-3f, 3f), Random.Range(-3f, 3f));
             DeathType = Random.Range(0, 2); //we've got three current deaths - immediate, short spin, and death tumble!
             DeathLength = Random.Range(2f, 4f);
@@ -669,7 +670,7 @@ public class ShipSettings : Unit, IPowerSource
             droll_ *= settings.TurnRate * 3f * Time.deltaTime;
             transform.localRotation *= Quaternion.AngleAxis(droll_, Vector3.forward) * Quaternion.AngleAxis(dyaw_, Vector3.up) * Quaternion.AngleAxis(dpitch_, invertYAxis ? Vector3.right : Vector3.left);
             transform.position += DeathDir * DeathVel * Time.deltaTime;
-            speed = 0f;
+            engines.SetSpeedInstantly(0f);
             DeathLength -= Time.deltaTime * 5.5f;
             if (DeathLength > .5f)
             {

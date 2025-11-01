@@ -150,7 +150,7 @@ public class AITurret : AIUnit
             if (!AITargetShip)
                 AITargetShip = AITarget.GetComponent<ShipSettings>();
             //lead the target 
-            Vector3 aimPoint = PredictV3Pos(transform.position, averageGunSpeed, AITarget.position, AITargetShip.velocity);
+            Vector3 aimPoint = PredictV3Pos(transform.position, averageGunSpeed, AITarget.position, AITargetShip.MeasuredVelocity);
             //Anim at the target's future position
             turret.TryToAimAtTarget(aimPoint);
 

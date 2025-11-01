@@ -237,7 +237,7 @@ public class AIPlayer : AIUnit
         }
         if (avoidBurn == 1 && (avoidTimer > skillSettings.AvoidTime / 3) && (avoidTimer < skillSettings.AvoidTime * .9f))
         {
-            ship.speed = ship.Settings.BurnSpeed;
+            ship.Engines.TargetSpeed = ship.Settings.BurnSpeed;
         }
         if (isAvoiding)
         {
@@ -785,7 +785,7 @@ public class AIPlayer : AIUnit
                         //Get the target's velocity, adding a miss possibility
                         Vector3 shootAt = DoRandomOffset(skillSettings.AimAccuracy, skillSettings.AimUpdate);
                         currentTargetPos = AITarget.position;// + shootAt;
-                        Vector3 targetVelocity = AITargetShip.velocity;
+                        Vector3 targetVelocity = AITargetShip.MeasuredVelocity;
 
                         //Predict where we need to shoot in order to hit our target! 
                         Vector3 aimPoint = PredictV3Pos(ship.transform.position, averageGunSpeed, currentTargetPos, targetVelocity*2f);
