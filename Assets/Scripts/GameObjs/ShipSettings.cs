@@ -137,7 +137,13 @@ public class ShipSettings : Unit, IPowerSource
 
     public float ShieldFrontNormalized => shield.Front / settings.Shield.Front;
     public float ShieldBackNormalized => shield.Back / settings.Shield.Back;
+    /// <summary>
+    /// Our velocity as measured over the last frame.
+    /// </summary>
     public Vector3 MeasuredVelocity => measuredVelocity;
+    /// <summary>
+    /// Our velocity as calculated by multiplying our current speed by our current heading.
+    /// </summary>
     public Vector3 CalculatedVelocity => transform.forward * engines.Speed;
 
     public bool IsDead => isDead;
@@ -383,12 +389,16 @@ public class ShipSettings : Unit, IPowerSource
                     //Find the direction to the collision
                     Vector3 colDir = bounceColliders[ib].transform.position - gameObject.transform.position;
                     //equally bounce each ship, damage is made from the rest of the momentum
-                    BouncePush = (speed + hitShip.speed) / 2f;
-                    var weightDamageThem = ((speed + hitShip.speed) / hitShip.speed) / 4f;
-                    var weightSpin = shipRadius / hitShip.shipRadius; 
-                    var weightDamage = ((speed + hitShip.speed) / speed) / 4f;
-                    DoDamage(bounceColliders[ib].transform.position, (speed + hitShip.speed) * .01f * weightDamage, hitShip.ShipID);
-                    hitShip.DoDamage(transform.position, (speed + hitShip.speed) * .01f * weightDamageThem, ShipID);
+
+                    Vector3 relativeVelocity = MeasuredVelocity - hitShip.MeasuredVelocity;
+                    var relativeSpeed = relativeVelocity.magnitude;
+                    // TODO: consider mass as well
+                    BouncePush = (relativeSpeed) / 2f;
+                    var weightSpin = shipRadius / hitShip.shipRadius;
+                    var weightDamageThem = ((relativeSpeed) / hitShip.engines.Speed) / 4f;
+                    var weightDamage = (relativeSpeed / engines.Speed) / 4f;
+                    DoDamage(bounceColliders[ib].transform.position, (relativeSpeed) * .01f * weightDamage, hitShip.ShipID);
+                    hitShip.DoDamage(transform.position, (relativeSpeed) * .01f * weightDamageThem, ShipID);
                     //print("RAM Detected:" + name +" has rammed " + hitShip.name + " at relative speeds of " + speed +" and " + hitShip.speed+
                     //" and will be damaged " + (speed+hitShip.speed)*.05f*weightDamage + "to " + (speed+hitShip.speed)*.05f*weightDamageThem);
                     InternalDamage(false);
