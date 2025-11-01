@@ -33,6 +33,7 @@ public class TurretSettings : Unit
     [SerializeField] public float Armor;
     [Header("Death Effect")]
     [SerializeField] public GameObject[] DeathVFX;
+    [SerializeField] private bool verboseLogging;
 
     //Hidden Attributes
     [HideInInspector] ShipSettings shipMain;
@@ -167,7 +168,12 @@ public class TurretSettings : Unit
 
     private void InterpolateTurretAim(Vector3 forward)
     {
-        if (forward == Vector3.zero) return; // Prevent log spam about "Look Rotation viewing vector is zero"
+        if (verboseLogging)
+        {
+            OMEPLogger.Log(this, forward);
+        }
+
+        if (forward == Vector3.zero || float.IsNaN(forward.x)) return; // Prevent log spam about "Look Rotation viewing vector is zero"
 
         Quaternion baseRot = Quaternion.LookRotation(forward, shipMain.transform.up);
         //Set initial local rotation
