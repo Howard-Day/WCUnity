@@ -8,6 +8,7 @@ using UnityEngine.Events;
 [System.Serializable] public class ShipEvent : UnityEvent<ShipSettings> { }
 
 // TODO: rename to something like "Ship"
+[SelectionBase]
 public class ShipSettings : Unit, IPowerSource
 {
     #region FIELDS
