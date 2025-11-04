@@ -84,7 +84,7 @@ public class ShipSettings : Unit, IPowerSource, IHaveEngines, IHaveArmor, IHaveS
 
     [HideInInspector] public int numWingmen = 0;
     [HideInInspector] private bool isDead = false;
-    [HideInInspector] public bool isBeingShot = false;
+    [HideInInspector] public bool isBeingShot = false; // TODO: this is sloppy
     [HideInInspector] public bool currentLocked = false; // TODO: what is this for? I don't think it belongs here.
 
     [HideInInspector] public bool hitInternal = false;

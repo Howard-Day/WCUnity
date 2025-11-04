@@ -5,7 +5,7 @@ using UnityEngine.Assertions;
 
 // TODO: rename to AIShip
 [RequireComponent(typeof(ShipSettings))]
-public class AIPlayer : AIUnit
+public partial class AIPlayer : AIUnit
 {
     #region FIELDS
     [Header("Settings")]
@@ -478,53 +478,9 @@ public class AIPlayer : AIUnit
         {
 
             case AIState.PATROL:
-                {
-                    //stop firing, if we are
-                    weaponsSystem.StopFiring();
-                    //Check to see if we've got any patrol points assigned already! 
-                    if (PatrolPoints.Count == 0)
-                    {
-                        // TODO: better logic for patrol points
-                        //Oh no! We need some to patrol, let's generate some, lessay 4
-                        int pp = 0;
-                        int numPoints = 4;
-                        while (pp <= numPoints)
-                        {
-                            PatrolPoints.Add(Random.onUnitSphere * Random.Range(320f, 500f));
-                            pp++;
-                        }
-                    }
-                    float ppDist = Vector3.Distance(transform.position, PatrolPoints[nextPatrolPoint]);
-                    if (ppDist > 10)
-                    {
-                        SteerTo(PatrolPoints[nextPatrolPoint]);
-                        ship.Engines.TargetSpeed = ship.Settings.TopSpeed * .75f; //Cruise speed! No rush, juuust loooking for baddies. 
-                    }
-                    else
-                    {
-                        print(gameObject.name + " Reached patrol point " + nextPatrolPoint + "; going to the next!");
-                        nextPatrolPoint++;
-                    }
-                    if (nextPatrolPoint > PatrolPoints.Count - 1) //Cycle the patrol point list
-                    {
-                        print(gameObject.name + " is Loooping patrol points!");
-                        nextPatrolPoint = 0;
-                    }
-
-                    // Target the last ship that attacked us, if any.
-                    if (AITarget != null && ship.lastHitID != 0)
-                    {
-                        AITarget = FindShipByID(ship.lastHitID, ship.Team);
-                    }
-
-                    // Distance check currently disabled; otherwise, distances are probably too low right now.
-                    if (AITarget != null /*&& DistanceTo(AITarget.gameObject) <= skillSettings.EngageDistance * 1.5f*/)
-                    { // If we're withing the engage envelope, let's go check it out! 
-                        ActiveAIState = AIState.CHASE;
-                    }
-
-                }
+                Patrol();
                 break;
+
             case AIState.BREAK: //Break formation and Attack!
                 {
                     if (ship.Flight != null && ship.Flight.Leader.CurrentTarget != null)
@@ -534,368 +490,25 @@ public class AIPlayer : AIUnit
                     ActiveAIState = AIState.CHASE;
                 }
                 break;
+
             case AIState.WINGMAN:
-                {
-                    if (ship.Flight == null) //Look for a wingleader in this state 
-                    {
-                        TryJoinFlight();
-                    }
-                    if (ship.Flight == null || ship.Flight.Leader == ship) // No wingleaders? Individual patrol mode!
-                    {
-                        ActiveAIState = AIState.PATROL;
-                    }
-                    else // We are a wingman in a formation
-                    {
-                        var leader = ship.Flight.Leader;
-
-                        //See how far away and what direction we need to go
-                        var localFormationPose = ship.Flight.GetSlotPose(ship);
-                        var leadDist = Vector3.Distance(localFormationPose.position, transform.position);
-                        var dirToPos = localFormationPose.position - transform.position;
-
-                        Debug.DrawLine(gameObject.transform.position, localFormationPose.position, Color.green, .10f);
-                        if (verboseLogging)
-                        {
-                            OMEPLogger.Log(this, $"leadDist: {leadDist}, AITarget: {AITarget}, " +
-                                $"Target dist: {Vector3.Distance(AITarget.transform.position, transform.position)}," +
-                                $" Engage dist: {skillSettings.EngageDistance}");
-                        }
-
-                        if (leadDist != 0)
-                        {
-                            if (leadDist > 120)//If we're a ways off, aim right at the formation point and afterburn into position.
-                            {
-                                ship.Engines.TargetSpeed = ship.Settings.BurnSpeed;
-                                SteerTo(localFormationPose.position);
-                            }
-                            if (leadDist <= 120 && leadDist > 20) //If we're a moderate distance away, set speed to the lead ship +25%, aim at the formation position.
-                            {
-                                ship.Engines.TargetSpeed = leader.Engines.Speed + ship.Settings.TopSpeed / 4;
-                                SteerTo(localFormationPose.position);
-                            }
-                            if (leadDist <= 20) //If we're close, Match speed, and aim at a point parallel to the direction of the lead ship
-                            {
-                                ship.Engines.TargetSpeed = leader.Engines.Speed;
-                                SteerTo(localFormationPose.position + leader.transform.forward * ship.Radius * 4f);
-                                //A gentle push, like the avoidance system, to nudge us into place
-                                float formPush = (dirToPos.magnitude / 10) * .5f;
-                                transform.position += dirToPos * formPush * Time.deltaTime;
-                            }
-                            if (leadDist <= 30) // attempt to match roll once we get close-ish
-                            {
-                                // TODO: this is hacky and affected by framerate. use ship controls to rotate instead of lerping.
-                                transform.rotation = Quaternion.Lerp(transform.rotation, localFormationPose.rotation, .005f);
-                                //QuaternionUtil.SmoothDamp(transform.rotation,WingmanTo.transform.rotation, ref refForm, .15f);
-                                ship.roll = leader.roll;
-                            }
-                        }
-
-                        if (AITarget != null) 
-                        {
-                            var distanceToTarget = Vector3.Distance(transform.position, AITarget.transform.position);
-                            // If our target is pretty far away, switch to our leader's target.
-                            if (distanceToTarget > skillSettings.MaxDistanceFromFlightLeader)
-                            {
-                                if (leader.CurrentTarget != null)
-                                {
-                                    AITarget = leader.CurrentTarget;
-                                }
-                            }
-                            else if (distanceToTarget < skillSettings.EngageDistance) // Hold formation until we're very close
-                            {
-                                // If we're not too far from flight leader, engage target if close enough to target.
-                                // Note that we scale down the max distance from flight leader here, so that we don't
-                                // have to turn around and head back towards leader immediately after engaging.
-                                if (leadDist <= skillSettings.MaxDistanceFromFlightLeader * .5f)
-                                {
-                                    ActiveAIState = AIState.REPOSITION;
-                                }
-                            }
-                        }
-                    }
-                }
+                Wingman();
                 break;
 
             case AIState.CHASE: // If we have a target, follow it.
-                {
-                    if (AITarget != null)
-                    {
-                        var distanceFromFlightLeader = ship.DistanceFromFlightLeader;
-                        if (distanceFromFlightLeader.HasValue && distanceFromFlightLeader > skillSettings.MaxDistanceFromFlightLeader)
-                        {
-                            GoToDefaultState();
-                            return;
-                        }
-
-                        float angleToTarget = AngleTo(AITarget.transform.position);
-                        if (randApproach.magnitude == 0)
-                        {
-                            randApproach = Random.onUnitSphere * AITarget.Radius * .5f;
-                        }
-                        
-                        SteerTo(AITarget.transform.position);// + (randApproach * (Vector3.Distance(AITarget.transform.position, transform.position) / engageDist)));
-
-                        ship.Engines.TargetSpeed = ship.Settings.TopSpeed;
-
-                        if (Vector3.Distance(AITarget.transform.position, transform.position) > skillSettings.EngageDistance)
-                        {
-                            ship.Engines.TargetSpeed = ship.Settings.BurnSpeed;
-                        }
-                        if (Vector3.Distance(AITarget.transform.position, transform.position) <= skillSettings.EngageDistance)
-                        {
-                            randApproach = Vector3.zero;
-                            ActiveAIState = AIState.ATTACK;
-                        }
-                        //Does the ship have a cloaking device? If so, engage it!
-                        if (ship.Settings.HasCloak)
-                        {
-                            ship.Cloak = true;
-                        }
-
-                    }
-                    else // No target.
-                    {
-                        GoToDefaultState();
-                    }
-                    //print(gameObject.name + " Is engaging! Throttle set to " + ship.Engines.TargetSpeed);
-                }
+                Chase();
                 break;
 
             case AIState.ATTACK: // If we're close to our target, attack it.
-                {
-                    //Early bail, if no target
-                    if (AITarget == null)
-                    {
-                        GoToDefaultState();
-                    }
-                    else
-                    {
-                        var distanceFromFlightLeader = ship.DistanceFromFlightLeader;
-                        if (distanceFromFlightLeader.HasValue && distanceFromFlightLeader > skillSettings.MaxDistanceFromFlightLeader)
-                        {
-                            GoToDefaultState();
-                            return;
-                        }
-
-                        //Does the ship have a cloaking device? If so, disengage it!
-                        if (ship.Settings.HasCloak)
-                        {
-                            if (ship.IsCloaked)
-                            {
-                                ship.Cloak = false;
-                            }
-                        }
-                        //Track the target according to our ability
-                        randApproach = Vector3.zero;
-
-                        if (randApproach.magnitude == 0)
-                        {
-                            randApproach = Random.onUnitSphere * AITarget.Radius * skillSettings.AimAccuracy;
-                        }
-
-                        float angleToTarget = AngleTo(AITarget.transform.position);
-                        float distToTarget = Vector3.Distance(AITarget.transform.position, transform.position);
-
-                        //Closest Target is infront of us
-                        if (angleToTarget < 140)
-                        {
-                            //If we're too far away to match speed to the target, get closer
-                            if (distToTarget > followDist)
-                            {
-                                ship.Engines.TargetSpeed = ship.Settings.TopSpeed;
-                            }
-                            //match the target's speed
-                            else
-                            {
-                                if (AITarget is IHaveEngines ihe)
-                                {
-                                    ship.Engines.TargetSpeed = Mathf.Max(Mathf.Min(ihe.Engines.TargetSpeed, ship.Settings.TopSpeed), ship.Settings.TopSpeed / 4);
-                                } else
-                                {
-                                    ship.Engines.TargetSpeed = AITarget.Velocity.magnitude;
-                                }
-                            }
-                            //Try and turn toward the target! 
-                            if (distToTarget > skillSettings.EngageDistance)
-                            {
-                                if (angleToTarget < 60)
-                                {
-                                    ship.Engines.TargetSpeed = ship.Settings.BurnSpeed;
-                                }
-                                else
-                                {
-                                    ship.Engines.TargetSpeed = ship.Settings.TopSpeed;
-                                }
-                            }
-                        }
-                        //OH NOES, WE BEIN HUNTED SON
-                        else
-                        {
-                            evadeTimer = 0;
-                            ActiveAIState = AIState.EVADE;
-                        }
-
-                        //Get the target's velocity, adding a miss possibility
-                        Vector3 shootAt = DoRandomOffset(skillSettings.AimAccuracy, skillSettings.AimUpdate);
-                        currentTargetPos = AITarget.transform.position;// + shootAt;
-                        Vector3 targetVelocity = AITarget.Velocity;
-
-                        //Predict where we need to shoot in order to hit our target! 
-                        Vector3 aimPoint = PredictV3Pos(ship.transform.position, averageGunSpeed, currentTargetPos, targetVelocity*2f);
-                        //AITarget.transform.position + Vector3.Lerp(AITargetShip.shipRadius * Vector3.one, shootAt, nearDodgeBlend);
-                        //Debug.DrawLine(transform.position,shootAt+AITarget.transform.position,Color.red,.01f);
-                        //Debug.DrawLine(transform.position,transform.position+transform.forward*25,Color.yellow,.01f);
-
-                        //Steer to the predicted aiming location! (Only if we're not trying to avoid something)
-                        if (!isAvoiding)
-                        {
-                            SteerTo(aimPoint);
-                        }
-                    
-                        
-                        float angleToShoot = AngleTo(aimPoint);
-
-                        var aiTargetShip = AITarget as ShipSettings;
-
-                        //if we're within the aim accuracy angle start firing!
-                        if (angleToShoot < skillSettings.AimAccuracy * 2f )
-                        {
-                            if (verboseLogging) { print("attempting to fire"); }
-                            aiTargetShip.isBeingShot = true;
-                            weaponsSystem.FireGuns();
-                        }
-                        //otherwise, stop firing
-                        else 
-                        {
-                            aiTargetShip.isBeingShot = false;
-                            weaponsSystem.StopFiring();
-
-                            //unless we're *very* close, take the chance!
-                            if (distToTarget < skillSettings.EngageDistance / 8f)
-                            {
-                                if (angleToShoot < skillSettings.AimAccuracy * 4f)
-                                {
-                                    aiTargetShip.isBeingShot = true;
-                                    if (verboseLogging) { print("attempting to fire"); }
-                                    weaponsSystem.FireGuns();
-                                }
-                                //disable firing
-                                else
-                                {
-                                    aiTargetShip.isBeingShot = false;
-                                    weaponsSystem.StopFiring();
-                                }
-                            }
-                            //disable firing
-                            else
-                            {
-                                aiTargetShip.isBeingShot = false;
-                                weaponsSystem.StopFiring();
-                            }
-                        }
-                        //Too far away to shoot, or the angle is too much!
-                        if (distToTarget > skillSettings.EngageDistance * 2 || AngleTo(AITarget.transform.position) > 180)
-                        {
-                            aiTargetShip.isBeingShot = false;
-                            weaponsSystem.StopFiring();
-                        }
-                        //we've gotten too far away, go back into engage mode
-                        if (distToTarget > skillSettings.EngageDistance * 1.5f)
-                        {
-                            ActiveAIState = AIState.CHASE;
-                        }
-                        //Oh no, we've crashed, reposition!
-                        if (ship.recover < 1)
-                        {
-                            ActiveAIState = AIState.REPOSITION;
-                        }
-                    }
-                }
+                Attack();
                 break;
 
             case AIState.EVADE:
-                {
-                    if (evadeTimer == 0) //We're starting to evade
-                    {//Punch it, Chewie! 
-                        weaponsSystem.StopFiring();
-
-                        ship.Engines.TargetSpeed = ship.Settings.BurnSpeed;
-                        if (EvadeSteer == Vector3.zero)// have we chosen where to steer? 
-                        {
-                            EvadeSteer = new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), Random.Range(-1f, 1f));
-                        }
-                        //Does the ship have a cloaking device? If so, engage it!
-                        if (ship.Settings.HasCloak)
-                        {
-                            ship.Cloak = true;
-                        }
-                    }
-                    if (GameObjTracker.Instance.CurrentFrame % Random.Range(60, 120) == 0) // every few second jerk around wildly! 
-                    {
-                        EvadeSteer = new Vector3(Random.Range(-2f, 2f), Random.Range(-2f, 2f), Random.Range(-2f, 2f));
-                    }
-                    ship.pitch = Mathf.Lerp(ship.pitch, EvadeSteer.x * skillSettings.EvadeAmount, .001f);
-                    ship.yaw = Mathf.Lerp(ship.yaw, EvadeSteer.y * skillSettings.EvadeAmount, .001f);
-                    ship.roll = Mathf.Lerp(ship.roll, EvadeSteer.z * skillSettings.EvadeAmount, .001f);
-                    //count down the time to return to normal combat. If we have a cloaking device, increase the wait time to be extra sneaky! 
-                    if (!ship.Settings.HasCloak)
-                    {
-                        evadeTimer += Time.deltaTime;
-                    }
-                    else
-                    {
-                        evadeTimer += Time.deltaTime / 4f;
-                    }
-                    if (evadeTimer >= skillSettings.EvadeLength)
-                    {
-                        EvadeSteer = Vector3.zero;
-                        ActiveAIState = AIState.ATTACK;
-                    }
-                    if (AITarget == null)
-                    {
-                        GoToDefaultState();
-                    }
-                }
+                Evade();
                 break;
 
             case AIState.REPOSITION:
-                {
-                    //Early Bail if no target
-                    if (AITarget == null)
-                    {
-                        GoToDefaultState();
-                    }
-                    //Basic State setup
-                    else
-                    {
-                        float angleToTarget = AngleTo(AITarget.transform.position);
-                        Vector3 dirToTarget = AITarget.transform.position - transform.position;
-                        float distToTarget = Vector3.Distance(AITarget.transform.position, transform.position);
-
-                        //No shootie
-                        weaponsSystem.StopFiring();
-
-                        randPos = Vector3.zero;
-                        if (randPos.magnitude == 0)
-                        {
-                            randPos = transform.position + Random.onUnitSphere * skillSettings.EngageDistance;
-                        }
-                        if (distToTarget < 80f && distToTarget > 40f)
-                        {
-                            ship.Engines.TargetSpeed = ship.Settings.BurnSpeed;
-                        }
-                        else
-                        {
-                            ship.Engines.TargetSpeed = ship.Settings.TopSpeed;
-                        }
-                        SteerTo(randPos);
-                        if (Vector3.Distance(transform.position, randPos) < 20f || distToTarget > 100f)
-                        {
-                            randPos = Vector3.zero;
-                            ActiveAIState = AIState.ATTACK;
-                        }
-                    }
-                }
+                Reposition();
                 break;
 
             case AIState.VICTORY:
