@@ -507,6 +507,7 @@ public class AIPlayer : AIUnit
                     //Check to see if we've got any patrol points assigned already! 
                     if (PatrolPoints.Count == 0)
                     {
+                        // TODO: better logic for patrol points
                         //Oh no! We need some to patrol, let's generate some, lessay 4
                         int pp = 0;
                         int numPoints = 4;
@@ -525,7 +526,7 @@ public class AIPlayer : AIUnit
                     else
                     {
                         patrolPoint = PatrolPoints[nextPatrolPoint];
-                        print(gameObject.name + " Reached patrol point " + nextPatrolPoint + " going to the next!");
+                        print(gameObject.name + " Reached patrol point " + nextPatrolPoint + "; going to the next!");
                         nextPatrolPoint++;
                     }
                     if (nextPatrolPoint > PatrolPoints.Count - 1) //Cycle the patrol point list
@@ -533,25 +534,21 @@ public class AIPlayer : AIUnit
                         print(gameObject.name + " is Loooping patrol points!");
                         nextPatrolPoint = 0;
                     }
-                    //AITarget is already the closest known enemy - let's use that! 
-                    if (AITarget != null && DistanceTo(AITarget.gameObject) <= skillSettings.EngageDistance * 1.5f)
-                    {//If we're withing the engage envelope, let's go check it out! 
-                        ActiveAIState = AIState.CHASE;
-                    }
-                    //It's an Ambush! 
+
+                    // Target the last ship that attacked us, if any.
                     if (AITarget && AITargetShip && ship.lastHitID != 0)
                     {
                         AITargetShip = FindShipByID(ship.lastHitID, ship.Team);
                         if (AITargetShip)
                         {
-                            AITarget = AITargetShip.gameObject.GetComponent<Transform>();
+                            AITarget = AITargetShip.transform;
                         }
                     }
-                    if (AITarget && AITargetShip)
-                    {
+
+                    if (AITarget != null && DistanceTo(AITarget.gameObject) <= skillSettings.EngageDistance * 1.5f)
+                    { // If we're withing the engage envelope, let's go check it out! 
                         ActiveAIState = AIState.CHASE;
                     }
-
 
                 }
                 break;
