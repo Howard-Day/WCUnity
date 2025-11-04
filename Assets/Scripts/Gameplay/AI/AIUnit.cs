@@ -14,7 +14,7 @@ abstract public class AIUnit : MonoBehaviour
     public bool verboseLogging = false;
 
     protected WeaponsSystem weaponsSystem;
-    protected Transform AITarget;
+    protected Unit AITarget;
 
     protected float averageGunSpeed = 0f;
     protected float cooldownWait;

@@ -4,13 +4,16 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Events;
+using UnityEngine.Serialization;
 
 [System.Serializable] public class ShipEvent : UnityEvent<ShipSettings> { }
 
 // TODO: rename to something like "Ship"
 [SelectionBase]
-public class ShipSettings : Unit, IPowerSource
+public class ShipSettings : Unit, IPowerSource, IHaveEngines, IHaveArmor, IHaveShields, IHaveHealth
 {
+    public enum HitLoc { F, R, L, U, D, B, NULL };
+
     #region FIELDS
     [SerializeField] public GameObject DamageTrails;
 
@@ -23,8 +26,8 @@ public class ShipSettings : Unit, IPowerSource
     [SerializeField] public LayerMask CollidesWith;
     [Header("Billboard")]
     [SerializeField] public GameObject Billboard;
-    [Header("VDU Icon!")]
-    [SerializeField] public Sprite VDUImage;
+    [Header("VDU Icon!"), FormerlySerializedAs("VDUImage")]
+    [SerializeField] private Sprite vduImage;
 
     [Header("Movement Settings")]
     [SerializeField] public LayerMask AutoAvoids;
@@ -46,7 +49,7 @@ public class ShipSettings : Unit, IPowerSource
     //Hidden Attributes
     [HideInInspector] public bool isPlayer = false;
     [HideInInspector] public GameObject playerUI;
-    [HideInInspector] public float shipRadius;
+    private float shipRadius;
     private float coreMax;
     [HideInInspector] public bool hitInAss = false; //this is important information, for a lot of reasons.
     Material billboardMat;
@@ -82,9 +85,7 @@ public class ShipSettings : Unit, IPowerSource
     [HideInInspector] public int numWingmen = 0;
     [HideInInspector] private bool isDead = false;
     [HideInInspector] public bool isBeingShot = false;
-    [HideInInspector] public bool isLocked = false;
-    [HideInInspector] public ShipSettings currentTarget;
-    [HideInInspector] public bool currentLocked = false;
+    [HideInInspector] public bool currentLocked = false; // TODO: what is this for? I don't think it belongs here.
 
     [HideInInspector] public bool hitInternal = false;
 
@@ -93,7 +94,6 @@ public class ShipSettings : Unit, IPowerSource
     [HideInInspector] public Vector3 BounceSpin;
     [HideInInspector] public float BouncePush;
 
-    [HideInInspector] public enum HitLoc { F, R, L, U, D, B, NULL };
     [HideInInspector] public HitLoc lastHit;
     [HideInInspector] public int lastHitID;
 
@@ -111,7 +111,7 @@ public class ShipSettings : Unit, IPowerSource
 
     //TODO: what's the difference between Cloak and isCloaked?
     public bool Cloak = false;
-    public bool isCloaked = false;
+    private bool isCloaked = false;
     public bool isCloaking = false;
     public float cloakedAmount = 0f;
 
@@ -122,31 +122,43 @@ public class ShipSettings : Unit, IPowerSource
     private ArmorStatus armor;
     private ShieldStatus shield;
     private Flight flight;
+    private Unit currentTarget;
+
+    private bool isLocked = false; // TODO: what is this for? I don't think it belongs here.
+    public bool IsLocked { get => isLocked; set => isLocked = value; }
     #endregion
 
     #region PROPERTIES
     public ShipSettingsAsset Settings => settings;
+    override public Sprite VDUImage => vduImage;
     public Engines Engines => engines;
     public TargetingSystem TargetingSystem => targetingSystem;
     public Capacitor MainCapacitor => mainCapacitor;
     public Capacitor CloakCapacitor => cloakCapacitor;
 
+    override public float Radius => shipRadius;
+
     override public string DisplayName => settings.DisplayName;
     override public TEAM Team => settings.AITeam;
     public IReadOnlyArmorStatus Armor => armor;
     public IReadOnlyShieldStatus Shield => shield;
+    public Unit CurrentTarget { get => currentTarget; set => currentTarget = value; }
+    public float CurrentHealth => _CoreStrength;
+    public float MaxHealth => coreMax;
+    public float NormalizedHealth => _CoreStrength / coreMax;
 
     public float ShieldFrontNormalized => shield.Front / settings.Shield.Front;
     public float ShieldBackNormalized => shield.Back / settings.Shield.Back;
     /// <summary>
     /// Our velocity as measured over the last frame.
     /// </summary>
-    public Vector3 MeasuredVelocity => measuredVelocity;
+    override public Vector3 Velocity => measuredVelocity;
     /// <summary>
     /// Our velocity as calculated by multiplying our current speed by our current heading.
     /// </summary>
     public Vector3 CalculatedVelocity => transform.forward * engines.Speed;
 
+    override public bool IsCloaked => isCloaked;
     public bool IsDead => isDead;
     public float CoreMax => coreMax;
     public Flight Flight
@@ -282,7 +294,7 @@ public class ShipSettings : Unit, IPowerSource
     {
         if (currentTarget != null)
         {
-            if (currentTarget.isLocked)
+            if (currentTarget is ShipSettings targetShip && targetShip.IsLocked)
             {
                 currentLocked = true;
             }
@@ -402,7 +414,7 @@ public class ShipSettings : Unit, IPowerSource
                     Vector3 colDir = bounceColliders[ib].transform.position - gameObject.transform.position;
                     //equally bounce each ship, damage is made from the rest of the momentum
 
-                    Vector3 relativeVelocity = MeasuredVelocity - hitShip.MeasuredVelocity;
+                    Vector3 relativeVelocity = Velocity - hitShip.Velocity;
                     var relativeSpeed = relativeVelocity.magnitude;
                     // TODO: consider mass as well
                     BouncePush = (relativeSpeed) / 2f;

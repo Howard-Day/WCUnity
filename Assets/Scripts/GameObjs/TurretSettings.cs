@@ -17,7 +17,8 @@ public class TurretSettings : Unit
     [Header("Billboard")]
     [SerializeField] public GameObject Billboard;
     [Header("VDU Icon!")]
-    [SerializeField] public Sprite VDUImage;
+    [FormerlySerializedAs("VDUImage")]
+    [SerializeField] public Sprite vduImage;
     [Header("Movement Settings")]
     [SerializeField] public float turnRate = 50f;
     [SerializeField] public float angleLimit = 60f;
@@ -51,6 +52,11 @@ public class TurretSettings : Unit
     public Capacitor MainCapacitor => mainCapacitor;
     public override string DisplayName => displayName;
     public override TEAM Team => shipMain.Team;
+    public override Sprite VDUImage => vduImage;
+    public override bool IsCloaked => shipMain.IsCloaked;
+    public override float Radius => 3; // TODO
+    public override Vector3 Velocity => shipMain.Velocity;
+
     #endregion
 
     private void Awake()

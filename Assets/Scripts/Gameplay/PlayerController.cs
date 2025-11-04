@@ -155,7 +155,7 @@ public class PlayerController : MonoBehaviour
     {
         if (context.phase == InputActionPhase.Performed)
         {
-            ship.currentTarget = ship.TargetingSystem.FindNearestTarget(ship.Team.GetHostileTeamsMask());
+            ship.CurrentTarget = ship.TargetingSystem.FindNearestTarget(ship.Team.GetHostileTeamsMask());
         }
     }
 
@@ -163,7 +163,7 @@ public class PlayerController : MonoBehaviour
     {
         if (context.phase == InputActionPhase.Performed)
         {
-            ship.currentTarget = ship.TargetingSystem.FindTargetForward();
+            ship.CurrentTarget = ship.TargetingSystem.FindTargetForward();
         }
     }
 

@@ -74,15 +74,15 @@ public class Engines : ShipSystem
         //Collision Detecting, but make sure the full collision is only being used if the ship is afterburning, simple manuvers won't do it as much.
         if (isAfterburning)
         {
-            ship.DoBounce(.5f, ship.shipRadius / 64f);
+            ship.DoBounce(.5f, ship.Radius / 64f);
         }
         else
         {
-            ship.DoBounce(.75f, ship.shipRadius / 64f);
+            ship.DoBounce(.75f, ship.Radius / 64f);
         }
         DoSFX();
 
-        if (ship.isCloaked)
+        if (ship.IsCloaked)
         {
             flareIntensity = (1 - ship.cloakedAmount * 1.1f);
         }
