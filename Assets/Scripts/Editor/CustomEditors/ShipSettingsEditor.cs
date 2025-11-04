@@ -17,6 +17,7 @@ public class ShipSettingsEditor : Editor
             if (instance.Flight != null)
             {
                 FormationEditorGUI.DrawFlightGUI(instance.Flight);
+                EditorGUILayout.LabelField("Distance from leader", instance.DistanceFromFlightLeader.ToString());
             }
         }
     }

@@ -212,7 +212,7 @@ public class AIPlayer : AIUnit
                             tarShipDir = ship.transform.position-tarShip.transform.position;
                             if (!isAvoiding)
                             {
-                                if (logDebug){print(ship.DisplayName + " is avoiding " + tarShip.DisplayName);}
+                                if (verboseLogging){ print(ship.DisplayName + " is avoiding " + tarShip.DisplayName);}
                             }
                             isAvoiding = true;
                             avoidBurn = 0;
@@ -263,7 +263,7 @@ public class AIPlayer : AIUnit
                 if (AngleTo(AITargetShip.transform.position) <= skillSettings.ForceFireAngle)
                 {
                     weaponsSystem.FireGuns();
-                    if (logDebug) { print(ship.DisplayName + " is forcing fire!"); }
+                    if (verboseLogging) { print(ship.DisplayName + " is forcing fire!"); }
                 }
             }
 
@@ -295,7 +295,7 @@ public class AIPlayer : AIUnit
                     if (hitShip && hitShip.Team == ship.Team)
                     {
                         //increment the Reposition Timer
-                        if (logDebug) { print(ship.DisplayName + " is avoiding friendly fire!"); }
+                        if (verboseLogging) { print(ship.DisplayName + " is avoiding friendly fire!"); }
                         friendlyFireTimer += Time.deltaTime;
                         //set the hold fire flag
                         holdFire = true;
@@ -536,7 +536,7 @@ public class AIPlayer : AIUnit
                     //AITarget is already the closest known enemy - let's use that! 
                     if (AITarget != null && DistanceTo(AITarget.gameObject) <= skillSettings.EngageDistance * 1.5f)
                     {//If we're withing the engage envelope, let's go check it out! 
-                        ActiveAIState = AIState.ENGAGE;
+                        ActiveAIState = AIState.CHASE;
                     }
                     //It's an Ambush! 
                     if (AITarget && AITargetShip && ship.lastHitID != 0)
@@ -549,19 +549,19 @@ public class AIPlayer : AIUnit
                     }
                     if (AITarget && AITargetShip)
                     {
-                        ActiveAIState = AIState.ENGAGE;
+                        ActiveAIState = AIState.CHASE;
                     }
 
 
                 }
                 break;
-            case AIState.BREAK: //Break and Attack!
+            case AIState.BREAK: //Break formation and Attack!
                 {
                     if (ship.Flight != null && ship.Flight.Leader.currentTarget != null && AITargetShip)
                     {
                         AITargetShip = ship.Flight.Leader.currentTarget;
                     }
-                    ActiveAIState = AIState.ENGAGE;
+                    ActiveAIState = AIState.CHASE;
                 }
                 break;
             case AIState.WINGMAN:
@@ -584,6 +584,10 @@ public class AIPlayer : AIUnit
                         var dirToPos = localFormationPose.position - transform.position;
 
                         Debug.DrawLine(gameObject.transform.position, localFormationPose.position, Color.green, .10f);
+                        if (verboseLogging)
+                        {
+                            OMEPLogger.Log(this, $"leadDist: {leadDist}, AITarget: {AITarget}, Target dist: {Vector3.Distance(AITarget.position, transform.position)}, Engage dist: {skillSettings.EngageDistance}");
+                        }
 
                         if (leadDist != 0)
                         {
@@ -612,20 +616,45 @@ public class AIPlayer : AIUnit
                                 //QuaternionUtil.SmoothDamp(transform.rotation,WingmanTo.transform.rotation, ref refForm, .15f);
                                 ship.roll = leader.roll;
                             }
-                            //AITarget is already the closest known enemy - let's use that! 
-                            if (AITarget != null && Vector3.Distance(AITarget.position, transform.position) <= skillSettings.EngageDistance * .333f)
-                            {//hold formation until we're very close
-                                ActiveAIState = AIState.REPOSITION;
+                        }
+
+                        if (AITarget != null) 
+                        {
+                            var distanceToTarget = Vector3.Distance(transform.position, AITarget.position);
+                            // If our target is pretty far away, switch to our leader's target.
+                            if (distanceToTarget > skillSettings.MaxDistanceFromFlightLeader)
+                            {
+                                if (leader.currentTarget != null)
+                                {
+                                    AITarget = leader.currentTarget.transform;
+                                }
+                            }
+                            else if (distanceToTarget < skillSettings.EngageDistance) // Hold formation until we're very close
+                            {
+                                // If we're not too far from flight leader, engage target if close enough to target.
+                                // Note that we scale down the max distance from flight leader here, so that we don't
+                                // have to turn around and head back towards leader immediately after engaging.
+                                if (leadDist <= skillSettings.MaxDistanceFromFlightLeader * .5f)
+                                {
+                                    ActiveAIState = AIState.REPOSITION;
+                                }
                             }
                         }
                     }
                 }
                 break;
 
-            case AIState.ENGAGE:
+            case AIState.CHASE: // If we have a target, follow it.
                 {
                     if (AITarget && AITargetShip)
                     {
+                        var distanceFromFlightLeader = ship.DistanceFromFlightLeader;
+                        if (distanceFromFlightLeader.HasValue && distanceFromFlightLeader > skillSettings.MaxDistanceFromFlightLeader)
+                        {
+                            GoToDefaultState();
+                            return;
+                        }
+
                         float angleToTarget = AngleTo(AITarget.position);
                         if (randApproach.magnitude == 0)
                         {
@@ -636,10 +665,6 @@ public class AIPlayer : AIUnit
 
                         ship.Engines.TargetSpeed = ship.Settings.TopSpeed;
 
-                        if (!AITarget)
-                        {
-                            ActiveAIState = AIState.PATROL;
-                        }
                         if (Vector3.Distance(AITarget.position, transform.position) > skillSettings.EngageDistance)
                         {
                             ship.Engines.TargetSpeed = ship.Settings.BurnSpeed;
@@ -647,7 +672,7 @@ public class AIPlayer : AIUnit
                         if (Vector3.Distance(AITarget.position, transform.position) <= skillSettings.EngageDistance)
                         {
                             randApproach = Vector3.zero;
-                            ActiveAIState = AIState.HUNT;
+                            ActiveAIState = AIState.ATTACK;
                         }
                         //Does the ship have a cloaking device? If so, engage it!
                         if (ship.Settings.HasCloak)
@@ -656,24 +681,30 @@ public class AIPlayer : AIUnit
                         }
 
                     }
-                    //Bail if there's no targetable enemies
-                    if (!AITargetShip || !AITarget)
+                    else // No target.
                     {
-                        ActiveAIState = AIState.PATROL;
+                        GoToDefaultState();
                     }
                     //print(gameObject.name + " Is engaging! Throttle set to " + ship.Engines.TargetSpeed);
                 }
                 break;
 
-            case AIState.HUNT:
+            case AIState.ATTACK: // If we're close to our target, attack it.
                 {
-                    //Early bail, if no target                    
+                    //Early bail, if no target
                     if (!AITargetShip || !AITarget)
                     {
-                        ActiveAIState = AIState.PATROL;
+                        GoToDefaultState();
                     }
                     else
                     {
+                        var distanceFromFlightLeader = ship.DistanceFromFlightLeader;
+                        if (distanceFromFlightLeader.HasValue && distanceFromFlightLeader > skillSettings.MaxDistanceFromFlightLeader)
+                        {
+                            GoToDefaultState();
+                            return;
+                        }
+
                         //Does the ship have a cloaking device? If so, disengage it!
                         if (ship.Settings.HasCloak)
                         {
@@ -726,7 +757,6 @@ public class AIPlayer : AIUnit
                             ActiveAIState = AIState.EVADE;
                         }
 
-
                         //Get the target's velocity, adding a miss possibility
                         Vector3 shootAt = DoRandomOffset(skillSettings.AimAccuracy, skillSettings.AimUpdate);
                         currentTargetPos = AITarget.position;// + shootAt;
@@ -750,7 +780,7 @@ public class AIPlayer : AIUnit
                         //if we're within the aim accuracy angle start firing!
                         if (angleToShoot < skillSettings.AimAccuracy * 2f )
                         {
-                            if (logDebug) { print("attempting to fire"); }
+                            if (verboseLogging) { print("attempting to fire"); }
                             AITargetShip.isBeingShot = true;
                             weaponsSystem.FireGuns();
                         }
@@ -766,7 +796,7 @@ public class AIPlayer : AIUnit
                                 if (angleToShoot < skillSettings.AimAccuracy * 4f)
                                 {
                                     AITargetShip.isBeingShot = true;
-                                    if (logDebug) { print("attempting to fire"); }
+                                    if (verboseLogging) { print("attempting to fire"); }
                                     weaponsSystem.FireGuns();
                                 }
                                 //disable firing
@@ -792,7 +822,7 @@ public class AIPlayer : AIUnit
                         //we've gotten too far away, go back into engage mode
                         if (distToTarget > skillSettings.EngageDistance * 1.5f)
                         {
-                            ActiveAIState = AIState.ENGAGE;
+                            ActiveAIState = AIState.CHASE;
                         }
                         //Oh no, we've crashed, reposition!
                         if (ship.recover < 1)
@@ -839,11 +869,11 @@ public class AIPlayer : AIUnit
                     if (evadeTimer >= skillSettings.EvadeLength)
                     {
                         EvadeSteer = Vector3.zero;
-                        ActiveAIState = AIState.HUNT;
+                        ActiveAIState = AIState.ATTACK;
                     }
                     if (!AITargetShip || !AITarget)
                     {
-                        ActiveAIState = AIState.PATROL;
+                        GoToDefaultState();
                     }
                 }
                 break;
@@ -853,7 +883,7 @@ public class AIPlayer : AIUnit
                     //Early Bail if no target
                     if (!AITargetShip || !AITarget)
                     {
-                        ActiveAIState = AIState.PATROL;
+                        GoToDefaultState();
                     }
                     //Basic State setup
                     if (AITarget)
@@ -882,7 +912,7 @@ public class AIPlayer : AIUnit
                         if (Vector3.Distance(transform.position, randPos) < 20f || distToTarget > 100f)
                         {
                             randPos = Vector3.zero;
-                            ActiveAIState = AIState.HUNT;
+                            ActiveAIState = AIState.ATTACK;
                         }
                     }
                 }
@@ -904,6 +934,19 @@ public class AIPlayer : AIUnit
         }
 
     }
+
+    private void GoToDefaultState()
+    {
+        if (ship.Flight == null || ship.Flight.Leader == ship)
+        {
+            ActiveAIState = AIState.PATROL;
+        } 
+        else
+        {
+            ActiveAIState = AIState.WINGMAN;
+        }
+    }
+
     //Dumb as rocks AI
     void ChumpAI()
     {
@@ -930,9 +973,9 @@ public class AIPlayer : AIUnit
 
             if (AITargetShip && Vector3.Distance(AITarget.position, transform.position) <= 100)
             {
-                if (ActiveAIState == AIState.ENGAGE)
+                if (ActiveAIState == AIState.CHASE)
                 {
-                    ActiveAIState = AIState.HUNT;
+                    ActiveAIState = AIState.ATTACK;
                 }
             }
             //TODO: this looks like a mistake:
@@ -978,9 +1021,9 @@ public class AIPlayer : AIUnit
 
             if (AITargetShip && Vector3.Distance(AITarget.position, transform.position) <= 100)
             {
-                if (ActiveAIState == AIState.ENGAGE)
+                if (ActiveAIState == AIState.CHASE)
                 {
-                    ActiveAIState = AIState.HUNT;
+                    ActiveAIState = AIState.ATTACK;
                 }
             }
             //TODO: this looks like a mistake:
@@ -1026,9 +1069,9 @@ public class AIPlayer : AIUnit
 
             if (AITargetShip && Vector3.Distance(AITarget.position, transform.position) <= 100)
             {
-                if (ActiveAIState == AIState.ENGAGE)
+                if (ActiveAIState == AIState.CHASE)
                 {
-                    ActiveAIState = AIState.HUNT;
+                    ActiveAIState = AIState.ATTACK;
                 }
             }
             //TODO: this looks like a mistake:
@@ -1045,7 +1088,7 @@ public class AIPlayer : AIUnit
                     ActiveAIState = AIState.REPOSITION;
                 }
             }
-            if (ActiveAIState == AIState.HUNT || ActiveAIState == AIState.REPOSITION)
+            if (ActiveAIState == AIState.ATTACK || ActiveAIState == AIState.REPOSITION)
             {
                 AITargetShip.isLocked = true;
             }
@@ -1104,6 +1147,15 @@ public class AIPlayer : AIUnit
 
 #if UNITY_EDITOR
     private void OnDrawGizmos()
+    {
+        if (AITarget != null)
+        {
+            Gizmos.color = new Color(1f, 0f, 0f, .5f);
+            Gizmos.DrawLine(transform.position, AITarget.position);
+        }
+    }
+
+    private void OnDrawGizmosSelected()
     {
         if (AITarget != null)
         {

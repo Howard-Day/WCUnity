@@ -158,6 +158,17 @@ public class ShipSettings : Unit, IPowerSource
             this.flight = value;
         }
     }
+    public float? DistanceFromFlightLeader
+    {
+        get
+        {
+            if (Flight == null) return null;
+
+            var leader = Flight.Leader;
+            if (this == leader) return 0;
+            return Vector3.Distance(transform.position, leader.transform.position);
+        }
+    }
     #endregion
 
     private void Awake() {
