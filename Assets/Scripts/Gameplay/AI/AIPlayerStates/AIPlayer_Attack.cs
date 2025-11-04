@@ -42,16 +42,15 @@ public partial class AIPlayer
             float angleToTarget = AngleTo(AITarget.transform.position);
             float distToTarget = Vector3.Distance(AITarget.transform.position, transform.position);
 
-            //Closest Target is infront of us
+            // Closest Target is in front of us
             if (angleToTarget < 140)
             {
-                //If we're too far away to match speed to the target, get closer
+                // If we're too far away to match speed to the target, get closer
                 if (distToTarget > followDist)
                 {
                     ship.Engines.TargetSpeed = ship.Settings.TopSpeed;
                 }
-                //match the target's speed
-                else
+                else // Match the target's speed
                 {
                     if (AITarget is IHaveEngines ihe)
                     {
@@ -62,7 +61,7 @@ public partial class AIPlayer
                         ship.Engines.TargetSpeed = AITarget.Velocity.magnitude;
                     }
                 }
-                //Try and turn toward the target! 
+                // Try and turn toward the target! 
                 if (distToTarget > skillSettings.EngageDistance)
                 {
                     if (angleToTarget < 60)
@@ -75,83 +74,56 @@ public partial class AIPlayer
                     }
                 }
             }
-            //OH NOES, WE BEIN HUNTED SON
+            // OH NOES, WE BEIN HUNTED SON
             else
             {
                 evadeTimer = 0;
                 ActiveAIState = AIState.EVADE;
             }
 
-            //Get the target's velocity, adding a miss possibility
+            // Get the target's velocity, adding a miss possibility
             Vector3 shootAt = DoRandomOffset(skillSettings.AimAccuracy, skillSettings.AimUpdate);
             currentTargetPos = AITarget.transform.position;// + shootAt;
             Vector3 targetVelocity = AITarget.Velocity;
 
-            //Predict where we need to shoot in order to hit our target! 
+            // Predict where we need to shoot in order to hit our target! 
             Vector3 aimPoint = PredictV3Pos(ship.transform.position, averageGunSpeed, currentTargetPos, targetVelocity * 2f);
-            //AITarget.transform.position + Vector3.Lerp(AITargetShip.shipRadius * Vector3.one, shootAt, nearDodgeBlend);
             //Debug.DrawLine(transform.position,shootAt+AITarget.transform.position,Color.red,.01f);
             //Debug.DrawLine(transform.position,transform.position+transform.forward*25,Color.yellow,.01f);
 
-            //Steer to the predicted aiming location! (Only if we're not trying to avoid something)
+            // Steer to the predicted aiming location! (Only if we're not trying to avoid something)
             if (!isAvoiding)
             {
                 SteerTo(aimPoint);
             }
 
-
             float angleToShoot = AngleTo(aimPoint);
 
             var aiTargetShip = AITarget as ShipSettings;
 
-            //if we're within the aim accuracy angle start firing!
-            if (angleToShoot < skillSettings.AimAccuracy * 2f)
+            // If we're within range and aim, start firing
+            bool shouldFire =
+                (angleToShoot < skillSettings.AimAccuracy * 2f && distToTarget <= skillSettings.EngageDistance * 2) ||
+                (angleToShoot < skillSettings.AimAccuracy * 4f && distToTarget < skillSettings.EngageDistance / 8f); // Very close range, less accuracy needed
+
+            if (shouldFire)
             {
                 if (verboseLogging) { print("attempting to fire"); }
                 aiTargetShip.isBeingShot = true;
                 weaponsSystem.FireGuns();
             }
-            //otherwise, stop firing
             else
             {
                 aiTargetShip.isBeingShot = false;
                 weaponsSystem.StopFiring();
+            }
 
-                //unless we're *very* close, take the chance!
-                if (distToTarget < skillSettings.EngageDistance / 8f)
-                {
-                    if (angleToShoot < skillSettings.AimAccuracy * 4f)
-                    {
-                        aiTargetShip.isBeingShot = true;
-                        if (verboseLogging) { print("attempting to fire"); }
-                        weaponsSystem.FireGuns();
-                    }
-                    //disable firing
-                    else
-                    {
-                        aiTargetShip.isBeingShot = false;
-                        weaponsSystem.StopFiring();
-                    }
-                }
-                //disable firing
-                else
-                {
-                    aiTargetShip.isBeingShot = false;
-                    weaponsSystem.StopFiring();
-                }
-            }
-            //Too far away to shoot, or the angle is too much!
-            if (distToTarget > skillSettings.EngageDistance * 2 || AngleTo(AITarget.transform.position) > 180)
-            {
-                aiTargetShip.isBeingShot = false;
-                weaponsSystem.StopFiring();
-            }
-            //we've gotten too far away, go back into engage mode
+            // We've gotten too far away, go back into engage mode
             if (distToTarget > skillSettings.EngageDistance * 1.5f)
             {
                 ActiveAIState = AIState.CHASE;
             }
-            //Oh no, we've crashed, reposition!
+            // Oh no, we've crashed, reposition!
             if (ship.recover < 1)
             {
                 ActiveAIState = AIState.REPOSITION;
