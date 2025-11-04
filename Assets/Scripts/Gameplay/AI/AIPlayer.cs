@@ -52,10 +52,7 @@ public class AIPlayer : AIUnit
     int nextPatrolPoint = 0;
     float evadeTimer = 0f;
 
-    Vector3 patrolPoint = Vector3.zero;
-
     Vector3 randDist = Vector3.zero;
-
     Vector3 currentTargetPos;
     #endregion
 
@@ -85,11 +82,7 @@ public class AIPlayer : AIUnit
 
     //Control where we go
     void SteerTo(Vector3 aimAt)
-    {       //Vector3 rollAdjust = Quaternion.AngleAxis(Time.time * 12f, Vector3.up).eulerAngles;
-        //Quaternion tarQ = Quaternion.LookRotation(targetDir, Vector3.up);
-        //tarQ *= Quaternion.AngleAxis(ship.turnRate * barrelRef, Vector3.forward);
-        //destQ *= Quaternion.AngleAxis(Time.time * ship.turnRate * barrelRef, Vector3.forward );
-
+    { 
         smoothAimAt =  Vector3.Lerp(smoothAimAt, aimAt, .25f);
 
         Vector3 targetDir = smoothAimAt - transform.position;
@@ -97,13 +90,6 @@ public class AIPlayer : AIUnit
         Quaternion tarQ = Quaternion.LookRotation(targetDir);
         tarQ *= Quaternion.AngleAxis(barrelRoll, Vector3.forward);
         Quaternion destQ = Quaternion.Inverse(transform.rotation) * tarQ;
-
-
-        /*
-        Quaternion initQ = Quaternion.Inverse(transform.rotation);
-        Quaternion tarQ = Quaternion.LookRotation(aimAt - transform.position);
-        Quaternion destQ = Quaternion.Slerp(initQ, tarQ,.125f);
-        */
 
         float newPitchDest = (destQ * Vector3.forward).y * 4;
         float newYawDest = (destQ * Vector3.right).z * 4;
@@ -121,13 +107,11 @@ public class AIPlayer : AIUnit
             ship.roll = Mathf.Lerp(ship.roll, newRollDest, skillSettings.TurnSpeed);
         }
 
-
         if (doDebugOrient)
         {
             if (!debugOrient.activeInHierarchy)
             {
                 debugOrient = Instantiate(debugOrient, transform.root);
-
             }
             else
             {
@@ -136,6 +120,7 @@ public class AIPlayer : AIUnit
             }
         }
     }
+
     //Do a Random Barrel Roll for fun!
     void DoABarrelRoll(float direction, float length)
     {
@@ -517,7 +502,6 @@ public class AIPlayer : AIUnit
                     }
                     else
                     {
-                        patrolPoint = PatrolPoints[nextPatrolPoint];
                         print(gameObject.name + " Reached patrol point " + nextPatrolPoint + "; going to the next!");
                         nextPatrolPoint++;
                     }
@@ -964,14 +948,6 @@ public class AIPlayer : AIUnit
         }
         if (AITarget != null)
         {
-            // TODO: this logic should be in the Chase function
-            if (Vector3.Distance(AITarget.transform.position, transform.position) <= 100)
-            {
-                if (ActiveAIState == AIState.CHASE)
-                {
-                    ActiveAIState = AIState.ATTACK;
-                }
-            }
             //TODO: this looks like a mistake:
             if (ship.hitInAss && ship.Shield.Back <= .5f && ship.lastHit == ShipSettings.HitLoc.B) //WE're being hit from behind, shields low, HOLY SHIT, EVADE!
             {
@@ -998,6 +974,7 @@ public class AIPlayer : AIUnit
         ship.CurrentTarget = AITarget;
         DoGunCooldown(1f, .125f);
     }
+
     //Default AI Settings!
     void DefaultAI()
     {
@@ -1011,14 +988,6 @@ public class AIPlayer : AIUnit
         }
         if (AITarget != null)
         {
-            // TODO: this logic should be in the Chase function
-            if (Vector3.Distance(AITarget.transform.position, transform.position) <= 100)
-            {
-                if (ActiveAIState == AIState.CHASE)
-                {
-                    ActiveAIState = AIState.ATTACK;
-                }
-            }
             //TODO: this looks like a mistake:
             if (ship.hitInAss && ship.Shield.Back <= .6f && ship.lastHit == ShipSettings.HitLoc.B) //WE're being hit from behind, shields low, HOLY SHIT, EVADE!
             {
@@ -1057,14 +1026,6 @@ public class AIPlayer : AIUnit
         }
         if (AITarget != null)
         {
-            // TODO: this logic should be in the Chase function
-            if (Vector3.Distance(AITarget.transform.position, transform.position) <= 100)
-            {
-                if (ActiveAIState == AIState.CHASE)
-                {
-                    ActiveAIState = AIState.ATTACK;
-                }
-            }
             //TODO: this looks like a mistake:
             if (ship.hitInAss && ship.Shield.Back <= .9f && ship.lastHit == ShipSettings.HitLoc.B) //WE're being hit from behind, shields low, HOLY SHIT, EVADE!
             {
