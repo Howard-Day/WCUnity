@@ -130,4 +130,20 @@ public class HUDRoot : MonoBehaviour
             RegisterBrackets();
         }
     }
+
+#if UNITY_EDITOR
+    private void OnGUI()
+    {
+        if (shipMain != null)
+        {
+            GUILayout.Label($"Target: {shipMain.currentTarget}");
+            var aiPlayer = shipMain.GetComponent<AIPlayer>();
+            if (aiPlayer != null)
+            {
+                GUILayout.Label($"Skill level: {aiPlayer.SkillSettings.SkillLevel}");
+                GUILayout.Label($"AI State: {aiPlayer.ActiveAIState}");
+            }
+        }
+    }
+#endif
 }
