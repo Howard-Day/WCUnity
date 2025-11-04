@@ -545,7 +545,8 @@ public class AIPlayer : AIUnit
                         }
                     }
 
-                    if (AITarget != null && DistanceTo(AITarget.gameObject) <= skillSettings.EngageDistance * 1.5f)
+                    // Distance check currently disabled; otherwise, distances are probably too low right now.
+                    if (AITarget != null /*&& DistanceTo(AITarget.gameObject) <= skillSettings.EngageDistance * 1.5f*/)
                     { // If we're withing the engage envelope, let's go check it out! 
                         ActiveAIState = AIState.CHASE;
                     }
