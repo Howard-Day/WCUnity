@@ -46,7 +46,20 @@ public partial class AIPlayer
             if (angleToTarget < 140)
             {
                 // If we're too far away to match speed to the target, get closer
-                if (distToTarget > followDist)
+
+                // Try and turn toward the target! 
+                if (distToTarget > skillSettings.EngageDistance)
+                {
+                    if (angleToTarget < 60)
+                    {
+                        ship.Engines.TargetSpeed = ship.Settings.BurnSpeed;
+                    }
+                    else
+                    {
+                        ship.Engines.TargetSpeed = ship.Settings.TopSpeed;
+                    }
+                } 
+                else if (distToTarget > followDist)
                 {
                     ship.Engines.TargetSpeed = ship.Settings.TopSpeed;
                 }
@@ -59,18 +72,6 @@ public partial class AIPlayer
                     else
                     {
                         ship.Engines.TargetSpeed = AITarget.Velocity.magnitude;
-                    }
-                }
-                // Try and turn toward the target! 
-                if (distToTarget > skillSettings.EngageDistance)
-                {
-                    if (angleToTarget < 60)
-                    {
-                        ship.Engines.TargetSpeed = ship.Settings.BurnSpeed;
-                    }
-                    else
-                    {
-                        ship.Engines.TargetSpeed = ship.Settings.TopSpeed;
                     }
                 }
             }
