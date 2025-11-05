@@ -14,11 +14,12 @@ public partial class AIPlayer : AIUnit
     public AIState ActiveAIState = AIState.PATROL;
 
     [Header("Patrol Pattern")]
-    public List<Vector3> PatrolPoints;
+    [SerializeField] private List<Vector3> PatrolPoints;
 
     [Header("Debug Options")]
-    public bool doDebugOrient = false;
-    public GameObject debugOrient;
+    [SerializeField] private bool doDebugOrient = false;
+    [SerializeField] private GameObject debugOrient;
+    [SerializeField] private Transform DEBUG_destination;
 
     [HideInInspector] public GameObjTracker Tracker;
     [HideInInspector] float barrelRoll;
@@ -54,6 +55,8 @@ public partial class AIPlayer : AIUnit
 
     Vector3 randDist = Vector3.zero;
     Vector3 currentTargetPos;
+
+    bool willOvershootDestination = false;
     #endregion
 
     #region PROPERTIES
@@ -64,6 +67,13 @@ public partial class AIPlayer : AIUnit
     } 
 
     protected override Capacitor MainCapacitor => ship.MainCapacitor;
+
+    /// <summary>
+    /// <c>true</c> if our destination is within our turning radius but
+    /// not in front of us; in other words, we'd end up circling around 
+    /// it.
+    /// </summary>
+    public bool WillOvershootDestination => willOvershootDestination;
     #endregion
 
     //Initial Conditions
@@ -80,10 +90,34 @@ public partial class AIPlayer : AIUnit
         gameObject.transform.SetParent(GameObject.FindWithTag("GamePlayObjs").transform);
     }
 
+    bool CheckWillOvershootDestination(Vector3 destination)
+    {
+        float speed = ship.Velocity.magnitude;
+        if (speed == 0) return false;
+
+        Vector3 direction = destination - transform.position;
+        float distance = direction.magnitude;
+        if (distance < .1)
+            return false; // Already at target
+
+        var maxTurnRate = ship.Settings.TurnRate;
+        Vector3 dirVel = ship.Velocity.normalized;
+        float omega = maxTurnRate * Mathf.Deg2Rad;
+        float turnRadius = speed / omega;
+
+        float theta = Mathf.Acos(Mathf.Clamp(Vector3.Dot(dirVel, direction.normalized), -1f, 1f));
+        bool willOvershoot = (distance < 2f * turnRadius * Mathf.Sin(theta * 0.5f)) && (theta > 0f);
+
+        if (willOvershoot) Debug.DrawLine(transform.position, destination, new Color(.3f, 0f, 0f, 1f));
+
+        return willOvershoot;
+    }
+
     //Control where we go
     void SteerTo(Vector3 aimAt)
     { 
         smoothAimAt =  Vector3.Lerp(smoothAimAt, aimAt, .25f);
+        willOvershootDestination = CheckWillOvershootDestination(smoothAimAt);
 
         Vector3 targetDir = smoothAimAt - transform.position;
 
@@ -591,6 +625,13 @@ public partial class AIPlayer : AIUnit
     //Default AI Settings!
     void DefaultAI()
     {
+        if (DEBUG_destination != null)
+        {
+            ship.Engines.TargetSpeed = ship.Settings.TopSpeed;
+            SteerTo(DEBUG_destination.position);
+            return;
+        }
+
         if (followDist == 0)
         {
             followDist = Random.Range(65f, 100f);
@@ -751,8 +792,18 @@ public partial class AIPlayer : AIUnit
                     string name = (instance.AITarget == null) ? "None" : instance.AITarget.name;
                     if (GUILayout.Button(name))
                     {
-                        UnityEditor.Selection.activeObject = (instance.AITarget as Component);
+                        UnityEditor.Selection.activeObject = (instance.AITarget);
                     }
+                }
+
+                if (GUILayout.Button("Create debug destination"))
+                {
+                    var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    go.name = "DESTINATION";
+                    go.transform.localScale = Vector3.one * 5f;
+                    var distance = 50f;
+                    go.transform.position = instance.transform.TransformPoint(new Vector3(distance, distance, distance));
+                    instance.DEBUG_destination = go.transform;
                 }
             }
         }

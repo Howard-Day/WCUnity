@@ -142,6 +142,7 @@ public class HUDRoot : MonoBehaviour
             {
                 GUILayout.Label($"Skill level: {aiPlayer.SkillSettings.SkillLevel}");
                 GUILayout.Label($"AI State: {aiPlayer.ActiveAIState}");
+                GUILayout.Label($"Will overshoot destination: {aiPlayer.WillOvershootDestination}");
             }
         }
     }
