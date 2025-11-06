@@ -180,7 +180,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 3072
   Billboard: {fileID: 4136052188531549729}
-  VDUImage: {fileID: -1922495045691203107, guid: bae67950433dbf946ac049c7736e3de7,
+  vduImage: {fileID: -1922495045691203107, guid: bae67950433dbf946ac049c7736e3de7,
     type: 3}
   AutoAvoids:
     serializedVersion: 2
@@ -199,7 +199,6 @@ MonoBehaviour:
   CloakOffSound: {fileID: 0}
   isPlayer: 0
   playerUI: {fileID: 0}
-  shipRadius: 11
   hitInAss: 0
   CloakSFX: {fileID: 0}
   _CoreStrength: 7.6666665
@@ -210,8 +209,6 @@ MonoBehaviour:
   isFiring: 0
   numWingmen: 0
   isBeingShot: 0
-  isLocked: 0
-  currentTarget: {fileID: 0}
   currentLocked: 1
   hitInternal: 0
   recover: 1
@@ -225,7 +222,6 @@ MonoBehaviour:
   oldRot: {x: 0, y: 0, z: 0, w: 0}
   rotDelta: {x: 0.88069504, y: 0.51214796, z: 0.24729522}
   Cloak: 0
-  isCloaked: 0
   isCloaking: 0
   cloakedAmount: 0
   lastPos: {x: 0, y: 0, z: 0}
@@ -289,9 +285,11 @@ MonoBehaviour:
   PatrolPoints: []
   doDebugOrient: 0
   debugOrient: {fileID: 0}
+  DEBUG_destination: {fileID: 0}
   Tracker: {fileID: 0}
   impatience: 0
   angleToTarget: 20.263432
+  preventCircling: 1
 --- !u!114 &4136052188945113504
 MonoBehaviour:
   m_ObjectHideFlags: 0
