@@ -80,7 +80,7 @@ public class SystemsDisplay : MonoBehaviour
         gunIcons = new List<GameObject>();
         foreach (ProjectileWeapon gun in guns)
         {
-            Vector3 localPos = gun.gameObject.transform.localPosition / shipMain.shipRadius * 1.5f;
+            Vector3 localPos = gun.gameObject.transform.localPosition / shipMain.Radius * 1.5f;
             if (localPos.magnitude >= Mathf.Infinity)
             {
                 wRegSuccess = false;

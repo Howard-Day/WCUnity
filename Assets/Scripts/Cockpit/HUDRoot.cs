@@ -113,7 +113,7 @@ public class HUDRoot : MonoBehaviour
         {
             foreach (ShipSettings ship in Ships) //Go through a list of ships, add them 
             {
-                if (ship != shipMain && !ship.IsDead && !ship.isCloaked ) //But only if we're not looking at ourselves! Or they're not dead or cloaked. :P
+                if (ship != shipMain && !ship.IsDead && !ship.IsCloaked ) //But only if we're not looking at ourselves! Or they're not dead or cloaked. :P
                 {
                     BracketController bracket = bracketsPool.Get();
                     bracket.ship = ship;
@@ -133,4 +133,21 @@ public class HUDRoot : MonoBehaviour
             RegisterBrackets();
         }
     }
+
+#if UNITY_EDITOR
+    private void OnGUI()
+    {
+        if (shipMain != null)
+        {
+            GUILayout.Label($"Target: {shipMain.CurrentTarget}");
+            var aiPlayer = shipMain.GetComponent<AIPlayer>();
+            if (aiPlayer != null)
+            {
+                GUILayout.Label($"Skill level: {aiPlayer.SkillSettings.SkillLevel}");
+                GUILayout.Label($"AI State: {aiPlayer.ActiveAIState}");
+                GUILayout.Label($"Will overshoot destination: {aiPlayer.WillOvershootDestination}");
+            }
+        }
+    }
+#endif
 }

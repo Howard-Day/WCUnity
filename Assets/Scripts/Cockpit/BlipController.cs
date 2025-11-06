@@ -45,7 +45,7 @@ public class BlipController : MonoBehaviour
             float normalizedDist = Mathf.Clamp01((clipDist.x + blipDist) / clipDist.y);
             blipSprite.color = Color.Lerp(Near, Far, normalizedDist);
             //blipSprite.sprite = radarRoot.fighterBlips[0];
-            if (ship.shipRadius >= 40)//Big contact! 
+            if (ship.Radius >= 40)//Big contact! 
             { //use the last 3 sprites as normalized distance falloffs
                 blipSprite.sprite = radarRoot.capitalBlips[Mathf.CeilToInt(normalizedDist * 3)];
             }
@@ -53,7 +53,7 @@ public class BlipController : MonoBehaviour
             { //use the last 3 sprites as normalized distance falloffs
                 blipSprite.sprite = radarRoot.fighterBlips[Mathf.CeilToInt(normalizedDist * 3)];
                 //unless the target is the current target!
-                if (ship == shipMain.currentTarget)
+                if (ship == shipMain.CurrentTarget)
                 {
                     if (GameObjTracker.Instance.CurrentFrame % 10 == 0)
                     {
@@ -105,7 +105,7 @@ public class BlipController : MonoBehaviour
                     }
                 }
             }
-            if (ship.isCloaked && !ship.isCloaking)
+            if (ship.IsCloaked && !ship.isCloaking)
             {
                 blipSprite.color = Near;
                 blipSprite.enabled = false;

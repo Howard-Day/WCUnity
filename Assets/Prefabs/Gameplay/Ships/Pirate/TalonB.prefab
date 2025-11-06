@@ -89,7 +89,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 3072
   Billboard: {fileID: 5695718656521392418}
-  VDUImage: {fileID: 1721689566, guid: bae67950433dbf946ac049c7736e3de7, type: 3}
+  vduImage: {fileID: 1721689566, guid: bae67950433dbf946ac049c7736e3de7, type: 3}
   AutoAvoids:
     serializedVersion: 2
     m_Bits: 3072
@@ -107,7 +107,6 @@ MonoBehaviour:
   CloakOffSound: {fileID: 0}
   isPlayer: 0
   playerUI: {fileID: 0}
-  shipRadius: 0
   hitInAss: 0
   CloakSFX: {fileID: 0}
   _CoreStrength: 0
@@ -116,11 +115,8 @@ MonoBehaviour:
   pitch: 0
   roll: 0
   isFiring: 0
-  speed: 0
   numWingmen: 0
   isBeingShot: 0
-  isLocked: 0
-  currentTarget: {fileID: 0}
   currentLocked: 0
   hitInternal: 0
   recover: 1
@@ -134,12 +130,10 @@ MonoBehaviour:
   oldRot: {x: 0, y: 0, z: 0, w: 0}
   rotDelta: {x: 0, y: 0, z: 0}
   Cloak: 0
-  isCloaked: 0
   isCloaking: 0
   cloakedAmount: 0
   lastPos: {x: 0, y: 0, z: 0}
   currentPos: {x: 0, y: 0, z: 0}
-  velocity: {x: 0, y: 0, z: 0}
 --- !u!114 &3337569064546673635
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -190,7 +184,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9a786fafaafa36f45a2047a82a97b822, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  logDebug: 0
+  verboseLogging: 0
   skillSettings: {fileID: 11400000, guid: b0f3f07fb9149bf49bcea551643104fd, type: 2}
   messageHandler: {fileID: 11400000, guid: 577166ff29f07ec4b99e06bc300282b0, type: 2}
   ActiveAIState: 5
@@ -198,10 +192,11 @@ MonoBehaviour:
   doDebugOrient: 0
   debugOrient: {fileID: 9145174605550071843, guid: ec3b7bfd95c432e4c98efb5379ee983e,
     type: 3}
+  DEBUG_destination: {fileID: 0}
   Tracker: {fileID: 0}
-  WingmanTo: {fileID: 0}
   impatience: 0
   angleToTarget: 0
+  preventCircling: 1
 --- !u!114 &5695718655840442019
 MonoBehaviour:
   m_ObjectHideFlags: 0

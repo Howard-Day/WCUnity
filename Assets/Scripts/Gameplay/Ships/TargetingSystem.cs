@@ -1,6 +1,6 @@
-using NUnit.Framework;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.Events;
 
 // Note: currently used by players but not by AI
@@ -77,7 +77,7 @@ public class TargetingSystem : ShipSystem
     {
         foreach (ShipSettings otherShip in ships)
         {
-            if (otherShip != null && !otherShip.isCloaked && otherShip != this.ship) {
+            if (otherShip != null && !otherShip.IsCloaked && otherShip != this.ship) {
                 float shipDist = Vector3.Distance(this.ship.transform.position, otherShip.transform.position);
                 if (shipDist < results.bestThreshold)
                 {
@@ -92,7 +92,7 @@ public class TargetingSystem : ShipSystem
     {
         foreach (ShipSettings otherShip in ships)
         {
-            if (otherShip != null && !otherShip.isCloaked && otherShip != this.ship)
+            if (otherShip != null && !otherShip.IsCloaked && otherShip != this.ship)
             {
                 float shipDist = Vector3.Distance(this.ship.transform.position, otherShip.transform.position);
                 if (shipDist < this.ship.Settings.RadarRange)

@@ -542,6 +542,14 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 1311964096}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: a4640cefed0981d43a4295490adc099f,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1311964100}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: a4640cefed0981d43a4295490adc099f,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1311964099}
   m_SourcePrefab: {fileID: 100100000, guid: a4640cefed0981d43a4295490adc099f, type: 3}
 --- !u!43 &61474659
 Mesh:
@@ -11163,6 +11171,14 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 1038971595}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: a4640cefed0981d43a4295490adc099f,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1038971598}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: a4640cefed0981d43a4295490adc099f,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1038971597}
   m_SourcePrefab: {fileID: 100100000, guid: a4640cefed0981d43a4295490adc099f, type: 3}
 --- !u!21 &404188460
 Material:
@@ -11595,7 +11611,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   weaponsSystem: {fileID: 0}
-  AITeam: 0
   displayName: 
   Billboard: {fileID: 2029234943}
   VDUImage: {fileID: 0}
@@ -16810,6 +16825,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &731579513 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7323633370213487620, guid: 056477233fab88b4fb207a13c830ac04,
+    type: 3}
+  m_PrefabInstance: {fileID: 3016229494751729897}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab731c29705c3e6418fa14c003762e33, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FormationManager
 --- !u!1 &743544715
 GameObject:
   m_ObjectHideFlags: 0
@@ -16854,13 +16881,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 047809ebc7f4ad544908dec086275ab7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speedMultiplier: 1
-  avoidMultiplier: 1
-  damageMultiplier: 1
-  armorMultiplier: 1
-  shieldMultiplier: 1
-  coreMultiplier: 1
-  MaxShipsPerSideToSpawn: 3
+  maxShipsPerSideToSpawn: 3
+  spawnInterval: 4
+  maxTeamSpawnsPerInterval: 1
   KilrathiSpawn:
   - {fileID: 2289861991765167612, guid: 4cb3a1366b7e311418b2f13dcbd2c1f1, type: 3}
   - {fileID: 6319509492990868623, guid: 0592aed47460dc64a84933d321b5c7d1, type: 3}
@@ -16883,8 +16906,6 @@ MonoBehaviour:
   - {fileID: 5695718655840442017, guid: 50cad5a492c0e8244ad10087087292c2, type: 3}
   - {fileID: 5695718655840442017, guid: 5aa001eec0e9cb84c9e0305bfd3fea3e, type: 3}
   - {fileID: 5695718655840442017, guid: a27fbf822fd4d9e4a91f5ac1af3af07c, type: 3}
-  randomPlayerSpawn: 1
-  playerSpawnIndex: 0
   PlayerSpawn:
   - {fileID: 5517306084593632097, guid: ae2c12908f39a3b448230834e24eaadb, type: 3}
   - {fileID: 5517306084593632097, guid: fff3f443289924940a86f890eeea892c, type: 3}
@@ -16892,6 +16913,25 @@ MonoBehaviour:
   - {fileID: 5517306084593632097, guid: ab212981a8655a24389a00ff4bbe01bd, type: 3}
   - {fileID: 3624570360706809150, guid: 990e71b9e0673344488b3e6c11f06639, type: 3}
   - {fileID: 5517306084593632097, guid: b4a9af15301c0414d8c16ecf6337a784, type: 3}
+  randomPlayerSpawn: 1
+  shipAddedEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 731579513}
+        m_TargetAssemblyTypeName: FormationManager, Assembly-CSharp
+        m_MethodName: OnShipAdded
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  shipRemovedEvent:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!21 &754540478
 Material:
   serializedVersion: 8
@@ -17296,7 +17336,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   weaponsSystem: {fileID: 0}
-  AITeam: 0
   displayName: 
   Billboard: {fileID: 1004857253}
   VDUImage: {fileID: 0}
@@ -17474,7 +17513,9 @@ MonoBehaviour:
   DamageTrails: {fileID: 1507481365441476783, guid: edceb4824a5b55a43a13f2d0bd9a92b9,
     type: 3}
   settings: {fileID: 0}
-  engines: {fileID: 0}
+  engines: {fileID: 1038971598}
+  weaponsSystem: {fileID: 0}
+  targetingSystem: {fileID: 1038971597}
   weaponsSystem: {fileID: 0}
   isWingLead: 0
   CollidesWith:
@@ -17508,7 +17549,6 @@ MonoBehaviour:
   pitch: 0
   roll: 0
   isFiring: 0
-  speed: 0
   numWingmen: 0
   isBeingShot: 0
   isLocked: 0
@@ -17531,7 +17571,6 @@ MonoBehaviour:
   cloakedAmount: 0
   lastPos: {x: 0, y: 0, z: 0}
   currentPos: {x: 0, y: 0, z: 0}
-  velocity: {x: 0, y: 0, z: 0}
 --- !u!64 &1038971596
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -17554,6 +17593,40 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -7461810274146446580, guid: 9aae54f0f4ab28a4586fea4c367c2645, type: 3}
+--- !u!114 &1038971597
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1038971593}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8d5623e5f37a208449822e3069bfe03d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TargetingSystem
+  ship: {fileID: 1038971595}
+--- !u!114 &1038971598
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1038971593}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e677dc164b747249a2c36130f0864d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Engines
+  ship: {fileID: 1038971595}
+  damageTrails: {fileID: 0}
+  engineSFX: {fileID: 0}
+  afterburnSFX: {fileID: 0}
+  minMaxThrottleVolume: {x: 1, y: 1}
+  minMaxThrottlePitch: {x: 1, y: 1}
+  afterburnPitch: 1
+  afterburnVolume: 0.25
+  afterburnSmoothness: 0.25
 --- !u!1 &1116571958
 GameObject:
   m_ObjectHideFlags: 0
@@ -18587,7 +18660,9 @@ MonoBehaviour:
   DamageTrails: {fileID: 1507481365441476783, guid: edceb4824a5b55a43a13f2d0bd9a92b9,
     type: 3}
   settings: {fileID: 0}
-  engines: {fileID: 0}
+  engines: {fileID: 1311964100}
+  weaponsSystem: {fileID: 0}
+  targetingSystem: {fileID: 1311964099}
   weaponsSystem: {fileID: 0}
   isWingLead: 0
   CollidesWith:
@@ -18621,7 +18696,6 @@ MonoBehaviour:
   pitch: 0
   roll: 0
   isFiring: 0
-  speed: 0
   numWingmen: 0
   isBeingShot: 0
   isLocked: 0
@@ -18644,7 +18718,6 @@ MonoBehaviour:
   cloakedAmount: 0
   lastPos: {x: 0, y: 0, z: 0}
   currentPos: {x: 0, y: 0, z: 0}
-  velocity: {x: 0, y: 0, z: 0}
 --- !u!114 &1311964096
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18685,6 +18758,40 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -7461810274146446580, guid: 9aae54f0f4ab28a4586fea4c367c2645, type: 3}
+--- !u!114 &1311964099
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1311964092}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8d5623e5f37a208449822e3069bfe03d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TargetingSystem
+  ship: {fileID: 1311964094}
+--- !u!114 &1311964100
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1311964092}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e677dc164b747249a2c36130f0864d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Engines
+  ship: {fileID: 1311964094}
+  damageTrails: {fileID: 0}
+  engineSFX: {fileID: 0}
+  afterburnSFX: {fileID: 0}
+  minMaxThrottleVolume: {x: 1, y: 1}
+  minMaxThrottlePitch: {x: 1, y: 1}
+  afterburnPitch: 1
+  afterburnVolume: 0.25
+  afterburnSmoothness: 0.25
 --- !u!1 &1533115164
 GameObject:
   m_ObjectHideFlags: 0
@@ -26452,6 +26559,74 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b4a9af15301c0414d8c16ecf6337a784, type: 3}
+--- !u!1001 &3016229494751729897
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 6095334878403061544, guid: 056477233fab88b4fb207a13c830ac04,
+        type: 3}
+      propertyPath: m_Name
+      value: FlightManager
+      objectReference: {fileID: 0}
+    - target: {fileID: 8145575087370753914, guid: 056477233fab88b4fb207a13c830ac04,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8145575087370753914, guid: 056477233fab88b4fb207a13c830ac04,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8145575087370753914, guid: 056477233fab88b4fb207a13c830ac04,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8145575087370753914, guid: 056477233fab88b4fb207a13c830ac04,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8145575087370753914, guid: 056477233fab88b4fb207a13c830ac04,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8145575087370753914, guid: 056477233fab88b4fb207a13c830ac04,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8145575087370753914, guid: 056477233fab88b4fb207a13c830ac04,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8145575087370753914, guid: 056477233fab88b4fb207a13c830ac04,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8145575087370753914, guid: 056477233fab88b4fb207a13c830ac04,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8145575087370753914, guid: 056477233fab88b4fb207a13c830ac04,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 056477233fab88b4fb207a13c830ac04, type: 3}
 --- !u!1001 &3624570361237999115
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -27066,6 +27241,7 @@ SceneRoots:
   - {fileID: 1802827650}
   - {fileID: 1883008860}
   - {fileID: 743544716}
+  - {fileID: 3016229494751729897}
   - {fileID: 1135689114}
   - {fileID: 896685209}
   - {fileID: 7551869093914986301}

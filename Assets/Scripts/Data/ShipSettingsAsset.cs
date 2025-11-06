@@ -65,6 +65,7 @@ public class ShipSettingsAsset : ScriptableObject
     [Header("Other settings")]
     [Min(0)]
     [SerializeField] private float radarRange = 9999;
+    [SerializeField] private bool canJoinFormations = true;
 
     public TEAM AITeam => aiTeam;
     public CLASS Class => @class;
@@ -89,6 +90,7 @@ public class ShipSettingsAsset : ScriptableObject
     public float CloakPower => cloakPower;
     public float CloakDrain => cloakDrain;
     public float RadarRange => radarRange;
+    public bool CanJoinFormations => canJoinFormations;
 }
 
 public static class TEAMExtensionMethods

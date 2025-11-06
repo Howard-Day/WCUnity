@@ -22,6 +22,8 @@ public class AIShipSkillSettings : AISkillSettings
     [SerializeField, Min(0)] protected float evadeAmount = 1.5f;
     [SerializeField, Min(0)] protected float forceFireAngle = 17.5f;
     [SerializeField, Min(0)] protected float forceFireDistanceDivisor = 4.5f;
+    [Tooltip("In meters. If we're further than this distance, we'll disengage combat and return to formation.")]
+    [SerializeField, Min(0)] protected float maxDistanceFromFlightLeader = 1000f;
     [SerializeField, NonNull] protected AITurretSkillSettings turretSkillSettings;
 
     public float AvoidAngle => avoidAngle;
@@ -37,5 +39,6 @@ public class AIShipSkillSettings : AISkillSettings
     public float EvadeAmount => evadeAmount;
     public float ForceFireAngle => forceFireAngle;
     public float ForceFireDistance => engageDistance / forceFireDistanceDivisor;
+    public float MaxDistanceFromFlightLeader => maxDistanceFromFlightLeader;
     public AITurretSkillSettings TurretSkillSettings => turretSkillSettings;
 }

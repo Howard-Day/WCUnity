@@ -17,7 +17,6 @@ public class AITurret : AIUnit
     PlayerController pilot;
     TurretSettings turret;
     Transform elevation;
-    ShipSettings AITargetShip;
 
     Vector3 currentTargetPos;
 
@@ -71,7 +70,7 @@ public class AITurret : AIUnit
         ShipSettings nearestShip = null;
         foreach (ShipSettings ship in GameObjTracker.Instance.AllShips)
         {
-            if (ship != null && !ship.isCloaked)
+            if (ship != null && !ship.IsCloaked)
             {
                 Vector3 shipVec = Vector3.Normalize(ship.transform.position - toObj.position);
                 float shipAngle = Vector3.Angle(shipVec, transform.forward);
@@ -96,7 +95,7 @@ public class AITurret : AIUnit
     //Handle angle to Aim at
     public Vector3 DoAim(float aimRand)
     {
-        return AITarget.position + (Random.onUnitSphere * aimRand);
+        return AITarget.transform.position + (Random.onUnitSphere * aimRand);
     }
     // Handy tool to predict where we need to Aim at our target! 
     public Vector3 PredictV3Pos(Vector3 muzzlePos, float bulletVelocity, Vector3 targetPos, Vector3 targetVelocity)
@@ -110,47 +109,32 @@ public class AITurret : AIUnit
     //Handle no targets
     void DoNoTargets()
     {
-        //release our target
         if (AITarget == null)
         {
-            AITargetShip = null;
-        }
-        //reset aiming, to the rear if it's a center turret, and to either side if it's not!
-        if (transform.localPosition.x == 0)
-        {
-            turret.TryToAimAtTarget(shipMain.transform.position - shipMain.transform.forward * 20f);
-        }
-        if (transform.localPosition.x < 0)
-        {
-            turret.TryToAimAtTarget(shipMain.transform.position - shipMain.transform.right * 20f);
-        }
-        if (transform.localPosition.x > 0)
-        {
-            turret.TryToAimAtTarget(shipMain.transform.position + shipMain.transform.right * 20f);
-        }
-        //check if our current target is out of our firing angle, if so, release it and look for others
-        if (AITarget)
-        {
-            Vector3 shipVec = Vector3.Normalize(AITarget.position - transform.position);
-            float shipAngle = Vector3.Angle(shipVec, transform.forward);
-            if (shipAngle >= turret.angleLimit)
+            //reset aiming, to the rear if it's a center turret, and to either side if it's not!
+            if (transform.localPosition.x == 0)
             {
-                AITarget = null;
-                AITargetShip = null;
+                turret.TryToAimAtTarget(shipMain.transform.position - shipMain.transform.forward * 20f);
+            }
+            if (transform.localPosition.x < 0)
+            {
+                turret.TryToAimAtTarget(shipMain.transform.position - shipMain.transform.right * 20f);
+            }
+            if (transform.localPosition.x > 0)
+            {
+                turret.TryToAimAtTarget(shipMain.transform.position + shipMain.transform.right * 20f);
             }
         }
     }
+
     //Handle attacking
     void DoAttack() 
     { 
         //check that we have a target
-        if(AITarget)
+        if (AITarget != null)
         {
-            //get the target's stats
-            if (!AITargetShip)
-                AITargetShip = AITarget.GetComponent<ShipSettings>();
             //lead the target 
-            Vector3 aimPoint = PredictV3Pos(transform.position, averageGunSpeed, AITarget.position, AITargetShip.velocity);
+            Vector3 aimPoint = PredictV3Pos(transform.position, averageGunSpeed, AITarget.transform.position, AITarget.Velocity);
             //Anim at the target's future position
             turret.TryToAimAtTarget(aimPoint);
 
@@ -172,23 +156,27 @@ public class AITurret : AIUnit
 
     void DoTargets()
     {
-        //find the closest target, if we don't already have one, check at the skill level frequency
-        if (!AITarget && GameObjTracker.Instance.CurrentFrame % skillSettings.ScanNewTargetFreq == 0)
+        //check if our current target is out of our firing angle, if so, release it and look for others
+        if (AITarget != null)
         {
-            AITargetShip = FindNearestShip(gameObject.transform, turret.angleLimit, shipMain.Team);
-            //if there is no target in range, bail
-            if (!AITargetShip)
+            Vector3 shipVec = Vector3.Normalize(AITarget.transform.position - transform.position);
+            float shipAngle = Vector3.Angle(shipVec, transform.forward);
+            if (shipAngle >= turret.angleLimit)
             {
-                return;
+                AITarget = null;
             }
-            //if the target ship is out of engagement range, ignore it! 
-            if (DistanceTo(AITargetShip.gameObject) > skillSettings.EngageDistance)
-            {
-                AITargetShip = null;
-                return;
-            }
+        }
 
-            AITarget = AITargetShip.gameObject.transform;
+        //find the closest target, if we don't already have one, check at the skill level frequency
+        if (AITarget == null && GameObjTracker.Instance.CurrentFrame % skillSettings.ScanNewTargetFreq == 0)
+        {
+            AITarget = FindNearestShip(gameObject.transform, turret.angleLimit, shipMain.Team);
+            // If we found a target but it's out of engagement range, ignore it! 
+            if (AITarget != null && DistanceTo(AITarget.gameObject) > skillSettings.EngageDistance)
+            {
+                AITarget = null;
+                return;
+            }
         }
     }
 

@@ -5,16 +5,16 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-public enum AIState { PATROL, BREAK, SEARCH, WINGMAN, ENGAGE, HUNT, EVADE, PROTECT, REPOSITION, FLEE, DEATH, VICTORY };
+public enum AIState { PATROL, BREAK, SEARCH, WINGMAN, CHASE, ATTACK, EVADE, PROTECT, REPOSITION, FLEE, DEATH, VICTORY };
 public enum AILevel { CHUMP, NOVICE, DEFAULT, SKILLED, ACE, MASTER };
 
 abstract public class AIUnit : MonoBehaviour
 {
     [Header("Debug Options")]
-    public bool logDebug = false;
+    public bool verboseLogging = false;
 
     protected WeaponsSystem weaponsSystem;
-    protected Transform AITarget;
+    protected Unit AITarget;
 
     protected float averageGunSpeed = 0f;
     protected float cooldownWait;
@@ -96,7 +96,7 @@ abstract public class AIUnit : MonoBehaviour
         {
             float tempGunSpeed = 0f;
             //loop through our guns, and add all their speeds together
-            if (logDebug) { print("the number of found weapons is " + weaponsSystem.projWeapons.Count); }
+            if (verboseLogging) { print("the number of found weapons is " + weaponsSystem.projWeapons.Count); }
             foreach (ProjectileWeapon gun in weaponsSystem.projWeapons)
             {
                 tempGunSpeed += gun.speed;

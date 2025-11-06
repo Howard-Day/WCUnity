@@ -4,12 +4,16 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Events;
+using UnityEngine.Serialization;
 
 [System.Serializable] public class ShipEvent : UnityEvent<ShipSettings> { }
 
 // TODO: rename to something like "Ship"
-public class ShipSettings : Unit, IPowerSource
+[SelectionBase]
+public class ShipSettings : Unit, IPowerSource, IHaveEngines, IHaveArmor, IHaveShields, IHaveHealth
 {
+    public enum HitLoc { F, R, L, U, D, B, NULL };
+
     #region FIELDS
     [SerializeField] public GameObject DamageTrails;
 
@@ -22,8 +26,8 @@ public class ShipSettings : Unit, IPowerSource
     [SerializeField] public LayerMask CollidesWith;
     [Header("Billboard")]
     [SerializeField] public GameObject Billboard;
-    [Header("VDU Icon!")]
-    [SerializeField] public Sprite VDUImage;
+    [Header("VDU Icon!"), FormerlySerializedAs("VDUImage")]
+    [SerializeField] private Sprite vduImage;
 
     [Header("Movement Settings")]
     [SerializeField] public LayerMask AutoAvoids;
@@ -45,7 +49,7 @@ public class ShipSettings : Unit, IPowerSource
     //Hidden Attributes
     [HideInInspector] public bool isPlayer = false;
     [HideInInspector] public GameObject playerUI;
-    [HideInInspector] public float shipRadius;
+    private float shipRadius;
     private float coreMax;
     [HideInInspector] public bool hitInAss = false; //this is important information, for a lot of reasons.
     Material billboardMat;
@@ -76,15 +80,12 @@ public class ShipSettings : Unit, IPowerSource
     [HideInInspector] public float roll;
     
     [HideInInspector] public bool isFiring = false;
-    [HideInInspector] public float speed = 0f;
     [HideInInspector] GameObjTracker Tracker;
 
     [HideInInspector] public int numWingmen = 0;
     [HideInInspector] private bool isDead = false;
-    [HideInInspector] public bool isBeingShot = false;
-    [HideInInspector] public bool isLocked = false;
-    [HideInInspector] public ShipSettings currentTarget;
-    [HideInInspector] public bool currentLocked = false;
+    [HideInInspector] public bool isBeingShot = false; // TODO: this is sloppy
+    [HideInInspector] public bool currentLocked = false; // TODO: what is this for? I don't think it belongs here.
 
     [HideInInspector] public bool hitInternal = false;
 
@@ -93,7 +94,6 @@ public class ShipSettings : Unit, IPowerSource
     [HideInInspector] public Vector3 BounceSpin;
     [HideInInspector] public float BouncePush;
 
-    [HideInInspector] public enum HitLoc { F, R, L, U, D, B, NULL };
     [HideInInspector] public HitLoc lastHit;
     [HideInInspector] public int lastHitID;
 
@@ -111,35 +111,76 @@ public class ShipSettings : Unit, IPowerSource
 
     //TODO: what's the difference between Cloak and isCloaked?
     public bool Cloak = false;
-    public bool isCloaked = false;
+    private bool isCloaked = false;
     public bool isCloaking = false;
     public float cloakedAmount = 0f;
 
     [HideInInspector] public Vector3 lastPos = Vector3.zero;
     [HideInInspector] public Vector3 currentPos;
-    public Vector3 velocity;
+    private Vector3 measuredVelocity;
 
     private ArmorStatus armor;
     private ShieldStatus shield;
+    private Flight flight;
+    private Unit currentTarget;
+
+    private bool isLocked = false; // TODO: what is this for? I don't think it belongs here.
+    public bool IsLocked { get => isLocked; set => isLocked = value; }
     #endregion
 
     #region PROPERTIES
     public ShipSettingsAsset Settings => settings;
+    override public Sprite VDUImage => vduImage;
     public Engines Engines => engines;
     public TargetingSystem TargetingSystem => targetingSystem;
     public Capacitor MainCapacitor => mainCapacitor;
     public Capacitor CloakCapacitor => cloakCapacitor;
 
+    override public float Radius => shipRadius;
+
     override public string DisplayName => settings.DisplayName;
     override public TEAM Team => settings.AITeam;
     public IReadOnlyArmorStatus Armor => armor;
     public IReadOnlyShieldStatus Shield => shield;
+    public Unit CurrentTarget { get => currentTarget; set => currentTarget = value; }
+    public float CurrentHealth => _CoreStrength;
+    public float MaxHealth => coreMax;
+    public float NormalizedHealth => _CoreStrength / coreMax;
 
     public float ShieldFrontNormalized => shield.Front / settings.Shield.Front;
     public float ShieldBackNormalized => shield.Back / settings.Shield.Back;
+    /// <summary>
+    /// Our velocity as measured over the last frame.
+    /// </summary>
+    override public Vector3 Velocity => measuredVelocity;
+    /// <summary>
+    /// Our velocity as calculated by multiplying our current speed by our current heading.
+    /// </summary>
+    public Vector3 CalculatedVelocity => transform.forward * engines.Speed;
 
+    override public bool IsCloaked => isCloaked;
     public bool IsDead => isDead;
     public float CoreMax => coreMax;
+    public Flight Flight
+    {
+        get => flight;
+        set
+        {
+            Assert.IsTrue(value == null || value.Team == this.Team);
+            this.flight = value;
+        }
+    }
+    public float? DistanceFromFlightLeader
+    {
+        get
+        {
+            if (Flight == null) return null;
+
+            var leader = Flight.Leader;
+            if (this == leader) return 0;
+            return Vector3.Distance(transform.position, leader.transform.position);
+        }
+    }
     #endregion
 
     private void Awake() {
@@ -253,7 +294,7 @@ public class ShipSettings : Unit, IPowerSource
     {
         if (currentTarget != null)
         {
-            if (currentTarget.isLocked)
+            if (currentTarget is ShipSettings targetShip && targetShip.IsLocked)
             {
                 currentLocked = true;
             }
@@ -268,7 +309,7 @@ public class ShipSettings : Unit, IPowerSource
     void DoVelocity()
     {
         currentPos = transform.position;
-        velocity = (currentPos - lastPos) /Time.deltaTime;
+        measuredVelocity = (currentPos - lastPos) /Time.deltaTime;
         lastPos = transform.position;
     }
    
@@ -372,12 +413,16 @@ public class ShipSettings : Unit, IPowerSource
                     //Find the direction to the collision
                     Vector3 colDir = bounceColliders[ib].transform.position - gameObject.transform.position;
                     //equally bounce each ship, damage is made from the rest of the momentum
-                    BouncePush = (speed + hitShip.speed) / 2f;
-                    var weightDamageThem = ((speed + hitShip.speed) / hitShip.speed) / 4f;
-                    var weightSpin = shipRadius / hitShip.shipRadius; 
-                    var weightDamage = ((speed + hitShip.speed) / speed) / 4f;
-                    DoDamage(bounceColliders[ib].transform.position, (speed + hitShip.speed) * .01f * weightDamage, hitShip.ShipID);
-                    hitShip.DoDamage(transform.position, (speed + hitShip.speed) * .01f * weightDamageThem, ShipID);
+
+                    Vector3 relativeVelocity = Velocity - hitShip.Velocity;
+                    var relativeSpeed = relativeVelocity.magnitude;
+                    // TODO: consider mass as well
+                    BouncePush = (relativeSpeed) / 2f;
+                    var weightSpin = shipRadius / hitShip.shipRadius;
+                    var weightDamageThem = ((relativeSpeed) / hitShip.engines.Speed) / 4f;
+                    var weightDamage = (relativeSpeed / engines.Speed) / 4f;
+                    DoDamage(bounceColliders[ib].transform.position, (relativeSpeed) * .01f * weightDamage, hitShip.ShipID);
+                    hitShip.DoDamage(transform.position, (relativeSpeed) * .01f * weightDamageThem, ShipID);
                     //print("RAM Detected:" + name +" has rammed " + hitShip.name + " at relative speeds of " + speed +" and " + hitShip.speed+
                     //" and will be damaged " + (speed+hitShip.speed)*.05f*weightDamage + "to " + (speed+hitShip.speed)*.05f*weightDamageThem);
                     InternalDamage(false);
@@ -406,7 +451,7 @@ public class ShipSettings : Unit, IPowerSource
             pitch *= recover;
             yaw *= recover;
             roll *= recover;
-            speed *= recover;
+            engines.SetSpeedInstantly(engines.Speed * recover);
             if (recover < .025f)
             {
                 InternalDamage(false);
@@ -595,7 +640,7 @@ public class ShipSettings : Unit, IPowerSource
         if (_CoreStrength > 0)
         {
             DeathDir = transform.forward;
-            DeathVel = speed;
+            DeathVel = engines.Speed;
         }
 
         if (!DecoRoot)
@@ -607,9 +652,19 @@ public class ShipSettings : Unit, IPowerSource
         }
     }
 
+    public void LeaveFlight()
+    {
+        if (flight != null)
+        {
+            flight.RemoveShip(this);
+            flight = null;
+        }
+    }
+
     void Kill()
     {
         isDead = true;
+        LeaveFlight();
         GameObjTracker.Instance.RemoveShip(this);
 
         _CoreStrength = 0;
@@ -620,7 +675,7 @@ public class ShipSettings : Unit, IPowerSource
         if (DeathSpin == Vector3.zero) //this happens once, let's take advantage!
         {
             DeathDir = transform.forward;
-            DeathVel = speed;
+            DeathVel = engines.Speed;
             DeathSpin = new Vector3(Random.Range(-3f, 3f), Random.Range(-3f, 3f), Random.Range(-3f, 3f));
             DeathType = Random.Range(0, 2); //we've got three current deaths - immediate, short spin, and death tumble!
             DeathLength = Random.Range(2f, 4f);
@@ -649,7 +704,7 @@ public class ShipSettings : Unit, IPowerSource
             droll_ *= settings.TurnRate * 3f * Time.deltaTime;
             transform.localRotation *= Quaternion.AngleAxis(droll_, Vector3.forward) * Quaternion.AngleAxis(dyaw_, Vector3.up) * Quaternion.AngleAxis(dpitch_, invertYAxis ? Vector3.right : Vector3.left);
             transform.position += DeathDir * DeathVel * Time.deltaTime;
-            speed = 0f;
+            engines.SetSpeedInstantly(0f);
             DeathLength -= Time.deltaTime * 5.5f;
             if (DeathLength > .5f)
             {
@@ -862,62 +917,42 @@ public class ShipSettings : Unit, IPowerSource
     }
 
 #if UNITY_EDITOR
-    [UnityEditor.CustomEditor(typeof(ShipSettings))]
-    public class ShipSettingsEditor : UnityEditor.Editor {
-        public override void OnInspectorGUI() {
-            base.OnInspectorGUI();
+    void OnDrawGizmos()
+    {
+        if (flight != null)
+        {
+            var color = flight.Color;
+            color.a = .33f;
+            Gizmos.color = color;
+            Gizmos.DrawWireCube(transform.position, new Vector3(10, 10, 10));
+        }
+    }
 
-            var instance = (ShipSettings)target;
-            /*
-            if (GUILayout.Button("Create settings asset")) {
-               
-                var asset = ScriptableObject.CreateInstance<ShipSettingsAsset>();
-                asset.aiTeam = instance.AITeam;
-                asset.@class = instance.Class;
-                asset.weight = instance.Weight;
-                asset.displayName = instance.DisplayName;
-
-                asset.settings.TurnRate = instance.settings.TurnRate;
-                asset.maxFuel = instance.maxFuel;
-                asset.fuelBurnRate = instance.fuelBurnRate;
-                asset.topSpeed = instance.topSpeed;
-                asset.burnSpeed = instance.burnSpeed;
-                asset.acceleration = instance.acceleration;
-                asset.deceleration = instance.deceleration;
-                asset.lag = instance.lag;
-
-                asset.deltaSmooth = instance.deltaSmooth;
-
-                asset.capacitorSize = instance.capacitorSize;
-                asset.weaponRechargeRate = instance.rechargeRate;
-
-                asset.armor = new ArmorSettings(instance.armor.Front, instance.armor.Back, instance.armor.Left, instance.armor.Right);
-                asset.shield = new ShieldSettings(instance.shield.Front, instance.shield.Back);
-                asset.shieldRechargeRate = instance.shieldRechargeRate;
-                asset.hasCloak = instance.hasCloak;
-                asset.timeToCloak = instance.timeToCloak;
-                asset.cloakPower = instance.cloakPower;
-                asset.cloakDrain = instance.cloakDrain;
-
-                var name = instance.DisplayName + ".asset";
-                string path = System.IO.Path.Join("Assets", "WingCommander/Settings/Ships", name);
-                AssetDatabase.CreateAsset(asset, path);
-            }*/
-            /*
-            if (GUILayout.Button("Add engines"))
+    void OnDrawGizmosSelected()
+    {
+        if (flight != null)
+        {
+            foreach (var ship in flight)
             {
-                var engines = instance.gameObject.AddComponent<Engines>();
-                engines.ship = instance;
-                engines.damageTrails = instance.DamageTrails;
-                engines.minMaxThrottlePitch = instance.MinMaxThrottlePitch;
-                engines.minMaxThrottleVolume = instance.MinMaxThrottleVolume;
-                engines.afterburnPitch = instance.AfterburnPitch;
-                engines.afterburnSmoothness = instance.AfterburnSmoothness;
-                engines.afterburnVolume = instance.AfterburnVolume;
-                instance.engines = engines;
-                UnityEditor.EditorUtility.SetDirty(instance.gameObject);
-                UnityEditor.EditorUtility.SetDirty(target);
-            }*/
+                if (ship != null)
+                {
+                    Gizmos.color = flight.Color;
+                    Gizmos.DrawWireCube(ship.transform.position, new Vector3(10, 10, 10));
+                    if (ship != this)
+                    {
+                        Gizmos.DrawLine(transform.position, ship.transform.position);
+                    }
+                    if (ship == flight.Leader)
+                    {
+                        const float T = 1; // Thickness
+                        const float D = 5; // Depth
+                        var crossCenter = ship.transform.position + new Vector3(0, 8, 0);
+                        Gizmos.DrawWireCube(crossCenter, new Vector3(D, T, T));
+                        Gizmos.DrawWireCube(crossCenter, new Vector3(T, D, T));
+                        Gizmos.DrawWireCube(crossCenter, new Vector3(T, T, D));
+                    }
+                }
+            }
         }
     }
 #endif

@@ -16,12 +16,12 @@ public class ShipSystem : MonoBehaviour
         Assert.IsNotNull(ship);
     }
 
+#if UNITY_EDITOR
     private void OnValidate()
     {
         AutoConfig();
     }
 
-#if UNITY_EDITOR
     virtual protected void AutoConfig()
     {
         if (ship == null)
@@ -31,7 +31,6 @@ public class ShipSystem : MonoBehaviour
             if (ship != null) UnityEditor.EditorUtility.SetDirty(this);
         }
     }
-#endif
 
     [UnityEditor.CustomEditor(typeof(ShipSystem), editorForChildClasses: true, isFallback = true)]
     protected class ShipSystemEditor : UnityEditor.Editor
@@ -41,4 +40,5 @@ public class ShipSystem : MonoBehaviour
             base.OnInspectorGUI();
         }
     }
+#endif
 }

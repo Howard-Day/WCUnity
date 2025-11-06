@@ -48,9 +48,6 @@ public class BracketController : MonoBehaviour
     {
         if (ship == null || pixelCamera == null) return;
 
-        //use default bracket color and sprite   
-        bracketSprite.color = Color;
-        bracketSprite.sprite = HUDRoot.defaultBracket;
         if (shipMain.Team == TEAM.CONFED)
         {
             bracketSprite.type = Image.Type.Sliced;
@@ -63,8 +60,7 @@ public class BracketController : MonoBehaviour
         angleTo = Vector3.Angle(this.pixelCamera.transform.forward, ship.transform.position - this.pixelCamera.transform.position);
         distTo = Vector3.Distance(this.pixelCamera.transform.position, ship.transform.position);
 
-        //unless the target is the current target!
-        if (ship == shipMain.currentTarget )
+        if (ship == shipMain.CurrentTarget)
         {
             bracketSprite.sprite = HUDRoot.targetBracket;
             if (GameObjTracker.Instance.CurrentFrame % 15 == 0)
@@ -96,8 +92,14 @@ public class BracketController : MonoBehaviour
                 bracketSprite.color = Color;
                 bracketSprite.enabled = true;
             }
-
+        } 
+        else
+        {
+            //use default bracket color and sprite   
+            bracketSprite.color = Color;
+            bracketSprite.sprite = HUDRoot.defaultBracket;
         }
+
         //handle hiding brackets when a ship is cloaking and cloaked! 
         if (ship.isCloaking)
         {
@@ -117,7 +119,7 @@ public class BracketController : MonoBehaviour
                 }
             }
         }
-        if (ship.isCloaked)
+        if (ship.IsCloaked)
         {
             bracketSprite.sprite = HUDRoot.targetBracket;
             bracketSprite.color = Color;
@@ -125,7 +127,7 @@ public class BracketController : MonoBehaviour
         }
 
 
-        if (distTo > clipDist.y * .75f && ship != shipMain.currentTarget)
+        if (distTo > clipDist.y * .75f && ship != shipMain.CurrentTarget)
         {
             bracketSprite.enabled = false;
         }

@@ -1,4 +1,5 @@
 using OneManEscapePlan.Common;
+using System;
 using UnityEngine;
 using UnityEngine.Assertions;
 
@@ -61,6 +62,7 @@ public class Engines : ShipSystem
         engineSFX.volume = minMaxThrottleVolume.x;
     }
 
+    // TODO: this should probably be done in FixedUpdate instead of Update
     void LateUpdate()
     {
         if (!ship.IsDead)
@@ -72,15 +74,15 @@ public class Engines : ShipSystem
         //Collision Detecting, but make sure the full collision is only being used if the ship is afterburning, simple manuvers won't do it as much.
         if (isAfterburning)
         {
-            ship.DoBounce(.5f, ship.shipRadius / 64f);
+            ship.DoBounce(.5f, ship.Radius / 64f);
         }
         else
         {
-            ship.DoBounce(.75f, ship.shipRadius / 64f);
+            ship.DoBounce(.75f, ship.Radius / 64f);
         }
         DoSFX();
 
-        if (ship.isCloaked)
+        if (ship.IsCloaked)
         {
             flareIntensity = (1 - ship.cloakedAmount * 1.1f);
         }
@@ -177,5 +179,14 @@ public class Engines : ShipSystem
             afterburnBlend = 0f;
         }
         afterburnSFX.volume = Mathf.Lerp(afterburnSFX.volume, afterburnBlend * afterburnVolume, afterburnSmoothness);
+    }
+
+    /// <summary>
+    /// Unrealistic; in most cases, we should set TargetSpeed instead.
+    /// </summary>
+    /// <param name="value"></param>
+    public void SetSpeedInstantly(float value)
+    {
+        speed = value;
     }
 }
