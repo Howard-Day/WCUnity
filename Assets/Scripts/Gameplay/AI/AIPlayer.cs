@@ -355,6 +355,24 @@ public partial class AIPlayer : AIUnit
     //Handle Being Shot
     void DoBeingShot()
     {
+        if (AITarget != null)
+        {
+            //TODO: this looks like a mistake:
+            if (ship.hitInAss && ship.Shield.Back <= skillSettings.ShieldLowThreshold && ship.lastHit == ShipSettings.HitLoc.B) //WE're being hit from behind, shields low, HOLY SHIT, EVADE!
+            {
+                ship.hitInAss = false;
+                if (AngleTo(AITarget.transform.position) > skillSettings.InFrontAngleThreshold)  //If our target is in front of us , just reposition, otherwise evade
+                {
+                    evadeTimer = 0f;
+                    ActiveAIState = AIState.EVADE;
+                }
+                else
+                {
+                    ActiveAIState = AIState.REPOSITION;
+                }
+            }
+        }
+
         // TODO: none of this logic is functional, because the angle can never be greater
         // than 180!
         const float BEHIND_US_ANGLE = 200;
@@ -608,24 +626,6 @@ public partial class AIPlayer : AIUnit
         {
             AITarget = FindNearestShip(gameObject.transform, ship.Team);
         }
-        if (AITarget != null)
-        {
-            //TODO: this looks like a mistake:
-            if (ship.hitInAss && ship.Shield.Back <= .5f && ship.lastHit == ShipSettings.HitLoc.B) //WE're being hit from behind, shields low, HOLY SHIT, EVADE!
-            {
-
-                ship.hitInAss = false;
-                if (AngleTo(AITarget.transform.position) > 30)  //If our target is in front of us , just reposition, otherwise evade
-                {
-                    evadeTimer = 0f;
-                    ActiveAIState = AIState.EVADE;
-                }
-                else
-                {
-                    ActiveAIState = AIState.REPOSITION;
-                }
-            }
-        }
         DoImpatience(3f, 2f, 1f);
         DoAIStates();
         RollControl(4000f);
@@ -656,23 +656,6 @@ public partial class AIPlayer : AIUnit
         {
             AITarget = FindNearestShip(gameObject.transform, ship.Team);
         }
-        if (AITarget != null)
-        {
-            //TODO: this looks like a mistake:
-            if (ship.hitInAss && ship.Shield.Back <= .6f && ship.lastHit == ShipSettings.HitLoc.B) //WE're being hit from behind, shields low, HOLY SHIT, EVADE!
-            {
-                ship.hitInAss = false;
-                if (AngleTo(AITarget.transform.position) > 20)  //If our target is in front of us , just reposition, otherwise evade
-                {
-                    evadeTimer = 0f;
-                    ActiveAIState = AIState.EVADE;
-                }
-                else
-                {
-                    ActiveAIState = AIState.REPOSITION;
-                }
-            }
-        }
         DoImpatience(2.5f, 1f, 2f);
         DoAIStates();
         RollControl(2500f);
@@ -696,21 +679,6 @@ public partial class AIPlayer : AIUnit
         }
         if (AITarget != null)
         {
-            //TODO: this looks like a mistake:
-            if (ship.hitInAss && ship.Shield.Back <= .9f && ship.lastHit == ShipSettings.HitLoc.B) //WE're being hit from behind, shields low, HOLY SHIT, EVADE!
-            {
-                ship.hitInAss = false;
-                if (AngleTo(AITarget.transform.position) > 15)  //If our target is in front of us , just reposition, otherwise evade
-                {
-                    evadeTimer = 0f;
-                    ActiveAIState = AIState.EVADE;
-                }
-                else
-                {
-                    ActiveAIState = AIState.REPOSITION;
-                }
-            }
-
             // TODO: does this belong here?
             if (AITarget is ShipSettings targetShip)
             {

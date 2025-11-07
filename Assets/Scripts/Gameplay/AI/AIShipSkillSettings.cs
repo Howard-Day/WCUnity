@@ -18,10 +18,13 @@ public class AIShipSkillSettings : AISkillSettings
     [SerializeField, Min(0)] protected float engageDistance = 175;
     [SerializeField, Min(0)] protected float aimAccuracy = 4f;
     [SerializeField, Min(0)] protected float aimUpdate = 10;
+    [SerializeField, Range(90f, 180f)] protected float evadeIfTargetBehindUsThreshold = 140;
     [SerializeField, Min(0)] protected float evadeLength = .5f;
     [SerializeField, Min(0)] protected float evadeAmount = 1.5f;
     [SerializeField, Min(0)] protected float forceFireAngle = 17.5f;
     [SerializeField, Min(0)] protected float forceFireDistanceDivisor = 4.5f;
+    [SerializeField, Min(0)] protected float shieldLowThreshold = .5f;
+    [SerializeField, Min(0)] protected float inFrontAngleThreshold = 30f;
     [Tooltip("In meters. If we're further than this distance, we'll disengage combat and return to formation.")]
     [SerializeField, Min(0)] protected float maxDistanceFromFlightLeader = 1000f;
     [SerializeField, NonNull] protected AITurretSkillSettings turretSkillSettings;
@@ -35,10 +38,13 @@ public class AIShipSkillSettings : AISkillSettings
     public float EngageDistance => engageDistance;
     public float AimAccuracy => aimAccuracy;
     public float AimUpdate => aimUpdate;
+    public float EvadeIfTargetBehindUsThreshold => evadeIfTargetBehindUsThreshold;
     public float EvadeLength => evadeLength;
     public float EvadeAmount => evadeAmount;
     public float ForceFireAngle => forceFireAngle;
     public float ForceFireDistance => engageDistance / forceFireDistanceDivisor;
+    public float ShieldLowThreshold => shieldLowThreshold;
+    public float InFrontAngleThreshold => inFrontAngleThreshold;
     public float MaxDistanceFromFlightLeader => maxDistanceFromFlightLeader;
     public AITurretSkillSettings TurretSkillSettings => turretSkillSettings;
 }

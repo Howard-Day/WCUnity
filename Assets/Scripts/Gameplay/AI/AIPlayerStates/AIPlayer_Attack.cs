@@ -43,7 +43,7 @@ public partial class AIPlayer
             float distToTarget = Vector3.Distance(AITarget.transform.position, transform.position);
 
             // Closest Target is in front of us
-            if (angleToTarget < 140)
+            if (angleToTarget < skillSettings.EvadeIfTargetBehindUsThreshold)
             {
                 // If we're too far away to match speed to the target, get closer
 
