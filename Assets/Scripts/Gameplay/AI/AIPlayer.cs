@@ -100,7 +100,7 @@ public partial class AIPlayer : AIUnit
         gameObject.transform.SetParent(GameObject.FindWithTag("GamePlayObjs").transform);
     }
 
-    [Range(1f, 1.5f), Tooltip("Scales our turning radius for the purpose of determining if we're going to overshoot " +
+    [Range(0f, 1.5f), Tooltip("Scales our turning radius for the purpose of determining if we're going to overshoot " +
         "our destination. Higher values better prevent overshooting, but also reduce responsiveness.")]
     [SerializeField] private float turnRadiusPaddingFactor = 1.25f;
     bool CheckWillOvershootDestination(Vector3 destination)
