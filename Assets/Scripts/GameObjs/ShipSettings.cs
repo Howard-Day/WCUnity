@@ -150,13 +150,14 @@ public class ShipSettings : Unit, IPowerSource, IHaveEngines, IHaveArmor, IHaveS
     public float ShieldFrontNormalized => shield.Front / settings.Shield.Front;
     public float ShieldBackNormalized => shield.Back / settings.Shield.Back;
     /// <summary>
-    /// Our velocity as measured over the last frame.
+    /// Our velocity as measured over the last frame. WARNING: sometimes has major
+    /// accuracy issues (caused by floating point precision?)
     /// </summary>
-    override public Vector3 Velocity => measuredVelocity;
+    public Vector3 MeasuredVelocity => measuredVelocity;
     /// <summary>
     /// Our velocity as calculated by multiplying our current speed by our current heading.
     /// </summary>
-    public Vector3 CalculatedVelocity => transform.forward * engines.Speed;
+    override public Vector3 Velocity => transform.forward * engines.Speed;
 
     override public bool IsCloaked => isCloaked;
     public bool IsDead => isDead;

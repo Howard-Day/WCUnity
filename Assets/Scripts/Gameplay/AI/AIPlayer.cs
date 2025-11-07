@@ -22,7 +22,6 @@ public partial class AIPlayer : AIUnit
     [SerializeField] private Transform DEBUG_destination;
 
     [HideInInspector] public GameObjTracker Tracker;
-    [HideInInspector] float barrelRoll;
     [HideInInspector] public float impatience;
     [HideInInspector] public float angleToTarget;
 
@@ -34,11 +33,10 @@ public partial class AIPlayer : AIUnit
     float followDist;
     Vector3 randPos = Vector3.zero;
 
-    bool rolling = false;
-    float rollStart;
+    bool isRolling = false;
+    double rollEnd;
     float rollDir;
-    float rollLength;
-    float barrelRef = 0f;
+    float barrelRoll;
 
     bool isAvoiding = false;
     float avoidTimer = 0f;
@@ -67,6 +65,8 @@ public partial class AIPlayer : AIUnit
     } 
 
     protected override Capacitor MainCapacitor => ship.MainCapacitor;
+
+    public bool IsRolling => isRolling;
 
     /// <summary>
     /// <c>true</c> if our destination is within our turning radius but
@@ -103,104 +103,74 @@ public partial class AIPlayer : AIUnit
         var maxTurnRate = ship.Settings.TurnRate;
         Vector3 dirVel = ship.Velocity.normalized;
         float omega = maxTurnRate * Mathf.Deg2Rad;
-        float turnRadius = speed / omega;
+        const float PADDING_FACTOR = 1.25f;
+        float turnRadius = (speed / omega) * PADDING_FACTOR;
 
         float theta = Mathf.Acos(Mathf.Clamp(Vector3.Dot(dirVel, direction.normalized), -1f, 1f));
         bool willOvershoot = (distance < 2f * turnRadius * Mathf.Sin(theta * 0.5f)) && (theta > 0f);
 
-        if (willOvershoot) Debug.DrawLine(transform.position, destination, new Color(.3f, 0f, 0f, 1f));
+        if (willOvershoot) Debug.DrawLine(transform.position, destination, new Color(.3f, 0f, 0f, 1f), .1f);
 
         return willOvershoot;
     }
 
-    //Control where we go
     void SteerTo(Vector3 aimAt)
-    { 
-        smoothAimAt =  Vector3.Lerp(smoothAimAt, aimAt, .25f);
-        willOvershootDestination = CheckWillOvershootDestination(smoothAimAt);
+    {
+        smoothAimAt = Vector3.Lerp(smoothAimAt, aimAt, .25f);
 
-        Vector3 targetDir = smoothAimAt - transform.position;
+        if (!isAvoiding) {
+            willOvershootDestination = CheckWillOvershootDestination(smoothAimAt);
 
-        Quaternion tarQ = Quaternion.LookRotation(targetDir);
-        tarQ *= Quaternion.AngleAxis(barrelRoll, Vector3.forward);
-        Quaternion destQ = Quaternion.Inverse(transform.rotation) * tarQ;
+            Vector3 localDir = transform.InverseTransformPoint(smoothAimAt);
+            float pitchDist = -Vector3.SignedAngle(Vector3.forward, new Vector3(0, localDir.y, localDir.z), Vector3.right);
+            float yawDist = Vector3.SignedAngle(Vector3.forward, new Vector3(localDir.x, 0, localDir.z), Vector3.up);
+            float rollDist = -yawDist / 2f + barrelRoll;
 
-        float newPitchDest = (destQ * Vector3.forward).y * 4;
-        float newYawDest = (destQ * Vector3.right).z * 4;
-        float newRollDest = (destQ * Vector3.up).x * 4;
 
-        newPitchDest = Mathf.Clamp(newPitchDest, -1f, 1f);
-        newYawDest = Mathf.Clamp(newYawDest, -1f, 1f);
-        newRollDest = Mathf.Clamp(newRollDest, -1f, 1f);
-        //quickly blend from any manual steering, only if we're not trying to avoid someone else!
-        if (!isAvoiding)
-        {
+            float turnRateFactor = ship.Settings.TurnRate / 2f;
+            float newPitchDest = pitchDist / turnRateFactor;
+            float newYawDest = yawDist / turnRateFactor;
+            float newRollDest = rollDist / turnRateFactor;
+
+            newPitchDest = Mathf.Clamp(newPitchDest, -1f, 1f);
+            newYawDest = Mathf.Clamp(newYawDest, -1f, 1f);
+            newRollDest = Mathf.Clamp(newRollDest, -1f, 1f);
+            //quickly blend from any manual steering, only if we're not trying to avoid someone else!
             //turnSpeed = 1f;
-            ship.yaw = Mathf.Lerp(ship.yaw, newYawDest, skillSettings.TurnSpeed);//Mathf.SmoothStep(ship.yaw,0f,.1f);
-            ship.pitch = Mathf.Lerp(ship.pitch, newPitchDest, skillSettings.TurnSpeed);//Mathf.SmoothStep(ship.pitch,0f,.1f);
-            ship.roll = Mathf.Lerp(ship.roll, newRollDest, skillSettings.TurnSpeed);
-        }
 
-        if (doDebugOrient)
-        {
-            if (!debugOrient.activeInHierarchy)
-            {
-                debugOrient = Instantiate(debugOrient, transform.root);
-            }
-            else
-            {
-                debugOrient.transform.position = aimAt;
-                debugOrient.transform.rotation = tarQ;
-            }
+            float scaledT = skillSettings.TurnSpeed * 60 * Time.deltaTime; // Scale for framerate, assuming default framerate is 60fps
+            ship.yaw = Mathf.Lerp(ship.yaw, newYawDest, scaledT);//Mathf.SmoothStep(ship.yaw,0f,.1f);
+            ship.pitch = Mathf.Lerp(ship.pitch, newPitchDest, scaledT);//Mathf.SmoothStep(ship.pitch,0f,.1f);
+            ship.roll = Mathf.Lerp(ship.roll, newRollDest, scaledT);
         }
     }
 
-    //Do a Random Barrel Roll for fun!
-    void DoABarrelRoll(float direction, float length)
-    {
-        if (!rolling)
-            return;
-        if (Time.time <= rollStart + length)
-        {
-            barrelRef = Mathf.SmoothStep(barrelRef, direction, .05f);
-        }
-        else
-        {
-            barrelRef = Mathf.Lerp(barrelRef, 0f, .05f);
-            rolling = false;
-        }
-        barrelRoll += barrelRef * ship.Settings.TurnRate * Time.deltaTime;
-    }
-    //Stop Rolling the ship
-    void StopRoll()
-    {
-        ship.roll = Mathf.SmoothStep(ship.roll, 0, .05f);
-    }
     //Roll the ship for more dynamic movement!
-    void RollControl(float rollOn)
+    void RollControl(float oddsAgainst)
     {
         //occasionally spin! 
-        if (rollOn > 0 && !rolling)
+        if (!isRolling && Random.Range(0, oddsAgainst) < 1f)
         {
-            rolling = true;
-            rollDir = Random.Range(-1, 2);
-            if (rollDir == 0)
-                rollDir = Random.Range(-1, 2);
-            if (rollDir == 0)
-                rollDir = Random.Range(-1, 2);
-            if (rollDir == 0)
-                rollDir = Random.Range(-1, 2);
-            if (rollDir == 0)
-                rollDir = 1;
-
-            rollLength = Random.Range(.5f, 6f);
-            rollStart = Time.time;
+            isRolling = true;
+            rollDir = Random.Range(-1f, 1f);
+            rollEnd = Time.timeAsDouble + Random.Range(.5f, 6f);
             //print(gameObject.name+" starting to " + rollDir +" roll for: "+rollLength +"sec");
         }
-        DoABarrelRoll(rollDir, rollLength);
-        if (!rolling)
+       
+        if (isRolling)
         {
-            StopRoll();
+            barrelRoll += rollDir * ship.Settings.TurnRate * Time.deltaTime;
+            if (Time.timeAsDouble > rollEnd)
+            {
+                isRolling = false;
+                //bool wasNegative = barrelRoll < 0;
+                //barrelRoll = Mathf.Repeat(Mathf.Abs(barrelRoll), 360f);
+                //if (wasNegative) barrelRoll *= -1f;
+                barrelRoll = 0;
+            }
+        } else
+        {
+            //barrelRoll = Mathf.MoveTowards(barrelRoll, 0, ship.Settings.TurnRate * Time.deltaTime);
         }
     }
 
@@ -579,7 +549,7 @@ public partial class AIPlayer : AIUnit
     {
         ship.Engines.TargetSpeed = ship.Settings.TopSpeed * .75f;
         SteerTo(new Vector3(0, 50, 200));
-        RollControl(Random.Range(-4000f, 1f));
+        RollControl(4000f);
     }
     //Novice AI Settings
     void NoviceAI()
@@ -613,7 +583,7 @@ public partial class AIPlayer : AIUnit
         }
         DoImpatience(3f, 2f, 1f);
         DoAIStates();
-        RollControl(Random.Range(-4000f, 1f));
+        RollControl(4000f);
         if (AITarget != null)
         {
             angleToTarget = AngleTo(AITarget.transform.position);
@@ -628,6 +598,7 @@ public partial class AIPlayer : AIUnit
         if (DEBUG_destination != null)
         {
             ship.Engines.TargetSpeed = ship.Settings.TopSpeed;
+            RollControl(400);
             SteerTo(DEBUG_destination.position);
             return;
         }
@@ -659,7 +630,7 @@ public partial class AIPlayer : AIUnit
         }
         DoImpatience(2.5f, 1f, 2f);
         DoAIStates();
-        RollControl(Random.Range(-2500f, 1f));
+        RollControl(2500f);
         if (AITarget != null)
         {
             angleToTarget = AngleTo(AITarget.transform.position);
@@ -710,7 +681,7 @@ public partial class AIPlayer : AIUnit
         }
         DoImpatience(2f, .75f, 2.5f);
         DoAIStates();
-        RollControl(Random.Range(-1500f, 1f));
+        RollControl(1500f);
         if (AITarget != null)
         {
             angleToTarget = AngleTo(AITarget.transform.position);
@@ -796,14 +767,22 @@ public partial class AIPlayer : AIUnit
                     }
                 }
 
-                if (GUILayout.Button("Create debug destination"))
+                UnityEditor.EditorGUILayout.LabelField("Will overshoot", instance.WillOvershootDestination.ToString());
+
+                if (instance.DEBUG_destination == null)
                 {
-                    var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                    go.name = "DESTINATION";
-                    go.transform.localScale = Vector3.one * 5f;
-                    var distance = 50f;
-                    go.transform.position = instance.transform.TransformPoint(new Vector3(distance, distance, distance));
-                    instance.DEBUG_destination = go.transform;
+                    if (GUILayout.Button("Create debug destination"))
+                    {
+                        var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                        go.name = "DESTINATION";
+                        go.transform.localScale = Vector3.one * 5f;
+                        var distance = 50f;
+                        go.transform.position = instance.transform.TransformPoint(new Vector3(distance, distance, distance));
+                        instance.DEBUG_destination = go.transform;
+                    }
+                } else if (GUILayout.Button("Randomize destination"))
+                {
+                    instance.DEBUG_destination.transform.position = (Random.insideUnitSphere * 300) + instance.transform.position;
                 }
             }
         }
