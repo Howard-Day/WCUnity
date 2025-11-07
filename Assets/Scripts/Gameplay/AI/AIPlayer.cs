@@ -355,6 +355,10 @@ public partial class AIPlayer : AIUnit
     //Handle Being Shot
     void DoBeingShot()
     {
+        // TODO: none of this logic is functional, because the angle can never be greater
+        // than 180!
+        const float BEHIND_US_ANGLE = 200;
+
         //track who's been shooting at us
         ShipSettings shootingShip = GameObjTracker.Instance.GetShipByID(ship.lastHitID);
         //check if we're being deliberately shot at!
@@ -363,14 +367,14 @@ public partial class AIPlayer : AIUnit
             //check if the last shot was from a ship other than our target, and *Isn't* a friendly.
             if (shootingShip !=  null && shootingShip != AITarget && shootingShip.Team != ship.Team)
             {
-                CheckIfShieldsLow(shootingShip, 1 / 3f, 200);
+                CheckIfShieldsLow(shootingShip, 1 / 3f, BEHIND_US_ANGLE);
             }
         }
         //if we're not deliberately being shot, check for that and then lower the threashold for action 
         //check if the last shot was from a ship other than our target, and *Isn't* a friendly.
         if (shootingShip != null && shootingShip != AITarget && shootingShip.Team != ship.Team)
         {
-            CheckIfShieldsLow(shootingShip, 1 / 5f, 200);
+            CheckIfShieldsLow(shootingShip, 1 / 5f, BEHIND_US_ANGLE);
         }
         //check if the last shot was from a ship other than our target, and *Is* a friendly. Higher threshold for a reposition.
         if (shootingShip != null && shootingShip != AITarget && shootingShip.Team == ship.Team)
@@ -380,7 +384,7 @@ public partial class AIPlayer : AIUnit
             if (ship.ShieldFrontNormalized <  LOW_FACTOR || ship.ShieldBackNormalized < LOW_FACTOR)
             {
                 //check if the firing ship is behind us!
-                if (AngleTo(shootingShip.transform.position) > 200f)
+                if (AngleTo(shootingShip.transform.position) > BEHIND_US_ANGLE)
                 {
                     //Reposition to clear our lane of fire! 
                     ActiveAIState = AIState.REPOSITION;
