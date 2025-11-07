@@ -357,7 +357,6 @@ public partial class AIPlayer : AIUnit
     {
         if (AITarget != null)
         {
-            //TODO: this looks like a mistake:
             if (ship.hitInAss && ship.Shield.Back <= skillSettings.ShieldLowThreshold && ship.lastHit == ShipSettings.HitLoc.B) //WE're being hit from behind, shields low, HOLY SHIT, EVADE!
             {
                 ship.hitInAss = false;
