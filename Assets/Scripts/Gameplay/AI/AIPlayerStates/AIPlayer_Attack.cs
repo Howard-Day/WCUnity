@@ -78,8 +78,7 @@ public partial class AIPlayer
             // OH NOES, WE BEIN HUNTED SON
             else
             {
-                evadeTimer = 0;
-                ActiveAIState = AIState.EVADE;
+                StartEvading(false);
             }
 
             // Get the target's velocity, adding a miss possibility

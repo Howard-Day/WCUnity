@@ -22,9 +22,15 @@ MonoBehaviour:
   engageDistance: 200
   aimAccuracy: 3
   aimUpdate: 2
-  evadeLength: 2
+  evadeDurationRange:
+    min: 1.75
+    max: 3.5
   evadeAmount: 3
+  evadeJukeDurationRange:
+    min: 0.75
+    max: 2
   forceFireAngle: 15
   forceFireDistanceDivisor: 4
+  maxDistanceFromFlightLeader: 1000
   turretSkillSettings: {fileID: 11400000, guid: 5e4ca6fba6d72794ca9dcc96b2a5ca31,
     type: 2}

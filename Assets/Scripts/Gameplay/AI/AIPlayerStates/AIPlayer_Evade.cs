@@ -12,50 +12,60 @@ public partial class AIPlayer {
     float evadePitchVelocity;
     float evadeYawVelocity;
     float evadeRollVelocity;
+    double evadeEndTime = 0;
+    double jukeEndTime = 0;
+
+    public void StartEvading(bool extendIfAlreadyEvading) // Punch it, Chewie! 
+    {
+        if (ActiveAIState == AIState.EVADE)
+        {
+            if (extendIfAlreadyEvading) ResetEvadeTimer();
+            return;
+        }
+        ActiveAIState = AIState.EVADE;
+
+        weaponsSystem.StopFiring();
+
+        ship.Engines.TargetSpeed = ship.Settings.BurnSpeed;
+        //Does the ship have a cloaking device? If so, engage it!
+        if (ship.Settings.HasCloak)
+        {
+            ship.Cloak = true;
+        }
+        jukeEndTime = 0;
+
+        ResetEvadeTimer();
+    }
+
+    private void ResetEvadeTimer()
+    {
+        evadeEndTime = Time.timeAsDouble + skillSettings.EvadeDurationRange.GetRandom();
+    }
 
     void Evade()
     {
-        if (evadeTimer == 0) //We're starting to evade
-        {//Punch it, Chewie! 
-            weaponsSystem.StopFiring();
+        if (Time.timeAsDouble >= jukeEndTime) // every few second jerk around wildly! 
+        {
+            EvadeSteer = GetRandomVector3(2f * skillSettings.EvadeAmount);
+            jukeEndTime = Time.timeAsDouble + skillSettings.EvadeJukeDurationRange.GetRandom();
+        }
 
-            ship.Engines.TargetSpeed = ship.Settings.BurnSpeed;
-            if (EvadeSteer == Vector3.zero)// have we chosen where to steer? 
-            {
-                EvadeSteer = GetRandomVector3(1f);
-            }
-            //Does the ship have a cloaking device? If so, engage it!
-            if (ship.Settings.HasCloak)
-            {
-                ship.Cloak = true;
-            }
-        }
-        if (GameObjTracker.Instance.CurrentFrame % Random.Range(60, 120) == 0) // every few second jerk around wildly! 
-        {
-            EvadeSteer = GetRandomVector3(2f);
-        }
-        // TODO: this is framerate-dependent; should use SmoothDamp or linear changes
-        ship.pitch = Mathf.SmoothDamp(ship.pitch, EvadeSteer.x * skillSettings.EvadeAmount, ref evadePitchVelocity, SMOOTH_DAMP_TIME);
-        ship.yaw = Mathf.SmoothDamp(ship.yaw, EvadeSteer.y * skillSettings.EvadeAmount, ref evadeYawVelocity, SMOOTH_DAMP_TIME);
-        ship.roll = Mathf.SmoothDamp(ship.roll, EvadeSteer.z * skillSettings.EvadeAmount, ref evadeRollVelocity, SMOOTH_DAMP_TIME);
+        ship.pitch = Mathf.SmoothDamp(ship.pitch, EvadeSteer.x, ref evadePitchVelocity, SMOOTH_DAMP_TIME);
+        ship.yaw = Mathf.SmoothDamp(ship.yaw, EvadeSteer.y, ref evadeYawVelocity, SMOOTH_DAMP_TIME);
+        ship.roll = Mathf.SmoothDamp(ship.roll, EvadeSteer.z, ref evadeRollVelocity, SMOOTH_DAMP_TIME);
 
-        //count down the time to return to normal combat. If we have a cloaking device, increase the wait time to be extra sneaky! 
-        if (!ship.Settings.HasCloak)
-        {
-            evadeTimer += Time.deltaTime;
-        }
-        else
-        {
-            evadeTimer += Time.deltaTime / 4f;
-        }
-        if (evadeTimer >= skillSettings.EvadeLength)
+        if (Time.timeAsDouble >= evadeEndTime)
         {
             EvadeSteer = Vector3.zero;
-            ActiveAIState = AIState.ATTACK;
-        }
-        if (AITarget == null)
-        {
-            GoToDefaultState();
+            evadeEndTime = 0;
+            if (AITarget == null)
+            {
+                GoToDefaultState();
+            }
+            else
+            {
+                ActiveAIState = AIState.ATTACK;
+            }
         }
     }
 

@@ -49,7 +49,6 @@ public partial class AIPlayer : AIUnit
     Vector3 EvadeSteer = Vector3.zero;
 
     int nextPatrolPoint = 0;
-    float evadeTimer = 0f;
 
     Vector3 randDist = Vector3.zero;
     Vector3 currentTargetPos;
@@ -100,7 +99,7 @@ public partial class AIPlayer : AIUnit
         gameObject.transform.SetParent(GameObject.FindWithTag("GamePlayObjs").transform);
     }
 
-    [Range(0f, 1.5f), Tooltip("Scales our turning radius for the purpose of determining if we're going to overshoot " +
+    [Range(1f, 1.5f), Tooltip("Scales our turning radius for the purpose of determining if we're going to overshoot " +
         "our destination. Higher values better prevent overshooting, but also reduce responsiveness.")]
     [SerializeField] private float turnRadiusPaddingFactor = 1.25f;
     bool CheckWillOvershootDestination(Vector3 destination)
@@ -363,8 +362,7 @@ public partial class AIPlayer : AIUnit
                 ship.hitInAss = false;
                 if (AngleTo(AITarget.transform.position) > skillSettings.InFrontAngleThreshold)  //If our target is in front of us , just reposition, otherwise evade
                 {
-                    evadeTimer = 0f;
-                    ActiveAIState = AIState.EVADE;
+                    StartEvading(false);
                 }
                 else
                 {
@@ -430,14 +428,6 @@ public partial class AIPlayer : AIUnit
         if (AITarget != null && AITarget.IsCloaked)
         {
             AITarget = FindNearestShip(gameObject.transform, ship.Team);
-        }
-    }
-    //Handle no enemies
-    void DoNoTargets()
-    {
-        if (AITarget == null)
-        {
-            GoToDefaultState();
         }
     }
 
@@ -733,7 +723,6 @@ public partial class AIPlayer : AIUnit
                 break;
         }
         DoCloakedTarget();
-        DoNoTargets();
         DoCollisionAvoidance();
         DoBeingShot();
         DoForceFire();
@@ -769,6 +758,11 @@ public partial class AIPlayer : AIUnit
             if (Application.isPlaying)
             {
                 var instance = (AIPlayer)target;
+
+                if (GUILayout.Button("Start evading"))
+                {
+                    instance.StartEvading(true);
+                }
                 
                 using (var hlayout = new UnityEditor.EditorGUILayout.HorizontalScope())
                 {
