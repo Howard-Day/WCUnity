@@ -90,6 +90,9 @@ public partial class AIPlayer : AIUnit
         gameObject.transform.SetParent(GameObject.FindWithTag("GamePlayObjs").transform);
     }
 
+    [Range(1f, 1.5f), Tooltip("Scales our turning radius for the purpose of determining if we're going to overshoot " +
+        "our destination. Higher values better prevent overshooting, but also reduce responsiveness.")]
+    [SerializeField] private float turnRadiusPaddingFactor = 1.25f;
     bool CheckWillOvershootDestination(Vector3 destination)
     {
         float speed = ship.Velocity.magnitude;
@@ -114,29 +117,57 @@ public partial class AIPlayer : AIUnit
         return willOvershoot;
     }
 
+    [Range(-1f, 1f), Tooltip("Scales how we turn when trying not to overshoot a destination")]
+    [SerializeField] private float counterOvershootScale = -.07f;
+    [SerializeField] private bool fancyRolling = true;
+    [Range(0f, 1f), Tooltip("Min. time before we stop trying to overshoot. Higher values reduce twitchiness, but also reduce responsiveness.")]
+    [SerializeField] private float overshootCooldown = .25f;
+    double overshootCooldownEnd;
     void SteerTo(Vector3 aimAt)
     {
         smoothAimAt = Vector3.Lerp(smoothAimAt, aimAt, .25f);
 
         if (!isAvoiding) {
-            willOvershootDestination = CheckWillOvershootDestination(smoothAimAt);
+            // Check if we're going to overshoot the destination. If we determine that
+            // we are going to overshoot, we apply a cooldown before we can check again.
+            // This helps to prevent twitchy behavior.
+            if (Time.timeAsDouble > overshootCooldownEnd)
+            {
+                willOvershootDestination = CheckWillOvershootDestination(smoothAimAt);
+                if (willOvershootDestination)
+                {
+                    overshootCooldownEnd = Time.timeAsDouble + overshootCooldown;
+                }
+            }
 
             Vector3 localDir = transform.InverseTransformPoint(smoothAimAt);
             float pitchDist = -Vector3.SignedAngle(Vector3.forward, new Vector3(0, localDir.y, localDir.z), Vector3.right);
             float yawDist = Vector3.SignedAngle(Vector3.forward, new Vector3(localDir.x, 0, localDir.z), Vector3.up);
-            float rollDist = -yawDist / 2f + barrelRoll;
 
+            if (willOvershootDestination)
+            {
+                pitchDist *= -counterOvershootScale;
+                yawDist *= -counterOvershootScale;
+                //rollDist *= -counterOvershootScale;
+            }
 
             float turnRateFactor = ship.Settings.TurnRate / 2f;
             float newPitchDest = pitchDist / turnRateFactor;
             float newYawDest = yawDist / turnRateFactor;
-            float newRollDest = rollDist / turnRateFactor;
+
+            float newRollDest;
+            if (fancyRolling)
+            {
+                float rollDist = Vector3.SignedAngle(Vector3.up, new Vector3(localDir.x, localDir.y, 0), Vector3.forward); // Roll to keep target above us
+                newRollDest = rollDist;// * turnRateFactor + barrelRoll;
+            } else
+            {
+                newRollDest = (-newYawDest / 2f) + barrelRoll;
+            }
 
             newPitchDest = Mathf.Clamp(newPitchDest, -1f, 1f);
             newYawDest = Mathf.Clamp(newYawDest, -1f, 1f);
             newRollDest = Mathf.Clamp(newRollDest, -1f, 1f);
-            //quickly blend from any manual steering, only if we're not trying to avoid someone else!
-            //turnSpeed = 1f;
 
             float scaledT = skillSettings.TurnSpeed * 60 * Time.deltaTime; // Scale for framerate, assuming default framerate is 60fps
             ship.yaw = Mathf.Lerp(ship.yaw, newYawDest, scaledT);//Mathf.SmoothStep(ship.yaw,0f,.1f);
