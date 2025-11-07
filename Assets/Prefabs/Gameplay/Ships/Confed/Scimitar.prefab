@@ -278,7 +278,7 @@ MonoBehaviour:
   verboseLogging: 0
   skillSettings: {fileID: 11400000, guid: cf2e97c0f6771ab42bb6cf23ebdb3e38, type: 2}
   messageHandler: {fileID: 11400000, guid: 577166ff29f07ec4b99e06bc300282b0, type: 2}
-  ActiveAIState: 5
+  activeAIState: 3
   PatrolPoints: []
   doDebugOrient: 0
   debugOrient: {fileID: 9145174605550071843, guid: ec3b7bfd95c432e4c98efb5379ee983e,
@@ -287,7 +287,10 @@ MonoBehaviour:
   Tracker: {fileID: 0}
   impatience: 0
   angleToTarget: 0
-  preventCircling: 1
+  turnRadiusPaddingFactor: 1.25
+  counterOvershootScale: -0.07
+  fancyRolling: 1
+  overshootCooldown: 0.25
 --- !u!114 &5695718655840442019
 MonoBehaviour:
   m_ObjectHideFlags: 0

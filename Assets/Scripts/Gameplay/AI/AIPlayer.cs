@@ -11,8 +11,8 @@ public partial class AIPlayer : AIUnit
     [Header("Settings")]
     [SerializeField] private AIShipSkillSettings skillSettings;
     public MessageHandler messageHandler;
-    public AIState ActiveAIState = AIState.PATROL;
-
+    [SerializeField] private AIState activeAIState = AIState.WINGMAN;
+  
     [Header("Patrol Pattern")]
     [SerializeField] private List<Vector3> PatrolPoints;
 
@@ -58,6 +58,16 @@ public partial class AIPlayer : AIUnit
     #endregion
 
     #region PROPERTIES
+    public AIState ActiveAIState
+    {
+        get => activeAIState;
+        set
+        {
+            //OMEPLogger.Log(this, value);
+            activeAIState = value;
+        }
+    }
+
     public AIShipSkillSettings SkillSettings
     {
         get => skillSettings;
