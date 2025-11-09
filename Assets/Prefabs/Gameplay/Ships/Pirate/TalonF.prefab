@@ -287,7 +287,6 @@ MonoBehaviour:
   Tracker: {fileID: 0}
   impatience: 0
   angleToTarget: 0
-  preventCircling: 1
 --- !u!114 &5695718655840442019
 MonoBehaviour:
   m_ObjectHideFlags: 0
