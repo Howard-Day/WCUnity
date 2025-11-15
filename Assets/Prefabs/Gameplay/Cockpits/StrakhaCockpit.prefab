@@ -5594,7 +5594,6 @@ MonoBehaviour:
   HitUp: {fileID: 4413684596295952070}
   HitDown: {fileID: 2780594785869934782}
   HitBack: {fileID: 3835662605718966699}
-  RadarBlips: []
 --- !u!1 &3749468308513615597
 GameObject:
   m_ObjectHideFlags: 0
@@ -5900,7 +5899,6 @@ MonoBehaviour:
   reticle: {fileID: 1183709410}
   nearFarClip: {x: 25, y: 1500}
   angleClip: 65
-  HUDBrackets: []
 --- !u!1 &3913850037584852888
 GameObject:
   m_ObjectHideFlags: 0
@@ -8501,7 +8499,6 @@ MonoBehaviour:
   SpawnParent: {fileID: 2289861991765167612, guid: 083afef334c52a24c8583f03a7dda35a,
     type: 3}
   isPlayer: 0
-  aiLevel: 2
   aiSkillSettings: {fileID: 11400000, guid: b0f3f07fb9149bf49bcea551643104fd, type: 2}
   messageOverride: {fileID: 0}
 --- !u!1 &5630748398345081020
