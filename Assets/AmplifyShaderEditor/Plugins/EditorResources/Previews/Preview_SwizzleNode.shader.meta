@@ -1,9 +1,16 @@
 fileFormatVersion: 2
 guid: d20531704ce28b14bafb296f291f6608
-timeCreated: 1510580676
-licenseType: Store
 ShaderImporter:
+  externalObjects: {}
   defaultTextures: []
+  nonModifiableTextures: []
   userData: 
   assetBundleName: 
   assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 68570
+  packageName: Amplify Shader Editor
+  packageVersion: 1.9.9.14
+  assetPath: Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_SwizzleNode.shader
+  uploadId: 1019702

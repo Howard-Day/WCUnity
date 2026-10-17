@@ -1,9 +1,16 @@
 fileFormatVersion: 2
 guid: fa1e3e404e6b3c243b5527b82739d682
-timeCreated: 1488289785
-licenseType: Store
 ShaderImporter:
+  externalObjects: {}
   defaultTextures: []
+  nonModifiableTextures: []
   userData: 
   assetBundleName: 
   assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 68570
+  packageName: Amplify Shader Editor
+  packageVersion: 1.9.9.14
+  assetPath: Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_WireNode.shader
+  uploadId: 1019702

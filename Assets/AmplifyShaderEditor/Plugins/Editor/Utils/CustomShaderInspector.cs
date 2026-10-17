@@ -5,24 +5,24 @@ using System;
 using System.Reflection;
 using System.Globalization;
 using UnityEngine;
+using UnityEditor;
 using AmplifyShaderEditor;
+using Unity.Scripting.LifecycleManagement;
 
-namespace UnityEditor
+namespace AmplifyShaderEditor
 {
 	[CustomEditor( typeof( Shader ) )]
+	[NoAutoStaticsCleanup]
 	internal class CustomShaderInspector : Editor
 	{
+		[NoAutoStaticsCleanup]
 		internal class Styles
 		{
 			public static Texture2D errorIcon = EditorGUIUtilityEx.LoadIcon( "console.erroricon.sml" );
 
 			public static Texture2D warningIcon = EditorGUIUtilityEx.LoadIcon( "console.warnicon.sml" );
-			#if UNITY_2020_1_OR_NEWER
 			public static GUIContent togglePreprocess = EditorGUIUtilityEx.TextContent( "Preprocess only|Show preprocessor output instead of compiled shader code" );
-			#if UNITY_2020_2_OR_NEWER
 			public static GUIContent toggleStripLineDirective = EditorGUIUtility.TrTextContent( "Strip #line directives", "Strip #line directives from preprocessor output" );
-			#endif
-			#endif				
 			public static GUIContent showSurface = EditorGUIUtilityEx.TextContent( "Show generated code|Show generated code of a surface shader" );
 
 			public static GUIContent showFF = EditorGUIUtilityEx.TextContent( "Show generated code|Show generated code of a fixed function shader" );
@@ -39,12 +39,8 @@ namespace UnityEditor
 
 			public static GUIContent arrayValuePopupButton = EditorGUIUtilityEx.TextContent( "..." );
 		}
-#if UNITY_2020_1_OR_NEWER
 		private static bool s_PreprocessOnly = false;
-#if UNITY_2020_2_OR_NEWER
 		private static bool s_StripLineDirectives = true;
-#endif
-#endif
 		private const float kSpace = 5f;
 
 		const float kValueFieldWidth = 200.0f;
@@ -56,7 +52,8 @@ namespace UnityEditor
 			"Vector: ",
 			"Float: ",
 			"Range: ",
-			"Texture: "
+			"Texture: ",
+			"Int: "
 		};
 
 		private static readonly string[] kTextureTypes = new string[]
@@ -79,6 +76,7 @@ namespace UnityEditor
 		private Mesh m_previewMesh;
 		private Vector2 m_mouseDelta;
 		private Transform m_cameraTransform;
+		private bool m_allowOpenInCanvas = true;
 
 		private static int m_sliderHashCode = -1;
 		private const float MaxDeltaY = 90;
@@ -173,7 +171,7 @@ namespace UnityEditor
 				GUI.DrawTexture( r, resultRender, ScaleMode.StretchToFill, false );
 			}
 		}
-		
+
 		void OnDestroy()
 		{
 			CleanUp();
@@ -181,13 +179,14 @@ namespace UnityEditor
 
 		public void OnDisable()
 		{
+			ImporterInspectorWarningSuppressor.Arm();
 			CleanUp();
 			if( m_SrpCompatibilityCheckMaterial != null )
 			{
 				GameObject.DestroyImmediate( m_SrpCompatibilityCheckMaterial );
 			}
 		}
-		
+
 		void CleanUp()
 		{
 			if( m_previewRenderUtility != null )
@@ -225,23 +224,27 @@ namespace UnityEditor
 
 		public virtual void OnEnable()
 		{
+			ImporterInspectorWarningSuppressor.Arm();
 			Shader s = this.target as Shader;
 			if( s!= null )
 				ShaderUtilEx.FetchCachedErrors( s );
+
+			m_allowOpenInCanvas = IOUtils.IsASEShader( s );
 		}
-		
+
 		private static string GetPropertyType( Shader s, int index )
 		{
-			UnityEditor.ShaderUtil.ShaderPropertyType propertyType = UnityEditor.ShaderUtil.GetPropertyType( s, index );
-			if ( propertyType == UnityEditor.ShaderUtil.ShaderPropertyType.TexEnv )
+			UnityEngine.Rendering.ShaderPropertyType propertyType = s.GetPropertyType( index );
+			if ( propertyType == UnityEngine.Rendering.ShaderPropertyType.Texture )
 			{
-				return CustomShaderInspector.kTextureTypes[ ( int ) UnityEditor.ShaderUtil.GetTexDim( s, index ) ];
+				return CustomShaderInspector.kTextureTypes[ ( int ) s.GetPropertyTextureDimension( index ) ];
 			}
 			return CustomShaderInspector.kPropertyTypes[ ( int ) propertyType ];
 		}
 
 		public override void OnInspectorGUI()
 		{
+			ImporterInspectorWarningSuppressor.Arm();
 			Shader shader = this.target as Shader;
 			if ( shader == null )
 			{
@@ -253,10 +256,12 @@ namespace UnityEditor
 			GUILayout.Space( 3 );
 			GUILayout.BeginHorizontal();
 			{
+				GUI.enabled = m_allowOpenInCanvas;
 				if ( GUILayout.Button( "Open in Shader Editor" ) )
 				{
 					ASEPackageManagerHelper.SetupLateShader( shader );
 				}
+				GUI.enabled = true;
 
 				if ( GUILayout.Button( "Open in Text Editor" ) )
 				{
@@ -299,7 +304,11 @@ namespace UnityEditor
 				}
 				EditorGUILayout.LabelField( "Disable batching", label, new GUILayoutOption[ 0 ] );
 				ShowKeywords( shader );
-				srpCompatibilityCheckMaterial.SetPass( 0 );
+
+				if ( !AmplifyShaderEditorWindow.IsSavingToDisk )
+				{
+					srpCompatibilityCheckMaterial.SetPass( 0 );
+				}
 
 				int shaderActiveSubshaderIndex = ShaderUtilEx.GetShaderActiveSubshaderIndex( shader );
 				int sRPBatcherCompatibilityCode = ShaderUtilEx.GetSRPBatcherCompatibilityCode( shader, shaderActiveSubshaderIndex );
@@ -343,11 +352,11 @@ namespace UnityEditor
 		{
 			GUILayout.Space( 5f );
 			GUILayout.Label( "Properties:", EditorStyles.boldLabel, new GUILayoutOption[ 0 ] );
-			int propertyCount = UnityEditor.ShaderUtil.GetPropertyCount( s );
+			int propertyCount = s.GetPropertyCount();
 			for ( int i = 0; i < propertyCount; i++ )
 			{
-				string propertyName = UnityEditor.ShaderUtil.GetPropertyName( s, i );
-				string label = CustomShaderInspector.GetPropertyType( s, i ) + UnityEditor.ShaderUtil.GetPropertyDescription( s, i );
+				string propertyName = s.GetPropertyName( i );
+				string label = CustomShaderInspector.GetPropertyType( s, i ) + s.GetPropertyDescription( i );
 				EditorGUILayout.LabelField( propertyName, label, new GUILayoutOption[ 0 ] );
 			}
 		}
@@ -473,18 +482,14 @@ namespace UnityEditor
 
 		private void ShowCompiledCodeButton( Shader s )
 		{
-#if UNITY_2020_1_OR_NEWER
 			using( new EditorGUI.DisabledScope( !EditorSettings.cachingShaderPreprocessor ) )
 			{
 				s_PreprocessOnly = EditorGUILayout.Toggle( Styles.togglePreprocess, s_PreprocessOnly );
-#if UNITY_2020_2_OR_NEWER
 				if( s_PreprocessOnly )
 				{
 					s_StripLineDirectives = EditorGUILayout.Toggle( Styles.toggleStripLineDirective, s_StripLineDirectives );
 				}
-#endif
 			}
-#endif
 			EditorGUILayout.BeginHorizontal( new GUILayoutOption[ 0 ] );
 			EditorGUILayout.PrefixLabel( "Compiled code", EditorStyles.miniButton );
 
@@ -505,13 +510,7 @@ namespace UnityEditor
 				}
 				if( GUI.Button( rect, showCurrent, EditorStyles.miniButton ) )
 				{
-#if UNITY_2020_1
-					ShaderUtilEx.OpenCompiledShader( s, ShaderInspectorPlatformsPopupEx.GetCurrentMode(), ShaderInspectorPlatformsPopupEx.GetCurrentPlatformMask(), ShaderInspectorPlatformsPopupEx.GetCurrentVariantStripping() == 0, s_PreprocessOnly );
-#elif UNITY_2020_2_OR_NEWER
 					ShaderUtilEx.OpenCompiledShader( s, ShaderInspectorPlatformsPopupEx.GetCurrentMode(), ShaderInspectorPlatformsPopupEx.GetCurrentPlatformMask(), ShaderInspectorPlatformsPopupEx.GetCurrentVariantStripping() == 0, s_PreprocessOnly, s_StripLineDirectives );
-#else
-					ShaderUtilEx.OpenCompiledShader( s, ShaderInspectorPlatformsPopupEx.GetCurrentMode(), ShaderInspectorPlatformsPopupEx.GetCurrentPlatformMask(), ShaderInspectorPlatformsPopupEx.GetCurrentVariantStripping() == 0 );
-#endif
 					GUIUtility.ExitGUI();
 				}
 			}
@@ -580,6 +579,82 @@ namespace UnityEditor
 				GUILayout.Button( CustomShaderInspector.Styles.no, GUI.skin.label, new GUILayoutOption[ 0 ] );
 			}
 			EditorGUILayout.EndHorizontal();
+		}
+	}
+
+	// @diogo: Unity's composite Shader inspector ( its ShaderImporterInspector shown alongside this CustomShaderInspector )
+	// gets built and torn down by selection churn or a save reimport without ever painting, so Unity's
+	// AssetImporterEditor.OnDisable logs a bogus "must call ApplyRevertGUI" error. The teardown is deferred and native,
+	// so instead of pre-flagging an instance we drop that one message at the log handler for a brief window; callers
+	// Arm() it whenever an ASE shader inspector is live or a shader is being saved.
+	[NoAutoStaticsCleanup]
+	internal static class ImporterInspectorWarningSuppressor
+	{
+		private class LogFilter : ILogHandler
+		{
+			public ILogHandler Inner;
+
+			public void LogFormat( LogType logType, UnityEngine.Object context, string format, params object[] args )
+			{
+				ILogHandler inner = Inner;
+				if ( logType == LogType.Error && DateTime.UtcNow.Ticks < s_deadline )
+				{
+					string message = ( args != null && args.Length == 1 && args[ 0 ] is string arg ) ? arg : format;
+					if ( message != null && message.Contains( "must call ApplyRevertGUI" ) )
+					{
+						return;
+					}
+				}
+				inner.LogFormat( logType, context, format, args );
+			}
+
+			public void LogException( Exception exception, UnityEngine.Object context )
+			{
+				Inner.LogException( exception, context );
+			}
+		}
+
+		private static LogFilter s_filter = null;
+		private static bool s_installed = false;
+		private static long s_deadline = 0;
+
+		public static void Arm()
+		{
+			// @diogo: brief wall-clock window brackets the deferred teardown; DateTime is thread-safe unlike editor time
+			s_deadline = DateTime.UtcNow.Ticks + TimeSpan.TicksPerSecond * 2;
+			if ( s_filter == null )
+			{
+				s_filter = new LogFilter();
+			}
+			// @diogo: already being in the chain is not the same as being its head; re-wrapping a
+			// handler that already calls into us would form a cycle
+			if ( !s_installed && Debug.unityLogger.logHandler != s_filter )
+			{
+				s_filter.Inner = Debug.unityLogger.logHandler;
+				Debug.unityLogger.logHandler = s_filter;
+				s_installed = true;
+				EditorApplication.update += Disarm;
+			}
+		}
+
+		// @diogo: the filter must not outlive its window; while installed it puts ASE frames on every
+		// editor log, which makes unrelated engine exceptions look like they were thrown by ASE
+		private static void Disarm()
+		{
+			if ( DateTime.UtcNow.Ticks < s_deadline )
+			{
+				return;
+			}
+
+			EditorApplication.update -= Disarm;
+
+			// @diogo: only unhook while still the outermost handler; anything wrapped around us would
+			// keep calling in, so in that case we stay installed as a passthrough
+			if ( Debug.unityLogger.logHandler == s_filter )
+			{
+				Debug.unityLogger.logHandler = s_filter.Inner;
+				s_installed = false;
+			}
 		}
 	}
 
@@ -659,6 +734,7 @@ namespace UnityEditor
 		public int warning;
 	}
 
+	[NoAutoStaticsCleanup]
 	public static class EditorGUIUtilityEx
 	{
 		private static System.Type type = null;
@@ -690,6 +766,7 @@ namespace UnityEditor
 		}
 	}
 
+	[NoAutoStaticsCleanup]
 	public static class GUILayoutUtilityEx
 	{
 		private static System.Type type = null;
@@ -703,6 +780,7 @@ namespace UnityEditor
 		}
 	}
 
+	[NoAutoStaticsCleanup]
 	public static class ShaderEx
 	{
 		private static System.Type type = null;
@@ -714,6 +792,7 @@ namespace UnityEditor
 		}
 	}
 
+	[NoAutoStaticsCleanup]
 	public static class ShaderUtilEx
 	{
 		private static System.Type type = null;
@@ -729,22 +808,11 @@ namespace UnityEditor
 			ShaderUtilEx.Type.InvokeMember( "OpenGeneratedFixedFunctionShader", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.InvokeMethod, null, null, new object[] { s } );
 		}
 
-#if UNITY_2020_1
-		public static void OpenCompiledShader( Shader shader, int mode, int customPlatformsMask, bool includeAllVariants, bool preprocessOnly )
-		{
-			ShaderUtilEx.Type.InvokeMember( "OpenCompiledShader", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.InvokeMethod, null, null, new object[] { shader, mode, customPlatformsMask, includeAllVariants, preprocessOnly } );
-		}
-#elif UNITY_2020_2_OR_NEWER
 		public static void OpenCompiledShader( Shader shader, int mode, int customPlatformsMask, bool includeAllVariants, bool preprocessOnly, bool stripLineDirectives )
 		{
 			ShaderUtilEx.Type.InvokeMember( "OpenCompiledShader", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.InvokeMethod, null, null, new object[] { shader, mode, customPlatformsMask, includeAllVariants, preprocessOnly, stripLineDirectives } );
 		}
-#else
-		public static void OpenCompiledShader( Shader shader, int mode, int customPlatformsMask, bool includeAllVariants )
-		{
-			ShaderUtilEx.Type.InvokeMember( "OpenCompiledShader", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.InvokeMethod, null, null, new object[] { shader, mode, customPlatformsMask, includeAllVariants } );
-		}
-#endif
+
 		public static void FetchCachedErrors( Shader s )
 		{
 			ShaderUtilEx.Type.InvokeMember( "FetchCachedMessages", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.InvokeMethod, null, null, new object[] { s } );
@@ -846,6 +914,7 @@ namespace UnityEditor
 		}
 	}
 
+	[NoAutoStaticsCleanup]
 	public static class FileUtilEx
 	{
 		private static System.Type type = null;
@@ -857,6 +926,7 @@ namespace UnityEditor
 		}
 	}
 
+	[NoAutoStaticsCleanup]
 	public static class ShaderInspectorEx
 	{
 		private static System.Type type = null;
@@ -868,6 +938,7 @@ namespace UnityEditor
 		}
 	}
 
+	[NoAutoStaticsCleanup]
 	public static class GUISkinEx
 	{
 		private static System.Type type = null;
@@ -879,6 +950,7 @@ namespace UnityEditor
 		}
 	}
 
+	[NoAutoStaticsCleanup]
 	public static class EditorGUIEx
 	{
 		public static System.Type Type = typeof( EditorGUI );
@@ -904,8 +976,28 @@ namespace UnityEditor
 			}
 		}
 
+		public static Gradient GradientField( Rect position, Gradient gradient )
+		{
+			return EditorGUI.GradientField( position, gradient );
+		}
 	}
 
+	[NoAutoStaticsCleanup]
+	internal static class EditorGUILayoutEx
+	{
+		public static System.Type Type = typeof( EditorGUILayout );
+		public static Gradient GradientField( Gradient value, params GUILayoutOption[] options )
+		{
+			return EditorGUILayout.GradientField( value, options );
+		}
+
+		public static Gradient GradientField( string label, Gradient value, params GUILayoutOption[] options )
+		{
+			return EditorGUILayout.GradientField( label, value, options );
+		}
+	}
+
+	[NoAutoStaticsCleanup]
 	public static class ShaderInspectorPlatformsPopupEx
 	{
 		private static System.Type type = null;

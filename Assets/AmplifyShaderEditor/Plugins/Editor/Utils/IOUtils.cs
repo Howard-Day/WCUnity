@@ -2,6 +2,7 @@
 // Copyright (c) Amplify Creations, Lda <info@amplify.pt>
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Security.Cryptography;
 using System.Collections.Generic;
@@ -12,7 +13,9 @@ using UnityEditor;
 using UnityEditor.Build;
 using System.Threading;
 using UnityEditor.VersionControl;
+using System.Text;
 using System.Text.RegularExpressions;
+using Unity.Scripting.LifecycleManagement;
 
 namespace AmplifyShaderEditor
 {
@@ -25,6 +28,7 @@ namespace AmplifyShaderEditor
 		UNITY_NATIVE_PATHS
 	}
 
+	[NoAutoStaticsCleanup]
 	public class Worker
 	{
 		public static readonly object locker = new object();
@@ -37,8 +41,8 @@ namespace AmplifyShaderEditor
 					IOUtils.SaveInThreadFlag = false;
 					lock( locker )
 					{
-						IOUtils.SaveInThreadShaderBody = string.Format( IOUtils.ShaderCopywriteMessage, VersionInfo.StaticToString() ) + IOUtils.SaveInThreadShaderBody;
-						// Add checksum 
+						IOUtils.SaveInThreadShaderBody = string.Format( CultureInfo.InvariantCulture, IOUtils.ShaderCopywriteMessage, VersionInfo.StaticToString() ) + IOUtils.SaveInThreadShaderBody;
+						// Add checksum
 						string checksum = IOUtils.CreateChecksum( IOUtils.SaveInThreadShaderBody );
 						IOUtils.SaveInThreadShaderBody += IOUtils.CHECKSUM + IOUtils.VALUE_SEPARATOR + checksum;
 
@@ -64,6 +68,7 @@ namespace AmplifyShaderEditor
 		}
 	}
 
+	[NoAutoStaticsCleanup]
 	public static class IOUtils
 	{
 		public delegate void OnShaderAction( Shader shader , bool isTemplate , string type );
@@ -89,24 +94,7 @@ namespace AmplifyShaderEditor
 		public static readonly string InstancedPropertiesData = "UNITY_ACCESS_INSTANCED_PROP({0})";
 
 		public static readonly string DotsInstancedPropertiesData = "\tUNITY_DOTS_INSTANCED_PROP({0}, {1})";
-		public static string DotsInstancedDefinesData
-		{ 
-			get
-			{
-				if ( ASEPackageManagerHelper.PackageSRPVersion >= ( int )ASESRPBaseline.ASE_SRP_13 )
-				{
-					return "#define {1} UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT({0} , {1})";
-				}
-				else if ( ASEPackageManagerHelper.PackageSRPVersion >= ( int )ASESRPBaseline.ASE_SRP_12 )
-				{
-					return "#define {1} UNITY_ACCESS_DOTS_INSTANCED_PROP_FROM_MACRO({0} , Metadata{1})";
-				}
-				else
-				{
-					return "#define {1} UNITY_ACCESS_DOTS_INSTANCED_PROP_FROM_MACRO({0} , Metadata_{1})";
-				}
-			}
-		}
+		public static readonly string DotsInstancedDefinesData = "#define {1} UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT( {0}, {1} )";
 
 		public static readonly string LWSRPInstancedPropertiesBegin = "UNITY_INSTANCING_BUFFER_START({0})";
 		public static readonly string LWSRPInstancedPropertiesEnd = "UNITY_INSTANCING_BUFFER_END({0})";
@@ -176,7 +164,7 @@ namespace AmplifyShaderEditor
 
 		public static int DefaultASEDirtyCheckId;
 
-		// this is to be used in combination with AssetDatabase.GetAssetPath, both of these include the Assets/ path so we need to remove from one of them 
+		// this is to be used in combination with AssetDatabase.GetAssetPath, both of these include the Assets/ path so we need to remove from one of them
 		public static string dataPath;
 
 
@@ -290,6 +278,41 @@ namespace AmplifyShaderEditor
 			return availableTypes;
 		}
 
+		// @diogo: resolved once per name; a large graph asks for the same few dozen node types tens of thousands of times
+		private static Dictionary<string, Type> s_nodeTypesByName = new Dictionary<string, Type>();
+
+		// The node type a metadata line names, after the legacy renames; null when nothing loaded defines it.
+		public static Type GetNodeType( string typeStr )
+		{
+			if ( !s_nodeTypesByName.TryGetValue( typeStr, out Type type ) )
+			{
+				string resolvedName = NodeTypeReplacer.ContainsKey( typeStr ) ? NodeTypeReplacer[ typeStr ] : typeStr;
+				type = Type.GetType( resolvedName );
+				if ( type == null )
+				{
+					try
+					{
+						Assembly editorAssembly = Assembly.Load( "Assembly-CSharp-Editor" );
+						if ( editorAssembly != null )
+						{
+							type = editorAssembly.GetType( resolvedName );
+						}
+					}
+					catch ( Exception )
+					{
+
+					}
+
+					if ( type == null )
+					{
+						type = GetAssemblyType( resolvedName );
+					}
+				}
+				s_nodeTypesByName.Add( typeStr, type );
+			}
+			return type;
+		}
+
 		public static Type GetAssemblyType( string typeName )
 		{
 			if( LoadedAssemblies == null )
@@ -381,21 +404,13 @@ namespace AmplifyShaderEditor
 		////////////////////////////////////////////////////////////////////////////
 		public static void SetAmplifyDefineSymbolOnBuildTargetGroup( BuildTargetGroup targetGroup )
 		{
-		#if UNITY_2021_2_OR_NEWER
 			var namedBuildTarget = NamedBuildTarget.FromBuildTargetGroup( targetGroup );
 			string currData = PlayerSettings.GetScriptingDefineSymbols( namedBuildTarget );
-		#else
-			string currData = PlayerSettings.GetScriptingDefineSymbolsForGroup( targetGroup );
-		#endif
 			if( !currData.Contains( AmplifyShaderEditorDefineSymbol ) )
 			{
 				if( string.IsNullOrEmpty( currData ) )
 				{
-				#if UNITY_2021_2_OR_NEWER
 					PlayerSettings.SetScriptingDefineSymbols( namedBuildTarget, AmplifyShaderEditorDefineSymbol );
-				#else
-					PlayerSettings.SetScriptingDefineSymbolsForGroup( targetGroup, AmplifyShaderEditorDefineSymbol );
-				#endif
 				}
 				else
 				{
@@ -405,38 +420,26 @@ namespace AmplifyShaderEditor
 					}
 					currData += AmplifyShaderEditorDefineSymbol;
 
-				#if UNITY_2021_2_OR_NEWER
 					PlayerSettings.SetScriptingDefineSymbols( namedBuildTarget, currData );
-				#else
-					PlayerSettings.SetScriptingDefineSymbolsForGroup( targetGroup, currData );
-				#endif
 				}
 			}
 		}
 
 		public static void RemoveAmplifyDefineSymbolOnBuildTargetGroup( BuildTargetGroup targetGroup )
 		{
-		#if UNITY_2021_2_OR_NEWER
 			var namedBuildTarget = NamedBuildTarget.FromBuildTargetGroup( targetGroup );
 			string currData = PlayerSettings.GetScriptingDefineSymbols( namedBuildTarget );
-		#else
-			string currData = PlayerSettings.GetScriptingDefineSymbolsForGroup( targetGroup );
-		#endif
 			if( currData.Contains( AmplifyShaderEditorDefineSymbol ) )
 			{
 				currData = currData.Replace( AmplifyShaderEditorDefineSymbol + ";" , "" );
 				currData = currData.Replace( ";" + AmplifyShaderEditorDefineSymbol , "" );
 				currData = currData.Replace( AmplifyShaderEditorDefineSymbol , "" );
-				
-			#if UNITY_2021_2_OR_NEWER			
+
 				PlayerSettings.SetScriptingDefineSymbols( namedBuildTarget, currData );
-			#else
-				PlayerSettings.SetScriptingDefineSymbolsForGroup( targetGroup, currData );
-			#endif
 			}
 		}
 
-		//Adding this attribute so scripting defining symbol can be registered right away so custom nodes using ASE ( under that symbol ) can be caught 
+		//Adding this attribute so scripting defining symbol can be registered right away so custom nodes using ASE ( under that symbol ) can be caught
 		// the first time ASE opens
 		[InitializeOnLoadMethod]
 		public static void Init()
@@ -446,47 +449,16 @@ namespace AmplifyShaderEditor
 				Initialized = true;
 				Preferences.Initialize();
 				if ( Preferences.Project.DefineSymbol )
+				{
 					SetAmplifyDefineSymbolOnBuildTargetGroup( EditorUserBuildSettings.selectedBuildTargetGroup );
-				//Array BuildTargetGroupValues = Enum.GetValues( typeof(  BuildTargetGroup ));
-				//for ( int i = 0; i < BuildTargetGroupValues.Length; i++ )
-				//{
-				//	if( i != 0 && i != 15 && i != 16 )
-				//		SetAmplifyDefineSymbolOnBuildTargetGroup( ( BuildTargetGroup ) BuildTargetGroupValues.GetValue( i ) );
-				//}
+				}
 
 				DefaultASEDirtyCheckId = Shader.PropertyToID( DefaultASEDirtyCheckName );
 				dataPath = Application.dataPath.Remove( Application.dataPath.Length - 6 );
 
-
-				//ASEFolderPath = AssetDatabase.GUIDToAssetPath( ASEFolderGUID );
-				//ASEResourcesPath = ASEFolderPath + ASEResourcesPath;
-			}
-		}
-
-
-		public static void DumpTemplateManagers()
-		{
-			for( int i = 0 ; i < AllOpenedWindows.Count ; i++ )
-			{
-				if( AllOpenedWindows[ i ].TemplatesManagerInstance != null )
-				{
-					Debug.Log( AllOpenedWindows[ i ].titleContent.text + ": " + AllOpenedWindows[ i ].TemplatesManagerInstance.GetInstanceID() );
-				}
-			}
-		}
-
-		public static TemplatesManager FirstValidTemplatesManager
-		{
-			get
-			{
-				for( int i = 0 ; i < AllOpenedWindows.Count ; i++ )
-				{
-					if( AllOpenedWindows[ i ].TemplatesManagerInstance != null )
-					{
-						return AllOpenedWindows[ i ].TemplatesManagerInstance;
-					}
-				}
-				return null;
+				ASEPackageManagerHelper.Initialize();
+				TemplatesManager.CheckCreateInstance();
+				TemplateTracker.Initialize();
 			}
 		}
 
@@ -555,7 +527,7 @@ namespace AmplifyShaderEditor
 				string[] subStr = shaderName.Split( '/' );
 				if( subStr.Length > 0 )
 				{
-					shaderName = subStr[ subStr.Length - 1 ]; // Remove pathname 
+					shaderName = subStr[ subStr.Length - 1 ]; // Remove pathname
 				}
 			}
 			else
@@ -576,7 +548,7 @@ namespace AmplifyShaderEditor
 
 		public static void AddFieldValueToString( ref string myString , object fieldValue )
 		{
-			myString += FIELD_SEPARATOR + fieldValue.ToString();
+			JsonGraphFormat.AppendParam( ref myString, fieldValue.ToString() );
 		}
 
 		public static void AddLineTerminator( ref string myString )
@@ -598,31 +570,20 @@ namespace AmplifyShaderEditor
 
 			if( addAdditionalInfo )
 			{
-				shaderBody = string.Format( ShaderCopywriteMessage, VersionInfo.StaticToString() ) + shaderBody;
-				// Add checksum 
+				shaderBody = string.Format( CultureInfo.InvariantCulture, ShaderCopywriteMessage, VersionInfo.StaticToString() ) + shaderBody;
+				// Add checksum
 				string checksum = CreateChecksum( shaderBody );
 				shaderBody += CHECKSUM + VALUE_SEPARATOR + checksum;
 			}
 
+
 			// Write to disk
-			StreamWriter fileWriter = new StreamWriter( pathName );
-			try
-			{
-				fileWriter.Write( shaderBody );
-			}
-			catch( Exception e )
-			{
-				Debug.LogException( e );
-			}
-			finally
-			{
-				fileWriter.Close();
-			}
+			File.WriteAllText( pathName, shaderBody );
 		}
 
 		public static string AddAdditionalInfo( string shaderBody )
 		{
-			shaderBody = string.Format( ShaderCopywriteMessage, VersionInfo.StaticToString() ) + shaderBody;
+			shaderBody = string.Format( CultureInfo.InvariantCulture, ShaderCopywriteMessage, VersionInfo.StaticToString() ) + shaderBody;
 			string checksum = CreateChecksum( shaderBody );
 			shaderBody += CHECKSUM + VALUE_SEPARATOR + checksum;
 			return shaderBody;
@@ -710,22 +671,22 @@ namespace AmplifyShaderEditor
 
 		public static void AddFunctionHeader( ref string function , string header )
 		{
-			function += header + "\n{\n";
+			function += string.Format( CultureInfo.InvariantCulture, "\t\t{0}\n\t\t{{\n", header );
 		}
 
 		public static void AddSingleLineFunction( ref string function , string header )
 		{
-			function += "\t" + header;
+			function += string.Format( CultureInfo.InvariantCulture, "\t\t{0}", header );
 		}
 
 		public static void AddFunctionLine( ref string function , string line )
 		{
-			function += "\t" + line + "\n";
+			function += string.Format( CultureInfo.InvariantCulture, "\t\t\t{0}\n", line );
 		}
 
 		public static void CloseFunctionBody( ref string function )
 		{
-			function += "}\n";
+			function += "\t\t}\n";
 		}
 
 		public static string CreateFullFunction( string header , params string[] functionLines )
@@ -777,6 +738,47 @@ namespace AmplifyShaderEditor
 			return finalComment;
 		}
 
+		// @diogo: template injection strips the emitted base indent and flattens the block; re-indent by
+		// brace depth so scoped branch bodies read as nested (#365).
+		public static string ReindentByBraceDepth( string body )
+		{
+			string[] lines = body.Split( '\n' );
+			StringBuilder result = new StringBuilder( body.Length );
+			int depth = 0;
+			for ( int i = 0; i < lines.Length; i++ )
+			{
+				string content = lines[ i ].Replace( "\t", string.Empty ).Trim();
+				if ( content.Length > 0 )
+				{
+					int opens = 0;
+					int closes = 0;
+					for ( int c = 0; c < content.Length; c++ )
+					{
+						if ( content[ c ] == '{' )
+						{
+							opens++;
+						}
+						else if ( content[ c ] == '}' )
+						{
+							closes++;
+						}
+					}
+
+					int leadingClose = ( content[ 0 ] == '}' ) ? 1 : 0;
+					depth = Mathf.Max( 0, depth - leadingClose );
+					result.Append( '\t', depth );
+					depth = Mathf.Max( 0, depth + opens - closes + leadingClose );
+				}
+
+				result.Append( content );
+				if ( i < lines.Length - 1 )
+				{
+					result.Append( '\n' );
+				}
+			}
+			return result.ToString();
+		}
+
 		public static string GetUVChannelDeclaration( string uvName , int channelId , int set )
 		{
 			string uvSetStr = ( set == 0 ) ? "uv" : "uv" + Constants.AvailableUVSetsStr[ set ];
@@ -791,8 +793,36 @@ namespace AmplifyShaderEditor
 
 		public static string GetVertexUVChannelName( int set )
 		{
-			string uvSetStr = ( set == 0 ) ? "texcoord" : ( "texcoord" + set.ToString() );
+			string uvSetStr = ( set == 0 ) ? "texcoord" : ( "texcoord" + IntToString( set ) );
 			return uvSetStr;
+		}
+
+		// @diogo: VECTOR_SEPARATOR is itself a comma, so a locale that writes decimals with one splits
+		// a single value into two fields; every number crossing to or from text goes through here,
+		// leaving correctness independent of the thread's culture
+		public static string FloatToString( float value )
+		{
+			return value.ToString( CultureInfo.InvariantCulture );
+		}
+
+		public static string FloatToString( float value, string format )
+		{
+			return value.ToString( format, CultureInfo.InvariantCulture );
+		}
+
+		public static string IntToString( int value )
+		{
+			return value.ToString( CultureInfo.InvariantCulture );
+		}
+
+		public static float StringToFloat( string data )
+		{
+			return Convert.ToSingle( data, CultureInfo.InvariantCulture );
+		}
+
+		public static int StringToInt( string data )
+		{
+			return Convert.ToInt32( data, CultureInfo.InvariantCulture );
 		}
 
 		//Floatify adds a .0 to the number as soon operarions with floats require that
@@ -801,44 +831,50 @@ namespace AmplifyShaderEditor
 		private const string CheckFloatifyPatt = "[eE][+-]";
 		public static string Floatify( float value )
 		{
-			string finalValue = value.ToString();
+			string finalValue = FloatToString( value );
 			return ( value % 1 ) != 0 ? finalValue :
 				( Regex.IsMatch( finalValue , CheckFloatifyPatt ) ? finalValue : finalValue + FloatifyStr );
 		}
 
 		public static string Vector2ToString( Vector2 data )
 		{
-			return data.x.ToString() + VECTOR_SEPARATOR + data.y.ToString();
+			return FloatToString( data.x ) + VECTOR_SEPARATOR + FloatToString( data.y );
 		}
 
 		public static string Vector3ToString( Vector3 data )
 		{
-			return data.x.ToString() + VECTOR_SEPARATOR + data.y.ToString() + VECTOR_SEPARATOR + data.z.ToString();
+			return FloatToString( data.x ) + VECTOR_SEPARATOR + FloatToString( data.y ) + VECTOR_SEPARATOR + FloatToString( data.z );
 		}
 
 		public static string Vector4ToString( Vector4 data )
 		{
-			return data.x.ToString() + VECTOR_SEPARATOR + data.y.ToString() + VECTOR_SEPARATOR + data.z.ToString() + VECTOR_SEPARATOR + data.w.ToString();
+			return FloatToString( data.x ) + VECTOR_SEPARATOR + FloatToString( data.y ) + VECTOR_SEPARATOR + FloatToString( data.z ) + VECTOR_SEPARATOR + FloatToString( data.w );
 		}
 
 		public static string ColorToString( Color data )
 		{
-			return data.r.ToString() + VECTOR_SEPARATOR + data.g.ToString() + VECTOR_SEPARATOR + data.b.ToString() + VECTOR_SEPARATOR + data.a.ToString();
+			return FloatToString( data.r ) + VECTOR_SEPARATOR + FloatToString( data.g ) + VECTOR_SEPARATOR + FloatToString( data.b ) + VECTOR_SEPARATOR + FloatToString( data.a );
+		}
+
+		public static string Matrix2x2ToString( Matrix4x4 matrix )
+		{
+			return  FloatToString( matrix[ 0, 0 ] ) + IOUtils.VECTOR_SEPARATOR + FloatToString( matrix[ 0, 1 ] ) + IOUtils.VECTOR_SEPARATOR +
+					FloatToString( matrix[ 1, 0 ] ) + IOUtils.VECTOR_SEPARATOR + FloatToString( matrix[ 1, 1 ] );
 		}
 
 		public static string Matrix3x3ToString( Matrix4x4 matrix )
 		{
-			return matrix[ 0 , 0 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 0 , 1 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 0 , 2 ].ToString() + IOUtils.VECTOR_SEPARATOR +
-					matrix[ 1 , 0 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 1 , 1 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 1 , 2 ].ToString() + IOUtils.VECTOR_SEPARATOR +
-					matrix[ 2 , 0 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 2 , 1 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 2 , 2 ].ToString();
+			return  FloatToString( matrix[ 0 , 0 ] ) + IOUtils.VECTOR_SEPARATOR + FloatToString( matrix[ 0 , 1 ] ) + IOUtils.VECTOR_SEPARATOR + FloatToString( matrix[ 0 , 2 ] ) + IOUtils.VECTOR_SEPARATOR +
+					FloatToString( matrix[ 1 , 0 ] ) + IOUtils.VECTOR_SEPARATOR + FloatToString( matrix[ 1 , 1 ] ) + IOUtils.VECTOR_SEPARATOR + FloatToString( matrix[ 1 , 2 ] ) + IOUtils.VECTOR_SEPARATOR +
+					FloatToString( matrix[ 2 , 0 ] ) + IOUtils.VECTOR_SEPARATOR + FloatToString( matrix[ 2 , 1 ] ) + IOUtils.VECTOR_SEPARATOR + FloatToString( matrix[ 2 , 2 ] );
 		}
 
 		public static string Matrix4x4ToString( Matrix4x4 matrix )
 		{
-			return matrix[ 0 , 0 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 0 , 1 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 0 , 2 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 0 , 3 ].ToString() + IOUtils.VECTOR_SEPARATOR +
-					matrix[ 1 , 0 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 1 , 1 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 1 , 2 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 1 , 3 ].ToString() + IOUtils.VECTOR_SEPARATOR +
-					matrix[ 2 , 0 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 2 , 1 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 2 , 2 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 2 , 3 ].ToString() + IOUtils.VECTOR_SEPARATOR +
-					matrix[ 3 , 0 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 3 , 1 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 3 , 2 ].ToString() + IOUtils.VECTOR_SEPARATOR + matrix[ 3 , 3 ].ToString();
+			return  FloatToString( matrix[ 0 , 0 ] ) + IOUtils.VECTOR_SEPARATOR + FloatToString( matrix[ 0 , 1 ] ) + IOUtils.VECTOR_SEPARATOR + FloatToString( matrix[ 0 , 2 ] ) + IOUtils.VECTOR_SEPARATOR + FloatToString( matrix[ 0 , 3 ] ) + IOUtils.VECTOR_SEPARATOR +
+					FloatToString( matrix[ 1 , 0 ] ) + IOUtils.VECTOR_SEPARATOR + FloatToString( matrix[ 1 , 1 ] ) + IOUtils.VECTOR_SEPARATOR + FloatToString( matrix[ 1 , 2 ] ) + IOUtils.VECTOR_SEPARATOR + FloatToString( matrix[ 1 , 3 ] ) + IOUtils.VECTOR_SEPARATOR +
+					FloatToString( matrix[ 2 , 0 ] ) + IOUtils.VECTOR_SEPARATOR + FloatToString( matrix[ 2 , 1 ] ) + IOUtils.VECTOR_SEPARATOR + FloatToString( matrix[ 2 , 2 ] ) + IOUtils.VECTOR_SEPARATOR + FloatToString( matrix[ 2 , 3 ] ) + IOUtils.VECTOR_SEPARATOR +
+					FloatToString( matrix[ 3 , 0 ] ) + IOUtils.VECTOR_SEPARATOR + FloatToString( matrix[ 3 , 1 ] ) + IOUtils.VECTOR_SEPARATOR + FloatToString( matrix[ 3 , 2 ] ) + IOUtils.VECTOR_SEPARATOR + FloatToString( matrix[ 3 , 3 ] );
 		}
 
 		public static Vector2 StringToVector2( string data )
@@ -846,8 +882,8 @@ namespace AmplifyShaderEditor
 			string[] parsedData = data.Split( VECTOR_SEPARATOR );
 			if( parsedData.Length >= 2 )
 			{
-				return new Vector2( Convert.ToSingle( parsedData[ 0 ] ) ,
-									Convert.ToSingle( parsedData[ 1 ] ) );
+				return new Vector2( StringToFloat( parsedData[ 0 ] ) ,
+									StringToFloat( parsedData[ 1 ] ) );
 			}
 			return Vector2.zero;
 		}
@@ -857,9 +893,9 @@ namespace AmplifyShaderEditor
 			string[] parsedData = data.Split( VECTOR_SEPARATOR );
 			if( parsedData.Length >= 3 )
 			{
-				return new Vector3( Convert.ToSingle( parsedData[ 0 ] ) ,
-									Convert.ToSingle( parsedData[ 1 ] ) ,
-									Convert.ToSingle( parsedData[ 2 ] ) );
+				return new Vector3( StringToFloat( parsedData[ 0 ] ) ,
+									StringToFloat( parsedData[ 1 ] ) ,
+									StringToFloat( parsedData[ 2 ] ) );
 			}
 			return Vector3.zero;
 		}
@@ -869,10 +905,10 @@ namespace AmplifyShaderEditor
 			string[] parsedData = data.Split( VECTOR_SEPARATOR );
 			if( parsedData.Length >= 4 )
 			{
-				return new Vector4( Convert.ToSingle( parsedData[ 0 ] ) ,
-									Convert.ToSingle( parsedData[ 1 ] ) ,
-									Convert.ToSingle( parsedData[ 2 ] ) ,
-									Convert.ToSingle( parsedData[ 3 ] ) );
+				return new Vector4( StringToFloat( parsedData[ 0 ] ) ,
+									StringToFloat( parsedData[ 1 ] ) ,
+									StringToFloat( parsedData[ 2 ] ) ,
+									StringToFloat( parsedData[ 3 ] ) );
 			}
 			return Vector4.zero;
 		}
@@ -882,12 +918,28 @@ namespace AmplifyShaderEditor
 			string[] parsedData = data.Split( VECTOR_SEPARATOR );
 			if( parsedData.Length >= 4 )
 			{
-				return new Color( Convert.ToSingle( parsedData[ 0 ] ) ,
-									Convert.ToSingle( parsedData[ 1 ] ) ,
-									Convert.ToSingle( parsedData[ 2 ] ) ,
-									Convert.ToSingle( parsedData[ 3 ] ) );
+				return new Color( StringToFloat( parsedData[ 0 ] ) ,
+									StringToFloat( parsedData[ 1 ] ) ,
+									StringToFloat( parsedData[ 2 ] ) ,
+									StringToFloat( parsedData[ 3 ] ) );
 			}
 			return Color.white;
+		}
+
+		public static Matrix4x4 StringToMatrix2x2( string data )
+		{
+			string[] parsedData = data.Split( VECTOR_SEPARATOR );
+			if ( parsedData.Length == 4 )
+			{
+				Matrix4x4 matrix = Matrix4x4.identity;
+				matrix[ 0, 0 ] = StringToFloat( parsedData[ 0 ] );
+				matrix[ 0, 1 ] = StringToFloat( parsedData[ 1 ] );
+				matrix[ 1, 0 ] = StringToFloat( parsedData[ 2 ] );
+				matrix[ 1, 1 ] = StringToFloat( parsedData[ 3 ] );
+				matrix[ 1, 1 ] = StringToFloat( parsedData[ 3 ] );
+				return matrix;
+			}
+			return Matrix4x4.identity;
 		}
 
 		public static Matrix4x4 StringToMatrix3x3( string data )
@@ -895,18 +947,16 @@ namespace AmplifyShaderEditor
 			string[] parsedData = data.Split( VECTOR_SEPARATOR );
 			if( parsedData.Length == 9 )
 			{
-				Matrix4x4 matrix = new Matrix4x4();
-				matrix[ 0 , 0 ] = Convert.ToSingle( parsedData[ 0 ] );
-				matrix[ 0 , 1 ] = Convert.ToSingle( parsedData[ 1 ] );
-				matrix[ 0 , 2 ] = Convert.ToSingle( parsedData[ 2 ] );
-
-				matrix[ 1 , 0 ] = Convert.ToSingle( parsedData[ 3 ] );
-				matrix[ 1 , 1 ] = Convert.ToSingle( parsedData[ 4 ] );
-				matrix[ 1 , 2 ] = Convert.ToSingle( parsedData[ 5 ] );
-
-				matrix[ 2 , 0 ] = Convert.ToSingle( parsedData[ 6 ] );
-				matrix[ 2 , 1 ] = Convert.ToSingle( parsedData[ 7 ] );
-				matrix[ 2 , 2 ] = Convert.ToSingle( parsedData[ 8 ] );
+				Matrix4x4 matrix = Matrix4x4.identity;
+				matrix[ 0, 0 ] = StringToFloat( parsedData[ 0 ] );
+				matrix[ 0, 1 ] = StringToFloat( parsedData[ 1 ] );
+				matrix[ 0, 2 ] = StringToFloat( parsedData[ 2 ] );
+				matrix[ 1, 0 ] = StringToFloat( parsedData[ 3 ] );
+				matrix[ 1, 1 ] = StringToFloat( parsedData[ 4 ] );
+				matrix[ 1, 2 ] = StringToFloat( parsedData[ 5 ] );
+				matrix[ 2, 0 ] = StringToFloat( parsedData[ 6 ] );
+				matrix[ 2, 1 ] = StringToFloat( parsedData[ 7 ] );
+				matrix[ 2, 2 ] = StringToFloat( parsedData[ 8 ] );
 				return matrix;
 			}
 			return Matrix4x4.identity;
@@ -918,25 +968,22 @@ namespace AmplifyShaderEditor
 			if( parsedData.Length == 16 )
 			{
 				Matrix4x4 matrix = new Matrix4x4();
-				matrix[ 0 , 0 ] = Convert.ToSingle( parsedData[ 0 ] );
-				matrix[ 0 , 1 ] = Convert.ToSingle( parsedData[ 1 ] );
-				matrix[ 0 , 2 ] = Convert.ToSingle( parsedData[ 2 ] );
-				matrix[ 0 , 3 ] = Convert.ToSingle( parsedData[ 3 ] );
-
-				matrix[ 1 , 0 ] = Convert.ToSingle( parsedData[ 4 ] );
-				matrix[ 1 , 1 ] = Convert.ToSingle( parsedData[ 5 ] );
-				matrix[ 1 , 2 ] = Convert.ToSingle( parsedData[ 6 ] );
-				matrix[ 1 , 3 ] = Convert.ToSingle( parsedData[ 7 ] );
-
-				matrix[ 2 , 0 ] = Convert.ToSingle( parsedData[ 8 ] );
-				matrix[ 2 , 1 ] = Convert.ToSingle( parsedData[ 9 ] );
-				matrix[ 2 , 2 ] = Convert.ToSingle( parsedData[ 10 ] );
-				matrix[ 2 , 3 ] = Convert.ToSingle( parsedData[ 11 ] );
-
-				matrix[ 3 , 0 ] = Convert.ToSingle( parsedData[ 12 ] );
-				matrix[ 3 , 1 ] = Convert.ToSingle( parsedData[ 13 ] );
-				matrix[ 3 , 2 ] = Convert.ToSingle( parsedData[ 14 ] );
-				matrix[ 3 , 3 ] = Convert.ToSingle( parsedData[ 15 ] );
+				matrix[ 0, 0 ] = StringToFloat( parsedData[ 0 ] );
+				matrix[ 0, 1 ] = StringToFloat( parsedData[ 1 ] );
+				matrix[ 0, 2 ] = StringToFloat( parsedData[ 2 ] );
+				matrix[ 0, 3 ] = StringToFloat( parsedData[ 3 ] );
+				matrix[ 1, 0 ] = StringToFloat( parsedData[ 4 ] );
+				matrix[ 1, 1 ] = StringToFloat( parsedData[ 5 ] );
+				matrix[ 1, 2 ] = StringToFloat( parsedData[ 6 ] );
+				matrix[ 1, 3 ] = StringToFloat( parsedData[ 7 ] );
+				matrix[ 2, 0 ] = StringToFloat( parsedData[ 8 ] );
+				matrix[ 2, 1 ] = StringToFloat( parsedData[ 9 ] );
+				matrix[ 2, 2 ] = StringToFloat( parsedData[ 10 ] );
+				matrix[ 2, 3 ] = StringToFloat( parsedData[ 11 ] );
+				matrix[ 3, 0 ] = StringToFloat( parsedData[ 12 ] );
+				matrix[ 3, 1 ] = StringToFloat( parsedData[ 13 ] );
+				matrix[ 3, 2 ] = StringToFloat( parsedData[ 14 ] );
+				matrix[ 3, 3 ] = StringToFloat( parsedData[ 15 ] );
 				return matrix;
 			}
 			return Matrix4x4.identity;

@@ -26,6 +26,9 @@ namespace AmplifyShaderEditor
 		private const string NodesDescTitle = "Node Info";
 		private const string CompatibleAssetsTitle = "Compatible Assets";
 
+		private const string NodeShortcutHelperLong = "Hold a shortcut key and click anywhere on the canvas to create a new node. Shortcut keys are shown inside [ ] placed in front of their respective node names on the Palette Tab.";
+		private const string NodeShortcutHelperShort = "Hold [key] + left-click canvas to create a node. Shortcut keys are shown as [X] in the Palette Tab.";
+
 		private const string KeyboardUsageTemplate = "[{0}] - {1}";
 		private const string m_lockedStr = "Locked Port";
 
@@ -101,7 +104,7 @@ namespace AmplifyShaderEditor
 			m_nodeInfoLabelStyle.clipping = TextClipping.Clip;
 			m_nodeInfoLabelStyle.imagePosition = ImagePosition.TextOnly;
 			m_nodeInfoLabelStyle.fontSize = ( int ) ( Constants.TextFieldFontSize );
-			
+
 
 			m_nodeInfoFoldoutStyle = new GUIStyle( ( GUIStyle ) "foldout" );
 			m_nodeInfoFoldoutStyle.fontStyle = FontStyle.Bold;
@@ -211,6 +214,7 @@ namespace AmplifyShaderEditor
 			Color originalColor = GUI.color;
 
 			DrawPort( WirePortDataType.OBJECT );
+			DrawPort( WirePortDataType.STRUCT );
 			DrawPort( WirePortDataType.INT );
 			DrawPort( WirePortDataType.FLOAT );
 			DrawPort( WirePortDataType.FLOAT2 );
@@ -218,6 +222,7 @@ namespace AmplifyShaderEditor
 			DrawPort( WirePortDataType.FLOAT4 );
 			DrawPort( WirePortDataType.COLOR );
 			DrawPort( WirePortDataType.SAMPLER2D );
+			DrawPort( WirePortDataType.FLOAT2x2 );
 			DrawPort( WirePortDataType.FLOAT3x3 );
 			DrawPort( WirePortDataType.FLOAT4x4 );
 
@@ -257,6 +262,7 @@ namespace AmplifyShaderEditor
 				DrawItem( "Shift/Ctrl + Node Select", "Add/Remove from selection" );
 				DrawItem( "Shift + Node Drag", "Node move with offset" );
 				DrawItem( "Ctrl + Node Drag", "Node move with snap" );
+				DrawItem( "Ctrl + Preview Hover", "Read pixel values of enabled preview channels under the cursor" );
 				DrawItem( "MMB/RMB + Drag Panel", "Scroll panel" );
 				DrawItem( "Alt + LMB Drag", "Additive box selection" );
 				DrawItem( "Alt + Shift + Drag", "Subtractive box selection" );
@@ -289,9 +295,14 @@ namespace AmplifyShaderEditor
 
 		void DrawItem( string name, string description )
 		{
+			DrawItem( name, description, string.Empty );
+		}
+
+		void DrawItem( string name, string description, string tooltip )
+		{
 			GUILayout.BeginHorizontal();
-			GUILayout.Label( name, m_labelStyleBold , GUILayout.Width( TitleLabelWidth ) );
-			GUILayout.Label( description, m_labelStyle );
+			GUILayout.Label( new GUIContent( name, tooltip ), m_labelStyleBold , GUILayout.Width( TitleLabelWidth ) );
+			GUILayout.Label( new GUIContent( description, tooltip ), m_labelStyle );
 			GUILayout.EndHorizontal();
 			GUILayout.Space( PixelSeparator );
 		}
@@ -307,10 +318,13 @@ namespace AmplifyShaderEditor
 				}
 
 				EditorGUI.indentLevel--;
+
+				EditorGUILayout.HelpBox( NodeShortcutHelperLong, MessageType.Info );
+
 				int count = m_nodesShortcuts.Count;
 				for ( int i = 0; i < count; i++ )
 				{
-					DrawItem( m_nodesShortcuts[ i ].Name, m_nodesShortcuts[ i ].Description );
+					DrawItem( m_nodesShortcuts[ i ].Name, m_nodesShortcuts[ i ].Description, NodeShortcutHelperShort );
 				}
 				EditorGUI.indentLevel++;
 			}

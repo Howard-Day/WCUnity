@@ -8,7 +8,9 @@ Shader /*ase_name*/"Hidden/Templates/CustomRTUpdate"/*end*/
 	SubShader
 	{
 		Tags { }
+
 		/*ase_all_modules*/
+
 		/*ase_pass*/
         Pass
         {
@@ -17,7 +19,8 @@ Shader /*ase_name*/"Hidden/Templates/CustomRTUpdate"/*end*/
             #include "UnityCustomRenderTexture.cginc"
             #pragma vertex ASECustomRenderTextureVertexShader
             #pragma fragment frag
-            #pragma target 3.0
+            #pragma target 3.5
+
 			/*ase_pragma*/
 
 			struct ase_appdata_customrendertexture
@@ -32,16 +35,49 @@ Shader /*ase_name*/"Hidden/Templates/CustomRTUpdate"/*end*/
 				float3 localTexcoord    : TEXCOORD0;    // Texcoord local to the update zone (== globalTexcoord if no partial update zone is specified)
 				float3 globalTexcoord   : TEXCOORD1;    // Texcoord relative to the complete custom texture
 				uint primitiveID        : TEXCOORD2;    // Index of the update zone (correspond to the index in the updateZones of the Custom Texture)
-				float3 direction        : TEXCOORD3;    // For cube textures, direction of the pixel being rendered in the cubemap
+				float3 position         : TEXCOORD3;    // For cube textures, position of the pixel being rendered in the cubemap
 				/*ase_interp(4,):sp=sp.xyzw;uv0=tc0;uv1=tc1;uv2=tc2;uv3=tc3*/
 			};
 
 			/*ase_globals*/
 
-			ase_v2f_customrendertexture ASECustomRenderTextureVertexShader(ase_appdata_customrendertexture IN /*ase_vert_input*/ )
+			float3 CustomRenderTextureComputeCubePosition( float2 globalTexcoord )
+			{
+				float2 xy = globalTexcoord * 2.0 - 1.0;
+				float3 position;
+				if ( _CustomRenderTextureCubeFace == 0.0 )
+				{
+					position = float3( 1.0, -xy.y, -xy.x );
+				}
+				else if ( _CustomRenderTextureCubeFace == 1.0 )
+				{
+					position = float3( -1.0, -xy.y, xy.x );
+				}
+				else if ( _CustomRenderTextureCubeFace == 2.0 )
+				{
+					position = float3( xy.x, 1.0, xy.y );
+				}
+				else if ( _CustomRenderTextureCubeFace == 3.0 )
+				{
+					position = float3( xy.x, -1.0, -xy.y );
+				}
+				else if ( _CustomRenderTextureCubeFace == 4.0 )
+				{
+					position = float3( xy.x, -xy.y, 1.0 );
+				}
+				else if ( _CustomRenderTextureCubeFace == 5.0 )
+				{
+					position = float3( -xy.x, -xy.y, -1.0 );
+				}
+				return position;
+			}
+
+			ase_v2f_customrendertexture ASECustomRenderTextureVertexShader( ase_appdata_customrendertexture IN /*ase_vert_input*/ )
 			{
 				ase_v2f_customrendertexture OUT;
+
 				/*ase_vert_code:IN=ase_appdata_customrendertexture;OUT=ase_v2f_customrendertexture*/
+
 			#if UNITY_UV_STARTS_AT_TOP
 				const float2 vertexPositions[6] =
 				{
@@ -134,23 +170,26 @@ Shader /*ase_name*/"Hidden/Templates/CustomRTUpdate"/*end*/
 					}
 				}
 
-				OUT.vertex = float4(pos, 0.0, 1.0);
+				OUT.vertex = float4(pos, UNITY_NEAR_CLIP_VALUE, 1.0);
 				OUT.primitiveID = asuint(CustomRenderTexturePrimitiveIDs[primitiveID]);
 				OUT.localTexcoord = float3(texCoords[vertexID], CustomRenderTexture3DTexcoordW);
 				OUT.globalTexcoord = float3(pos.xy * 0.5 + 0.5, CustomRenderTexture3DTexcoordW);
 			#if UNITY_UV_STARTS_AT_TOP
 				OUT.globalTexcoord.y = 1.0 - OUT.globalTexcoord.y;
 			#endif
-				OUT.direction = CustomRenderTextureComputeCubeDirection(OUT.globalTexcoord.xy);
-
+				OUT.position = CustomRenderTextureComputeCubePosition( OUT.globalTexcoord.xy );
 				return OUT;
 			}
 
-            float4 frag(ase_v2f_customrendertexture IN /*ase_frag_input*/) : COLOR
+            float4 frag( ase_v2f_customrendertexture IN /*ase_frag_input*/ ) : SV_Target
             {
-				float4 finalColor;
+				/*ase_local_var:wp*/half3 PositionWS = IN.position;
+				/*ase_local_var:wn*/half3 NormalWS = normalize( IN.position );
+
 				/*ase_frag_code:IN=ase_v2f_customrendertexture*/
-                finalColor = /*ase_frag_out:Frag Color;Float4*/float4(1,1,1,1)/*end*/;
+
+                float4 finalColor = /*ase_frag_out:Frag Color;Float4*/float4(1,1,1,1)/*end*/;
+
 				return finalColor;
             }
             ENDCG

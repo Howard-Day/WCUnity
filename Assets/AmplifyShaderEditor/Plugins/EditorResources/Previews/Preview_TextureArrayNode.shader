@@ -2,11 +2,11 @@ Shader "Hidden/TextureArrayNode"
 {
 	Properties
 	{
-		_A ("_UVs", 2D) = "white" {}
-		_B ("_Index", 2D) = "white" {}
-		_C ("_Lod", 2D) = "white" {}
-		_D ("_NormalScale", 2D) = "white" {}
-		_G ("_Tex", 2D) = "white" {}
+		_A ("_UVs", 2DArray) = "white" {}
+		_B ("_Index", 2DArray) = "white" {}
+		_C ("_Lod", 2DArray) = "white" {}
+		_D ("_NormalScale", 2DArray) = "white" {}
+		_G ("_Tex", 2DArray) = "white" {}
 		_TexConnected ("_TexConnected", Int) = 0
 	}
 	SubShader
@@ -18,14 +18,15 @@ Shader "Hidden/TextureArrayNode"
 			#pragma fragment frag
 			#pragma target 3.5
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#include "UnityStandardUtils.cginc"
 
 			uniform UNITY_DECLARE_TEX2DARRAY( _Sampler );
-			sampler2D _A;
-			sampler2D _B;
-			sampler2D _C;
-			sampler2D _D;
-			sampler2D _G;
+			ASE_PORT( _A );
+			ASE_PORT( _B );
+			ASE_PORT( _C );
+			ASE_PORT( _D );
+			ASE_PORT( _G );
 			float _CustomUVs;
 			float _LodType;
 			float _Unpack;
@@ -35,19 +36,19 @@ Shader "Hidden/TextureArrayNode"
 			{
 				float2 uvs = i.uv;
 				if ( _CustomUVs == 1 )
-					uvs = tex2D( _A, i.uv ).xy;
+					uvs = ASE_SAMPLE_PORT( _A, i.uv ).xy;
 
-				float n = tex2D( _D, i.uv ).r;
+				float n = ASE_SAMPLE_PORT( _D, i.uv ).r;
 				float4 c = 0;
 				if ( _LodType == 1 ) {
-					float lod = tex2D( _C, i.uv ).r;
-					c = UNITY_SAMPLE_TEX2DARRAY_LOD( _Sampler, float3( uvs, tex2D( _B, i.uv ).r ), lod );
+					float lod = ASE_SAMPLE_PORT( _C, i.uv ).r;
+					c = UNITY_SAMPLE_TEX2DARRAY_LOD( _Sampler, float3( uvs, ASE_SAMPLE_PORT( _B, i.uv ).r ), lod );
 				}
 				else if( _TexConnected == 0) {
-					c = UNITY_SAMPLE_TEX2DARRAY( _Sampler, float3( uvs, tex2D( _B, i.uv ).r ) );
+					c = UNITY_SAMPLE_TEX2DARRAY( _Sampler, float3( uvs, ASE_SAMPLE_PORT( _B, i.uv ).r ) );
 				} 
 				else {
-					c = tex2D( _G, uvs );
+					c = ASE_SAMPLE_PORT( _G, uvs );
 				}
 
 				if ( _Unpack == 1 ) 

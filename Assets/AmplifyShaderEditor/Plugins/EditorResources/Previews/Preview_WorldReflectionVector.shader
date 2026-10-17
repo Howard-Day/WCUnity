@@ -2,7 +2,7 @@ Shader "Hidden/WorldReflectionVector"
 {
 	Properties
 	{
-		_A ("_TangentNormal", 2D) = "white" {}
+		_A ("_TangentNormal", 2DArray) = "white" {}
 	}
 	SubShader
 	{
@@ -11,17 +11,17 @@ Shader "Hidden/WorldReflectionVector"
 			CGPROGRAM
 			#pragma vertex vert_img
 			#pragma fragment frag
+			#pragma target 3.5
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 
 			float4 frag(v2f_img i) : SV_Target
 			{
-				float2 xy = 2 * i.uv - 1;
-				float z = -sqrt(1-saturate(dot(xy,xy)));
-				float3 vertexPos = float3(xy, z);
-				float3 normal = normalize(vertexPos);
-				float3 worldNormal = UnityObjectToWorldNormal(normal);
+				float3 vertexPos = PreviewFragmentPositionOS( i.uv );
+				float3 normal = PreviewFragmentNormalOS( i.uv );
+				float3 worldNormal = UnityObjectToWorldNormal( normal );
 
-				float3 worldViewDir = normalize(float3(0,0,-5) - vertexPos);
+				float3 worldViewDir = normalize(preview_WorldSpaceCameraPos - vertexPos);
 				float3 worldRefl = -worldViewDir;
 				worldRefl = reflect( worldRefl, worldNormal );
 				
@@ -35,21 +35,21 @@ Shader "Hidden/WorldReflectionVector"
 			CGPROGRAM
 			#pragma vertex vert_img
 			#pragma fragment frag
+			#pragma target 3.5
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 
-			sampler2D _A;
+			ASE_PORT( _A );
 
 			float4 frag(v2f_img i) : SV_Target
 			{
-				float2 xy = 2 * i.uv - 1;
-				float z = -sqrt(1-saturate(dot(xy,xy)));
-				float3 vertexPos = float3(xy, z);
-				float3 normal = normalize(vertexPos);
-				float3 worldNormal = UnityObjectToWorldNormal(normal);
+				float3 vertexPos = PreviewFragmentPositionOS( i.uv );
+				float3 normal = PreviewFragmentNormalOS( i.uv );
+				float3 worldNormal = UnityObjectToWorldNormal( normal );
 
-				float3 tangent = normalize(float3( -z, xy.y*0.01, xy.x ));
+				float3 tangent = PreviewFragmentTangentOS( i.uv );
 				float3 worldPos = mul(unity_ObjectToWorld, float4(vertexPos,1)).xyz;
-				float3 worldViewDir = normalize(float3(0,0,-5) - vertexPos);
+				float3 worldViewDir = normalize(preview_WorldSpaceCameraPos - vertexPos);
 				
 				float3 worldTangent = UnityObjectToWorldDir(tangent);
 				float tangentSign = -1;
@@ -65,7 +65,7 @@ Shader "Hidden/WorldReflectionVector"
 				
 				// Needs further checking
 				//float3 tangentNormal = tex2Dlod(_A, float4(sphereUVs,0,0)).xyz;
-				float3 tangentNormal = tex2D(_A, sphereUVs).xyz;
+				float3 tangentNormal = ASE_SAMPLE_PORT( _A, sphereUVs).xyz;
 
 				worldRefl = reflect( worldRefl, half3( dot( tSpace0.xyz, tangentNormal ), dot( tSpace1.xyz, tangentNormal ), dot( tSpace2.xyz, tangentNormal ) ) );
 				

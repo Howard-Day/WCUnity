@@ -28,7 +28,8 @@ namespace AmplifyShaderEditor
 		protected override void CommonInit( int uniqueId )
 		{
 			base.CommonInit( uniqueId );
-			m_inputPorts[ 0 ].AddPortForbiddenTypes(	WirePortDataType.FLOAT3x3,
+			m_inputPorts[ 0 ].AddPortForbiddenTypes(	WirePortDataType.FLOAT2x2,
+														WirePortDataType.FLOAT3x3,
 														WirePortDataType.FLOAT4x4,
 														WirePortDataType.SAMPLER1D,
 														WirePortDataType.SAMPLER2D,
@@ -167,6 +168,33 @@ namespace AmplifyShaderEditor
 			//	return m_outputPorts[ 0 ].LocalValue;
 			//}
 		}
+
+		public override void PropagateNodeData( NodeData nodeData, ref MasterNodeDataCollector dataCollector )
+		{
+			if ( !dataCollector.Touch( nodeData.Category, this, nodeData.Fields ) )
+			{
+				UIUtils.SetCategoryInBitArray( ref m_category, nodeData.Category );
+				nodeData.GraphDepth += 1;
+				if ( nodeData.GraphDepth > m_graphDepth )
+				{
+					m_graphDepth = nodeData.GraphDepth;
+				}
+
+				// @diogo: the input is generated vertex-side, so its demand belongs to the vertex slot
+				if ( nodeData.Category != MasterNodePortCategory.Vertex && nodeData.Category != MasterNodePortCategory.Tessellation )
+				{
+					nodeData.Category = MasterNodePortCategory.Vertex;
+				}
+
+				if ( m_inputPorts[ 0 ].IsConnected )
+				{
+					nodeData.OutputPortId = m_inputPorts[ 0 ].GetConnection( 0 ).PortId;
+					nodeData.Fields = StructFieldMask.All;
+					m_inputPorts[ 0 ].GetOutputNode().PropagateNodeData( nodeData, ref dataCollector );
+				}
+			}
+		}
+
 		public override void ReadFromString( ref string[] nodeParams )
 		{
 			base.ReadFromString( ref nodeParams );

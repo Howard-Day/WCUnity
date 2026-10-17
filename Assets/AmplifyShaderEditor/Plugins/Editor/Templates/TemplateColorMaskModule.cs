@@ -44,6 +44,18 @@ namespace AmplifyShaderEditor
 			m_inlineColorMask.CopyFrom( other.InlineColorMask );
 		}
 
+		// Copies the mask channels but not the render target index, which belongs to the pass the
+		// mask is declared in.
+		public void MirrorFrom( TemplateColorMaskModule other )
+		{
+			for ( int i = 0; i < m_colorMask.Length; i++ )
+			{
+				m_colorMask[ i ] = other.ColorMask[ i ];
+			}
+
+			m_inlineColorMask.CopyFrom( other.InlineColorMask, true );
+		}
+
 		public void ConfigureFromTemplateData( TemplateColorMaskData data )
 		{
 			bool newValidData = ( data.DataCheck == TemplateDataCheck.Valid );

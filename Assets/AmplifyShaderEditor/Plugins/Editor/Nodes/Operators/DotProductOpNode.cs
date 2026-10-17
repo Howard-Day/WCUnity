@@ -9,6 +9,8 @@ namespace AmplifyShaderEditor
 	[NodeAttributes( "Dot", "Vector Operators", "Scalar dot product of two vectors ( A . B )", null, KeyCode.Period )]
 	public sealed class DotProductOpNode : DynamicTypeNode
 	{
+		static readonly int _Type_PID = Shader.PropertyToID( "_Type" );
+
 		protected override void CommonInit( int uniqueId )
 		{
 			base.CommonInit( uniqueId );
@@ -29,6 +31,31 @@ namespace AmplifyShaderEditor
 			string result = "dot( " + m_inputA + " , " + m_inputB + " )";
 			RegisterLocalVariable( 0, result, ref dataCollector, "dotResult" + OutputId );
 			return m_outputPorts[ 0 ].LocalValue( dataCollector.PortCategory );
+		}
+
+		private int GetInputPortType( int inputPort )
+		{
+			int type;
+			switch ( m_inputPorts[ 0 ].DataType )
+			{
+				case WirePortDataType.FLOAT:
+				case WirePortDataType.INT:
+					type = 1; break;
+				case WirePortDataType.FLOAT2:
+					type = 2; break;
+				case WirePortDataType.FLOAT3:
+					type = 3; break;
+				case WirePortDataType.FLOAT4:
+				default:
+					type = 4; break;
+			}
+			return type;
+		}
+
+		public override void SetPreviewInputs()
+		{
+			base.SetPreviewInputs();
+			PreviewMaterial.SetInt( _Type_PID, Mathf.Max( GetInputPortType( 0 ), GetInputPortType( 1 ) ) );
 		}
 	}
 }

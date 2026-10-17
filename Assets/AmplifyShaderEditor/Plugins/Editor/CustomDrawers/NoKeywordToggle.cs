@@ -5,21 +5,25 @@ using UnityEngine;
 using UnityEditor;
 using System;
 
-public class NoKeywordToggle : MaterialPropertyDrawer
+namespace AmplifyShaderEditor
 {
-    
-    public override void OnGUI(Rect position, MaterialProperty prop, String label, MaterialEditor editor) {
-        bool value = (prop.floatValue != 0.0f);
+	public class NoKeywordToggle : MaterialPropertyDrawer
+	{
 
-        EditorGUI.BeginChangeCheck();
+		public override void OnGUI( Rect position, MaterialProperty prop, String label, MaterialEditor editor )
 		{
-			EditorGUI.showMixedValue = prop.hasMixedValue;
-			value = EditorGUI.Toggle( position, label, value );
-			EditorGUI.showMixedValue = false;
+			bool value = ( prop.floatValue != 0.0f );
+
+			EditorGUI.BeginChangeCheck();
+			{
+				EditorGUI.showMixedValue = prop.hasMixedValue;
+				value = EditorGUI.Toggle( position, label, value );
+				EditorGUI.showMixedValue = false;
+			}
+			if ( EditorGUI.EndChangeCheck() )
+			{
+				prop.floatValue = value ? 1.0f : 0.0f;
+			}
 		}
-        if (EditorGUI.EndChangeCheck())
-		{
-            prop.floatValue = value ? 1.0f : 0.0f;
-        }
-    }
+	}
 }

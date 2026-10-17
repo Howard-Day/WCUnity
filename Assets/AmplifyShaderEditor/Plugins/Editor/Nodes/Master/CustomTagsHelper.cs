@@ -11,6 +11,7 @@ namespace AmplifyShaderEditor
 		private const string TagFormat = "\"{0}\"=\"{1}\"";
 		public string TagName;
 		public string TagValue;
+		public bool TagImmutable = false; // @diogo: when true, it cannot be changed by shader and always matches template
 		public int TagId = -1;
 		public bool TagFoldout = true;
 
@@ -40,6 +41,7 @@ namespace AmplifyShaderEditor
 		{
 			TagName = other.TagName;
 			TagValue = other.TagValue;
+			TagImmutable = other.TagImmutable;
 			TagId = other.TagId;
 			TagFoldout = other.TagFoldout;
 
@@ -145,6 +147,16 @@ namespace AmplifyShaderEditor
 		{
 			TagName = name;
 			TagValue = value;
+			TagImmutable = false;
+			TagId = id;
+			CheckSpecialTag();
+		}
+
+		public CustomTagData( string name, string value, bool immutable, int id )
+		{
+			TagName = name;
+			TagValue = value;
+			TagImmutable = immutable;
 			TagId = id;
 			CheckSpecialTag();
 		}

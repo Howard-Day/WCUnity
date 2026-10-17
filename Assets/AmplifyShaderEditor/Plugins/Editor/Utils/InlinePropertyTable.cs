@@ -2,9 +2,11 @@ using UnityEngine;
 using UnityEditor;
 using System;
 using System.Collections.Generic;
+using Unity.Scripting.LifecycleManagement;
 
 namespace AmplifyShaderEditor
 {
+	[NoAutoStaticsCleanup]
 	public class InlinePropertyTable
 	{
 		// @diogo: Used to keep track of inline properties during Graph loading process, in order to resolve

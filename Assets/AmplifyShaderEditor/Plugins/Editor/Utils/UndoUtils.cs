@@ -19,30 +19,8 @@ namespace AmplifyShaderEditor
 
 		public static void UnregisterUndoRedoCallback( Undo.UndoRedoCallback onUndoRedo )
 		{
-			if ( Preferences.User.EnableUndo )
-			{
-				Undo.undoRedoPerformed -= onUndoRedo;
-			}
-		}
-
-		public static void RegisterCompleteObjectUndo( UnityEngine.Object objectToUndo, string name )
-		{
-			if ( Preferences.User.EnableUndo )
-			{
-				Profiler.BeginSample( "Undo_RegisterCompleteObjectUndo" );
-				Undo.RegisterCompleteObjectUndo( objectToUndo, name );
-				Profiler.EndSample();
-			}
-		}
-
-		public static void RegisterCreatedObjectUndo( UnityEngine.Object objectToUndo, string name )
-		{
-			if ( Preferences.User.EnableUndo )
-			{
-				Profiler.BeginSample( "Undo_RegisterCreatedObjectUndo" );
-				Undo.RegisterCreatedObjectUndo( objectToUndo, name );
-				Profiler.EndSample();
-			}
+			// @diogo: unconditional on purpose: gating on EnableUndo would leak the subscription if the pref flips off mid-session
+			Undo.undoRedoPerformed -= onUndoRedo;
 		}
 
 		public static void ClearUndo( UnityEngine.Object obj )
@@ -55,34 +33,10 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		public static void RecordObject( UnityEngine.Object objectToUndo, string name )
-		{
-			if ( Preferences.User.EnableUndo )
-			{
-				Profiler.BeginSample( "Undo_RecordObject" );
-				Undo.RecordObject( objectToUndo, name );
-				Profiler.EndSample();
-			}
-		}
-
-		public static void RecordObjects( UnityEngine.Object[] objectsToUndo, string name )
-		{
-			if ( Preferences.User.EnableUndo )
-			{
-				Profiler.BeginSample( "Undo_RecordObjects" );
-				Undo.RecordObjects( objectsToUndo, name );
-				Profiler.EndSample();
-			}
-		}
-
+		// Destroys the object without an undo record; the snapshot proxy restores it on undo.
 		public static void DestroyObjectImmediate( UnityEngine.Object objectToUndo )
 		{
-			if ( Preferences.User.EnableUndo )
-			{
-				Profiler.BeginSample( "Undo_DestroyObjectImmediate" );
-				Undo.DestroyObjectImmediate( objectToUndo );
-				Profiler.EndSample();
-			}
+			UnityEngine.Object.DestroyImmediate( objectToUndo );
 		}
 
 		public static void PerformUndo()

@@ -203,28 +203,4 @@ namespace AmplifyShaderEditor
 			}
 		}
 	}
-
-	internal static class EditorGUILayoutEx
-	{
-		public static System.Type Type = typeof( EditorGUILayout );
-		public static Gradient GradientField( Gradient value, params GUILayoutOption[] options )
-		{
-			return EditorGUILayout.GradientField( value, options );
-		}
-
-		public static Gradient GradientField( string label, Gradient value, params GUILayoutOption[] options )
-		{
-			return EditorGUILayout.GradientField( label, value, options );
-		}
-	}
-
-	internal static class EditorGUIEx
-	{
-		public static System.Type Type = typeof( EditorGUI );
-
-		public static Gradient GradientField( Rect position, Gradient gradient )
-		{
-			return EditorGUI.GradientField( position, gradient );
-		}
-	}
 }

@@ -14,7 +14,7 @@ namespace AmplifyShaderEditor
 		TemplateShader	= 1 << 3
 	}
 
-
+	[Serializable]
 	[AttributeUsage( AttributeTargets.Class )]
 	public class NodeAttributes : Attribute
 	{
@@ -24,14 +24,14 @@ namespace AmplifyShaderEditor
 		public string Category;
 		public KeyCode ShortcutKey;
 		public bool Available;
-		public System.Type[] CastType; // Type that will be converted to AttribType if dropped on the canvas ... p.e. dropping a texture2d on the canvas will generate a sampler2d node 
+		public System.Type[] CastType; // Type that will be converted to AttribType if dropped on the canvas ... p.e. dropping a texture2d on the canvas will generate a sampler2d node
 		public bool Deprecated;
 		public string DeprecatedAlternative;
 		public System.Type DeprecatedAlternativeType;
 		public bool FromCommunity;
 		public string CustomCategoryColor; // Color created via a string containing its hexadecimal representation
-		public int SortOrderPriority; // to be used when name comparing on sorting 
-		public int NodeAvailabilityFlags;// used to define where this node can be used 
+		public int SortOrderPriority; // to be used when name comparing on sorting
+		public int NodeAvailabilityFlags;// used to define where this node can be used
 		private string m_nodeUrl;
 		public string Community;
 		public string Tags;

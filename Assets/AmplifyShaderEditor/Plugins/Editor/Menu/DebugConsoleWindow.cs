@@ -26,21 +26,13 @@ namespace AmplifyShaderEditor
 		private string m_root = string.Empty;
 #if ASE_CONSOLE_WINDOW
 		public readonly static bool DeveloperMode = true;
-		public static bool UseShaderPanelsInfo = true;
 		[MenuItem( "Window/Amplify Shader Editor/Open Debug Console" )]
 		static void OpenMainShaderGraph()
 		{
 			OpenWindow();
 		}
-		[MenuItem( "Window/Amplify Shader Editor/Create Template Menu Items" )]
-		public static void CreateTemplateMenuItems()
-		{
-			UIUtils.CurrentWindow.TemplatesManagerInstance.CreateTemplateMenuItems();
-		}
-
 #else
 		public readonly static bool DeveloperMode = false;
-		public static bool UseShaderPanelsInfo = false;
 #endif
 
 		public static DebugConsoleWindow OpenWindow()

@@ -1,0 +1,116 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 944495770235517469dde353ea417f49, type: 3}
+  m_Name: HDRP
+  m_EditorClassIdentifier: 
+  PackageName: com.unity.render-pipelines.high-definition
+  Templates:
+  - Template: {fileID: 4800000, guid: d345501910c196f4a81c9eff8a0a5ad7, type: 3}
+    Versions:
+    - VersionRange:
+        Min: 14
+        Max: 15
+      Override: {fileID: 102900000, guid: fbb37fa862af43a4d8d8ff3696114c99, type: 3}
+    - VersionRange:
+        Min: 15
+        Max: 16
+      Override: {fileID: 102900000, guid: bc6e28d653906ec4fbfd3275f10d17e7, type: 3}
+    - VersionRange:
+        Min: 16
+        Max: 17
+      Override: {fileID: 102900000, guid: 27f3672985dda2f40ae9a230502c9e7c, type: 3}
+    - VersionRange:
+        Min: 17
+        Max: 18
+      Override: {fileID: 102900000, guid: c7762184a6a495244947fcb8dbd4a243, type: 3}
+    TemplateName: Hidden/HDRP/Decal
+    TemplateTimestamp: 639105672058419076
+  - Template: {fileID: 4800000, guid: 41e04be03f2c20941bc749271be1c937, type: 3}
+    Versions:
+    - VersionRange:
+        Min: 14
+        Max: 15
+      Override: {fileID: 102900000, guid: e1a6c1b137fe13c44a0f796a13e405f8, type: 3}
+    - VersionRange:
+        Min: 15
+        Max: 16
+      Override: {fileID: 102900000, guid: 28e7aa82b3206424e87cb29fb640a356, type: 3}
+    - VersionRange:
+        Min: 16
+        Max: 17
+      Override: {fileID: 102900000, guid: 1310b9484ea75434d8936547d85b58b3, type: 3}
+    - VersionRange:
+        Min: 17
+        Max: 18
+      Override: {fileID: 102900000, guid: 6959ca9dfcedd6e4aaff65c7086f7d22, type: 3}
+    TemplateName: Hidden/HDRP/Fabric
+    TemplateTimestamp: 639105672030107994
+  - Template: {fileID: 4800000, guid: e4fe21624ace6de4b9fbaabdda0c51de, type: 3}
+    Versions:
+    - VersionRange:
+        Min: 14
+        Max: 15
+      Override: {fileID: 102900000, guid: 3b948ea3730697b43bcd01eaf33f330e, type: 3}
+    - VersionRange:
+        Min: 15
+        Max: 16
+      Override: {fileID: 102900000, guid: 20b2be996ec78ab4a8e7677cb04422a3, type: 3}
+    - VersionRange:
+        Min: 16
+        Max: 17
+      Override: {fileID: 102900000, guid: cbea886d262f29f429a939bb606ef0bb, type: 3}
+    - VersionRange:
+        Min: 17
+        Max: 18
+      Override: {fileID: 102900000, guid: 6d5e1f0ef5b5b5540b32f8a92c9f1fc8, type: 3}
+    TemplateName: Hidden/HDRP/Hair
+    TemplateTimestamp: 639105672003079758
+  - Template: {fileID: 4800000, guid: 53b46d85872c5b24c8f4f0a1c3fe4c87, type: 3}
+    Versions:
+    - VersionRange:
+        Min: 14
+        Max: 15
+      Override: {fileID: 102900000, guid: c521004b7b228f4448f60aa8c36ef633, type: 3}
+    - VersionRange:
+        Min: 15
+        Max: 16
+      Override: {fileID: 102900000, guid: 8b1effb97a88d544999362d448d6b782, type: 3}
+    - VersionRange:
+        Min: 16
+        Max: 17
+      Override: {fileID: 102900000, guid: 6d3e05e0baa797a4887d7cedd2cbd396, type: 3}
+    - VersionRange:
+        Min: 17
+        Max: 18
+      Override: {fileID: 102900000, guid: 3c943aa514e3841439a231fe338cec75, type: 3}
+    TemplateName: Hidden/HDRP/Lit
+    TemplateTimestamp: 639105671967984047
+  - Template: {fileID: 4800000, guid: 7f5cb9c3ea6481f469fdd856555439ef, type: 3}
+    Versions:
+    - VersionRange:
+        Min: 14
+        Max: 15
+      Override: {fileID: 102900000, guid: b78996762d5452f438e4a4db564380f2, type: 3}
+    - VersionRange:
+        Min: 15
+        Max: 16
+      Override: {fileID: 102900000, guid: c40474d5f7354334eb2bcfa7b1bdea51, type: 3}
+    - VersionRange:
+        Min: 16
+        Max: 17
+      Override: {fileID: 102900000, guid: c99955e90ff310244b014060d85070ee, type: 3}
+    - VersionRange:
+        Min: 17
+        Max: 18
+      Override: {fileID: 102900000, guid: 2f256b42c1304d94d902abc256709794, type: 3}
+    TemplateName: Hidden/HDRP/Unlit
+    TemplateTimestamp: 639105671935408560

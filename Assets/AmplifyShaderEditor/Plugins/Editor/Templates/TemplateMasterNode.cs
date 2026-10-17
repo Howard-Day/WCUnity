@@ -112,10 +112,10 @@ namespace AmplifyShaderEditor
 
 		void FetchCurrentTemplate()
 		{
-			m_currentTemplate = m_containerGraph.ParentWindow.TemplatesManagerInstance.GetTemplate( m_templateGUID ) as TemplateData;
+			m_currentTemplate = TemplatesManager.Instance.GetTemplate( m_templateGUID ) as TemplateData;
 			if( m_currentTemplate == null )
 			{
-				m_currentTemplate = m_containerGraph.ParentWindow.TemplatesManagerInstance.GetTemplate( m_templateName ) as TemplateData;
+				m_currentTemplate = TemplatesManager.Instance.GetTemplate( m_templateName ) as TemplateData;
 			}
 
 			if( m_currentTemplate != null )
@@ -148,7 +148,7 @@ namespace AmplifyShaderEditor
 		{
 			FetchCurrentTemplate();
 
-			int templateCount = m_containerGraph.ParentWindow.TemplatesManagerInstance.TemplateCount;
+			int templateCount = TemplatesManager.Instance.TemplateCount;
 			m_availableCategories = new MasterNodeCategoriesData[ templateCount + 1 ];
 			m_availableCategoryLabels = new GUIContent[ templateCount + 1 ];
 
@@ -162,7 +162,7 @@ namespace AmplifyShaderEditor
 			for( int i = 0; i < templateCount; i++ )
 			{
 				int idx = i + 1;
-				TemplateData templateData = m_containerGraph.ParentWindow.TemplatesManagerInstance.GetTemplate( i ) as TemplateData;
+				TemplateData templateData = TemplatesManager.Instance.GetTemplate( i ) as TemplateData;
 
 				if( m_currentTemplate != null && m_currentTemplate.GUID.Equals( templateData.GUID ) )
 					m_masterNodeCategory = idx;
@@ -174,11 +174,11 @@ namespace AmplifyShaderEditor
 
 		void SetCategoryIdxFromTemplate()
 		{
-			int templateCount = m_containerGraph.ParentWindow.TemplatesManagerInstance.TemplateCount;
+			int templateCount = TemplatesManager.Instance.TemplateCount;
 			for( int i = 0; i < templateCount; i++ )
 			{
 				int idx = i + 1;
-				TemplateData templateData = m_containerGraph.ParentWindow.TemplatesManagerInstance.GetTemplate( i ) as TemplateData;
+				TemplateData templateData = TemplatesManager.Instance.GetTemplate( i ) as TemplateData;
 				if( templateData != null && m_currentTemplate != null && m_currentTemplate.GUID.Equals( templateData.GUID ) )
 					m_masterNodeCategory = idx;
 			}
@@ -225,6 +225,12 @@ namespace AmplifyShaderEditor
 				int newPropertyCount = m_currentTemplate.AvailableShaderProperties.Count;
 				for( int i = 0; i < newPropertyCount; i++ )
 				{
+					// Unused properties are not reserved, leaving their names free for users to declare
+					if ( !m_currentTemplate.AvailableShaderProperties[ i ].NameInUse )
+					{
+						continue;
+					}
+
 					int nodeId = UIUtils.CheckUniformNameOwner( m_currentTemplate.AvailableShaderProperties[ i ].PropertyName );
 					if( nodeId > -1 )
 					{
@@ -286,10 +292,18 @@ namespace AmplifyShaderEditor
 					string pathname = AssetDatabase.GUIDToAssetPath( m_currentTemplate.GUID );
 					if( !string.IsNullOrEmpty( pathname ) )
 					{
-						Shader selectedTemplate = AssetDatabase.LoadAssetAtPath<Shader>( pathname );
-						if( selectedTemplate != null )
+						// @diogo: when a manifest overrides this template for the installed SRP version, edit the versioned .template file instead
+						if( ASEPackageManagerHelper.TryGetActiveTemplateOverridePath( m_currentTemplate.GUID, out string overridePath ) )
 						{
-							AssetDatabase.OpenAsset( selectedTemplate, 1 );
+							UnityEditorInternal.InternalEditorUtility.OpenFileAtLineExternal( overridePath, 1 );
+						}
+						else
+						{
+							Shader selectedTemplate = AssetDatabase.LoadAssetAtPath<Shader>( pathname );
+							if( selectedTemplate != null )
+							{
+								AssetDatabase.OpenAsset( selectedTemplate, 1 );
+							}
 						}
 					}
 				}
@@ -349,19 +363,19 @@ namespace AmplifyShaderEditor
 
 					if( m_currentDataCollector.DirtySpecialLocalVariables )
 					{
-						string cleanVariables = m_currentDataCollector.SpecialLocalVariables.Replace( "\t", string.Empty );
+						string cleanVariables = IOUtils.ReindentByBraceDepth( m_currentDataCollector.SpecialLocalVariables );
 						m_currentDataCollector.AddInstructions( cleanVariables, false );
 						m_currentDataCollector.ClearSpecialLocalVariables();
 					}
 
 					if( m_currentDataCollector.DirtyVertexVariables )
 					{
-						string cleanVariables = m_currentDataCollector.VertexLocalVariables.Replace( "\t", string.Empty );
+						string cleanVariables = IOUtils.ReindentByBraceDepth( m_currentDataCollector.VertexLocalVariables );
 						m_currentDataCollector.AddVertexInstruction( cleanVariables, UniqueId, false );
 						m_currentDataCollector.ClearVertexLocalVariables();
 					}
 
-					// fill functions 
+					// fill functions
 					for( int j = 0; j < m_currentDataCollector.InstructionsList.Count; j++ )
 					{
 						fragmentInstructions.Add( m_currentDataCollector.InstructionsList[ j ].PropertyName );
@@ -447,11 +461,19 @@ namespace AmplifyShaderEditor
 			int shaderPropertiesAmount = m_currentTemplate.AvailableShaderProperties.Count;
 			for( int i = 0; i < shaderPropertiesAmount; i++ )
 			{
+				// Unused properties have no template declarations, so let user nodes declare their own uniforms;
+				// uniforms declared unconditionally on the template body must still be soft registered even while
+				// their property is commented out, so user nodes reusing the name don't redeclare them
+				if ( !m_currentTemplate.AvailableShaderProperties[ i ].NameInUse &&
+					!m_currentTemplate.AvailableShaderProperties[ i ].UniformDeclaredUnconditionally )
+				{
+					continue;
+				}
 				m_currentDataCollector.SoftRegisterUniform( m_currentTemplate.AvailableShaderProperties[ i ] );
 			}
 			m_containerGraph.CheckPropertiesAutoRegister( ref m_currentDataCollector );
 
-			//Sort ports by both 
+			//Sort ports by both
 			List<InputPort> fragmentPorts = new List<InputPort>();
 			List<InputPort> vertexPorts = new List<InputPort>();
 			SortInputPorts( ref vertexPorts, ref fragmentPorts );
@@ -475,6 +497,7 @@ namespace AmplifyShaderEditor
 				vertexInstructions.Add( m_currentDataCollector.VertexInterpDeclList[ i ] );
 			}
 
+			vertexInstructions.AddRange( m_currentDataCollector.TemplateDataCollectorInstance.FlushConditionalInterpolators() );
 			vertexInstructions.AddRange( m_currentDataCollector.TemplateDataCollectorInstance.GetInterpUnusedChannels() );
 			//Fill common local variables and operations
 
@@ -523,6 +546,11 @@ namespace AmplifyShaderEditor
 			if( m_currentTemplate.DepthData.ValidZWrite )
 			{
 				validBody = m_currentTemplate.FillTemplateBody( m_currentTemplate.DepthData.ZWriteModeId, ref shaderBody, m_depthOphelper.CurrentZWriteMode ) && validBody;
+			}
+
+			if( m_currentTemplate.DepthData.ValidZClip )
+			{
+				validBody = m_currentTemplate.FillTemplateBody( m_currentTemplate.DepthData.ZClipModeId, ref shaderBody, m_depthOphelper.CurrentZClipMode ) && validBody;
 			}
 
 			if( m_currentTemplate.DepthData.ValidZTest )
@@ -599,14 +627,14 @@ namespace AmplifyShaderEditor
 					templateShaderName = GetCurrentParam( ref nodeParams );
 				}
 
-				TemplateData template = m_containerGraph.ParentWindow.TemplatesManagerInstance.GetTemplate( templateGUID ) as TemplateData;
+				TemplateData template = TemplatesManager.Instance.GetTemplate( templateGUID ) as TemplateData;
 				if( template != null )
 				{
 					SetTemplate( template, false, true );
 				}
 				else
 				{
-					template = m_containerGraph.ParentWindow.TemplatesManagerInstance.GetTemplateByName( templateShaderName ) as TemplateData;
+					template = TemplatesManager.Instance.GetTemplateByName( templateShaderName ) as TemplateData;
 					if( template != null )
 					{
 						SetTemplate( template, false, true );
@@ -679,6 +707,14 @@ namespace AmplifyShaderEditor
 					SamplingMacros = Convert.ToBoolean( GetCurrentParam( ref nodeParams ) );
 				else
 					SamplingMacros = false;
+
+				if( UIUtils.CurrentShaderVersion() >= 19906 )
+				{
+					if ( m_currentTemplate.DepthData.ValidZClip )
+					{
+						m_depthOphelper.ReadZClipFromString( ref m_currentReadParamIdx, ref nodeParams );
+					}
+				}
 			}
 			catch( Exception e )
 			{
@@ -747,6 +783,11 @@ namespace AmplifyShaderEditor
 			}
 
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_samplingMacros );
+
+			if( m_currentTemplate.DepthData.ValidZClip )
+			{
+				m_depthOphelper.WriteZClipToString( ref nodeInfo );
+			}
 		}
 
 		public override void Destroy()

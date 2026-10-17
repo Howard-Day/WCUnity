@@ -31,7 +31,6 @@ namespace AmplifyShaderEditor
 
 		private string m_previousLabel = string.Empty;
 
-		private bool m_refSelect = false;
 		private int m_prevReferenceId = -1;
 
 		protected override void CommonInit( int uniqueId )
@@ -54,8 +53,11 @@ namespace AmplifyShaderEditor
 		{
 			base.OnUniqueIDAssigned();
 
-			if( UniqueId > -1 )
+			if ( UniqueId > -1 )
+			{
+				m_containerGraph.LocalVarNodes.OnReorderEventComplete -= OnReorderEventComplete;
 				m_containerGraph.LocalVarNodes.OnReorderEventComplete += OnReorderEventComplete;
+			}
 		}
 
 		private void OnReorderEventComplete()
@@ -75,14 +77,21 @@ namespace AmplifyShaderEditor
 				if( m_drawPreviewAsSphere != m_currentSelected.SpherePreview )
 				{
 					m_drawPreviewAsSphere = m_currentSelected.SpherePreview;
-					OnNodeChange();
+					OnNodeChange( new NodeUpdateCache() );
 				}
 				//CheckSpherePreview();
 
 				if( m_cachedPropertyId == -1 )
 					m_cachedPropertyId = Shader.PropertyToID( "_A" );
 
-				PreviewMaterial.SetTexture( m_cachedPropertyId, m_currentSelected.OutputPorts[ 0 ].OutputPreviewTexture );
+				// @diogo: registry read bypasses InputPorts; the register may be pooled and RT-less, so pull
+				// it and, when we are live, mark it so it settles as a persistent frontier RT (QA #5c).
+				m_currentSelected.EnsurePreviewRendered();
+				if( PreviewLive )
+				{
+					m_currentSelected.MarkFeedsLiveConsumer();
+				}
+				m_currentSelected.OutputPorts[ 0 ].BindPreview( PreviewMaterial, m_cachedPropertyId, ASEPreviewSlices.ReferenceScratchIndex, this );
 			}
 		}
 
@@ -90,17 +99,18 @@ namespace AmplifyShaderEditor
 		{
 			base.DrawProperties();
 			EditorGUILayout.BeginHorizontal();
-			EditorGUI.BeginChangeCheck();
-			m_referenceId = EditorGUILayoutPopup( Constants.AvailableReferenceStr, m_referenceId, UIUtils.LocalVarNodeArr() );
-			if( EditorGUI.EndChangeCheck() )
+			SearchableDropdown.Draw( Constants.AvailableReferenceStr, m_referenceId, UIUtils.LocalVarNodeArr(), ( idx ) =>
 			{
-				UpdateFromSelected();
-			}
+				if( idx != m_referenceId )
+				{
+					UndoRecordObject( "Selected local var reference" );
+					m_referenceId = idx;
+					UpdateFromSelected();
+					SetDirtyFromAsyncEdit();
+				}
+			} );
 
-			if( GUILayout.Button( "\u25C4", "minibutton", GUILayout.Width( 17 ) ) && m_currentSelected )
-			{
-				UIUtils.FocusOnNode( m_currentSelected, 0, false );
-			}
+			UIUtils.DrawReferenceFocusButton( m_currentSelected );
 			EditorGUILayout.EndHorizontal();
 			//EditorGUILayout.LabelField( ConnStatus.ToString() + " " + m_activeConnections );
 		}
@@ -119,13 +129,22 @@ namespace AmplifyShaderEditor
 
 			if( m_dropdownEditing )
 			{
-				EditorGUI.BeginChangeCheck();
-				m_referenceId = EditorGUIPopup( m_dropdownRect, m_referenceId, UIUtils.LocalVarNodeArr(), UIUtils.PropertyPopUp );
-				if( EditorGUI.EndChangeCheck() )
+				DropdownEditing = false;
+				// @diogo: consume the chevron click so the canvas doesn't also select/drag under the popup
+				if ( drawInfo.CurrentEventType == EventType.MouseDown )
 				{
-					UpdateFromSelected();
-					DropdownEditing = false;
+					ContainerGraph.ParentWindow.MouseInteracted = true;
 				}
+				SearchableDropdown.Open( m_dropdownRect, UIUtils.LocalVarNodeArr(), ( idx ) =>
+				{
+					if( idx != m_referenceId )
+					{
+						UndoRecordObject( "Selected local var reference" );
+						m_referenceId = idx;
+						UpdateFromSelected();
+						SetDirtyFromAsyncEdit();
+					}
+				} );
 			}
 		}
 
@@ -135,22 +154,18 @@ namespace AmplifyShaderEditor
 			UpdateLocalVar();
 		}
 
-		public override void OnNodeRepaint( DrawInfo drawInfo )
-		{
-			base.OnNodeRepaint( drawInfo );
-
-			if( m_isVisible && m_refSelect && !m_selected )
-			{
-				GUI.color = Constants.SpecialGetLocalVarSelectionColor;
-				GUI.Label( m_globalPosition, string.Empty, UIUtils.GetCustomStyle( CustomStyle.NodeWindowOn ) );
-				GUI.color = m_colorBuffer;
-			}
-		}
-
 		void CheckForLoops()
 		{
 			if( CurrentSelected != null && UIUtils.DetectNodeLoopsFrom( CurrentSelected, new Dictionary<int, int>() ) )
 			{
+				// @diogo: mid-load the walk sees every settled getter dummy edge at once and false-positives on
+				// evaluation-dead routes; report only - the destructive disable is interactive-edit protection
+				if ( m_containerGraph.IsLoading )
+				{
+					UIUtils.ShowMessage( UniqueId, "Possible loop detected while loading, selection kept", MessageSeverity.Warning );
+					return;
+				}
+
 				CurrentSelected = UIUtils.GetLocalVarNode( m_prevReferenceId );
 				if( CurrentSelected == null || UIUtils.DetectNodeLoopsFrom( CurrentSelected, new Dictionary<int, int>() ) )
 				{
@@ -178,7 +193,7 @@ namespace AmplifyShaderEditor
 			{
 				m_nodeId = m_currentSelected.UniqueId;
 				m_outputPorts[ 0 ].Locked = false;
-				m_outputPorts[ 0 ].ChangeType( m_currentSelected.OutputPorts[ 0 ].DataType, false );
+				m_outputPorts[ 0 ].ChangeType( m_currentSelected.OutputPorts[ 0 ].DataType, m_currentSelected.OutputPorts[ 0 ].StructName, false );
 				m_drawPreviewAsSphere = m_currentSelected.SpherePreview;
 				CheckSpherePreview();
 
@@ -194,7 +209,6 @@ namespace AmplifyShaderEditor
 
 		public void UpdateLocalVar()
 		{
-			m_refSelect = false;
 			if( m_referenceId > -1 )
 			{
 				ParentNode newNode = UIUtils.GetLocalVarNode( m_referenceId );
@@ -219,10 +233,13 @@ namespace AmplifyShaderEditor
 
 				if( m_currentSelected != null )
 				{
-					if( m_currentSelected.OutputPorts[ 0 ].DataType != m_outputPorts[ 0 ].DataType )
+					OutputPort sourcePort = m_currentSelected.OutputPorts[ 0 ];
+
+					// @diogo: a struct can change name without changing type, which this guard would swallow
+					if( sourcePort.DataType != m_outputPorts[ 0 ].DataType || sourcePort.StructName != m_outputPorts[ 0 ].StructName )
 					{
 						m_outputPorts[ 0 ].Locked = false;
-						m_outputPorts[ 0 ].ChangeType( m_currentSelected.OutputPorts[ 0 ].DataType, false );
+						m_outputPorts[ 0 ].ChangeType( sourcePort.DataType, sourcePort.StructName, false );
 					}
 
 					if( !m_previousLabel.Equals( m_currentSelected.DataToArray ) )
@@ -236,9 +253,6 @@ namespace AmplifyShaderEditor
 						m_referenceWidth = m_currentSelected.Position.width;
 						m_sizeIsDirty = true;
 					}
-
-					if( m_currentSelected.Selected )
-						m_refSelect = true;
 				}
 				else
 				{
@@ -273,14 +287,12 @@ namespace AmplifyShaderEditor
 		}
 
 
-		//public override void PropagateNodeData( NodeData nodeData, ref MasterNodeDataCollector dataCollector )
-		//{
-		//	base.PropagateNodeData( nodeData, ref dataCollector );
-		//	if( m_currentSelected != null )
-		//	{
-		//		m_currentSelected.PropagateNodeData( nodeData, ref dataCollector );
-		//	}
-		//}
+		// @diogo: the hidden loop-detection reference on the input port counts as a connection, so the base walk already
+		// crosses into the Register; this only forwards the demand that reached the Get instead of asking for everything
+		public override StructFieldMask FieldDemandForInput( int inputIndex, StructFieldMask received )
+		{
+			return received;
+		}
 
 		public override void ReadFromString( ref string[] nodeParams )
 		{
@@ -317,14 +329,6 @@ namespace AmplifyShaderEditor
 
 		}
 
-		public override void OnNodeDoubleClicked( Vector2 currentMousePos2D )
-		{
-			if( m_currentSelected != null )
-			{
-				UIUtils.FocusOnNode( m_currentSelected, 0, true );
-			}
-		}
-
 		public override void RefreshExternalReferences()
 		{
 			base.RefreshExternalReferences();
@@ -356,7 +360,7 @@ namespace AmplifyShaderEditor
 			if( m_currentSelected != null )
 			{
 				m_outputPorts[ 0 ].Locked = false;
-				m_outputPorts[ 0 ].ChangeType( m_currentSelected.OutputPorts[ 0 ].DataType, false );
+				m_outputPorts[ 0 ].ChangeType( m_currentSelected.OutputPorts[ 0 ].DataType, m_currentSelected.OutputPorts[ 0 ].StructName, false );
 			}
 			else
 			{
@@ -366,6 +370,12 @@ namespace AmplifyShaderEditor
 
 		public override void ActivateNode( int signalGenNodeId, int signalGenPortId, System.Type signalGenNodeType )
 		{
+			// @diogo: destroyed shells must ignore signals; destroy cascades and undo patching reach them via live neighbors
+			if ( WasDestroyed )
+			{
+				return;
+			}
+
 			base.ActivateNode( signalGenNodeId, signalGenPortId, signalGenNodeType );
 			if( m_activeConnections == 1 )
 			{
@@ -378,6 +388,12 @@ namespace AmplifyShaderEditor
 
 		public override void DeactivateNode( int deactivatedPort, bool forceComplete )
 		{
+			// @diogo: destroyed shells must ignore signals; destroy cascades and undo patching reach them via live neighbors
+			if ( WasDestroyed )
+			{
+				return;
+			}
+
 			forceComplete = forceComplete || ( m_activeConnections == 1 );
 			base.DeactivateNode( deactivatedPort, forceComplete );
 			if( forceComplete && m_currentSelected != null )
@@ -386,14 +402,8 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		public override void OnNodeSelected( bool value )
-		{
-			base.OnNodeSelected( value );
-			if( m_currentSelected != null )
-			{
-				m_currentSelected.CheckReferenceSelection();
-			}
-		}
+		public override int ReferencedNodeId { get { return ( m_currentSelected != null ) ? m_currentSelected.UniqueId : base.ReferencedNodeId; } }
+		public override bool HasMissingReference { get { return m_currentSelected == null; } }
 
 		public RegisterLocalVarNode CurrentSelected
 		{

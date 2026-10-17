@@ -19,7 +19,7 @@ namespace AmplifyShaderEditor
 
 		private const string CurrSelectedStr = "Current";
 		private const string MaxAmountStr = "Amount";
-		private const int MaxAllowedAmount = 10;
+		private const int MaxAllowedAmount = 20;
 
 		private const int MinComboSize = 50;
 		private const int MaxComboSize = 105;
@@ -46,7 +46,7 @@ namespace AmplifyShaderEditor
 		private bool m_toggleMode = false;
 
 		[SerializeField]
-		private string[] m_optionNames = { "In 0", "In 1", "In 2", "In 3", "In 4", "In 5", "In 6", "In 7", "In 8", "In 9" };
+		private string[] m_optionNames = { "In 0", "In 1", "In 2", "In 3", "In 4", "In 5", "In 6", "In 7", "In 8", "In 9", "In 10", "In 11", "In 12", "In 13", "In 14", "In 15", "In 16", "In 17", "In 18", "In 19" };
 
 		[SerializeField]
 		private int m_orderIndex = -1;
@@ -72,8 +72,15 @@ namespace AmplifyShaderEditor
 		private bool m_nameModified = false;
 		private double m_lastTimeNameModified = 0;
 
+		private float InstanceIconWidth = 19;
+		private float InstanceIconHeight = 19;
+		// @diogo: neutral multiplier — the teal used by other reference nodes turns this orange header green;
+		// a grey scale keeps the hue and just darkens, matching how the others read visually
+		private readonly Color ReferenceHeaderColor = new Color( 0.5f, 0.5f, 0.5f, 1.0f );
+
 		private Rect m_varRect;
 		private Rect m_imgRect;
+		private Rect m_iconPos;
 		private bool m_editing;
 
 		private int m_cachedPropertyId = -1;
@@ -119,7 +126,7 @@ namespace AmplifyShaderEditor
 				m_currentSelectedInput = Mathf.Clamp( newValue, 0, m_refMaxInputs - 1 );
 			else
 				m_currentSelectedInput = Mathf.Clamp( newValue, 0, m_maxAmountInputs - 1 );
-			m_outputPorts[ 0 ].ChangeType( m_inputPorts[ m_currentSelectedInput ].DataType, false );
+			m_outputPorts[ 0 ].ChangeType( m_inputPorts[ m_currentSelectedInput ].DataType, m_inputPorts[ m_currentSelectedInput ].StructName, false );
 			PreviewIsDirty = true;
 			ChangeSignalPropagation();
 		}
@@ -178,7 +185,7 @@ namespace AmplifyShaderEditor
 			base.OnConnectedOutputNodeChanges( portId, otherNodeId, otherPortId, name, type );
 			m_inputPorts[ portId ].MatchPortToConnection();
 			if( portId == m_currentSelectedInput )
-				m_outputPorts[ 0 ].ChangeType( m_inputPorts[ portId ].DataType, false );
+				m_outputPorts[ 0 ].ChangeType( m_inputPorts[ portId ].DataType, m_inputPorts[ portId ].StructName, false );
 		}
 
 		public override void OnInputPortConnected( int portId, int otherNodeId, int otherPortId, bool activateNode = true )
@@ -190,16 +197,22 @@ namespace AmplifyShaderEditor
 				port.GetOutputNode().ActivateNode( m_activeNode, m_activePort, m_activeType );
 			}
 
-			OnNodeChange();
+			OnNodeChange( new NodeUpdateCache() );
 			SetSaveIsDirty();
 
 			m_inputPorts[ portId ].MatchPortToConnection();
 			if( arrayPos == m_currentSelectedInput )
-				m_outputPorts[ 0 ].ChangeType( m_inputPorts[ portId ].DataType, false );
+				m_outputPorts[ 0 ].ChangeType( m_inputPorts[ portId ].DataType, m_inputPorts[ portId ].StructName, false );
 		}
 
 		public override void ActivateNode( int signalGenNodeId, int signalGenPortId, Type signalGenNodeType )
 		{
+			// @diogo: destroyed shells must ignore signals; destroy cascades and undo patching reach them via live neighbors
+			if ( WasDestroyed )
+			{
+				return;
+			}
+
 			if( m_selfPowered )
 				return;
 
@@ -213,7 +226,8 @@ namespace AmplifyShaderEditor
 				if( m_inputPorts[ m_currentSelectedInput ].IsConnected )
 					m_inputPorts[ m_currentSelectedInput ].GetOutputNode().ActivateNode( signalGenNodeId, signalGenPortId, signalGenNodeType );
 
-			SetSaveIsDirty();
+			// @diogo: activation is signal propagation ( re-runs on load / graph refresh ), not a user edit; dirtying
+			// here flagged the graph modified on open. Base ParentNode omits it; real edits dirty via the change checks.
 		}
 
 		public override void DeactivateInputPortNode( int deactivatedPort, bool forceComplete )
@@ -225,10 +239,16 @@ namespace AmplifyShaderEditor
 
 		public override void DeactivateNode( int deactivatedPort, bool forceComplete )
 		{
+			// @diogo: destroyed shells must ignore signals; destroy cascades and undo patching reach them via live neighbors
+			if ( WasDestroyed )
+			{
+				return;
+			}
+
 			if( m_selfPowered )
 				return;
 
-			SetSaveIsDirty();
+			// @diogo: see ActivateNode - no save-dirty on deactivation ( propagation, not a user edit )
 			m_activeConnections -= 1;
 
 			if( ( forceComplete || m_activeConnections <= 0 ) )
@@ -258,7 +278,7 @@ namespace AmplifyShaderEditor
 					m_inputPorts[ m_currentSelectedInput ].GetOutputNode().ActivateNode( UniqueId, m_inputPorts[ m_currentSelectedInput ].PortId, m_activeType );
 			}
 		}
-		
+
 		public bool DrawOption( ParentNode owner, bool forceDraw = false )
 		{
 			if( !IsConnected && !forceDraw )
@@ -315,7 +335,9 @@ namespace AmplifyShaderEditor
 				return;
 			}
 
-			if( m_functionSwitchReference == null )
+			// @diogo: a node in Instance mode can't itself be a source ( no chaining ), so a source
+			// switched into Instance mode ( or a missing one ) invalidates the link
+			if ( m_functionSwitchReference == null || m_functionSwitchReference.m_referenceType == TexReferenceType.Instance )
 			{
 				m_validReference = false;
 				ResetToSelf();
@@ -347,17 +369,6 @@ namespace AmplifyShaderEditor
 			m_refMaxInputs = -1;
 			m_refOptionLabel = string.Empty;
 			m_refSelectedInput = -1;
-
-			for( int i = 0; i < MaxAllowedAmount; i++ )
-			{
-				m_inputPorts[ i ].Visible = ( i < m_maxAmountInputs );
-				m_inputPorts[ i ].Name = m_optionNames[ i ];
-			}
-
-			if( m_currentSelectedInput >= m_maxAmountInputs )
-			{
-				m_currentSelectedInput = m_maxAmountInputs - 1;
-			}
 
 			UpdateLabels();
 			m_sizeIsDirty = true;
@@ -405,29 +416,56 @@ namespace AmplifyShaderEditor
 							UIUtils.UnregisterFunctionSwitchCopyNode( this );
 						UIUtils.RegisterFunctionSwitchNode( this );
 						ResetToSelf();
+						m_headerColorModifier = Color.white;
 					}
 					else
 					{
 						if( ContainerGraph.ParentWindow.CustomGraph == null )
 							UIUtils.UnregisterFunctionSwitchNode( this );
 						UIUtils.RegisterFunctionSwitchCopyNode( this );
+						m_headerColorModifier = ReferenceHeaderColor;
 					}
 				}
 
+				UIUtils.DrawSeparator();
+
 				if( m_referenceType == TexReferenceType.Instance )
 				{
-					EditorGUI.BeginChangeCheck();
-					string[] arr = new string[ UIUtils.FunctionSwitchList().Count ];
-					int[] ids = new int[ UIUtils.FunctionSwitchList().Count ];
+					// @diogo: the register keeps registration order, which differs between a live session and a
+					// reload; sort a copy like the other reference pickers so the list is stable across save/load
+					List<FunctionSwitch> switches = new List<FunctionSwitch>( UIUtils.FunctionSwitchList() );
+					switches.Sort( ( a, b ) =>
+					{
+						int result = a.OptionLabel.CompareTo( b.OptionLabel );
+						return ( result != 0 ) ? result : a.UniqueId.CompareTo( b.UniqueId );
+					} );
+					string[] arr = new string[ switches.Count ];
+					int[] ids = new int[ switches.Count ];
 					for( int i = 0; i < arr.Length; i++ )
 					{
-						arr[ i ] = i + " - " + UIUtils.FunctionSwitchList()[ i ].OptionLabel;
-						ids[ i ] = UIUtils.FunctionSwitchList()[ i ].UniqueId;
+						arr[ i ] = switches[ i ].OptionLabel;
+						ids[ i ] = switches[ i ].UniqueId;
 					}
-					m_referenceUniqueId = EditorGUILayout.IntPopup( Constants.AvailableReferenceStr, m_referenceUniqueId, arr, ids );
+					arr = UIUtils.DisambiguateReferenceLabels( arr, switches, 0 );
+					EditorGUILayout.BeginHorizontal();
+					SearchableDropdown.Draw( Constants.AvailableReferenceStr, Array.IndexOf( ids, m_referenceUniqueId ), arr, ( idx ) =>
+					{
+						if( idx > -1 && idx < ids.Length && ids[ idx ] != m_referenceUniqueId )
+						{
+							UndoRecordObject( "Selected function switch reference" );
+							m_referenceUniqueId = ids[ idx ];
+							UpdateFromSelected();
+							SetDirtyFromAsyncEdit();
+						}
+					} );
+					UIUtils.DrawReferenceFocusButton( UIUtils.GetNode( m_referenceUniqueId ) );
+					EditorGUILayout.EndHorizontal();
+
+					// @diogo: bailing without closing the outer change check leaks it onto the caller's
+					// stack and flags the SF as modified just for drawing this panel
 					if( EditorGUI.EndChangeCheck() )
 					{
-						UpdateFromSelected();
+						m_dirtySettings = true;
 					}
 					return;
 				}
@@ -449,41 +487,8 @@ namespace AmplifyShaderEditor
 				m_toggleMode = EditorGUILayoutToggle( "Toggle Mode", m_toggleMode );
 				if( EditorGUI.EndChangeCheck() )
 				{
-					if( m_toggleMode )
-					{
-						m_inputPorts[ 0 ].Name = ToggleFalseStr;
-						m_inputPorts[ 1 ].Name = ToggleTrueStr;
-
-						for( int i = 0; i < MaxAllowedAmount; i++ )
-						{
-							m_inputPorts[ i ].Visible = ( i < 2 );
-						}
-
-						if( m_currentSelectedInput >= 2 )
-						{
-							m_currentSelectedInput = 1;
-						}
-						UpdateLabels();
-						m_sizeIsDirty = true;
-					}
-					else
-					{
-						m_inputPorts[ 0 ].Name = m_optionNames[ 0 ];
-						m_inputPorts[ 1 ].Name = m_optionNames[ 1 ];
-
-						for( int i = 0; i < MaxAllowedAmount; i++ )
-						{
-							m_inputPorts[ i ].Visible = ( i < m_maxAmountInputs );
-						}
-
-						if( m_currentSelectedInput >= m_maxAmountInputs )
-						{
-							m_currentSelectedInput = m_maxAmountInputs - 1;
-						}
-
-						UpdateLabels();
-						m_sizeIsDirty = true;
-					}
+					UpdateLabels();
+					m_sizeIsDirty = true;
 				}
 
 				if( !m_toggleMode )
@@ -492,16 +497,6 @@ namespace AmplifyShaderEditor
 					m_maxAmountInputs = EditorGUILayoutIntSlider( MaxAmountStr, m_maxAmountInputs, 2, MaxAllowedAmount );
 					if( EditorGUI.EndChangeCheck() )
 					{
-						for( int i = 0; i < MaxAllowedAmount; i++ )
-						{
-							m_inputPorts[ i ].Visible = ( i < m_maxAmountInputs );
-						}
-
-						if( m_currentSelectedInput >= m_maxAmountInputs )
-						{
-							m_currentSelectedInput = m_maxAmountInputs - 1;
-						}
-
 						UpdateLabels();
 						m_sizeIsDirty = true;
 					}
@@ -572,18 +567,48 @@ namespace AmplifyShaderEditor
 			SetCurrentSelectedInput( m_currentSelectedInput, m_previousSelectedInput );
 		}
 
+		public override void ReconnectClipboardReferences( Clipboard clipboard )
+		{
+			// validate node first
+			int newId = clipboard.GeNewNodeId( m_referenceUniqueId );
+			if ( ContainerGraph.GetNode( newId ) != null )
+			{
+				m_referenceUniqueId = newId;
+			}
+			RefreshExternalReferences();
+		}
+
 		public void UpdateLabels()
 		{
-			int maxinputs = m_maxAmountInputs;
-			if( m_validReference )
-				maxinputs = m_functionSwitchReference.MaxAmountInputs;
-
-			AvailableInputsLabels = new string[ maxinputs ];
-			AvailableInputsValues = new int[ maxinputs ];
-
-			for( int i = 0; i < maxinputs; i++ )
+			if ( ToggleMode )
 			{
-				AvailableInputsLabels[ i ] = m_optionNames[ i ];
+				m_inputPorts[ 0 ].Name = ToggleFalseStr;
+				m_inputPorts[ 1 ].Name = ToggleTrueStr;
+			}
+			else
+			{
+				for ( int i = 0; i < MaxAllowedAmount; i++ )
+				{
+					m_inputPorts[ i ].Name = OptionNames[ i ];
+				}
+			}
+
+			for ( int i = 0; i < MaxAllowedAmount; i++ )
+			{
+				m_inputPorts[ i ].Visible = ( i < MaxAmountInputs );
+			}
+
+			if ( m_currentSelectedInput >= MaxAmountInputs )
+			{
+				m_currentSelectedInput = MaxAmountInputs - 1;
+			}
+
+			AvailableInputsLabels = new string[ MaxAmountInputs ];
+			AvailableInputsValues = new int[ MaxAmountInputs ];
+
+			for ( int i = 0; i < MaxAmountInputs; i++ )
+			{
+				AvailableInputsLabels[ i ] = OptionNames[ i ];
 				AvailableInputsValues[ i ] = i;
 			}
 		}
@@ -596,7 +621,7 @@ namespace AmplifyShaderEditor
 				m_dirtySettings = false;
 		}
 
-		public override void OnNodeLayout( DrawInfo drawInfo )
+		public override void OnNodeLayout( DrawInfo drawInfo, NodeUpdateCache cache )
 		{
 			float finalSize = 0;
 			if( !m_toggleMode )
@@ -614,7 +639,7 @@ namespace AmplifyShaderEditor
 				}
 			}
 
-			base.OnNodeLayout( drawInfo );
+			base.OnNodeLayout( drawInfo, cache );
 
 			bool toggleMode = m_toggleMode;
 			if( m_validReference )
@@ -643,11 +668,23 @@ namespace AmplifyShaderEditor
 				m_imgRect.width = 16 * drawInfo.InvertedZoom;
 				m_imgRect.height = m_imgRect.width;
 			}
+
+			if( m_referenceType == TexReferenceType.Instance )
+			{
+				m_iconPos = m_globalPosition;
+				m_iconPos.width = InstanceIconWidth * drawInfo.InvertedZoom;
+				m_iconPos.height = InstanceIconHeight * drawInfo.InvertedZoom;
+
+				m_iconPos.y = m_globalPosition.y + m_headerPosition.height * 0.5f - m_iconPos.height * 0.5f;
+				m_iconPos.x += 5 * drawInfo.InvertedZoom;
+			}
 		}
 
 		public override void DrawGUIControls( DrawInfo drawInfo )
 		{
-			if( m_validReference )
+			// @diogo: gate on mode, not on a resolved source — an unassigned reference must not enter value
+			// editing either, or m_editing sticks and hides the widget
+			if( m_referenceType == TexReferenceType.Instance )
 			{
 				base.DrawGUIControls( drawInfo );
 			}
@@ -683,11 +720,18 @@ namespace AmplifyShaderEditor
 
 			if( m_validReference )
 			{
-				SetAdditonalTitleTextOnCallback( m_functionSwitchReference.OptionLabel, ( instance, newSubTitle ) => instance.AdditonalTitleContent.text = string.Format( Constants.SubTitleVarNameFormatStr, newSubTitle ) );
+				// @diogo: key the cache on the format too, or a source sharing the label of whatever was shown
+				// last (e.g. a duplicate's own value) never replaces the subtitle
+				SetAdditonalTitleTextOnCallback( m_functionSwitchReference.OptionLabel, Constants.SubTitleRefNameFormatStr, ( instance, newSubTitle ) => instance.AdditonalTitleContent.text = string.Format( Constants.SubTitleRefNameFormatStr, newSubTitle ) );
+			}
+			else if( m_referenceType == TexReferenceType.Instance )
+			{
+				// @diogo: an unassigned reference still reads as Ref( None ), not as this node's own value
+				SetAdditonalTitleTextOnCallback( Constants.NoStringValue, Constants.SubTitleRefNameFormatStr, ( instance, newSubTitle ) => instance.AdditonalTitleContent.text = string.Format( Constants.SubTitleRefNameFormatStr, newSubTitle ) );
 			}
 			else
 			{
-				SetAdditonalTitleTextOnCallback( m_optionLabel, ( instance, newSubTitle ) => instance.AdditonalTitleContent.text = string.Format( Constants.SubTitleValueFormatStr, newSubTitle ) );
+				SetAdditonalTitleTextOnCallback( m_optionLabel, Constants.SubTitleValueFormatStr, ( instance, newSubTitle ) => instance.AdditonalTitleContent.text = string.Format( Constants.SubTitleValueFormatStr, newSubTitle ) );
 
 				if( m_editing )
 				{
@@ -695,6 +739,7 @@ namespace AmplifyShaderEditor
 					{
 						if( GUI.Button( m_varRect, GUIContent.none, UIUtils.GraphButton ) )
 						{
+							UndoRecordObject( "Changing value Option on node Function Switch" );
 							PreviewIsDirty = true;
 							int prevVal = m_currentSelectedInput;
 							m_currentSelectedInput = m_currentSelectedInput == 1 ? 0 : 1;
@@ -731,6 +776,11 @@ namespace AmplifyShaderEditor
 
 			if( !m_isVisible )
 				return;
+
+			if( m_referenceType == TexReferenceType.Instance )
+			{
+				GUI.Label( m_iconPos, string.Empty, UIUtils.GetCustomStyle( CustomStyle.SamplerTextureIcon ) );
+			}
 
 			if( ContainerGraph.LodLevel <= ParentGraph.NodeLOD.LOD2 )
 			{
@@ -777,8 +827,18 @@ namespace AmplifyShaderEditor
 
 		public override void PropagateNodeData( NodeData nodeData, ref MasterNodeDataCollector dataCollector )
 		{
+			// @diogo: only records the visit for a struct upstream; the selected input is walked on every visit, as before
+			dataCollector.Touch( nodeData.Category, this, nodeData.Fields );
 			if( m_inputPorts[ m_currentSelectedInput ].IsConnected )
+			{
+				nodeData.OutputPortId = m_inputPorts[ m_currentSelectedInput ].GetConnection( 0 ).PortId;
 				m_inputPorts[ m_currentSelectedInput ].GetOutputNode().PropagateNodeData( nodeData, ref dataCollector );
+			}
+		}
+
+		public override StructFieldMask FieldDemandForInput( int inputIndex, StructFieldMask received )
+		{
+			return received;
 		}
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
@@ -796,26 +856,9 @@ namespace AmplifyShaderEditor
 			m_maxAmountInputs = Convert.ToInt32( GetCurrentParam( ref nodeParams ) );
 			m_orderIndex = Convert.ToInt32( GetCurrentParam( ref nodeParams ) );
 
-			for( int i = 0; i < MaxAllowedAmount; i++ )
-			{
-				m_inputPorts[ i ].Visible = ( i < m_maxAmountInputs );
-			}
-
-			if( m_currentSelectedInput >= m_maxAmountInputs )
-			{
-				m_currentSelectedInput = m_maxAmountInputs - 1;
-			}
-
 			for( int i = 0; i < m_maxAmountInputs; i++ )
 			{
 				m_optionNames[ i ] = GetCurrentParam( ref nodeParams );
-				m_inputPorts[ i ].Name = m_optionNames[ i ];
-			}
-
-			if( m_toggleMode )
-			{
-				m_inputPorts[ 0 ].Name = ToggleFalseStr;
-				m_inputPorts[ 1 ].Name = ToggleTrueStr;
 			}
 
 			UpdateLabels();
@@ -840,6 +883,7 @@ namespace AmplifyShaderEditor
 					if( ContainerGraph.ParentWindow.CustomGraph == null )
 						UIUtils.UnregisterFunctionSwitchNode( this );
 					UIUtils.RegisterFunctionSwitchCopyNode( this );
+					m_headerColorModifier = ReferenceHeaderColor;
 				}
 			}
 		}
@@ -879,8 +923,18 @@ namespace AmplifyShaderEditor
 		public override string DataToArray { get { return m_optionLabel; } }
 		public int MaxAmountInputs
 		{
-			get { return m_maxAmountInputs; }
+			get { return m_validReference ? m_functionSwitchReference.MaxAmountInputs : ( m_toggleMode ? 2 : m_maxAmountInputs ); }
+		}
+		public bool ToggleMode
+		{
+			get { return m_validReference ? m_functionSwitchReference.ToggleMode : m_toggleMode; }
+		}
+		public string[] OptionNames
+		{
+			get { return m_validReference ? m_functionSwitchReference.OptionNames : m_optionNames; }
 		}
 		public bool DirtySettings { get { return m_dirtySettings; } }
+		public override int ReferencedNodeId { get { return ( m_referenceType == TexReferenceType.Instance && m_referenceUniqueId > -1 ) ? m_referenceUniqueId : base.ReferencedNodeId; } }
+		public override bool HasMissingReference { get { return m_referenceType == TexReferenceType.Instance && m_functionSwitchReference == null; } }
 	}
 }

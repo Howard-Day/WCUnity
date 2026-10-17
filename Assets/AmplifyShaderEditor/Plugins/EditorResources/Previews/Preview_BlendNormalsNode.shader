@@ -2,17 +2,18 @@ Shader "Hidden/BlendNormalsNode"
 {
 	Properties
 	{
-		_A ("_A", 2D) = "white" {}
-		_B ("_B", 2D) = "white" {}
-		_C ("_C", 2D) = "white" {}
+		_A ("_A", 2DArray) = "white" {}
+		_B ("_B", 2DArray) = "white" {}
+		_C ("_C", 2DArray) = "white" {}
 	}
 	SubShader
 	{
 		CGINCLUDE
 			#pragma vertex vert_img
 			#pragma fragment frag
-			#pragma target 3.0
+			#pragma target 3.5
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#include "UnityStandardUtils.cginc"
 		
 			float3 BlendNormalWorldspaceRNM(float3 n1, float3 n2, float3 vtxNormal)
@@ -33,13 +34,13 @@ Shader "Hidden/BlendNormalsNode"
 		{
 			CGPROGRAM
 
-			sampler2D _A;
-			sampler2D _B;
+			ASE_PORT( _A );
+			ASE_PORT( _B );
 
 			float4 frag(v2f_img i) : SV_Target
 			{
-				float3 a = tex2D( _A, i.uv ).rgb;
-				float3 b = tex2D( _B, i.uv ).rgb;
+				float3 a = ASE_SAMPLE_PORT( _A, i.uv ).rgb;
+				float3 b = ASE_SAMPLE_PORT( _B, i.uv ).rgb;
 				return float4(BlendNormals(a, b), 0);
 			}
 			ENDCG
@@ -49,13 +50,13 @@ Shader "Hidden/BlendNormalsNode"
 		{
 			CGPROGRAM
 
-			sampler2D _A;
-			sampler2D _B;
+			ASE_PORT( _A );
+			ASE_PORT( _B );
 
 			float4 frag(v2f_img i) : SV_Target
 			{
-				float3 a = tex2D(_A, i.uv).rgb;
-				float3 b = tex2D(_B, i.uv).rgb;
+				float3 a = ASE_SAMPLE_PORT( _A, i.uv).rgb;
+				float3 b = ASE_SAMPLE_PORT( _B, i.uv).rgb;
 				return float4(BlendNormalRNM(a, b), 0);
 			}
 			ENDCG
@@ -65,15 +66,15 @@ Shader "Hidden/BlendNormalsNode"
 		{
 			CGPROGRAM
 
-			sampler2D _A;
-			sampler2D _B;
-			sampler2D _C;
+			ASE_PORT( _A );
+			ASE_PORT( _B );
+			ASE_PORT( _C );
 
 			float4 frag(v2f_img i) : SV_Target
 			{
-				float3 a = tex2D(_A, i.uv).rgb;
-				float3 b = tex2D(_B, i.uv).rgb;
-				float3 c = tex2D(_C, i.uv).rgb;
+				float3 a = ASE_SAMPLE_PORT( _A, i.uv).rgb;
+				float3 b = ASE_SAMPLE_PORT( _B, i.uv).rgb;
+				float3 c = ASE_SAMPLE_PORT( _C, i.uv).rgb;
 				return float4(BlendNormalWorldspaceRNM(a,b,c), 0);
 			}
 			ENDCG

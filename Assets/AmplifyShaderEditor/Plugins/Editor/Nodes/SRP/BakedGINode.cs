@@ -151,11 +151,11 @@ namespace AmplifyShaderEditor
 			}
 			else
 			{
-				screenPos = GeneratorUtils.GenerateScreenPosition( ref dataCollector, UniqueId, CurrentPrecisionType );
+				screenPos = GeneratorUtils.GenerateScreenPositionRaw( ref dataCollector, UniqueId, CurrentPrecisionType );
 				positionSS = string.Format( "( uint2 )( {0}.xy / {0}.w * _ScreenSize.xy )", screenPos );
 			}
 
-			
+
 			string localVarName = "bakedGI" + OutputId;
 
 			if ( dataCollector.TemplateDataCollectorInstance.IsHDRP )
@@ -163,10 +163,9 @@ namespace AmplifyShaderEditor
 				bool unityIsBeta = TemplateHelperFunctions.GetUnityBetaVersion( out int betaVersion );
 				int unityVersion = TemplateHelperFunctions.GetUnityVersion();
 
-				if ( ASEPackageManagerHelper.CurrentHDRPBaseline == ASESRPBaseline.ASE_SRP_14 && unityVersion >= 20220326 ||
-					 ASEPackageManagerHelper.CurrentHDRPBaseline == ASESRPBaseline.ASE_SRP_16 && unityVersion >= 20230220 ||
-					 ASEPackageManagerHelper.CurrentHDRPBaseline == ASESRPBaseline.ASE_SRP_17 && unityIsBeta && betaVersion >= 15 ||
-					 ASEPackageManagerHelper.CurrentSRPVersion >= ( int )170003 )
+				if ( ASEPackageManagerHelper.CurrentHDRPBaseline == SRPBaseline.ASE_SRP_14_X && unityVersion >= 20220326 ||
+					 ASEPackageManagerHelper.CurrentHDRPBaseline == SRPBaseline.ASE_SRP_16_X && unityVersion >= 20230220 ||
+					 ASEPackageManagerHelper.CurrentHDRPBaseline >= SRPBaseline.ASE_SRP_17_X )
 				{
 					dataCollector.AddToPragmas( UniqueId, "multi_compile_fragment _ PROBE_VOLUMES_L1 PROBE_VOLUMES_L2" );
 
@@ -181,9 +180,9 @@ namespace AmplifyShaderEditor
 			}
 			else
 			{
-				if ( ASEPackageManagerHelper.CurrentURPBaseline >= ASESRPBaseline.ASE_SRP_15 )
+				if ( ASEPackageManagerHelper.CurrentURPBaseline >= SRPBaseline.ASE_SRP_15_X )
 				{
-					dataCollector.AddToPragmas( UniqueId, "multi_compile_fragment _ PROBE_VOLUMES_L1 PROBE_VOLUMES_L2" );
+					dataCollector.AddToDirectives( "#include_with_pragmas \"Packages/com.unity.render-pipelines.universal/ShaderLibrary/ProbeVolumeVariants.hlsl\"", -1, AdditionalLineType.Custom );
 
 					dataCollector.AddFunction( BakedGIBodyURP2[ 0 ], BakedGIBodyURP2, false );
 					RegisterLocalVariable( 0, string.Format( BakedGIHeaderURP2, positionWS, normalWS, positionSS, uvStaticLightmap, uvDynamicLightmap, m_applyScaling ? "true" : "false" ), ref dataCollector, localVarName );

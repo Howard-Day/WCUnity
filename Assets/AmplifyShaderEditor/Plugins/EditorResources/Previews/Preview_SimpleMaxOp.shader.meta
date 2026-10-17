@@ -1,9 +1,16 @@
 fileFormatVersion: 2
 guid: 79d7f2a11092ac84a95ef6823b34adf2
-timeCreated: 1488289785
-licenseType: Store
 ShaderImporter:
+  externalObjects: {}
   defaultTextures: []
+  nonModifiableTextures: []
   userData: 
   assetBundleName: 
   assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 68570
+  packageName: Amplify Shader Editor
+  packageVersion: 1.9.9.14
+  assetPath: Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_SimpleMaxOp.shader
+  uploadId: 1019702

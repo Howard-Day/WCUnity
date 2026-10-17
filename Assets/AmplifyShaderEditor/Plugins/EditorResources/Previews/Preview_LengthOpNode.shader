@@ -2,7 +2,7 @@ Shader "Hidden/LengthOpNode"
 {
 	Properties
 	{
-		_A ("_A", 2D) = "white" {}
+		_A ("_A", 2DArray) = "white" {}
 	}
 		SubShader
 	{
@@ -10,14 +10,16 @@ Shader "Hidden/LengthOpNode"
 		{
 			CGPROGRAM
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#pragma vertex vert_img
 			#pragma fragment frag
+			#pragma target 3.5
 
-			sampler2D _A;
+			ASE_PORT( _A );
 
 			float4 frag (v2f_img i) : SV_Target
 			{
-				return length( tex2D (_A, i.uv).x );
+				return length( ASE_SAMPLE_PORT( _A, i.uv).x );
 			}
 			ENDCG
 		}
@@ -26,14 +28,16 @@ Shader "Hidden/LengthOpNode"
 		{
 			CGPROGRAM
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#pragma vertex vert_img
 			#pragma fragment frag
+			#pragma target 3.5
 
-			sampler2D _A;
+			ASE_PORT( _A );
 
 			float4 frag (v2f_img i) : SV_Target
 			{
-				return length( tex2D(_A, i.uv).xy );
+				return length( ASE_SAMPLE_PORT( _A, i.uv).xy );
 			}
 			ENDCG
 		}
@@ -42,14 +46,16 @@ Shader "Hidden/LengthOpNode"
 		{
 			CGPROGRAM
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#pragma vertex vert_img
 			#pragma fragment frag
+			#pragma target 3.5
 
-			sampler2D _A;
+			ASE_PORT( _A );
 
 			float4 frag (v2f_img i) : SV_Target
 			{
-				return length( tex2D(_A, i.uv).xyz );
+				return length( ASE_SAMPLE_PORT( _A, i.uv).xyz );
 			}
 			ENDCG
 		}
@@ -58,14 +64,16 @@ Shader "Hidden/LengthOpNode"
 		{
 			CGPROGRAM
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#pragma vertex vert_img
 			#pragma fragment frag
+			#pragma target 3.5
 
-			sampler2D _A;
+			ASE_PORT( _A );
 
 			float4 frag (v2f_img i) : SV_Target
 			{
-				return length( tex2D(_A, i.uv));
+				return length( ASE_SAMPLE_PORT( _A, i.uv));
 			}
 			ENDCG
 		}

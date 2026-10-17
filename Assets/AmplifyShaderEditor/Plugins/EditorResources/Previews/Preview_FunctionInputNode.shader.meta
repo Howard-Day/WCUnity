@@ -1,9 +1,16 @@
 fileFormatVersion: 2
 guid: 04bc8e7b317dccb4d8da601680dd8140
-timeCreated: 1488289785
-licenseType: Store
 ShaderImporter:
+  externalObjects: {}
   defaultTextures: []
+  nonModifiableTextures: []
   userData: 
   assetBundleName: 
   assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 68570
+  packageName: Amplify Shader Editor
+  packageVersion: 1.9.9.14
+  assetPath: Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_FunctionInputNode.shader
+  uploadId: 1019702

@@ -1,8 +1,16 @@
 fileFormatVersion: 2
 guid: 91a149ac9d615be429126c95e20753ce
-timeCreated: 1509361778
-licenseType: Store
 NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 0
   userData: 
   assetBundleName: 
   assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 68570
+  packageName: Amplify Shader Editor
+  packageVersion: 1.9.9.14
+  assetPath: Assets/AmplifyShaderEditor/Plugins/EditorResources/ShaderFunctions/Blinn-Phong
+    Half Vector.asset
+  uploadId: 1019702

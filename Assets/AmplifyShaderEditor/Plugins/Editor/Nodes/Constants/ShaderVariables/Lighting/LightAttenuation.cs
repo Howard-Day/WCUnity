@@ -7,7 +7,7 @@ using UnityEngine;
 namespace AmplifyShaderEditor
 {
 	[System.Serializable]
-	[NodeAttributes( "Light Attenuation", "Lighting", "Contains light attenuation for all types of light", NodeAvailabilityFlags = (int)( NodeAvailability.CustomLighting | NodeAvailability.TemplateShader ) )]
+	[NodeAttributes( "Main Light Attenuation", "Lighting", "Attenuation/shadow of main Directional light." )]
 	public sealed class LightAttenuation : ParentNode
 	{
 		static readonly string SurfaceError = "This node only returns correct information using a custom light model, otherwise returns 1";
@@ -42,12 +42,18 @@ namespace AmplifyShaderEditor
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
 		{
+			if ( !dataCollector.IsFragmentCategory )
+			{
+				UIUtils.ShowMessage( UniqueId, "Main Light Attenuation node not supported on Vertex or Tessellation stages." );
+				return m_outputPorts[0].ErrorValue;
+			}
+
 			if( dataCollector.IsTemplate  )
 			{
 				if( !dataCollector.IsSRP )
 				{
 					string result = string.Empty;
-					if( dataCollector.TemplateDataCollectorInstance.ContainsSpecialLocalFragVar( TemplateInfoOnSematics.SHADOWCOORDS, WirePortDataType.FLOAT4, ref result ) )
+					if( dataCollector.TemplateDataCollectorInstance.ContainsSpecialLocalFragVar( TemplateInfoOnSematics.LIGHT_ATTENUATION, WirePortDataType.FLOAT, ref result ) )
 					{
 						return result;
 					}
@@ -61,125 +67,32 @@ namespace AmplifyShaderEditor
 						if( dataCollector.HasLocalVariable( LightweightLightAttenDecl ))
 							return ASEAttenVarName;
 
-						bool isForward = dataCollector.CurrentPassName.Contains( "Forward" );
-						bool isGBuffer = dataCollector.CurrentPassName.Contains( "GBuffer" );
-
-						// Pragmas
-						var pragmas = new List<string>();
-						if ( ASEPackageManagerHelper.CurrentSRPVersion >= 140009 )
-						{
-							if ( isForward || isGBuffer )
-							{
-								pragmas.Add( "multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN" );
-								pragmas.Add( "multi_compile_fragment _ _SHADOWS_SOFT _SHADOWS_SOFT_LOW _SHADOWS_SOFT_MEDIUM _SHADOWS_SOFT_HIGH" );
-							}
-
-							if ( isForward )
-							{
-								pragmas.Add( "multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS" );
-								pragmas.Add( "multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS" );
-								pragmas.Add( "multi_compile _ _FORWARD_PLUS" );
-							}
-						}
-						else if ( ASEPackageManagerHelper.CurrentURPBaseline >= ASESRPBaseline.ASE_SRP_14 )
-						{
-							if ( isForward || isGBuffer )
-							{
-								pragmas.Add( "multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN" );
-								pragmas.Add( "multi_compile_fragment _ _SHADOWS_SOFT" );
-							}
-
-							if ( isForward )
-							{
-								pragmas.Add( "multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS" );
-								pragmas.Add( "multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS" );
-								pragmas.Add( "multi_compile _ _FORWARD_PLUS" );
-							}
-						}
-						else if ( ASEPackageManagerHelper.CurrentURPBaseline >= ASESRPBaseline.ASE_SRP_12 )
-						{
-							if ( isForward || isGBuffer )
-							{
-								pragmas.Add( "multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN" );
-								pragmas.Add( "multi_compile_fragment _ _SHADOWS_SOFT" );
-							}
-
-							if ( isForward )
-							{
-								pragmas.Add( "multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS" );
-								pragmas.Add( "multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS" );
-							}
-						}
-						else if ( ASEPackageManagerHelper.CurrentURPBaseline >= ASESRPBaseline.ASE_SRP_11 )
-						{
-							if ( isForward || isGBuffer )
-							{
-								pragmas.Add( "multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN" );
-								pragmas.Add( "multi_compile_fragment _ _SHADOWS_SOFT" );
-							}
-
-							if ( isForward )
-							{
-								pragmas.Add( "multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS" );
-								pragmas.Add( "multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS" );
-							}
-						}
-						else
-						{
-							if ( isForward || isGBuffer )
-							{
-								pragmas.Add( "multi_compile _ _MAIN_LIGHT_SHADOWS" );
-								pragmas.Add( "multi_compile _ _MAIN_LIGHT_SHADOWS_CASCADE" );
-								pragmas.Add( "multi_compile_fragment _ _SHADOWS_SOFT" );
-							}
-
-							if ( isForward )
-							{
-								pragmas.Add( "multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS" );
-								pragmas.Add( "multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS" );
-							}
-						}
-
-						for ( int i = 0; i < pragmas.Count; i++ )
-						{
-							dataCollector.AddToPragmas( UniqueId, pragmas[ i ] );
-						}
-
-						//string shadowCoords = dataCollector.TemplateDataCollectorInstance.GetShadowCoords( UniqueId/*, false, dataCollector.PortCategory*/ );
-						//return shadowCoords;
-						// Vertex Instructions
-						//TemplateVertexData shadowCoordsData = dataCollector.TemplateDataCollectorInstance.RequestNewInterpolator( WirePortDataType.FLOAT4, false );
-						//string vertexInterpName = dataCollector.TemplateDataCollectorInstance.CurrentTemplateData.VertexFunctionData.OutVarName;
-						//string vertexShadowCoords = vertexInterpName + "." + shadowCoordsData.VarNameWithSwizzle;
-						//string vertexPos = dataCollector.TemplateDataCollectorInstance.GetVertexPosition( WirePortDataType.FLOAT3, PrecisionType.Float ,false,MasterNodePortCategory.Vertex );
-
-						//dataCollector.AddToVertexLocalVariables( UniqueId, string.Format( LightweightVertexInstructions[ 0 ], vertexPos ));
-						//dataCollector.AddToVertexLocalVariables( UniqueId, LightweightVertexInstructions[ 1 ]);
-						//dataCollector.AddToVertexLocalVariables( UniqueId, string.Format( LightweightVertexInstructions[ 2 ], vertexShadowCoords ) );
-						//dataCollector.AddToVertexLocalVariables( UniqueId, LightweightVertexInstructions[ 3 ]);
-
-						// Fragment Instructions
-						//string fragmentInterpName = dataCollector.TemplateDataCollectorInstance.CurrentTemplateData.FragmentFunctionData.InVarName;
-						//string fragmentShadowCoords = fragmentInterpName + "." + shadowCoordsData.VarNameWithSwizzle;
+						dataCollector.TemplateDataCollectorInstance.AddMainLightShadowAttenuationDependsURP( UniqueId );
 
 						dataCollector.AddLocalVariable( UniqueId, LightweightLightAttenDecl );
 						string mainLight = dataCollector.TemplateDataCollectorInstance.GetURPMainLight( UniqueId );
-						//dataCollector.AddLocalVariable( UniqueId, string.Format( LightweightFragmentInstructions[ 0 ], shadowCoords ) );
+
 						dataCollector.AddLocalVariable( UniqueId, string.Format( LightweightFragmentInstructions[ 1 ], mainLight) );
 						return ASEAttenVarName;
 					}
 					else
 					{
-						UIUtils.ShowMessage( UniqueId, "Light Attenuation node currently not supported on HDRP" );
-						return "1";
+						UIUtils.ShowMessage( UniqueId, "Main Light Attenuation node currently not supported on HDRP" );
+						return m_outputPorts[0].ErrorValue;
 					}
 				}
 			}
 
-			if ( dataCollector.GenType == PortGenType.NonCustomLighting || dataCollector.CurrentCanvasMode != NodeAvailability.CustomLighting )
+			if ( dataCollector.CurrentCanvasMode != NodeAvailability.CustomLighting )
 			{
-				UIUtils.ShowMessage( UniqueId, "Light Attenuation node currently not supported on non-custom lighting surface shaders" );
-				return "1";
+				UIUtils.ShowMessage( UniqueId, "Main Light Attenuation node not supported on non-custom lighting Surface shaders." );
+				return m_outputPorts[0].ErrorValue;
+			}
+
+			if ( dataCollector.GenType == PortGenType.NonCustomLighting )
+			{
+				UIUtils.ShowMessage( UniqueId, "Main Light Attenuation node must only be connected to Custom Lighting output on Surface shaders." );
+				return m_outputPorts[0].ErrorValue;
 			}
 
 			dataCollector.UsingLightAttenuation = true;

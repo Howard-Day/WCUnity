@@ -1,9 +1,16 @@
 fileFormatVersion: 2
 guid: 13bd295c44d04e1419f20f792d331e33
-timeCreated: 1488289785
-licenseType: Store
 ShaderImporter:
+  externalObjects: {}
   defaultTextures: []
+  nonModifiableTextures: []
   userData: 
   assetBundleName: 
   assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 68570
+  packageName: Amplify Shader Editor
+  packageVersion: 1.9.9.14
+  assetPath: Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_Texture2D.shader
+  uploadId: 1019702

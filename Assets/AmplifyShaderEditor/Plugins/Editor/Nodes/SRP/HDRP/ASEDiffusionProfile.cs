@@ -1,11 +1,11 @@
 // Amplify Shader Editor - Visual Shader Editing Tool
 // Copyright (c) Amplify Creations, Lda <info@amplify.pt>
 
-#if UNITY_2019_3_OR_NEWER
 using UnityEditor;
 using UnityEngine;
 using System;
 using System.Reflection;
+using Unity.Scripting.LifecycleManagement;
 
 namespace AmplifyShaderEditor
 {
@@ -22,7 +22,7 @@ namespace AmplifyShaderEditor
 		{
 			var guid = HDUtilsEx.ConvertVector4ToGUID( prop.vectorValue );
 			var profile = AssetDatabase.LoadAssetAtPath( AssetDatabase.GUIDToAssetPath( guid ), DiffusionProfileSettingsEx.Type );
-			
+
 			EditorGUI.BeginChangeCheck();
 			profile = EditorGUI.ObjectField( position, new GUIContent( label ), profile, DiffusionProfileSettingsEx.Type, false );
 			if( EditorGUI.EndChangeCheck() )
@@ -50,6 +50,7 @@ namespace AmplifyShaderEditor
 			DiffusionProfileMaterialUIEx.DrawDiffusionProfileWarning( profile );
 		}
 
+		[NoAutoStaticsCleanup]
 		private static class DiffusionProfileMaterialUIEx
 		{
 			private static System.Type type = null;
@@ -63,6 +64,7 @@ namespace AmplifyShaderEditor
 			}
 		}
 
+		[NoAutoStaticsCleanup]
 		private static class HDShadowUtilsEx
 		{
 			private static System.Type type = null;
@@ -84,4 +86,3 @@ namespace AmplifyShaderEditor
 		}
 	}
 }
-#endif //UNITY_2019_3_OR_NEWER

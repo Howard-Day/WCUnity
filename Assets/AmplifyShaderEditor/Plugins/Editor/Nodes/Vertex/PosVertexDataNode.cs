@@ -73,6 +73,11 @@ namespace AmplifyShaderEditor
 		}
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalVar )
 		{
+			if ( dataCollector.PortCategory == MasterNodePortCategory.Tessellation )
+			{
+				UIUtils.ShowNoVertexModeNodeMessage( this );
+				return "0";
+			}
 
 			if ( dataCollector.MasterNodeCategory == AvailableShaderTypes.Template )
 			{

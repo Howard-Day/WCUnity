@@ -1,9 +1,16 @@
 fileFormatVersion: 2
 guid: c7c4485750948a045b5dab0985896e17
-timeCreated: 1488289785
-licenseType: Store
 ShaderImporter:
+  externalObjects: {}
   defaultTextures: []
+  nonModifiableTextures: []
   userData: 
   assetBundleName: 
   assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 68570
+  packageName: Amplify Shader Editor
+  packageVersion: 1.9.9.14
+  assetPath: Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_DiffuseAndSpecularFromMetallic.shader
+  uploadId: 1019702

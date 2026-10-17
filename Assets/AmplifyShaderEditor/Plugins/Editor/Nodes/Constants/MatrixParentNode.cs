@@ -59,7 +59,9 @@ namespace AmplifyShaderEditor
 		public override void OnNodeLogicUpdate( DrawInfo drawInfo )
 		{
 			base.OnNodeLogicUpdate( drawInfo );
-			m_showCBuffer = m_containerGraph.IsSRP || m_containerGraph.CurrentShaderFunction != null;
+			// @diogo: the last clause keeps the option listed on a pipeline that does not offer it, so a
+			// node carrying it renders honestly instead of blank; on those the mode is inert, not invalid
+			m_showCBuffer = m_containerGraph.IsSRP || m_containerGraph.CurrentShaderFunction != null || m_currentParameterType == PropertyType.Property;
 		}
 
 		protected void DrawParameterType()
@@ -109,18 +111,6 @@ namespace AmplifyShaderEditor
 		{
 			base.Destroy();
 			m_upperLeftWidget = null;
-		}
-
-		public override void OnMasterNodeReplaced( MasterNode newMasterNode )
-		{
-			base.OnMasterNodeReplaced( newMasterNode );
-			if( m_containerGraph.IsStandardSurface || !m_containerGraph.IsSRP )
-			{
-				if( m_currentParameterType == PropertyType.Property )
-				{
-					m_currentParameterType = PropertyType.Global;
-				}
-			}
 		}
 
 		public override void SetGlobalValue() { Shader.SetGlobalMatrix( m_propertyName, m_defaultValue ); }

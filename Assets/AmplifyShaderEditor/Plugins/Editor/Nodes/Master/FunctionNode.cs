@@ -39,6 +39,7 @@ namespace AmplifyShaderEditor
 
 		[SerializeField]
 		private string m_filename;
+		public string Filename => m_filename;
 
 		[SerializeField]
 		private string m_headerTitle = string.Empty;
@@ -51,6 +52,11 @@ namespace AmplifyShaderEditor
 
 		[SerializeField]
 		private string m_functionGUID = string.Empty;
+		public string FunctionGUID => m_functionGUID;
+
+		// @diogo: see ShaderFunctionToNode.cs for more information
+		private bool m_isEligibleForConversion = false;
+		public bool IsEligibleForConversion => m_isEligibleForConversion;
 
 		//[SerializeField]
 		//private List<string> m_includes = new List<string>();
@@ -77,7 +83,12 @@ namespace AmplifyShaderEditor
 		public string[] ReadOptionsHelper = new string[] { };
 
 		private bool m_lateRefresh = false;
-		
+
+		// The field demand already sent up each input during the current pass, keyed by category and input index
+		private Dictionary<long, StructFieldMask> m_walkedDemand = new Dictionary<long, StructFieldMask>();
+		private MasterNodeDataCollector m_walkedOwner;
+		private static readonly MasterNodePortCategory[] s_walkCategories = { MasterNodePortCategory.Vertex, MasterNodePortCategory.Fragment, MasterNodePortCategory.Tessellation, MasterNodePortCategory.Debug };
+
 		private Texture2D m_headerIcon = null;
 		public Texture2D HeaderIcon
 		{
@@ -137,10 +148,14 @@ namespace AmplifyShaderEditor
 			ContainerGraph.ParentWindow.GraphCount = m_functionGraphId + 1;
 			m_functionGraph.SetGraphId( m_functionGraphId );
 
+			// @diogo: set before the load so the inner nodes are built already knowing the pipeline;
+			// dropping a function node fires no master node event, and generation can be a while away
+			m_functionGraph.CurrentSRPType = ContainerGraph.CurrentSRPType;
+
 			ParentGraph cachedGraph = ContainerGraph.ParentWindow.CustomGraph;
 			ContainerGraph.ParentWindow.CustomGraph = m_functionGraph;
 
-			AmplifyShaderEditorWindow.LoadFromMeta( ref m_functionGraph, ContainerGraph.ParentWindow.ContextMenuInstance, Function.FunctionInfo );
+			AmplifyShaderEditorWindow.LoadFromMeta( ref m_functionGraph, ContainerGraph.ParentWindow.ContextMenuInstance, Function.FunctionInfo, useParsedCache: true );
 			//m_functionCheckSum = LastLine( m_function.FunctionInfo );
 			m_functionCheckSum = AssetDatabase.GetAssetDependencyHash( AssetDatabase.GetAssetPath( m_function ) ).ToString();
 			List<PropertyNode> propertyList = UIUtils.PropertyNodesList();
@@ -165,6 +180,7 @@ namespace AmplifyShaderEditor
 				{
 					AddInputPort( m_allFunctionInputs[ i ].SelectedInputType, false, m_allFunctionInputs[ i ].InputName, -1, MasterNodePortCategory.Fragment, m_allFunctionInputs[ i ].UniqueId );
 				}
+				m_inputPorts[ i ].StructName = m_allFunctionInputs[ i ].SelectedInputStructName;
 				InputPortSwitchRestriction( m_inputPorts[ i ] );
 
 				if( !m_allFunctionInputs[ i ].InputPorts[ 0 ].IsConnected )
@@ -195,6 +211,7 @@ namespace AmplifyShaderEditor
 				{
 					AddOutputPort( m_allFunctionOutputs[ i ].AutoOutputType, m_allFunctionOutputs[ i ].OutputName, m_allFunctionOutputs[ i ].UniqueId );
 				}
+				m_outputPorts[ i ].StructName = m_allFunctionOutputs[ i ].AutoOutputStructName;
 				OutputPortSwitchRestriction( m_outputPorts[ i ] );
 			}
 
@@ -257,16 +274,17 @@ namespace AmplifyShaderEditor
 
 		public void SetPreviewInput( InputPort input )
 		{
-			if( !HasPreviewShader || !m_initialized )
+			if( !HasPreviewShader || !m_initialized || Preferences.User.DisablePreviews )
 				return;
 
+			int scratchIndex = m_inputPorts.IndexOf( input );
 			if( input.IsConnected && input.InputNodeHasPreview( ContainerGraph ) )
 			{
-				input.SetPreviewInputTexture( ContainerGraph );
+				input.SetPreviewInputTexture( ContainerGraph, scratchIndex );
 			}
 			else
 			{
-				input.SetPreviewInputValue( ContainerGraph );
+				input.SetPreviewInputValue( ContainerGraph, scratchIndex );
 			}
 		}
 
@@ -280,6 +298,52 @@ namespace AmplifyShaderEditor
 			if( m_allFunctionOutputs == null || m_allFunctionOutputs.Count == 0 )
 				return false;
 
+			// @diogo: on-demand idle-skip (pooled SF previews, QA #5). When pooling is on, skip walking a static
+			// SF's internal cone entirely - it only needs a recompute when this node is already dirty, when an
+			// outer input changed this pass, or when the output cone holds a live/continuous node ( m_previewLive
+			// from the last walk ). The FunctionOutput RTs are persistent so the visible swatch stays valid while
+			// skipped; outer producers are still visited ( memoized ) so their dirtiness is observed cheaply.
+			if( Preferences.User.PooledPreviews && !PreviewIsDirty && !m_previewLive )
+			{
+				bool anyInputDirty = false;
+				for( int i = 0; i < InputPorts.Count; i++ )
+				{
+					if( !InputPorts[ i ].IsConnected || InputPorts[ i ].ExternalReferences.Count == 0 )
+					{
+						continue;
+					}
+
+					ParentNode producer = ContainerGraph.GetNode( InputPorts[ i ].ExternalReferences[ 0 ].NodeId );
+					if( producer == null )
+					{
+						continue;
+					}
+
+					if( !duplicatesDict.ContainsKey( producer.OutputId ) )
+					{
+						if( producer.RecursivePreviewUpdate() )
+						{
+							anyInputDirty = true;
+						}
+					}
+					else if( duplicatesDict[ producer.OutputId ] )
+					{
+						anyInputDirty = true;
+					}
+				}
+
+				if( !anyInputDirty )
+				{
+					if( !duplicatesDict.ContainsKey( OutputId ) )
+					{
+						duplicatesDict.Add( OutputId, false );
+					}
+					return false;
+				}
+			}
+
+			// @diogo: accumulate preview liveness from the SF's outputs (pooled SF previews, QA #5).
+			bool live = false;
 			for( int i = 0; i < m_allFunctionOutputs.Count; i++ )
 			{
 				ParentNode outNode = m_allFunctionOutputs[ i ];
@@ -295,14 +359,49 @@ namespace AmplifyShaderEditor
 					{
 						PreviewIsDirty = true;
 					}
+					live = live || outNode.PreviewLive;
 				}
 			}
+			m_previewLive = live;
 
 			bool needsUpdate = PreviewIsDirty;
 			RenderNodePreview();
+
+			// @diogo: pooled SF previews (QA #5). The SF's compute is complete ( all internal reads happened
+			// in post-order above ), so hand this SF's transient internal preview RTs back to the pool. The
+			// FunctionOutput RTs are kept ( aliased by this node's visible swatch ); nested FunctionNodes
+			// already returned their own sub-graph when their RecursivePreviewUpdate ran.
+			if( Preferences.User.PooledPreviews && m_functionGraph != null )
+			{
+				ReturnInternalPooledPreviews( m_functionGraph );
+			}
+
 			if( !duplicatesDict.ContainsKey( OutputId ) )
 				duplicatesDict.Add( OutputId, needsUpdate );
 			return needsUpdate;
+		}
+
+		// @diogo: hand this SF's direct regular internal preview RTs back to the pool (pooled SF previews,
+		// QA #5). Skips FunctionOutput nodes (aliased by this node's visible output ports) and nested
+		// FunctionNodes (each returns its own sub-graph when its RecursivePreviewUpdate ran).
+		private void ReturnInternalPooledPreviews( ParentGraph graph )
+		{
+			ASEPreviewRTPool pool = ContainerGraph.ParentWindow.PreviewRTPool;
+			List<ParentNode> nodes = graph.AllNodes;
+			for( int i = 0; i < nodes.Count; i++ )
+			{
+				ParentNode node = nodes[ i ];
+				if( node == null || node is FunctionOutput || node is FunctionNode )
+				{
+					continue;
+				}
+
+				List<OutputPort> outputs = node.OutputPorts;
+				for( int p = 0; p < outputs.Count; p++ )
+				{
+					pool.Return( outputs[ p ].DetachPooledPreview() );
+				}
+			}
 		}
 
 		public override void RenderNodePreview()
@@ -310,20 +409,20 @@ namespace AmplifyShaderEditor
 			if( m_outputPorts == null )
 				return;
 
-			if( !PreviewIsDirty && !m_continuousPreviewRefresh )
+			if( !PreviewIsDirty && !ContinuousPreviewRefresh )
 				return;
 
 			// this is in the wrong place??
 			if( m_drawPreviewAsSphere != m_mainPreviewNode.SpherePreview )
 			{
 				m_drawPreviewAsSphere = m_mainPreviewNode.SpherePreview;
-				OnNodeChange();
+				OnNodeChange( new NodeUpdateCache() );
 			}
 
 			int count = m_outputPorts.Count;
 			for( int i = 0; i < count; i++ )
 			{
-				m_outputPorts[ i ].OutputPreviewTexture = m_allFunctionOutputs[ i ].PreviewTexture;
+				m_outputPorts[ i ].AliasPreview( m_allFunctionOutputs[ i ].PreviewSlice );
 			}
 
 			if( PreviewIsDirty )
@@ -332,14 +431,14 @@ namespace AmplifyShaderEditor
 			PreviewIsDirty = false;
 		}
 
-		public override RenderTexture PreviewTexture
+		public override ASEPreviewSlice PreviewSlice
 		{
 			get
 			{
 				if( m_mainPreviewNode != null )
-					return m_mainPreviewNode.PreviewTexture;
+					return m_mainPreviewNode.PreviewSlice;
 				else
-					return base.PreviewTexture;
+					return base.PreviewSlice;
 			}
 		}
 
@@ -400,8 +499,8 @@ namespace AmplifyShaderEditor
 					if( !UIUtils.CurrentWindow.IsShaderFunctionWindow )
 					{
 						// This function is nested inside a shader function itself and this method
-						// was called before the main output node was created. 
-						// This is possible since all nodes RefreshExternalReferences(...) are called at the end 
+						// was called before the main output node was created.
+						// This is possible since all nodes RefreshExternalReferences(...) are called at the end
 						// of a LoadFromMeta
 						// Need to delay this setup to after all nodes are loaded to then setup the directives
 						m_lateRefresh = true;
@@ -460,7 +559,14 @@ namespace AmplifyShaderEditor
 		{
 			switch( port.DataType )
 			{
+				// @diogo: the wildcard still carries structs and every numeric type, but a texture object
+				// is bound rather than assigned, so it cannot ride through as one
 				case WirePortDataType.OBJECT:
+				{
+					port.AcceptAllTypes();
+					port.AddPortForbiddenTypes( WirePortDataType.SAMPLER1D, WirePortDataType.SAMPLER2D, WirePortDataType.SAMPLER3D,
+						WirePortDataType.SAMPLERCUBE, WirePortDataType.SAMPLER2DARRAY, WirePortDataType.SAMPLERSTATE );
+				}
 				break;
 				case WirePortDataType.FLOAT:
 				case WirePortDataType.FLOAT2:
@@ -472,10 +578,11 @@ namespace AmplifyShaderEditor
 					port.CreatePortRestrictions( WirePortDataType.FLOAT, WirePortDataType.FLOAT2, WirePortDataType.FLOAT3, WirePortDataType.FLOAT4, WirePortDataType.COLOR, WirePortDataType.INT, WirePortDataType.OBJECT );
 				}
 				break;
+				case WirePortDataType.FLOAT2x2:
 				case WirePortDataType.FLOAT3x3:
 				case WirePortDataType.FLOAT4x4:
 				{
-					port.CreatePortRestrictions( WirePortDataType.FLOAT3x3, WirePortDataType.FLOAT4x4, WirePortDataType.OBJECT );
+					port.CreatePortRestrictions( WirePortDataType.FLOAT2x2, WirePortDataType.FLOAT3x3, WirePortDataType.FLOAT4x4, WirePortDataType.OBJECT );
 				}
 				break;
 				case WirePortDataType.SAMPLER1D:
@@ -492,6 +599,12 @@ namespace AmplifyShaderEditor
 					port.CreatePortRestrictions( WirePortDataType.SAMPLERSTATE );
 				}
 				break;
+				// @diogo: a struct only ever matches a struct, the wildcard is deliberately absent
+				case WirePortDataType.STRUCT:
+				{
+					port.CreatePortRestrictions( WirePortDataType.STRUCT );
+				}
+				break;
 				default:
 				break;
 			}
@@ -501,7 +614,14 @@ namespace AmplifyShaderEditor
 		{
 			switch( port.DataType )
 			{
+				// @diogo: the wildcard still carries structs and every numeric type, but a texture object
+				// is bound rather than assigned, so it cannot ride through as one
 				case WirePortDataType.OBJECT:
+				{
+					port.AcceptAllTypes();
+					port.AddPortForbiddenTypes( WirePortDataType.SAMPLER1D, WirePortDataType.SAMPLER2D, WirePortDataType.SAMPLER3D,
+						WirePortDataType.SAMPLERCUBE, WirePortDataType.SAMPLER2DARRAY, WirePortDataType.SAMPLERSTATE );
+				}
 				break;
 				case WirePortDataType.FLOAT:
 				case WirePortDataType.FLOAT2:
@@ -509,6 +629,7 @@ namespace AmplifyShaderEditor
 				case WirePortDataType.FLOAT4:
 				case WirePortDataType.COLOR:
 				case WirePortDataType.INT:
+				case WirePortDataType.FLOAT2x2:
 				case WirePortDataType.FLOAT3x3:
 				case WirePortDataType.FLOAT4x4:
 				{
@@ -529,6 +650,12 @@ namespace AmplifyShaderEditor
 					port.CreatePortRestrictions( WirePortDataType.SAMPLERSTATE );
 				}
 				break;
+				// @diogo: only the receiving port decides, and the wildcard says it carries structs
+				case WirePortDataType.STRUCT:
+				{
+					port.CreatePortRestrictions( WirePortDataType.STRUCT, WirePortDataType.OBJECT );
+				}
+				break;
 				default:
 				break;
 			}
@@ -536,18 +663,87 @@ namespace AmplifyShaderEditor
 
 		public override void PropagateNodeData( NodeData nodeData, ref MasterNodeDataCollector dataCollector )
 		{
+			int outputPortId = nodeData.OutputPortId;
+			StructFieldMask received = nodeData.Fields;
+
+			// @diogo: not a gate, the outer walk below runs on every visit; the touch only tells a struct upstream
+			// that this reader was walked, so a whole-struct read of it can be served from the record
+			dataCollector.Touch( nodeData.Category, this, received );
 			ParentGraph cachedGraph = ContainerGraph.ParentWindow.CustomGraph;
 			m_outsideGraph = cachedGraph;
 			ContainerGraph.ParentWindow.CustomGraph = m_functionGraph;
 
 			for( int i = 0; i < m_allFunctionOutputs.Count; i++ )
 			{
+				// @diogo: only the output the consumer came through carries its demand; the others are still walked for
+				// reachability, as before, demanding nothing
+				bool demanded = ( outputPortId < 0 ) || ( m_outputPorts[ i ].PortId == outputPortId );
+				nodeData.Fields = demanded ? received : StructFieldMask.None;
 				m_allFunctionOutputs[ i ].PropagateNodeData( nodeData, ref dataCollector );
 			}
 
 			ContainerGraph.ParentWindow.CustomGraph = cachedGraph;
 
-			base.PropagateNodeData( nodeData, ref dataCollector );
+			// @diogo: the outer walk is not gated on Touch: the outer demand is whatever the interior recorded on each Function Input,
+			// and that can grow on every visit; an input is re-walked only when its demand grew, since re-sending a covered
+			// demand adds nothing upstream and multiplies the visits exponentially along chains of function nodes
+			UIUtils.SetCategoryInBitArray( ref m_category, nodeData.Category );
+			nodeData.GraphDepth += 1;
+			if ( nodeData.GraphDepth > m_graphDepth )
+			{
+				m_graphDepth = nodeData.GraphDepth;
+			}
+
+			if ( m_walkedOwner != dataCollector )
+			{
+				m_walkedOwner = dataCollector;
+				m_walkedDemand.Clear();
+			}
+
+			// @diogo: the interior may read an input on another stage than the one this node was visited in (a Vertex To Fragment
+			// inside the function), and that stage's demand has to reach the outer chain
+			MasterNodePortCategory visitedCategory = nodeData.Category;
+			int count = m_inputPorts.Count;
+			for ( int i = 0; i < count; i++ )
+			{
+				if ( m_inputPorts[ i ].IsConnected )
+				{
+					bool anyRecorded = false;
+					for ( int c = 0; c < s_walkCategories.Length && !anyRecorded; c++ )
+					{
+						anyRecorded = ( i < m_allFunctionInputs.Count ) && m_allFunctionInputs[ i ].DemandFor( s_walkCategories[ c ], dataCollector ) != null;
+					}
+
+					for ( int c = 0; c < s_walkCategories.Length; c++ )
+					{
+						MasterNodePortCategory category = s_walkCategories[ c ];
+						StructFieldMask demand = ( i < m_allFunctionInputs.Count ) ? m_allFunctionInputs[ i ].DemandFor( category, dataCollector ) : null;
+
+						// @diogo: only an input the interior never reached falls back to the visited stage; walking one read on
+						// another stage in the visited one tags its chain with a stage it never generates in
+						if ( demand == null && ( category != visitedCategory || anyRecorded ) )
+						{
+							continue;
+						}
+
+						StructFieldMask fields = demand ?? StructFieldMask.All;
+
+						long key = ( ( long )category << 32 ) | ( uint )i;
+						bool seen = m_walkedDemand.TryGetValue( key, out StructFieldMask walked );
+						if ( seen && walked.Covers( fields ) )
+						{
+							continue;
+						}
+						m_walkedDemand[ key ] = seen ? walked.Union( fields ) : fields;
+
+						nodeData.Category = category;
+						nodeData.OutputPortId = m_inputPorts[ i ].GetConnection( 0 ).PortId;
+						nodeData.Fields = fields;
+						m_inputPorts[ i ].GetOutputNode().PropagateNodeData( nodeData, ref dataCollector );
+					}
+				}
+			}
+			nodeData.Category = visitedCategory;
 		}
 
 		protected override void OnUniqueIDAssigned()
@@ -576,13 +772,13 @@ namespace AmplifyShaderEditor
 
 				ParentGraph cachedGraph = ContainerGraph.ParentWindow.CustomGraph;
 				ContainerGraph.ParentWindow.CustomGraph = m_functionGraph;
-				functionInput.ChangeOutputType( inputPort.DataType, false );
+				functionInput.ChangeOutputType( inputPort.DataType, inputPort.StructName, false );
 				ContainerGraph.ParentWindow.CustomGraph = cachedGraph;
 			}
 
 			for( int i = 0; i < m_allFunctionOutputs.Count; i++ )
 			{
-				m_outputPorts[ i ].ChangeType( m_allFunctionOutputs[ i ].InputPorts[ 0 ].DataType, false );
+				m_outputPorts[ i ].ChangeType( m_allFunctionOutputs[ i ].InputPorts[ 0 ].DataType, m_allFunctionOutputs[ i ].InputPorts[ 0 ].StructName, false );
 			}
 		}
 
@@ -592,6 +788,20 @@ namespace AmplifyShaderEditor
 
 			FunctionInput functionInput = m_refreshIdsRequired ? m_allFunctionInputs[ portId ] : GetFunctionInputByUniqueId( portId );
 			functionInput.PreviewIsDirty = true;
+
+			// @diogo: an auto-cast port keeps whatever it adopted, which for a struct leaves it naming one
+			// nothing is feeding it - and a port that names a struct refuses every other struct offered to
+			// it. Only the name is handed back, so every other type still keeps the shape it was cast to
+			if ( functionInput.AutoCast )
+			{
+				InputPort inputPort = m_refreshIdsRequired ? m_inputPorts[ portId ] : GetInputPortByUniqueId( portId );
+				inputPort.ChangeType( inputPort.DataType, functionInput.SelectedInputStructName, false );
+
+				ParentGraph cachedGraph = ContainerGraph.ParentWindow.CustomGraph;
+				ContainerGraph.ParentWindow.CustomGraph = m_functionGraph;
+				functionInput.ChangeOutputType( inputPort.DataType, functionInput.SelectedInputStructName, false );
+				ContainerGraph.ParentWindow.CustomGraph = cachedGraph;
+			}
 		}
 
 		public override void OnConnectedOutputNodeChanges( int inputPortId, int otherNodeId, int otherPortId, string name, WirePortDataType type )
@@ -606,14 +816,34 @@ namespace AmplifyShaderEditor
 
 				ParentGraph cachedGraph = ContainerGraph.ParentWindow.CustomGraph;
 				ContainerGraph.ParentWindow.CustomGraph = m_functionGraph;
-				functionInput.ChangeOutputType( inputPort.DataType, false );
+				functionInput.ChangeOutputType( inputPort.DataType, inputPort.StructName, false );
 				ContainerGraph.ParentWindow.CustomGraph = cachedGraph;
 			}
 
 			for( int i = 0; i < m_allFunctionOutputs.Count; i++ )
 			{
-				m_outputPorts[ i ].ChangeType( m_allFunctionOutputs[ i ].InputPorts[ 0 ].DataType, false );
+				m_outputPorts[ i ].ChangeType( m_allFunctionOutputs[ i ].InputPorts[ 0 ].DataType, m_allFunctionOutputs[ i ].InputPorts[ 0 ].StructName, false );
 			}
+		}
+
+		// The definition behind a struct this call hands out. The graph around it has no other way to
+		// reach one - a registry never crosses the boundary, and the type is declared inside the function.
+		public StructDefinitionData GetBoundaryStructDefinition( string typeName )
+		{
+			StructDefinitionData definition = null;
+			int outputCount = ( m_functionGraph != null ) ? m_outputPorts.Count : 0;
+
+			// @diogo: only a name this call actually puts on a wire is looked up, so a struct that stays
+			// inside the function is never offered to the graph around it
+			for ( int i = 0; i < outputCount && definition == null; i++ )
+			{
+				if ( m_outputPorts[ i ].DataType == WirePortDataType.STRUCT && m_outputPorts[ i ].StructName == typeName )
+				{
+					definition = m_functionGraph.GetStructDefinition( typeName );
+				}
+			}
+
+			return definition;
 		}
 
 		public override void DrawProperties()
@@ -622,7 +852,7 @@ namespace AmplifyShaderEditor
 
 			if( Function == null )
 				return;
-			
+
 			if( Function.Description.Length > 0 || m_allFunctionSwitches.Count > 0 )
 				NodeUtils.DrawPropertyGroup( ref m_parametersFoldout, "Parameters", DrawDescription );
 
@@ -701,34 +931,38 @@ namespace AmplifyShaderEditor
 			if( m_functionGraph != null && ContainerGraph.ParentWindow.CurrentGraph != m_functionGraph )
 				ContainerGraph.ParentWindow.CurrentGraph.InstancePropertyCount -= m_functionGraph.InstancePropertyCount;
 
-			if( ContainerGraph.ParentWindow.OutsideGraph.CurrentStandardSurface != null )
+			// @diogo: skip on whole-graph teardown: master nodes may already be destroyed, and their directives die with them
+			if ( !ParentGraph.IsBulkDestroying )
 			{
-				//for( int i = 0; i < m_includes.Count; i++ )
-				//{
-				//	//if( ContainerGraph.ParentWindow.OutsideGraph.CurrentStandardSurface.AdditionalIncludes.OutsideList.Contains( m_includes[ i ] ) )
-				//	//{
-				//	//	ContainerGraph.ParentWindow.OutsideGraph.CurrentStandardSurface.AdditionalIncludes.OutsideList.Remove( m_includes[ i ] );
-				//	//}
-				//	ContainerGraph.ParentWindow.OutsideGraph.CurrentStandardSurface.AdditionalDirectives.RemoveShaderFunctionItem( AdditionalLineType.Include, m_includes[ i ] );
-				//}
-
-				//for( int i = 0; i < m_pragmas.Count; i++ )
-				//{
-				//	//if( ContainerGraph.ParentWindow.OutsideGraph.CurrentStandardSurface.AdditionalPragmas.OutsideList.Contains( m_pragmas[ i ] ) )
-				//	//{
-				//	//	ContainerGraph.ParentWindow.OutsideGraph.CurrentStandardSurface.AdditionalPragmas.OutsideList.Remove( m_pragmas[ i ] );
-				//	//}
-				//	ContainerGraph.ParentWindow.OutsideGraph.CurrentStandardSurface.AdditionalDirectives.RemoveShaderFunctionItem( AdditionalLineType.Pragma, m_pragmas[ i ] );
-				//}
-				ContainerGraph.ParentWindow.OutsideGraph.CurrentStandardSurface.AdditionalDirectives.RemoveShaderFunctionItems( OutputId/*, m_directives */);
-			}
-			else
-			{
-				if( ContainerGraph.ParentWindow.OutsideGraph.MultiPassMasterNodes.Count > 0 )
+				if( ContainerGraph.ParentWindow.OutsideGraph.CurrentStandardSurface != null )
 				{
-					for( int lod = -1; lod < ContainerGraph.ParentWindow.OutsideGraph.LodMultiPassMasternodes.Count; lod++ )
+					//for( int i = 0; i < m_includes.Count; i++ )
+					//{
+					//	//if( ContainerGraph.ParentWindow.OutsideGraph.CurrentStandardSurface.AdditionalIncludes.OutsideList.Contains( m_includes[ i ] ) )
+					//	//{
+					//	//	ContainerGraph.ParentWindow.OutsideGraph.CurrentStandardSurface.AdditionalIncludes.OutsideList.Remove( m_includes[ i ] );
+					//	//}
+					//	ContainerGraph.ParentWindow.OutsideGraph.CurrentStandardSurface.AdditionalDirectives.RemoveShaderFunctionItem( AdditionalLineType.Include, m_includes[ i ] );
+					//}
+
+					//for( int i = 0; i < m_pragmas.Count; i++ )
+					//{
+					//	//if( ContainerGraph.ParentWindow.OutsideGraph.CurrentStandardSurface.AdditionalPragmas.OutsideList.Contains( m_pragmas[ i ] ) )
+					//	//{
+					//	//	ContainerGraph.ParentWindow.OutsideGraph.CurrentStandardSurface.AdditionalPragmas.OutsideList.Remove( m_pragmas[ i ] );
+					//	//}
+					//	ContainerGraph.ParentWindow.OutsideGraph.CurrentStandardSurface.AdditionalDirectives.RemoveShaderFunctionItem( AdditionalLineType.Pragma, m_pragmas[ i ] );
+					//}
+					ContainerGraph.ParentWindow.OutsideGraph.CurrentStandardSurface.AdditionalDirectives.RemoveShaderFunctionItems( OutputId/*, m_directives */);
+				}
+				else
+				{
+					if( ContainerGraph.ParentWindow.OutsideGraph.MultiPassMasterNodes.Count > 0 )
 					{
-						RemoveShaderFunctionDirectivesInternal( lod );
+						for( int lod = -1; lod < ContainerGraph.ParentWindow.OutsideGraph.LodMultiPassMasternodes.Count; lod++ )
+						{
+							RemoveShaderFunctionDirectivesInternal( lod );
+						}
 					}
 				}
 			}
@@ -736,7 +970,7 @@ namespace AmplifyShaderEditor
 
 
 
-			// Cannot GameObject.Destroy(m_directives[i]) since we would be removing them from 
+			// Cannot GameObject.Destroy(m_directives[i]) since we would be removing them from
 			// the shader function asset itself
 
 			m_directives.Clear();
@@ -814,12 +1048,27 @@ namespace AmplifyShaderEditor
 			}
 
 			ContainerGraph.ParentWindow.CustomGraph = cachedGraph;
+
+			// @diogo: the output ports take their struct name when this node is built, which is before the
+			// function graph has finished resolving what it holds - an asset reference in there is looked
+			// up later, and nothing announces it. So the boundary is compared back against, the same way
+			// the Struct node polls the definition it built its own ports from
+			int boundaryCount = ( m_allFunctionOutputs != null ) ? m_allFunctionOutputs.Count : 0;
+			for ( int i = 0; i < boundaryCount && !m_portsChanged; i++ )
+			{
+				m_portsChanged = m_outputPorts[ i ].StructName != m_allFunctionOutputs[ i ].InputPorts[ 0 ].StructName;
+			}
+
 			if( m_portsChanged )
 			{
 				m_portsChanged = false;
+				// @diogo: a function-switch selection can route the SF output through a branch containing a
+				// continuous node, changing its liveness; force a preview re-walk so the on-demand idle-skip
+				// re-evaluates m_previewLive instead of staying stale-false (pooled SF previews, QA #5).
+				PreviewIsDirty = true;
 				for( int i = 0; i < m_allFunctionOutputs.Count; i++ )
 				{
-					m_outputPorts[ i ].ChangeType( m_allFunctionOutputs[ i ].InputPorts[ 0 ].DataType, false );
+					m_outputPorts[ i ].ChangeType( m_allFunctionOutputs[ i ].InputPorts[ 0 ].DataType, m_allFunctionOutputs[ i ].InputPorts[ 0 ].StructName, false );
 				}
 
 				CheckPortVisibility();
@@ -829,6 +1078,8 @@ namespace AmplifyShaderEditor
 		public override void Draw( DrawInfo drawInfo )
 		{
 			//CheckForChangesRecursively();
+
+			var nodeChangeCache = new NodeUpdateCache();
 
 			if( !m_initialGraphDraw && drawInfo.CurrentEventType == EventType.Repaint )
 			{
@@ -842,7 +1093,7 @@ namespace AmplifyShaderEditor
 						ParentNode node = m_functionGraph.AllNodes[ i ];
 						if( node != null )
 						{
-							node.OnNodeLayout( drawInfo );
+							node.OnNodeLayout( drawInfo, nodeChangeCache );
 						}
 					}
 				}
@@ -936,12 +1187,25 @@ namespace AmplifyShaderEditor
 
 			for( int i = 0; i < m_inputPorts.Count; i++ )
 			{
-				if( m_inputPorts[ i ].IsConnected )
+				InputPort newInputPort = newNode.GetInputPortByUniqueId( m_inputPorts[ i ].PortId );
+				if( newNode.InputPorts != null && newInputPort != null )
 				{
-					InputPort newInputPort = newNode.GetInputPortByUniqueId( m_inputPorts[ i ].PortId );
-					if( newNode.InputPorts != null && newInputPort != null )
+					// @diogo: the rebuilt node starts from the function's own defaults, so the values
+					// set on this instance have to be carried over or a function edit reverts them
+					newInputPort.InternalData = m_inputPorts[ i ].InternalData;
+
+					if( m_inputPorts[ i ].IsConnected )
 					{
-						ContainerGraph.CreateConnection( newInputPort.NodeId, newInputPort.PortId, m_inputPorts[ i ].ExternalReferences[ 0 ].NodeId, m_inputPorts[ i ].ExternalReferences[ 0 ].PortId );
+						// @diogo: a wildcard source, e.g. Get Local Var, may only resolve once the other rebuilt functions reconnect
+						OutputPort sourcePort = m_inputPorts[ i ].GetOutputConnection( 0 );
+						if ( sourcePort != null && sourcePort.DataType == WirePortDataType.OBJECT && !newInputPort.CheckValidType( sourcePort ) )
+						{
+							ContainerGraph.DeferWire( newInputPort, sourcePort );
+						}
+						else
+						{
+							ContainerGraph.CreateConnection( newInputPort.NodeId, newInputPort.PortId, m_inputPorts[ i ].ExternalReferences[ 0 ].NodeId, m_inputPorts[ i ].ExternalReferences[ 0 ].PortId );
+						}
 					}
 				}
 			}
@@ -953,6 +1217,9 @@ namespace AmplifyShaderEditor
 				ContainerGraph.DeselectNode( this );
 				ContainerGraph.SelectNode( newNode, true, false );
 			}
+
+			// @diogo: a function rebuilt earlier in this pass may hold a wire to this instance
+			ContainerGraph.RetargetDeferredWires( UniqueId, newNode.UniqueId );
 
 			ContainerGraph.DestroyNode( this, false );
 		}
@@ -1002,6 +1269,7 @@ namespace AmplifyShaderEditor
 				return outputPort.LocalValue( dataCollector.PortCategory );
 
 			m_functionGraph.CurrentPrecision = ContainerGraph.ParentWindow.CurrentGraph.CurrentPrecision;
+			m_functionGraph.CurrentSRPType = ContainerGraph.ParentWindow.CurrentGraph.CurrentSRPType;
 			ParentGraph cachedGraph = ContainerGraph.ParentWindow.CustomGraph;
 			m_outsideGraph = cachedGraph;
 			ContainerGraph.ParentWindow.CustomGraph = m_functionGraph;
@@ -1014,7 +1282,7 @@ namespace AmplifyShaderEditor
 			string result = string.Empty;
 			for( int i = 0; i < m_allFunctionInputs.Count; i++ )
 			{
-				if( !m_allFunctionInputs[ i ].InputPorts[ 0 ].IsConnected || m_inputPorts[ i ].IsConnected )
+				if ( UsesOuterPort( i ) )
 					m_allFunctionInputs[ i ].OnPortGeneration += FunctionNodeOnPortGeneration;
 			}
 
@@ -1022,7 +1290,7 @@ namespace AmplifyShaderEditor
 
 			for( int i = 0; i < m_allFunctionInputs.Count; i++ )
 			{
-				if( !m_allFunctionInputs[ i ].InputPorts[ 0 ].IsConnected || m_inputPorts[ i ].IsConnected )
+				if ( UsesOuterPort( i ) )
 					m_allFunctionInputs[ i ].OnPortGeneration -= FunctionNodeOnPortGeneration;
 			}
 
@@ -1034,6 +1302,19 @@ namespace AmplifyShaderEditor
 				outputPort.SetLocalValue( result, dataCollector.PortCategory );
 
 			return outputPort.LocalValue( dataCollector.PortCategory );
+		}
+
+		// True when the input generates through this node's port instead of its own default wire; the branch
+		// analysis mirrors it to know which side of the boundary an input's chain lives on
+		public bool UsesOuterPort( int index )
+		{
+			return !m_allFunctionInputs[ index ].InputPorts[ 0 ].IsConnected || m_inputPorts[ index ].IsConnected;
+		}
+
+		public bool UsesOuterPort( FunctionInput input )
+		{
+			int index = m_allFunctionInputs.FindIndex( ( x ) => { return x.Equals( input ); } );
+			return index >= 0 && UsesOuterPort( index );
 		}
 
 		private string FunctionNodeOnPortGeneration( ref MasterNodeDataCollector dataCollector, int index, ParentGraph graph )
@@ -1084,6 +1365,8 @@ namespace AmplifyShaderEditor
 				m_functionGUID = GetCurrentParam( ref nodeParams );
 			}
 
+			bool loadFailed = false;
+
 			AmplifyShaderFunction loaded = AssetDatabase.LoadAssetAtPath<AmplifyShaderFunction>( AssetDatabase.GUIDToAssetPath( m_functionGUID ) );
 			if( loaded != null )
 			{
@@ -1114,9 +1397,23 @@ namespace AmplifyShaderEditor
 					}
 					else
 					{
-						SetTitleText( "ERROR" );
-						UIUtils.ShowMessage( UniqueId, string.Format( "Error loading {0} shader function from project folder", m_filename ), MessageSeverity.Error );
+						loadFailed = true;
 					}
+				}
+				else
+				{
+					loadFailed = true;
+				}
+			}
+
+			if ( loadFailed )
+			{
+				if ( ShaderFunctionToNode.IsEligible( m_functionGUID ) )
+				{
+					// @diogo:
+					// Function is missing but is eligible for conversion to scripted node.
+					// Check ShaderFunctionToNode.cs for more information.
+					m_isEligibleForConversion = true;
 				}
 				else
 				{
@@ -1124,6 +1421,7 @@ namespace AmplifyShaderEditor
 					UIUtils.ShowMessage( UniqueId, string.Format( "Missing {0} shader function on project folder", m_filename ), MessageSeverity.Error );
 				}
 			}
+
 			if( UIUtils.CurrentShaderVersion() > 14203 )
 			{
 				ReadOptionsHelper = GetCurrentParam( ref nodeParams ).Split( ',' );
@@ -1160,7 +1458,7 @@ namespace AmplifyShaderEditor
 				int inputCount = InputPorts.Count;
 				for( int i = 0; i < inputCount; i++ )
 				{
-					InputPorts[ i ].ChangeProperties( m_allFunctionInputs[ i ].InputName, m_allFunctionInputs[ i ].SelectedInputType, false );
+					InputPorts[ i ].ChangeProperties( m_allFunctionInputs[ i ].InputName, m_allFunctionInputs[ i ].SelectedInputType, m_allFunctionInputs[ i ].SelectedInputStructName, false );
 				}
 			}
 
@@ -1169,7 +1467,7 @@ namespace AmplifyShaderEditor
 				int outputCount = OutputPorts.Count;
 				for( int i = 0; i < outputCount; i++ )
 				{
-					OutputPorts[ i ].ChangeProperties( m_allFunctionOutputs[ i ].OutputName, m_allFunctionOutputs[ i ].AutoOutputType, false );
+					OutputPorts[ i ].ChangeProperties( m_allFunctionOutputs[ i ].OutputName, m_allFunctionOutputs[ i ].AutoOutputType, m_allFunctionOutputs[ i ].AutoOutputStructName, false );
 				}
 			}
 		}
@@ -1195,6 +1493,8 @@ namespace AmplifyShaderEditor
 
 		public bool HasProperties { get { return m_reordenator != null; } }
 
+		public ParentGraph OutsideGraph { get { return m_outsideGraph; } }
+
 		public ParentGraph FunctionGraph
 		{
 			get { return m_functionGraph; }
@@ -1207,22 +1507,6 @@ namespace AmplifyShaderEditor
 			set { m_function = value; }
 		}
 
-		public override void RecordObjectOnDestroy( string Id )
-		{
-			base.RecordObjectOnDestroy( Id );
-			if( m_reordenator != null )
-				m_reordenator.RecordObject( Id );
-
-			if( m_functionGraph != null )
-			{
-				UndoUtils.RegisterCompleteObjectUndo( m_functionGraph, Id );
-				for( int i = 0; i < m_functionGraph.AllNodes.Count; i++ )
-				{
-					m_functionGraph.AllNodes[ i ].RecordObject( Id );
-				}
-			}
-		}
-
 		public override void SetContainerGraph( ParentGraph newgraph )
 		{
 			base.SetContainerGraph( newgraph );
@@ -1233,14 +1517,21 @@ namespace AmplifyShaderEditor
 				m_functionGraph.AllNodes[ i ].SetContainerGraph( m_functionGraph );
 			}
 		}
-		
+
 		public override void OnMasterNodeReplaced( MasterNode newMasterNode )
 		{
 			base.OnMasterNodeReplaced( newMasterNode );
 			if( m_functionGraph == null )
 				return;
 
+			// @diogo: the function graph has no master node of its own, so the pipeline its nodes read
+			// has to come from the graph owning the new master
+			m_functionGraph.CurrentSRPType = ContainerGraph.ParentWindow.OutsideGraph.CurrentSRPType;
+
+			ParentGraph cachedGraph = ContainerGraph.ParentWindow.CustomGraph;
+			ContainerGraph.ParentWindow.CustomGraph = m_functionGraph;
 			m_functionGraph.FireMasterNodeReplacedEvent( newMasterNode );
+			ContainerGraph.ParentWindow.CustomGraph = cachedGraph;
 
 			StandardSurfaceOutputNode surface = newMasterNode as StandardSurfaceOutputNode;
 			if( surface != null )

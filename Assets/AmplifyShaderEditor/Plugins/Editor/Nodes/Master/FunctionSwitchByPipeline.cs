@@ -8,18 +8,18 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Switch by Pipeline", "Functions", "Executes branch according to current pipeline", NodeAvailabilityFlags = (int)NodeAvailability.ShaderFunction )]
+	[NodeAttributes( "Function Switch by Pipeline", "Functions", "Executes branch according to current pipeline", NodeAvailabilityFlags = (int)NodeAvailability.ShaderFunction )]
 	public sealed class FunctionSwitchByPipeline : ParentNode
 	{
 		protected override void CommonInit( int uniqueId )
 		{
 			base.CommonInit( uniqueId );
-			AddInputPort( WirePortDataType.FLOAT, false, "BiRP Surface", -1, MasterNodePortCategory.Fragment, 0 );
-			AddInputPort( WirePortDataType.FLOAT, false, "BiRP VertFrag", -1, MasterNodePortCategory.Fragment, 3 );
-			AddInputPort( WirePortDataType.FLOAT, false, "URP", -1, MasterNodePortCategory.Fragment, 1 );
-			AddInputPort( WirePortDataType.FLOAT, false, "HDRP", -1, MasterNodePortCategory.Fragment, 2 );
+			AddInputPort( WirePortDataType.FLOAT, false, "BiRP Surface", -1, MasterNodePortCategory.Fragment, 0 ).SetFreeForAll();
+			AddInputPort( WirePortDataType.FLOAT, false, "BiRP VertFrag", -1, MasterNodePortCategory.Fragment, 3 ).SetFreeForAll();
+			AddInputPort( WirePortDataType.FLOAT, false, "URP", -1, MasterNodePortCategory.Fragment, 1 ).SetFreeForAll();
+			AddInputPort( WirePortDataType.FLOAT, false, "HDRP", -1, MasterNodePortCategory.Fragment, 2 ).SetFreeForAll();
 			AddOutputPort( WirePortDataType.FLOAT, Constants.EmptyPortValue );
-
+			m_previewShaderGUID = "a58e46feaa5e3d14383bfeac24d008bc";
 		}
 
 		public override void OnInputPortConnected( int portId, int otherNodeId, int otherPortId, bool activateNode = true )
@@ -43,22 +43,27 @@ namespace AmplifyShaderEditor
 				case TemplateSRPType.BiRP:
 				{
 					InputPort port = UIUtils.CurrentWindow.OutsideGraph.IsStandardSurface ? GetInputPortByUniqueId( 0 ) : GetInputPortByUniqueId( 3 );
-					m_outputPorts[ 0 ].ChangeType( port.DataType, false );
+					m_outputPorts[ 0 ].ChangeType( port.DataType, port.StructName, false );
 				}
 				break;
 				case TemplateSRPType.URP:
 				{
 					InputPort port = GetInputPortByUniqueId( 1 );
-					m_outputPorts[ 0 ].ChangeType( port.DataType, false );
+					m_outputPorts[ 0 ].ChangeType( port.DataType, port.StructName, false );
 				}
 				break;
 				case TemplateSRPType.HDRP:
 				{
 					InputPort port = GetInputPortByUniqueId( 2 );
-					m_outputPorts[ 0 ].ChangeType( port.DataType, false );
+					m_outputPorts[ 0 ].ChangeType( port.DataType, port.StructName, false );
 				}
 				break;
 			}
+		}
+
+		public override StructFieldMask FieldDemandForInput( int inputIndex, StructFieldMask received )
+		{
+			return received;
 		}
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )

@@ -1,4 +1,4 @@
-Shader /*ase_name*/ "Hidden/Templates/PostProcessStack" /*end*/
+Shader /*ase_name*/ "Hidden/Built-In/PostProcessStack" /*end*/
 {
 	Properties
 	{
@@ -7,8 +7,8 @@ Shader /*ase_name*/ "Hidden/Templates/PostProcessStack" /*end*/
 
 	SubShader
 	{
-		Cull Off 
-		ZWrite Off 
+		Cull Off
+		ZWrite Off
 		ZTest Always
 		/*ase_pass*/
 		Pass
@@ -17,11 +17,11 @@ Shader /*ase_name*/ "Hidden/Templates/PostProcessStack" /*end*/
 
 			#pragma vertex Vert
 			#pragma fragment Frag
-			#pragma target 3.0
+			#pragma target 3.5
 
 			#include "UnityCG.cginc"
 			/*ase_pragma*/
-		
+
 			struct ASEAttributesDefault
 			{
 				float3 vertex : POSITION;
@@ -43,7 +43,7 @@ Shader /*ase_name*/ "Hidden/Templates/PostProcessStack" /*end*/
 			uniform sampler2D _MainTex;
 			uniform half4 _MainTex_TexelSize;
 			uniform half4 _MainTex_ST;
-			
+
 			/*ase_globals*/
 
 			/*ase_funcs*/
@@ -79,11 +79,11 @@ Shader /*ase_name*/ "Hidden/Templates/PostProcessStack" /*end*/
 				/*ase_frag_code:i=ASEVaryingsDefault*/
 
 				float4 color = /*ase_frag_out:Frag Color;Float4*/tex2D(_MainTex, i.texcoord )/*end*/;
-				
+
 				return color;
 			}
 			ENDCG
 		}
 	}
-	CustomEditor "ASEMaterialInspector"
+	CustomEditor "AmplifyShaderEditor.MaterialInspector"
 }

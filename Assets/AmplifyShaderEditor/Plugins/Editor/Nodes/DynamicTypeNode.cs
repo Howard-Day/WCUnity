@@ -41,7 +41,7 @@ namespace AmplifyShaderEditor
 			WirePortDataType.INT,
 			WirePortDataType.UINT
 		};
-        
+
 		protected override void CommonInit( int uniqueId )
 		{
 			base.CommonInit( uniqueId );
@@ -83,9 +83,10 @@ namespace AmplifyShaderEditor
 			if( m_extensibleInputPorts || m_allowMatrixCheck )
 			{
 				int higher = 0;
-				int groupOneType = 0;
-				int groupTwoType = 0;
-				for( int i = 0; i < m_inputPorts.Count; i++ )
+				int groupType1 = 0;
+				int groupType2 = 0;
+				int groupType3 = 0;
+				for ( int i = 0; i < m_inputPorts.Count; i++ )
 				{
 					if( m_inputPorts[ i ].IsConnected )
 					{
@@ -104,18 +105,24 @@ namespace AmplifyShaderEditor
 							case WirePortDataType.FLOAT4:
 							case WirePortDataType.COLOR:
 							{
-								groupOneType++;
-								groupTwoType++;
+								groupType1++;
+								groupType2++;
+								groupType3++;
 							}
 							break;
 							case WirePortDataType.FLOAT3x3:
 							{
-								groupOneType++;
+								groupType1++;
 							}
 							break;
 							case WirePortDataType.FLOAT4x4:
 							{
-								groupTwoType++;
+								groupType2++;
+							}
+							break;
+							case WirePortDataType.FLOAT2x2:
+							{
+								groupType3++;
 							}
 							break;
 						}
@@ -130,14 +137,19 @@ namespace AmplifyShaderEditor
 					}
 				}
 
-				if( groupOneType > 0 && m_mainDataType == WirePortDataType.FLOAT4x4 )
+				if( groupType1 > 0 && m_mainDataType == WirePortDataType.FLOAT4x4 )
 				{
 					m_errorMessageTooltip = "Doing this operation with FLOAT4x4 value only works against other FLOAT4x4 or FLOAT values";
 					m_showErrorMessage = true;
 				}
-				else if( groupTwoType > 0 && m_mainDataType == WirePortDataType.FLOAT3x3 )
+				else if( groupType2 > 0 && m_mainDataType == WirePortDataType.FLOAT3x3 )
 				{
 					m_errorMessageTooltip = "Doing this operation with FLOAT3x3 value only works against other FLOAT3x3 or FLOAT values";
+					m_showErrorMessage = true;
+				}
+				else if ( groupType3 > 0 && m_mainDataType == WirePortDataType.FLOAT2x2 )
+				{
+					m_errorMessageTooltip = "Doing this operation with FLOAT2x2 value only works against other FLOAT2x2 or FLOAT values";
 					m_showErrorMessage = true;
 				}
 				else
@@ -191,8 +203,9 @@ namespace AmplifyShaderEditor
 				m_inputPorts[ portId ].MatchPortToConnection();
 
 				int higher = 0;
-				int groupOneType = 0;
-				int groupTwoType = 0;
+				int groupType1 = 0;
+				int groupType2 = 0;
+				int groupType3 = 0;
 				for( int i = 0; i < m_inputPorts.Count; i++ )
 				{
 					if( m_inputPorts[ i ].IsConnected )
@@ -212,18 +225,24 @@ namespace AmplifyShaderEditor
 							case WirePortDataType.FLOAT4:
 							case WirePortDataType.COLOR:
 							{
-								groupOneType++;
-								groupTwoType++;
+								groupType1++;
+								groupType2++;
+								groupType3++;
 							}
 							break;
 							case WirePortDataType.FLOAT3x3:
 							{
-								groupOneType++;
+								groupType1++;
 							}
 							break;
 							case WirePortDataType.FLOAT4x4:
 							{
-								groupTwoType++;
+								groupType2++;
+							}
+							break;
+							case WirePortDataType.FLOAT2x2:
+							{
+								groupType3++;
 							}
 							break;
 						}
@@ -237,14 +256,19 @@ namespace AmplifyShaderEditor
 						m_inputPorts[ i ].ChangeType( m_mainDataType, false );
 					}
 				}
-				if( groupOneType > 0 && m_mainDataType == WirePortDataType.FLOAT4x4 )
+				if( ( groupType1 > 0 || groupType3 > 0 ) && m_mainDataType == WirePortDataType.FLOAT4x4 )
 				{
 					m_errorMessageTooltip = "Doing this operation with FLOAT4x4 value only works against other FLOAT4x4 or FLOAT values";
 					m_showErrorMessage = true;
 				}
-				else if( groupTwoType > 0 && m_mainDataType == WirePortDataType.FLOAT3x3 )
+				else if( ( groupType2 > 0 || groupType3 > 0 ) && m_mainDataType == WirePortDataType.FLOAT3x3 )
 				{
 					m_errorMessageTooltip = "Doing this operation with FLOAT3x3 value only works against other FLOAT3x3 or FLOAT values";
+					m_showErrorMessage = true;
+				}
+				else if ( ( groupType1 > 0 || groupType2 > 0 ) && m_mainDataType == WirePortDataType.FLOAT2x2 )
+				{
+					m_errorMessageTooltip = "Doing this operation with FLOAT2x2 value only works against other FLOAT2x2 or FLOAT values";
 					m_showErrorMessage = true;
 				}
 				else
@@ -318,8 +342,6 @@ namespace AmplifyShaderEditor
 					{
 						if( m_inputCount > m_lastInputCount )
 						{
-							UndoUtils.RegisterCompleteObjectUndo( m_containerGraph.ParentWindow, Constants.UndoCreateDynamicPortId );
-							RecordObject( Constants.UndoCreateDynamicPortId );
 
 							AddInputPort( m_mainDataType, false, ( ( char ) ( 'A' + m_inputCount - 1 ) ).ToString() );
 							m_inputPorts[ m_inputCount - 1 ].CreatePortRestrictions( m_dynamicRestrictions );
@@ -351,7 +373,7 @@ namespace AmplifyShaderEditor
 
 			bool hasEmptyConnections = false;
 
-			bool hasMatrix = m_inputPorts[ 0 ].DataType == WirePortDataType.FLOAT3x3 || m_inputPorts[ 0 ].DataType == WirePortDataType.FLOAT4x4 || m_inputPorts[ 1 ].DataType == WirePortDataType.FLOAT3x3 || m_inputPorts[ 1 ].DataType == WirePortDataType.FLOAT4x4;
+			bool hasMatrix = m_inputPorts[ 0 ].DataTypeIsMatrix || m_inputPorts[ 1 ].DataTypeIsMatrix;
 
 			if( m_inputPorts.Count != m_beforePreviewCount )
 			{
@@ -375,7 +397,7 @@ namespace AmplifyShaderEditor
 				{
 					for( int i = m_inputPorts.Count - 1; i >= 2; i-- )
 					{
-						if( m_inputPorts[ i ].DataType == WirePortDataType.FLOAT3x3 || m_inputPorts[ i ].DataType == WirePortDataType.FLOAT4x4 )
+						if( m_inputPorts[ i ].DataTypeIsMatrix )
 						{
 							m_containerGraph.ParentWindow.ShowMessage( UniqueId, "Matrix operations are only valid for the first two inputs to prevent errors" );
 							m_inputPorts[ i ].FullDeleteConnections();
@@ -399,11 +421,6 @@ namespace AmplifyShaderEditor
 			NodeWireReferencesUtils wireReferenceUtils = m_containerGraph.ParentWindow.WireReferenceUtils;
 			if( !wireReferenceUtils.OutputPortReference.IsValid )
 			{
-				if( recordUndo )
-				{
-					UndoUtils.RegisterCompleteObjectUndo( m_containerGraph.ParentWindow, Constants.UndoDeleteDynamicPortId );
-					RecordObject( Constants.UndoDeleteDynamicPortId );
-				}
 
 				bool hasDeleted = false;
 				m_inputCount = 2;
@@ -418,7 +435,8 @@ namespace AmplifyShaderEditor
 						{
 							wireReferenceUtils.InputPortReference.Invalidate();
 						}
-						DeleteInputPortByArrayIdx( i );
+						// @diogo: honor recordUndo - this trims already-empty ports, so its DeleteConnection is a no-op that must not register undo steps
+						DeleteInputPortByArrayIdx( i, recordUndo );
 					}
 					else
 					{
@@ -456,6 +474,11 @@ namespace AmplifyShaderEditor
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
 		{
+			if( m_outputPorts[ 0 ].IsLocalValue( dataCollector.PortCategory ) )
+			{
+				return m_outputPorts[ 0 ].LocalValue( dataCollector.PortCategory );
+			}
+
 			string result = BuildResults( outputId, ref dataCollector, ignoreLocalvar );
 			return CreateOutputLocalVariable( 0, result, ref dataCollector );
 		}
@@ -465,12 +488,12 @@ namespace AmplifyShaderEditor
 			m_inputA = m_inputPorts[ 0 ].GeneratePortInstructions( ref dataCollector );
 			if( m_inputPorts[ 0 ].DataType != m_mainDataType )
 			{
-				m_inputA = UIUtils.CastPortType( ref dataCollector, CurrentPrecisionType, new NodeCastInfo( UniqueId, outputId ), m_inputA, m_inputPorts[ 0 ].DataType, m_mainDataType, m_inputA );
+				m_inputA = UIUtils.CastPortType( ref dataCollector, CurrentPrecisionType, m_inputA, m_inputPorts[ 0 ].DataType, m_mainDataType, m_inputA );
 			}
 			m_inputB = m_inputPorts[ 1 ].GeneratePortInstructions( ref dataCollector );
 			if( m_inputPorts[ 1 ].DataType != m_mainDataType )
 			{
-				m_inputB = UIUtils.CastPortType( ref dataCollector, CurrentPrecisionType, new NodeCastInfo( UniqueId, outputId ), m_inputB, m_inputPorts[ 1 ].DataType, m_mainDataType, m_inputB );
+				m_inputB = UIUtils.CastPortType( ref dataCollector, CurrentPrecisionType, m_inputB, m_inputPorts[ 1 ].DataType, m_mainDataType, m_inputB );
 			}
 		}
 
@@ -482,7 +505,7 @@ namespace AmplifyShaderEditor
 				m_extensibleInputResults.Add( m_inputPorts[ i ].GeneratePortInstructions( ref dataCollector ) );
 				if( m_inputPorts[ i ].DataType != m_mainDataType && m_inputPorts[ i ].DataType != WirePortDataType.FLOAT && m_inputPorts[ i ].DataType != WirePortDataType.INT )
 				{
-					m_extensibleInputResults[ i ] = UIUtils.CastPortType( ref dataCollector, CurrentPrecisionType, new NodeCastInfo( UniqueId, outputId ), m_extensibleInputResults[ i ], m_inputPorts[ i ].DataType, m_mainDataType, m_extensibleInputResults[ i ] );
+					m_extensibleInputResults[ i ] = UIUtils.CastPortType( ref dataCollector, CurrentPrecisionType, m_extensibleInputResults[ i ], m_inputPorts[ i ].DataType, m_mainDataType, m_extensibleInputResults[ i ] );
 				}
 			}
 		}

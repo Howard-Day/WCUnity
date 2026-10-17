@@ -68,7 +68,7 @@ Shader "Hidden/LinearMaterial"
 				c.rgb *= _Mask.rgb;
 
 				c.a = tex2D( _GUIClipTexture, i.clipUV ).a;
-				return c;
+				return saturate( c );
 			}
 			ENDCG
 		}
@@ -119,7 +119,7 @@ Shader "Hidden/LinearMaterial"
 				c.rgb *= alpha;
 
 				c.a = tex2D( _GUIClipTexture, i.clipUV ).a;
-				return c;
+				return saturate( c );
 			}
 			ENDCG
 		}
@@ -170,7 +170,7 @@ Shader "Hidden/LinearMaterial"
 				c.rgb = lerp( back, c.rgb, c.a );
 
 				c.a = tex2D( _GUIClipTexture, i.clipUV ).a;
-				return c;
+				return saturate( c );
 			}
 			ENDCG
 		}
@@ -224,7 +224,7 @@ Shader "Hidden/LinearMaterial"
 				c.rgb = lerp( back, c.rgb, c.a * alpha);
 
 				c.a = tex2D( _GUIClipTexture, i.clipUV ).a;
-				return c;
+				return saturate( c );
 			}
 			ENDCG
 		}

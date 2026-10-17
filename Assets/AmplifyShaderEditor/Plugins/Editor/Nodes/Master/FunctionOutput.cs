@@ -52,6 +52,8 @@ namespace AmplifyShaderEditor
 			m_textLabelWidth = 100;
 			m_autoWrapProperties = true;
 			AddInputPort( WirePortDataType.FLOAT, false, "  " );
+			// @diogo: this port declares nothing, it takes the type it is given, so it must never refuse a struct
+			m_inputPorts[ 0 ].SetFreeForAll();
 			AddOutputPort( WirePortDataType.FLOAT, "  " );
 			m_outputPorts[ 0 ].Visible = false;
 			SetTitleText( m_outputName );
@@ -71,6 +73,7 @@ namespace AmplifyShaderEditor
 					if( m_inputPorts[ i ].IsConnected )
 					{
 						NodeData nodeData = new NodeData( m_inputPorts[ i ].Category );
+						nodeData.OutputPortId = m_inputPorts[ i ].GetConnection( 0 ).PortId;
 						ParentNode node = m_inputPorts[ i ].GetOutputNode();
 						MasterNodeDataCollector temp = masterNode.CurrentDataCollector;
 						node.PropagateNodeData( nodeData, ref temp );
@@ -78,6 +81,11 @@ namespace AmplifyShaderEditor
 					}
 				}
 			}
+		}
+
+		public override StructFieldMask FieldDemandForInput( int inputIndex, StructFieldMask received )
+		{
+			return received;
 		}
 
 		protected override void OnUniqueIDAssigned()
@@ -99,14 +107,14 @@ namespace AmplifyShaderEditor
 		{
 			base.OnInputPortConnected( portId, otherNodeId, otherPortId, activateNode );
 			m_inputPorts[ 0 ].MatchPortToConnection();
-			m_outputPorts[ 0 ].ChangeType( m_inputPorts[ 0 ].DataType, false );
+			m_outputPorts[ 0 ].ChangeType( m_inputPorts[ 0 ].DataType, m_inputPorts[ 0 ].StructName, false );
 		}
 
 		public override void OnConnectedOutputNodeChanges( int outputPortId, int otherNodeId, int otherPortId, string name, WirePortDataType type )
 		{
 			base.OnConnectedOutputNodeChanges( outputPortId, otherNodeId, otherPortId, name, type );
 			m_inputPorts[ 0 ].MatchPortToConnection();
-			m_outputPorts[ 0 ].ChangeType( m_inputPorts[ 0 ].DataType, false );
+			m_outputPorts[ 0 ].ChangeType( m_inputPorts[ 0 ].DataType, m_inputPorts[ 0 ].StructName, false );
 		}
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
@@ -200,10 +208,10 @@ namespace AmplifyShaderEditor
 			}
 		}
 		
-		public override void OnNodeLayout( DrawInfo drawInfo )
+		public override void OnNodeLayout( DrawInfo drawInfo, NodeUpdateCache cache )
 		{
 			// RUN LAYOUT CHANGES AFTER TITLES CHANGE
-			base.OnNodeLayout( drawInfo );
+			base.OnNodeLayout( drawInfo, cache );
 			m_titleClickArea = m_titlePos;
 			m_titleClickArea.height = Constants.NODE_HEADER_HEIGHT;
 		}
@@ -233,6 +241,12 @@ namespace AmplifyShaderEditor
 		public WirePortDataType AutoOutputType
 		{
 			get { return m_inputPorts[ 0 ].DataType; }
+		}
+
+		// The struct flowing out of this node, empty for every other type.
+		public string AutoOutputStructName
+		{
+			get { return m_inputPorts[ 0 ].StructName; }
 		}
 
 		public override void WriteToString( ref string nodeInfo, ref string connectionsInfo )

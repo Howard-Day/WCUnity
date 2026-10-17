@@ -2,8 +2,8 @@ Shader "Hidden/UnpackScaleNormalNode"
 {
 	Properties
 	{
-		_A ("_Value", 2D) = "white" {}
-		_B ("_NormalScale", 2D) = "white" {}
+		_A ("_Value", 2DArray) = "white" {}
+		_B ("_NormalScale", 2DArray) = "white" {}
 	}
 	SubShader
 	{
@@ -12,17 +12,18 @@ Shader "Hidden/UnpackScaleNormalNode"
 			CGPROGRAM
 			#pragma vertex vert_img
 			#pragma fragment frag
-			#pragma target 3.0
+			#pragma target 3.5
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#include "UnityStandardUtils.cginc"
 
-			sampler2D _A;
-			sampler2D _B;
+			ASE_PORT( _A );
+			ASE_PORT( _B );
 
 			float4 frag( v2f_img i ) : SV_Target
 			{
-				float4 c = tex2D( _A, i.uv );
-				float n = tex2D( _B, i.uv ).r;
+				float4 c = ASE_SAMPLE_PORT( _A, i.uv );
+				float n = ASE_SAMPLE_PORT( _B, i.uv ).r;
 				c.rgb = UnpackScaleNormal( c, n );
 
 				return float4(c.rgb, 0);

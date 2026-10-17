@@ -6,7 +6,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Not", "Logical Operators", "...", tags: "" )]
+	[NodeAttributes( "Not", "Logical Operators", "Returns the logical inverse of the input. Outputs 1 if the input is 0, or 0 if the input is 1.", tags: "" )]
 	public sealed class NotNode : ParentNode
 	{
 		protected override void CommonInit( int uniqueId )
@@ -39,7 +39,7 @@ namespace AmplifyShaderEditor
 
 			var inputValue = m_inputPorts[ 0 ].GeneratePortInstructions( ref dataCollector );
 			var outputType = UIUtils.PrecisionWirePortToCgType( CurrentPrecisionType, m_outputPorts[ 0 ].DataType );
-			
+
 			string result = string.Format( "( ( {0} )!{1} )", outputType, inputValue );
 			return CreateOutputLocalVariable( 0, result, ref dataCollector );
 		}

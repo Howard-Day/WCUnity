@@ -9,7 +9,7 @@ using System.Collections.Generic;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Texture Coordinates", "UV Coordinates", "Texture UV coordinates set, if <b>Tex</b> is connected to a texture object it will use that texture scale factors, otherwise uses <b>Tilling</b> and <b>Offset</b> port values", null, KeyCode.U, tags: "uv" )]
+	[NodeAttributes( "Texture Coordinates", "UV Coordinates", "Texture UV coordinates set, if <b>Tex</b> is connected to a texture object it will use that texture scale factors, otherwise uses <b>Tilling</b> and <b>Offset</b> port values", null, KeyCode.U, tags: "uv texcoord" )]
 	public sealed class TextureCoordinatesNode : ParentNode
 	{
 
@@ -49,6 +49,13 @@ namespace AmplifyShaderEditor
 		private Vector4Node m_texCoordsHelper;
 
 		private TexturePropertyNode m_referenceNode = null;
+
+		// @diogo: Triplanar's Top/Mid/Bot all carry the Triplanar's own id, so only the name tells them apart
+		[SerializeField]
+		private string m_referenceName = string.Empty;
+
+		// @diogo: name last rendered in the subtitle; source renames don't notify us, so UpdateTitle polls it
+		private string m_previousReferenceName = null;
 
 		private InputPort m_texPort = null;
 		private InputPort m_tilingPort = null;
@@ -123,19 +130,27 @@ namespace AmplifyShaderEditor
 
 		void UpdateTitle()
 		{
-			if( m_inputReferenceNode != null )
+			string referenceName;
+			if ( m_inputReferenceNode != null )
 			{
-				m_additionalContent.text = string.Format( "Value( {0} )", m_inputReferenceNode.PropertyInspectorName );
+				referenceName = m_inputReferenceNode.PropertyInspectorName;
 			}
-			else if( m_referenceArrayId > -1 && m_referenceNode != null )
+			else if ( m_referenceArrayId > -1 && m_referenceNode != null )
 			{
-				m_additionalContent.text = string.Format( "Value( {0} )", m_referenceNode.PropertyInspectorName );
+				referenceName = m_referenceNode.PropertyInspectorName;
 			}
 			else
 			{
-				m_additionalContent.text = string.Empty;
+				referenceName = string.Empty;
 			}
-			m_sizeIsDirty = true;
+
+			// @diogo: diff the source name, not the formatted text, so polling never allocates or resizes
+			if ( !string.Equals( m_previousReferenceName, referenceName ) )
+			{
+				m_previousReferenceName = referenceName;
+				m_additionalContent.text = ( referenceName.Length > 0 ) ? string.Format( "Value( {0} )", referenceName ) : string.Empty;
+				m_sizeIsDirty = true;
+			}
 		}
 
 		void UpdatePorts()
@@ -161,38 +176,49 @@ namespace AmplifyShaderEditor
 		{
 			bool guiEnabledBuffer = GUI.enabled;
 
-			EditorGUI.BeginChangeCheck();
 			List<string> arr = new List<string>( UIUtils.TexturePropertyNodeArr() );
 			if( arr != null && arr.Count > 0 )
 			{
 				arr.Insert( 0, "None" );
 				GUI.enabled = true && ( !m_texPort.IsConnected );
-				m_referenceArrayId = EditorGUILayoutPopup( Constants.AvailableReferenceStr, m_referenceArrayId + 1, arr.ToArray() ) - 1;
+				EditorGUILayout.BeginHorizontal();
+				SearchableDropdown.Draw( Constants.AvailableReferenceStr, m_referenceArrayId + 1, UIUtils.DisambiguateReferenceLabels( arr.ToArray(), ContainerGraph.TexturePropertyNodes.NodesList, 1 ), ( idx ) =>
+				{
+					// @diogo: idx counts the leading "None" entry, so the reference id is idx - 1
+					int newReferenceArrayId = idx - 1;
+					if( newReferenceArrayId != m_referenceArrayId )
+					{
+						UndoRecordObject( "Selected texture reference" );
+						m_referenceArrayId = newReferenceArrayId;
+						m_referenceNode = UIUtils.GetTexturePropertyNode( m_referenceArrayId );
+						if( m_referenceNode != null )
+						{
+							m_referenceNodeId = m_referenceNode.UniqueId;
+							m_referenceName = m_referenceNode.PropertyName;
+						}
+						else
+						{
+							m_referenceNodeId = -1;
+							m_referenceArrayId = -1;
+							m_referenceName = string.Empty;
+						}
+
+						UpdateTitle();
+						UpdatePorts();
+						SetDirtyFromAsyncEdit();
+					}
+				} );
+				UIUtils.DrawReferenceFocusButton( m_referenceNode );
+				EditorGUILayout.EndHorizontal();
 			}
 			else
 			{
 				m_referenceArrayId = -1;
 				GUI.enabled = false;
-				EditorGUILayoutPopup( Constants.AvailableReferenceStr, 0, Dummy );
+				SearchableDropdown.Draw( Constants.AvailableReferenceStr, m_referenceArrayId, Dummy, null );
 			}
 
 			GUI.enabled = guiEnabledBuffer;
-			if( EditorGUI.EndChangeCheck() )
-			{
-				m_referenceNode = UIUtils.GetTexturePropertyNode( m_referenceArrayId );
-				if( m_referenceNode != null )
-				{
-					m_referenceNodeId = m_referenceNode.UniqueId;
-				}
-				else
-				{
-					m_referenceNodeId = -1;
-					m_referenceArrayId = -1;
-				}
-
-				UpdateTitle();
-				UpdatePorts();
-			}
 
 			EditorGUI.BeginChangeCheck();
 			m_texcoordSize = EditorGUILayoutIntPopup( Constants.AvailableUVSizesLabel, m_texcoordSize, Constants.AvailableUVSizesStr, Constants.AvailableUVSizes );
@@ -242,6 +268,7 @@ namespace AmplifyShaderEditor
 		{
 			base.OnNodeLogicUpdate( drawInfo );
 			CheckReference();
+			UpdateTitle();
 		}
 
 		//public override void Draw( DrawInfo drawInfo )
@@ -266,34 +293,37 @@ namespace AmplifyShaderEditor
 			}
 		}
 
+		// @diogo: the sorted register shifts indices on rename/add/remove; re-anchor the index to the property
 		void CheckReference()
 		{
-			if( m_referenceArrayId > -1 )
+			if ( m_referenceNodeId > -1 )
 			{
-				ParentNode newNode = UIUtils.GetTexturePropertyNode( m_referenceArrayId );
-				if( newNode == null || newNode.UniqueId != m_referenceNodeId )
+				if ( m_referenceNode != null )
 				{
-					m_referenceNode = null;
-					int count = UIUtils.GetTexturePropertyNodeAmount();
-					for( int i = 0; i < count; i++ )
-					{
-						ParentNode node = UIUtils.GetTexturePropertyNode( i );
-						if( node.UniqueId == m_referenceNodeId )
-						{
-							m_referenceNode = node as TexturePropertyNode;
-							m_referenceArrayId = i;
-							break;
-						}
-					}
+					// @diogo: the live pointer wins, so mirror its name before any index driven re-resolve
+					m_referenceName = m_referenceNode.PropertyName;
 				}
-			}
 
-			if( m_referenceNode == null && m_referenceNodeId > -1 )
-			{
-				m_referenceNodeId = -1;
-				m_referenceArrayId = -1;
-				UpdateTitle();
-				UpdatePorts();
+				if ( m_referenceNode == null || UIUtils.GetTexturePropertyNode( m_referenceArrayId ) != m_referenceNode )
+				{
+					// @diogo: an id that outlived its target later resolves to whatever node inherits it;
+					// Triplanar is an exception, it owns off-graph texture properties that carry its own id
+					ParentNode owner = ContainerGraph.GetNode( m_referenceNodeId );
+					if ( owner is TexturePropertyNode || owner is TriplanarNode )
+					{
+						m_referenceNode = UIUtils.GetTexturePropertyNodeByReference( m_referenceNodeId, m_referenceName );
+						m_referenceArrayId = UIUtils.GetTexturePropertyNodeRegisterId( m_referenceNode );
+					}
+					else
+					{
+						m_referenceNodeId = -1;
+						m_referenceArrayId = -1;
+						m_referenceNode = null;
+						m_referenceName = string.Empty;
+						UpdateTitle();
+					}
+					UpdatePorts();
+				}
 			}
 		}
 
@@ -318,6 +348,11 @@ namespace AmplifyShaderEditor
 				m_texcoordSize = Convert.ToInt32( GetCurrentParam( ref nodeParams ) );
 				UpdateOutput();
 			}
+
+			if ( UIUtils.CurrentShaderVersion() >= 19913 )
+			{
+				m_referenceName = GetCurrentParam( ref nodeParams );
+			}
 		}
 
 
@@ -328,9 +363,9 @@ namespace AmplifyShaderEditor
 			{
 				if( UIUtils.CurrentShaderVersion() > 2404 )
 				{
-					m_referenceNode = UIUtils.GetNode( m_referenceNodeId ) as TexturePropertyNode;
+					m_referenceNode = UIUtils.GetTexturePropertyNodeByReference( m_referenceNodeId, m_referenceName );
 					if( m_referenceNodeId > -1 )
-						m_referenceArrayId = UIUtils.GetTexturePropertyNodeRegisterId( m_referenceNodeId );
+						m_referenceArrayId = UIUtils.GetTexturePropertyNodeRegisterId( m_referenceNode );
 				}
 				else
 				{
@@ -344,18 +379,24 @@ namespace AmplifyShaderEditor
 				UpdatePorts();
 			}
 		}
+		public override int ReferencedNodeId { get { return m_referenceNodeId > -1 ? m_referenceNodeId : base.ReferencedNodeId; } }
+
+		public override void ReconnectClipboardReferences( Clipboard clipboard )
+		{
+			// validate node first
+			int newId = clipboard.GeNewNodeId( m_referenceNodeId );
+			if ( ContainerGraph.GetNode( newId ) != null )
+			{
+				m_referenceNodeId = newId;
+			}
+			RefreshExternalReferences();
+		}
 
 		public override void PropagateNodeData( NodeData nodeData, ref MasterNodeDataCollector dataCollector )
 		{
-			if( dataCollector != null && dataCollector.TesselationActive )
-			{
-				base.PropagateNodeData( nodeData, ref dataCollector );
-				return;
-			}
-
 			if( dataCollector.IsTemplate )
 			{
-				dataCollector.TemplateDataCollectorInstance.SetUVUsage( m_textureCoordChannel , m_texcoordSize );
+				dataCollector.TemplateDataCollectorInstance.SetUVUsage( m_textureCoordChannel, m_texcoordSize, nodeData.Category );
 			}
 			else
 			{
@@ -382,6 +423,8 @@ namespace AmplifyShaderEditor
 				if( m_inputPorts[ i ].IsConnected )
 				{
 					//m_inputPorts[ i ].GetOutputNode().PropagateNodeCategory( category );
+					nodeData.OutputPortId = m_inputPorts[ i ].GetConnection( 0 ).PortId;
+					nodeData.Fields = StructFieldMask.All;
 					m_inputPorts[ i ].GetOutputNode().PropagateNodeData( nodeData, ref dataCollector );
 				}
 			}
@@ -391,8 +434,9 @@ namespace AmplifyShaderEditor
 		{
 			base.WriteToString( ref nodeInfo, ref connectionsInfo );
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_textureCoordChannel );
-			IOUtils.AddFieldValueToString( ref nodeInfo, ( ( m_referenceNode != null ) ? m_referenceNode.UniqueId : -1 ) );
+			IOUtils.AddFieldValueToString( ref nodeInfo, m_referenceNodeId );
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_texcoordSize );
+			IOUtils.AddFieldValueToString( ref nodeInfo, m_referenceName );
 		}
 
 		string GetValidPropertyName()
@@ -427,17 +471,19 @@ namespace AmplifyShaderEditor
 			string tiling = string.Empty;
 			string offset = string.Empty;
 
+			TexturePropertyNode textureProperty = null;
 			string portProperty = string.Empty;
 			if( m_texPort.IsConnected )
 			{
+				textureProperty = m_texPort.GetOutputNodeWhichIsNotRelay( 0 ) as TexturePropertyNode;
 				portProperty = m_texPort.GeneratePortInstructions( ref dataCollector );
 			}
 			else if( m_referenceArrayId > -1 )
 			{
-				TexturePropertyNode temp = UIUtils.GetTexturePropertyNode( m_referenceArrayId );
-				if( temp != null )
+				textureProperty = UIUtils.GetTexturePropertyNode( m_referenceArrayId );
+				if( textureProperty != null )
 				{
-					portProperty = temp.BaseGenerateShaderForOutput( outputId, ref dataCollector, ignoreLocalVar );
+					portProperty = textureProperty.BaseGenerateShaderForOutput( outputId, ref dataCollector, ignoreLocalVar );
 				}
 			}
 
@@ -484,17 +530,12 @@ namespace AmplifyShaderEditor
 						m_texCoordsHelper.ContainerGraph = ContainerGraph;
 						m_texCoordsHelper.SetBaseUniqueId( UniqueId, true );
 						m_texCoordsHelper.RegisterPropertyOnInstancing = false;
-						m_texCoordsHelper.AddGlobalToSRPBatcher = true;
 					}
 
-					if( UIUtils.CurrentWindow.OutsideGraph.IsInstancedShader )
-					{
-						m_texCoordsHelper.CurrentParameterType = PropertyType.InstancedProperty;
-					}
-					else
-					{
-						m_texCoordsHelper.CurrentParameterType = PropertyType.Global;
-					}
+					m_texCoordsHelper.AddGlobalToSRPBatcher = ( textureProperty != null ) ? ( textureProperty.CurrentParameterType != PropertyType.Global ) : true;
+					m_texCoordsHelper.CurrentParameterType = PropertyType.Global;
+					m_texCoordsHelper.SetRawVariableMode( ( textureProperty != null ) ? textureProperty.CurrentVariableMode : VariableMode.Create );
+
 					m_texCoordsHelper.ResetOutputLocals();
 					m_texCoordsHelper.SetRawPropertyName( dummyPropertyTexcoords );
 					dummyPropertyTexcoords = m_texCoordsHelper.GenerateShaderForOutput( 0, ref dataCollector, false );
@@ -554,7 +595,7 @@ namespace AmplifyShaderEditor
 
 			if( !string.IsNullOrEmpty( propertyName ) /*m_referenceArrayId > -1*/ )
 			{
-				m_surfaceTexcoordName = GeneratorUtils.GenerateAutoUVs( ref dataCollector, UniqueId, m_textureCoordChannel, propertyName, m_outputPorts[ 0 ].DataType, tiling, offset, OutputId );
+				m_surfaceTexcoordName = GeneratorUtils.GenerateAutoUVs( ref dataCollector, UniqueId, m_textureCoordChannel, propertyName, m_outputPorts[ 0 ].DataType, tiling, offset, OutputId, ( textureProperty != null ) ? textureProperty.CurrentVariableMode : VariableMode.Create );
 			}
 			else
 			{

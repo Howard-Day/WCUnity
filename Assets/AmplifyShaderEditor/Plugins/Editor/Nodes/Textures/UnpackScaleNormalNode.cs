@@ -39,6 +39,13 @@ namespace AmplifyShaderEditor
 		}
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
 		{
+			// @diogo: a frontier regeneration above a runtime branch would redeclare the local with its
+			// source now hoisted into a different expression (#365)
+			if ( m_outputPorts[ 0 ].IsLocalValue( dataCollector.PortCategory ) )
+			{
+				return GetOutputVectorItem( 0, outputId, m_outputPorts[ 0 ].LocalValue( dataCollector.PortCategory ) );
+			}
+
 			string src = m_inputPorts[ 0 ].GeneratePortInstructions( ref dataCollector );
 			
 
@@ -58,6 +65,8 @@ namespace AmplifyShaderEditor
 			string normalMapUnpackMode = string.Empty;
 			string scaleValue = isScaledNormal?m_inputPorts[ 1 ].GeneratePortInstructions( ref dataCollector ):"1.0";
 			normalMapUnpackMode = GeneratorUtils.GenerateUnpackNormalStr( ref dataCollector, CurrentPrecisionType, UniqueId, OutputId, src, isScaledNormal, scaleValue , m_inputMode );
+			// @diogo: mirrors the one path in GenerateUnpackNormalStr that declares unpack<id> instead of inlining
+			bool declaredLocal = isScaledNormal && m_inputMode == UnpackInputMode.Tangent && dataCollector.IsTemplate && dataCollector.IsSRP;
 			if( isScaledNormal && !( dataCollector.IsTemplate && dataCollector.IsSRP ) )
 			{
 				dataCollector.AddToIncludes( UniqueId, Constants.UnityStandardUtilsLibFuncs );
@@ -75,10 +84,15 @@ namespace AmplifyShaderEditor
 			{
 				string varName = "localUnpackNormal" + OutputId;
 				dataCollector.AddLocalVariable( UniqueId, "float3 " + varName + " = " + normalMapUnpackMode + ";" );
+				m_outputPorts[ 0 ].SetLocalValue( varName, dataCollector.PortCategory );
 				return GetOutputVectorItem( 0, outputId, varName );
 			}
 			else
 			{
+				if ( declaredLocal )
+				{
+					m_outputPorts[ 0 ].SetLocalValue( normalMapUnpackMode, dataCollector.PortCategory );
+				}
 				return GetOutputVectorItem( 0, outputId, normalMapUnpackMode );
 			}
 		}

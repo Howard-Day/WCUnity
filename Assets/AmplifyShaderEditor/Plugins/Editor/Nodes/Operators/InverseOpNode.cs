@@ -81,8 +81,7 @@ namespace AmplifyShaderEditor
 			m_opName = "inverse";
 			m_drawPreview = false;
 
-			m_inputPorts[ 0 ].CreatePortRestrictions( WirePortDataType.FLOAT3x3,
-													  WirePortDataType.FLOAT4x4 );
+			m_inputPorts[ 0 ].CreatePortRestrictions( WirePortDataType.FLOAT2x2, WirePortDataType.FLOAT3x3, WirePortDataType.FLOAT4x4 );
 			m_inputPorts[ 0 ].ChangeType( WirePortDataType.FLOAT4x4, false );
 			m_outputPorts[ 0 ].ChangeType( WirePortDataType.FLOAT4x4, false );
 		}
@@ -95,7 +94,12 @@ namespace AmplifyShaderEditor
 			string precisionString = UIUtils.PrecisionWirePortToCgType( CurrentPrecisionType, WirePortDataType.FLOAT );
 			string value = m_inputPorts[ 0 ].GeneratePortInstructions( ref dataCollector );
 
-			if ( m_outputPorts[ 0 ].DataType == WirePortDataType.FLOAT3x3 )
+			if ( m_outputPorts[ 0 ].DataType == WirePortDataType.FLOAT2x2 )
+			{
+				GeneratorUtils.Add2x2InverseFunction( ref dataCollector, precisionString );
+				RegisterLocalVariable( 0, string.Format( GeneratorUtils.Inverse2x2Header, value ), ref dataCollector, "invertVal" + OutputId );
+			}
+			else if ( m_outputPorts[ 0 ].DataType == WirePortDataType.FLOAT3x3 )
 			{
 				GeneratorUtils.Add3x3InverseFunction( ref dataCollector, precisionString );
 				RegisterLocalVariable( 0, string.Format( GeneratorUtils.Inverse3x3Header, value ), ref dataCollector, "invertVal" + OutputId );

@@ -92,9 +92,8 @@ namespace AmplifyShaderEditor
 			if( m_outputPorts[ 0 ].IsLocalValue( dataCollector.PortCategory ) )
 				return m_outputPorts[ 0 ].LocalValue( dataCollector.PortCategory );
 
-#if UNITY_2020_3_OR_NEWER
 			dataCollector.AddToIncludes( UniqueId , CommonLightingLib );
-#endif
+
 			string colorValue = m_inputPorts[ 0 ].GeneratePortInstructions( ref dataCollector );
 			string intensityValue = m_inputPorts[ 1 ].GeneratePortInstructions( ref dataCollector );
 			string expositionWeightValue = m_inputPorts[ 2 ].GeneratePortInstructions( ref dataCollector );
@@ -133,7 +132,7 @@ namespace AmplifyShaderEditor
 			m_showErrorMessage = ( ContainerGraph.CurrentCanvasMode == NodeAvailability.SurfaceShader ) ||
 									( ContainerGraph.CurrentCanvasMode == NodeAvailability.TemplateShader && ContainerGraph.CurrentSRPType != TemplateSRPType.HDRP );
 		}
-		
+
 		public override void ReadFromString( ref string[] nodeParams )
 		{
 			base.ReadFromString( ref nodeParams );

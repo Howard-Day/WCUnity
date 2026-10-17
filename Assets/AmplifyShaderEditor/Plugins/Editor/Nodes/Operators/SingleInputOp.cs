@@ -18,6 +18,8 @@ namespace AmplifyShaderEditor
 
 		protected bool m_autoUpdateOutputPort = true;
 
+		protected bool m_isDerivativeOp = false;
+
 		protected override void CommonInit( int uniqueId )
 		{
 			base.CommonInit( uniqueId );
@@ -48,6 +50,11 @@ namespace AmplifyShaderEditor
 		{
 			if ( m_outputPorts[ 0 ].IsLocalValue( dataCollector.PortCategory ) )
 				return m_outputPorts[ 0 ].LocalValue( dataCollector.PortCategory );
+
+			if ( m_isDerivativeOp && dataCollector.IsFragmentCategory )
+			{
+				dataCollector.NotifyDivergenceHazard( UniqueId );
+			}
 
 			string result = "0";
 			if ( m_inputPorts[ 0 ].IsConnected )

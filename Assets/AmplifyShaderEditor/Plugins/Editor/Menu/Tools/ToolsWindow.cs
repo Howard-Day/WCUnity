@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEditor;
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace AmplifyShaderEditor
 {
@@ -112,6 +113,7 @@ namespace AmplifyShaderEditor
 
 		//Search Bar
 		private const string SearchBarId = "ASE_SEARCH_BAR";
+		private const string TypeFilterPrefix = "t:";
 		private bool m_searchBarVisible = false;
 		private bool m_selectSearchBarTextfield = false;
 		private bool m_refreshSearchResultList = false;
@@ -176,7 +178,8 @@ namespace AmplifyShaderEditor
 			m_showConsoleWindowButton.ToolButtonPressedEvt += OnButtonPressedEvent;
 			m_showConsoleWindowButton.AddState( IOUtils.ShowConsoleWindowGUID );
 
-			m_searchBarSize = new Rect( 0, TabY + 4, 110, 60 );
+			// @diogo: height must match the single-line search field; an oversized rect breaks IMGUI click-to-cursor hit-testing
+			m_searchBarSize = new Rect( 0, TabY + 4, 110, 18 );
 		}
 
 		void OnShowPortLegend()
@@ -304,6 +307,12 @@ namespace AmplifyShaderEditor
 					{
 						m_refreshSearchResultList = true;
 					}
+
+					// @diogo: keep repainting while focused, otherwise the dirty-repaint gate freezes the caret blink
+					if ( currentFocus.Equals( SearchBarId ) )
+					{
+						m_parentWindow.ForceRepaint();
+					}
 				} else
 				{
 					GUI.Label( m_searchBarSize, m_searchBarValue, UIUtils.ToolbarSearchTextfield );
@@ -399,19 +408,83 @@ namespace AmplifyShaderEditor
 
 		int m_previousNodeCount = 0;
 
+		// @diogo: splits on whitespace but keeps quoted spans together, so t:"texture sample" stays a single token
+		private static List<string> TokenizeSearchQuery( string query )
+		{
+			List<string> tokens = new List<string>();
+			StringBuilder token = new StringBuilder();
+			bool quoted = false;
+			for ( int i = 0; i < query.Length; i++ )
+			{
+				char c = query[ i ];
+				if ( c == '\"' )
+				{
+					quoted = !quoted;
+				}
+				else if ( char.IsWhiteSpace( c ) && !quoted )
+				{
+					if ( token.Length > 0 )
+					{
+						tokens.Add( token.ToString() );
+						token.Length = 0;
+					}
+				}
+				else
+				{
+					token.Append( c );
+				}
+			}
+
+			if ( token.Length > 0 )
+			{
+				tokens.Add( token.ToString() );
+			}
+
+			return tokens;
+		}
+
+		// @diogo: pulls Unity-style "t:<type>" tokens out of the query; the remaining words stay free text
+		private static void SplitSearchQuery( string query, out string typeFilter, out string textFilter )
+		{
+			typeFilter = string.Empty;
+
+			List<string> tokens = TokenizeSearchQuery( query );
+			List<string> textTokens = new List<string>( tokens.Count );
+			for ( int i = 0; i < tokens.Count; i++ )
+			{
+				if ( tokens[ i ].StartsWith( TypeFilterPrefix, StringComparison.OrdinalIgnoreCase ) )
+				{
+					typeFilter = tokens[ i ].Substring( TypeFilterPrefix.Length );
+				}
+				else
+				{
+					textTokens.Add( tokens[ i ] );
+				}
+			}
+
+			textFilter = string.Join( " ", textTokens.ToArray() );
+		}
+
 		void RefreshList()
 		{
 			m_refreshSearchResultList = false;
 			m_currentSelected = -1;
 			m_searchResultNodes.Clear();
-			if ( !string.IsNullOrEmpty( m_searchBarValue ) )
+
+			string typeFilter;
+			string textFilter;
+			SplitSearchQuery( m_searchBarValue, out typeFilter, out textFilter );
+
+			if ( typeFilter.Length > 0 || textFilter.Length > 0 )
 			{
 				List<ParentNode> nodes = m_parentWindow.CurrentGraph.AllNodes;
 				int count = nodes.Count;
 				m_previousNodeCount = count;
 				for ( int i = 0; i < count; i++ )
 				{
-					if ( nodes[ i ].CheckFindText( m_searchBarValue ) )
+					bool matchesType = typeFilter.Length == 0 || nodes[ i ].CheckFindType( typeFilter );
+					bool matchesText = textFilter.Length == 0 || nodes[ i ].CheckFindText( textFilter );
+					if ( matchesType && matchesText )
 					{
 						m_searchResultNodes.Add( nodes[ i ] );
 					}

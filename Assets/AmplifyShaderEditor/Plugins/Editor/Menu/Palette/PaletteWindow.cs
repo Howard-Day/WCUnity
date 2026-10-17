@@ -8,6 +8,8 @@ namespace AmplifyShaderEditor
 {
 	public sealed class PaletteWindow : PaletteParent
 	{
+		protected override bool SupportsReservedTab { get { return true; } }
+
 		public PaletteWindow( AmplifyShaderEditorWindow parentWindow ) : base( parentWindow, 0, 0, 250, 0, string.Empty, MenuAnchor.TOP_RIGHT, MenuAutoSize.MATCH_VERTICAL )
 		{
 			m_searchFilterControl += "PALETTEWINDOW";

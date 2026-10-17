@@ -8,15 +8,16 @@ Shader "Hidden/LightAttenuation"
 			#pragma vertex vert_img
 			#pragma fragment frag
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#include "Lighting.cginc"
 
 			float4 _EditorWorldLightPos;
 
 			float4 frag(v2f_img i) : SV_Target
 			{
-				float2 xy = 2 * i.uv - 1;
-				float z = -sqrt(1-saturate(dot(xy,xy)));
-				float3 worldNormal = normalize(float3(xy, z));
+				float3 vertexPos = PreviewFragmentPositionOS( i.uv );
+				float3 normal = PreviewFragmentNormalOS( i.uv );
+				float3 worldNormal = UnityObjectToWorldNormal( normal );
 				float3 lightDir = normalize( _EditorWorldLightPos.xyz );
 				return saturate(dot(worldNormal ,lightDir) * 10 + 0.1);
 			}

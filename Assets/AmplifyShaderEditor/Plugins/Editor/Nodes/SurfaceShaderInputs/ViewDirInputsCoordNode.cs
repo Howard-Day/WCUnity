@@ -9,15 +9,16 @@ namespace AmplifyShaderEditor
 	public enum ViewSpace
 	{
 		Tangent,
-		World
+		World,
+		Object,
+		View
 	}
 
 	[Serializable]
-	[NodeAttributes( "View Dir", "Camera And Screen", "View direction vector, you can select between <b>World</b> space or <b>Tangent</b> space", tags: "camera vector" )]	
+	[NodeAttributes( "View Direction", "Camera And Screen", "Normalized View Direction vector.", tags: "camera vector" )]
 	public sealed class ViewDirInputsCoordNode : SurfaceShaderINParentNode
 	{
 		private const string SpaceStr = "Space";
-		private const string WorldDirVarStr = "worldViewDir";
 		private const string NormalizeOptionStr = "Safe Normalize";
 
 		[SerializeField]
@@ -75,10 +76,7 @@ namespace AmplifyShaderEditor
 		{
 			base.SetPreviewInputs();
 
-			if( m_viewDirSpace == ViewSpace.World )
-				m_previewMaterialPassId = 0;
-			else if( m_viewDirSpace == ViewSpace.Tangent )
-				m_previewMaterialPassId = 1;
+			m_previewMaterialPassId = ( int )m_viewDirSpace;
 		}
 
 		public override void PropagateNodeData( NodeData nodeData, ref MasterNodeDataCollector dataCollector )
@@ -95,51 +93,36 @@ namespace AmplifyShaderEditor
 		{
 			if( dataCollector.IsTemplate )
 			{
-				string varName = ( m_viewDirSpace == ViewSpace.World ) ? dataCollector.TemplateDataCollectorInstance.GetViewDir(true,MasterNodePortCategory.Fragment, m_safeNormalize?NormalizeType.Safe:NormalizeType.Regular) :
-																		dataCollector.TemplateDataCollectorInstance.GetTangentViewDir( CurrentPrecisionType, true,MasterNodePortCategory.Fragment, m_safeNormalize ? NormalizeType.Safe : NormalizeType.Regular );
+				TemplateDataCollector inst = dataCollector.TemplateDataCollectorInstance;
+				string varName = inst.GetViewDir(useMasterNodeCategory: true, customCategory: MasterNodePortCategory.Fragment, normalizeType: m_safeNormalize ? NormalizeType.Safe : NormalizeType.Regular, space: m_viewDirSpace );
 				return GetOutputVectorItem( 0, outputId, varName );
 			}
 
 
 			if( dataCollector.PortCategory == MasterNodePortCategory.Vertex || dataCollector.PortCategory == MasterNodePortCategory.Tessellation )
 			{
-				string result = GeneratorUtils.GenerateViewDirection( ref dataCollector, UniqueId, m_viewDirSpace );
+				string result = GeneratorUtils.GenerateViewDirection( ref dataCollector, UniqueId, normalizeType: m_safeNormalize ? NormalizeType.Safe : NormalizeType.Regular, space: m_viewDirSpace );
 				return GetOutputVectorItem( 0, outputId, result );
 			}
 			else
 			{
-				if( m_viewDirSpace == ViewSpace.World )
+				if ( m_viewDirSpace == ViewSpace.Tangent )
 				{
-					if( dataCollector.DirtyNormal || m_safeNormalize )
+					dataCollector.ForceNormal = true;
+					string result = base.GenerateShaderForOutput( outputId, ref dataCollector, ignoreLocalVar );
+					if ( m_safeNormalize )
 					{
-						dataCollector.AddToInput( UniqueId, SurfaceInputs.WORLD_POS );
-						string result = GeneratorUtils.GenerateViewDirection( ref dataCollector, UniqueId );
-						return GetOutputVectorItem( 0, outputId, result );
+						result = TemplateHelperFunctions.SafeNormalize( dataCollector, result );
 					}
-					else
-					{
-						dataCollector.AddToInput( UniqueId, SurfaceInputs.VIEW_DIR, PrecisionType.Float );
-						return GetOutputVectorItem( 0, outputId, m_currentInputValueStr );
-						//return base.GenerateShaderForOutput( outputId, ref dataCollector, ignoreLocalVar );
-					}
+					return result;
 				}
 				else
 				{
-					if( m_safeNormalize )
-					{
-						dataCollector.AddToInput( UniqueId, SurfaceInputs.WORLD_NORMAL, CurrentPrecisionType );
-						dataCollector.AddToInput( UniqueId, SurfaceInputs.INTERNALDATA, addSemiColon: false );
-						dataCollector.ForceNormal = true;
-						dataCollector.AddToInput( UniqueId, SurfaceInputs.WORLD_POS );
-						string result = GeneratorUtils.GenerateViewDirection( ref dataCollector, UniqueId, ViewSpace.Tangent );
-						return GetOutputVectorItem( 0, outputId, result );
-					}
-					else
-					{
-						dataCollector.ForceNormal = true;
-						return base.GenerateShaderForOutput( outputId, ref dataCollector, ignoreLocalVar );
-					}
+					dataCollector.AddToInput( UniqueId, SurfaceInputs.WORLD_POS );
+					string result = GeneratorUtils.GenerateViewDirection( ref dataCollector, UniqueId, m_safeNormalize ? NormalizeType.Safe : NormalizeType.Regular, space: m_viewDirSpace );
+					return GetOutputVectorItem( 0, outputId, result );
 				}
+
 			}
 		}
 
@@ -147,7 +130,9 @@ namespace AmplifyShaderEditor
 		{
 			base.ReadFromString( ref nodeParams );
 			if( UIUtils.CurrentShaderVersion() > 2402 )
-				m_viewDirSpace = (ViewSpace)Enum.Parse( typeof( ViewSpace ), GetCurrentParam( ref nodeParams ) );
+			{
+				m_viewDirSpace = ( ViewSpace )Enum.Parse( typeof( ViewSpace ), GetCurrentParam( ref nodeParams ) );
+			}
 
 			if( UIUtils.CurrentShaderVersion() > 15201 )
 			{

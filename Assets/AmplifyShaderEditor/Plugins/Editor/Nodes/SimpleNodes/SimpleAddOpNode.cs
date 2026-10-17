@@ -23,6 +23,7 @@ namespace AmplifyShaderEditor
 				WirePortDataType.FLOAT3,
 				WirePortDataType.FLOAT4,
 				WirePortDataType.COLOR,
+				WirePortDataType.FLOAT2x2,
 				WirePortDataType.FLOAT3x3,
 				WirePortDataType.FLOAT4x4,
 				WirePortDataType.INT

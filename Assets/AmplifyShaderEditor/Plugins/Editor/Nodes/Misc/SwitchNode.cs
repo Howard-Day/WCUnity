@@ -45,6 +45,7 @@ namespace AmplifyShaderEditor
 			{
 				AddInputPort( WirePortDataType.FLOAT, false, InputPortName + i );
 				m_inputPorts[ i ].Visible = ( i < 2 );
+				m_inputPorts[ i ].SetFreeForAll();
 			}
 			AddOutputPort( WirePortDataType.FLOAT, " " );
 
@@ -71,7 +72,7 @@ namespace AmplifyShaderEditor
 		{
 			m_inputPorts[ inputPortId ].MatchPortToConnection();
 			if( inputPortId == m_currentSelectedInput )
-				m_outputPorts[ 0 ].ChangeType( m_inputPorts[ inputPortId ].DataType, false );
+				m_outputPorts[ 0 ].ChangeType( m_inputPorts[ inputPortId ].DataType, m_inputPorts[ inputPortId ].StructName, false );
 		}
 
 		public override void OnInputPortConnected( int portId, int otherNodeId, int otherPortId, bool activateNode = true )
@@ -79,7 +80,7 @@ namespace AmplifyShaderEditor
 			base.OnInputPortConnected( portId, otherNodeId, otherPortId, activateNode );
 			m_inputPorts[ portId ].MatchPortToConnection();
 			if( portId == m_currentSelectedInput )
-				m_outputPorts[ 0 ].ChangeType( m_inputPorts[ portId ].DataType, false );
+				m_outputPorts[ 0 ].ChangeType( m_inputPorts[ portId ].DataType, m_inputPorts[ portId ].StructName, false );
 		}
 
 		public void UpdateLabels()
@@ -100,9 +101,9 @@ namespace AmplifyShaderEditor
 		//	m_sizeIsDirty = true;
 		//}
 
-		public override void OnNodeLayout( DrawInfo drawInfo )
+		public override void OnNodeLayout( DrawInfo drawInfo, NodeUpdateCache cache )
 		{
-			base.OnNodeLayout( drawInfo );
+			base.OnNodeLayout( drawInfo, cache );
 
 			m_varRect = m_remainingBox;
 			m_varRect.width = 50 * drawInfo.InvertedZoom;
@@ -193,6 +194,11 @@ namespace AmplifyShaderEditor
 			}
 
 			m_currentSelectedInput = EditorGUILayoutIntPopup( CurrSelectedStr, m_currentSelectedInput, m_availableInputsLabels, m_availableInputsValues );
+		}
+
+		public override StructFieldMask FieldDemandForInput( int inputIndex, StructFieldMask received )
+		{
+			return ( inputIndex == m_currentSelectedInput ) ? received : StructFieldMask.All;
 		}
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )

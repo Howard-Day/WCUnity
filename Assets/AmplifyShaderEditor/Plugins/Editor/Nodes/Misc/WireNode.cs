@@ -14,10 +14,16 @@ namespace AmplifyShaderEditor
 
 		bool m_forceVisualDataUpdate = false;
 
+		// True once this reroute's stored position is its final centered top-left ( set on
+		// load/deserialize ). Freshly created reroutes start false so they get centered on the
+		// drop point exactly once. Intentionally not serialized.
+		private bool m_alreadyCentered = false;
+
 		protected override void CommonInit( int uniqueId )
 		{
 			base.CommonInit( uniqueId );
 			AddInputPort( WirePortDataType.OBJECT, false, string.Empty );
+			m_inputPorts[ 0 ].SetFreeForAll();
 			AddOutputPort( WirePortDataType.OBJECT, Constants.EmptyPortValue );
 			m_tooltipText = string.Empty;
 			m_drawPreview = false;
@@ -35,7 +41,12 @@ namespace AmplifyShaderEditor
 					return rightWire.GetLastInputDataTypeRecursively();
 				else
 				{
-					return m_outputPorts[ 0 ].GetInputConnection( 0 ).DataType;
+					// @diogo: the reference goes stale when the target port is trimmed off an extensible node
+					InputPort rightPort = m_outputPorts[ 0 ].GetInputConnection( 0 );
+					if ( rightPort != null )
+					{
+						return rightPort.DataType;
+					}
 				}
 			}
 
@@ -59,7 +70,7 @@ namespace AmplifyShaderEditor
 		{
 			base.OnInputPortConnected( portId, otherNodeId, otherPortId, activateNode );
 			m_inputPorts[ 0 ].MatchPortToConnection();
-			m_outputPorts[ 0 ].ChangeType( m_inputPorts[ 0 ].DataType, false );
+			m_outputPorts[ 0 ].ChangeType( m_inputPorts[ 0 ].DataType, m_inputPorts[ 0 ].StructName, false );
 
 			m_forceVisualDataUpdate = true;
 		}
@@ -70,11 +81,16 @@ namespace AmplifyShaderEditor
 
 			if( m_outputPorts[ portId ].ConnectionCount > 1 )
 			{
-				for( int i = 0; i < m_outputPorts[ portId ].ExternalReferences.Count; i++ )
+				// @diogo: a reroute output feeds a single input, so drop every connection but the new one;
+				// matching on the port id alone missed other reroutes, whose input always sits on port 0.
+				// The deletes remove entries from the live list, hence the snapshot; they go through
+				// ContainerGraph because the UIUtils helper always targets the main graph
+				WireReference[] externalRefs = m_outputPorts[ portId ].ExternalReferences.ToArray();
+				for ( int i = 0; i < externalRefs.Length; i++ )
 				{
-					if( m_outputPorts[ portId ].ExternalReferences[ i ].PortId != otherPortId )
+					if ( externalRefs[ i ].NodeId != otherNodeId || externalRefs[ i ].PortId != otherPortId )
 					{
-						UIUtils.DeleteConnection( true, m_outputPorts[ portId ].ExternalReferences[ i ].NodeId, m_outputPorts[ portId ].ExternalReferences[ i ].PortId, false, true );
+						ContainerGraph.DeleteConnection( true, externalRefs[ i ].NodeId, externalRefs[ i ].PortId, false, true );
 					}
 				}
 			}
@@ -95,7 +111,7 @@ namespace AmplifyShaderEditor
 		{
 			base.OnConnectedOutputNodeChanges( outputPortId, otherNodeId, otherPortId, name, type );
 			m_inputPorts[ 0 ].MatchPortToConnection();
-			m_outputPorts[ 0 ].ChangeType( m_inputPorts[ 0 ].DataType, false );
+			m_outputPorts[ 0 ].ChangeType( m_inputPorts[ 0 ].DataType, m_inputPorts[ 0 ].StructName, false );
 
 			m_forceVisualDataUpdate = true;
 		}
@@ -118,6 +134,11 @@ namespace AmplifyShaderEditor
 			m_inputPorts[ 0 ].NotifyExternalRefencesOnChange();
 		}
 
+		public override StructFieldMask FieldDemandForInput( int inputIndex, StructFieldMask received )
+		{
+			return ( inputIndex == 0 ) ? received : StructFieldMask.All;
+		}
+
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
 		{
 			base.GenerateShaderForOutput( outputId, ref dataCollector, ignoreLocalvar );
@@ -132,13 +153,13 @@ namespace AmplifyShaderEditor
 			base.DrawProperties();
 		}
 
-		public override void OnNodeLayout( DrawInfo drawInfo )
+		public override void OnNodeLayout( DrawInfo drawInfo, NodeUpdateCache cache )
 		{
 			if( m_firstDraw )
 			{
 				m_firstDraw = false;
 				AfterCommonInit();
-				OnNodeChange();
+				OnNodeChange( cache );
 			}
 
 			if( m_forceVisualDataUpdate )
@@ -173,7 +194,12 @@ namespace AmplifyShaderEditor
 				m_position.width = m_extraSize.x + UIUtils.PortsSize.x;
 				m_position.height = m_extraSize.y + UIUtils.PortsSize.y;
 
-				Vec2Position -= Position.size * 0.5f;
+				if ( !m_alreadyCentered )
+				{
+					// center a freshly created reroute on its drop point ( one-time )
+					Vec2Position -= Position.size * 0.5f;
+					m_alreadyCentered = true;
+				}
 				if( OnNodeChangeSizeEvent != null )
 				{
 					OnNodeChangeSizeEvent( this );
@@ -271,7 +297,7 @@ namespace AmplifyShaderEditor
 						if( m_outputPorts[ i ].Locked )
 							GUI.color = Constants.LockedPortColor;
 						else if( ContainerGraph.ParentWindow.Options.ColoredPorts )
-							GUI.color = UIUtils.GetColorForDataType( m_visualDataType, false, false );
+							GUI.color = ContainerGraph.GetPortColor( m_visualDataType, m_outputPorts[ i ].StructName );
 						else
 							GUI.color = m_outputPorts[ i ].HasCustomColor ? m_outputPorts[ i ].CustomColor : UIUtils.GetColorForDataType( m_visualDataType, true, false );
 
@@ -403,14 +429,19 @@ namespace AmplifyShaderEditor
 			m_extraSize.Set( 20f, 20f );
 			m_position.width = m_extraSize.x + UIUtils.PortsSize.x;
 			m_position.height = m_extraSize.y + UIUtils.PortsSize.y;
-
-			Vec2Position += Position.size * 0.5f;
 		}
 
 		public override void OnAfterDeserialize()
 		{
 			base.OnAfterDeserialize();
 			m_sizeIsDirty = false;
+			m_alreadyCentered = true;
+		}
+
+		public override void ReadFromString( ref string[] nodeParams )
+		{
+			base.ReadFromString( ref nodeParams );
+			m_alreadyCentered = true;
 		}
 
 		public WireReference FindNewValidInputNode( WireNode current )
@@ -471,6 +502,11 @@ namespace AmplifyShaderEditor
 			WireReference inputReference = FindNewValidOutputNode( this );
 			if( outputReference != null && inputReference != null )
 			{
+				// @diogo: the target input is still wired to this reroute and ConnectTo only appends, so
+				// drop that connection first or the port keeps both sources; callbacks stay off because
+				// they'd trim the very port we're about to reconnect on extensible nodes. This is now the
+				// first mutation of the delete, so it has to be the one taking the undo snapshot
+				ContainerGraph.DeleteConnection( true, inputReference.NodeId, inputReference.PortId, false, false );
 				ContainerGraph.ParentWindow.ConnectInputToOutput( inputReference.NodeId, inputReference.PortId, outputReference.NodeId, outputReference.PortId );
 			}
 		}

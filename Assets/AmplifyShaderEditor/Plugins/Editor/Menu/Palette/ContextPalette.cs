@@ -61,6 +61,8 @@ namespace AmplifyShaderEditor
 			m_position = new Vector3( m_maximizedArea.x, m_maximizedArea.y, 0f );
 			m_isActive = true;
 			m_focusOnSearch = true;
+			// @diogo: rebuild on every open so the usage ranking reflects the graph as it is now
+			ForceUpdate = true;
 		}
 
 

@@ -1,9 +1,16 @@
 fileFormatVersion: 2
 guid: b45d57fa606c1ea438fe9a2c08426bc7
-timeCreated: 1512043114
-licenseType: Store
 ShaderImporter:
-  defaultTextures:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
   userData: 
   assetBundleName: 
   assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 68570
+  packageName: Amplify Shader Editor
+  packageVersion: 1.9.9.14
+  assetPath: Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_IndirectDiffuseLight.shader
+  uploadId: 1019702

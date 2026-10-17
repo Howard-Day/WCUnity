@@ -14,6 +14,8 @@ namespace AmplifyShaderEditor
 		[SerializeField]
 		private bool m_safeNormalize = false;
 
+		private int m_cachedPropertyId = -1;
+
 		private const string SubtitleFormat = "({0})";
 
 		protected override void CommonInit( int uniqueId )
@@ -50,6 +52,16 @@ namespace AmplifyShaderEditor
 			EditorGUILayout.HelpBox( Constants.SafeNormalizeInfoStr, MessageType.Info );
 		}
 
+		public override void SetPreviewInputs()
+		{
+			base.SetPreviewInputs();
+
+			if( m_cachedPropertyId == -1 )
+				m_cachedPropertyId = Shader.PropertyToID( "_Safe" );
+
+			PreviewMaterial.SetInt( m_cachedPropertyId, m_safeNormalize ? 1 : 0 );
+		}
+
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
 		{
 			if ( m_outputPorts[ 0 ].IsLocalValue( dataCollector.PortCategory ) )
@@ -73,6 +85,7 @@ namespace AmplifyShaderEditor
 				{
 					return m_inputPorts[ 0 ].GeneratePortInstructions( ref dataCollector );
 				}
+				case WirePortDataType.FLOAT2x2:
 				case WirePortDataType.FLOAT3x3:
 				case WirePortDataType.FLOAT4x4:
 				{

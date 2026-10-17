@@ -16,7 +16,7 @@ namespace AmplifyShaderEditor
 	}
 
 	[Serializable]
-	[NodeAttributes( "Template Parameter" , "Constants And Properties" , "Select and use one of the pre-existing properties given by the template" )]
+	[NodeAttributes( "Template Parameter" , "Template" , "Select and use one of the pre-existing properties given by the template", NodeAvailabilityFlags = (int)NodeAvailability.TemplateShader )]
 	public sealed class TemplateShaderPropertyNode : TemplateNodeParent
 	{
 		private const string CurrentScopeStr = "Scope";
@@ -507,6 +507,7 @@ namespace AmplifyShaderEditor
 					break;
 					default:
 					case WirePortDataType.OBJECT:
+					case WirePortDataType.FLOAT2x2:
 					case WirePortDataType.FLOAT3x3:
 					case WirePortDataType.FLOAT4x4:
 					m_outputPorts[ 0 ].ChangeProperties( "Out" , m_shaderProperties[ m_currentPropertyIdx ].PropertyDataType , false );
@@ -710,6 +711,18 @@ namespace AmplifyShaderEditor
 		{
 			base.RefreshExternalReferences();
 			CheckWarningState();
+		}
+
+		// True when the selected template property is declared as a legacy sampler
+		public bool IsLegacySampler
+		{
+			get
+			{
+				return m_shaderProperties != null &&
+					m_currentPropertyIdx >= 0 &&
+					m_currentPropertyIdx < m_shaderProperties.Count &&
+					m_shaderProperties[ m_currentPropertyIdx ].DeclaredAsLegacySampler;
+			}
 		}
 
 		public override void Destroy()

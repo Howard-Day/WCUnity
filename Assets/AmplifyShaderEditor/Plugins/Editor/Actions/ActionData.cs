@@ -304,6 +304,7 @@ namespace AmplifyShaderEditor
 			m_newProperties = string.Empty;
 			string trash = string.Empty;
 			node.WriteToString( ref m_newProperties, ref trash );
+			JsonGraphFormat.EndNodeLine( ref m_newProperties );
 		}
 
 		public ChangeNodePropertiesActionData( int nodeId, string originalProperties )
@@ -314,17 +315,18 @@ namespace AmplifyShaderEditor
 			m_newProperties = string.Empty;
 			string trash = string.Empty;
 			UIUtils.GetNode( nodeId ).WriteToString( ref m_newProperties, ref trash );
+			JsonGraphFormat.EndNodeLine( ref m_newProperties );
 		}
 
 		public override void ExecuteForward()
 		{
-			string[] properties = m_newProperties.Split( IOUtils.FIELD_SEPARATOR );
+			string[] properties = JsonGraphFormat.SplitInstruction( m_newProperties );
 			UIUtils.GetNode( m_nodeId ).ReadFromString( ref properties );
 		}
 
 		public override void ExecuteReverse()
 		{
-			string[] properties = m_originalProperties.Split( IOUtils.FIELD_SEPARATOR );
+			string[] properties = JsonGraphFormat.SplitInstruction( m_originalProperties );
 			UIUtils.GetNode( m_nodeId ).ReadFromString( ref properties );
 		}
 

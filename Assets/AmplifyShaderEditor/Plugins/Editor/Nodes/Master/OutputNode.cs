@@ -1,8 +1,10 @@
 using System;
 using UnityEngine;
+using Unity.Scripting.LifecycleManagement;
 
 namespace AmplifyShaderEditor
 {
+	[NoAutoStaticsCleanup]
 	public class OutputNode : SignalGeneratorNode
 	{
 		public static int LOD_SUBSHADER_VERSION = 17200;

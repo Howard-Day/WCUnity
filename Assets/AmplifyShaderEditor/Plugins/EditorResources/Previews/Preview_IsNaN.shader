@@ -2,7 +2,7 @@ Shader "Hidden/IsNaN"
 {
 	Properties
 	{
-		_A ("_A", 2D) = "white" {}
+		_A ("_A", 2DArray) = "white" {}
 	}
 	SubShader
 	{
@@ -10,10 +10,12 @@ Shader "Hidden/IsNaN"
 		{
 			CGPROGRAM
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#pragma vertex vert_img
 			#pragma fragment frag
+			#pragma target 3.5
 
-			sampler2D _A;
+			ASE_PORT( _A );
 
 			bool4 IsNaN( float4 x )
 			{
@@ -24,7 +26,7 @@ Shader "Hidden/IsNaN"
 			float4 frag(v2f_img i) : SV_Target
 			{
 				// for some reason, isnan() wasn't working in preview shaders
-				return IsNaN( tex2D(_A, i.uv) ) ? 1 : 0;
+				return IsNaN( ASE_SAMPLE_PORT( _A, i.uv) ) ? 1 : 0;
 			}
 			ENDCG
 		}

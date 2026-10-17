@@ -2,7 +2,7 @@ Shader "Hidden/ObjSpaceViewDirHlpNode"
 {
 Properties
 	{
-		_A ("_A", 2D) = "white" {}
+		_A ("_A", 2DArray) = "white" {}
 	}
 	SubShader
 	{
@@ -11,13 +11,15 @@ Properties
 			CGPROGRAM
 			#pragma vertex vert_img
 			#pragma fragment frag
+			#pragma target 3.5
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			
-			sampler2D _A;
+			ASE_PORT( _A );
 
 			float4 frag( v2f_img i ) : SV_Target
 			{
-				return float4(ObjSpaceViewDir(tex2D( _A, i.uv )),0);
+				return float4(ObjSpaceViewDir(ASE_SAMPLE_PORT( _A, i.uv )),0);
 			}
 			ENDCG
 		}

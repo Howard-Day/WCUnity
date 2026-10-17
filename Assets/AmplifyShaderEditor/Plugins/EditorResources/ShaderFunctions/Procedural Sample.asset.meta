@@ -1,8 +1,16 @@
 fileFormatVersion: 2
 guid: f5379ff72769e2b4495e5ce2f004d8d4
-timeCreated: 1602845933
-licenseType: Store
 NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 0
   userData: 
   assetBundleName: 
   assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 68570
+  packageName: Amplify Shader Editor
+  packageVersion: 1.9.9.14
+  assetPath: Assets/AmplifyShaderEditor/Plugins/EditorResources/ShaderFunctions/Procedural
+    Sample.asset
+  uploadId: 1019702

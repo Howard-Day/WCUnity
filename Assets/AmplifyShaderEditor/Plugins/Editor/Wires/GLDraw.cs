@@ -1,9 +1,11 @@
 using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
+using Unity.Scripting.LifecycleManagement;
 
 namespace AmplifyShaderEditor
 {
+	[NoAutoStaticsCleanup]
 	public class GLDraw
 	{
 		/*
@@ -126,6 +128,52 @@ namespace AmplifyShaderEditor
 
 			DrawCurve( Allv3Points, AllPerpendiculars, AllColors, pointsCount );
 			return BoundBox;
+		}
+
+		// @diogo: dashed variant used by the soft-reference wires; even-indexed segments become the dashes
+		public static void DrawDashedBezier( Vector2 start, Vector2 startTangent, Vector2 end, Vector2 endTangent, Color startColor, Color endColor, float width, float dashSize )
+		{
+			int segments = Mathf.Clamp( Mathf.RoundToInt( ( start - end ).magnitude / dashSize ), 9, 127 );
+			int pointsCount = segments + 1;
+
+			Vector3[] points = Handles.MakeBezierPoints( start, end, startTangent, endTangent, pointsCount );
+
+			startColor.a = 0.25f;
+			endColor.a = 0.25f;
+
+			CreateMaterial();
+			LineMaterial.SetPass( 0 );
+
+			GL.Begin( GL.QUADS );
+			float amount = 1 / (float)segments;
+			for ( int i = 0; i < segments; i += 2 )
+			{
+				Vector2 startNormal = PointNormal( points, pointsCount, i, width );
+				Vector2 endNormal = PointNormal( points, pointsCount, i + 1, width );
+
+				GL.Color( Color.LerpUnclamped( startColor, endColor, amount * i ) );
+				GL.TexCoord( Zero );
+				GL.Vertex3( points[ i ].x - startNormal.x, points[ i ].y - startNormal.y, 0 );
+				GL.TexCoord( Up );
+				GL.Vertex3( points[ i ].x + startNormal.x, points[ i ].y + startNormal.y, 0 );
+
+				GL.Color( Color.LerpUnclamped( startColor, endColor, amount * ( i + 1 ) ) );
+				GL.TexCoord( Up );
+				GL.Vertex3( points[ i + 1 ].x + endNormal.x, points[ i + 1 ].y + endNormal.y, 0 );
+				GL.TexCoord( Zero );
+				GL.Vertex3( points[ i + 1 ].x - endNormal.x, points[ i + 1 ].y - endNormal.y, 0 );
+			}
+			GL.End();
+		}
+
+		private static Vector2 PointNormal( Vector3[] points, int pointsCount, int index, float width )
+		{
+			int prev = index > 0 ? index - 1 : 0;
+			int next = index < pointsCount - 1 ? index + 1 : pointsCount - 1;
+			Aux1Vec2.Set( points[ next ].y - points[ prev ].y, points[ prev ].x - points[ next ].x );
+			FastNormalized( ref Aux1Vec2 );
+			Aux1Vec2.Set( Aux1Vec2.x * width, Aux1Vec2.y * width );
+			return Aux1Vec2;
 		}
 
 		private static void FastNormalized( ref Vector2 v )

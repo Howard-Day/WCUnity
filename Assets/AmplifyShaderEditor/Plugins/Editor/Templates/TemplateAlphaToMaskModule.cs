@@ -23,13 +23,13 @@ namespace AmplifyShaderEditor
 		[SerializeField]
 		private InlineProperty m_inlineAlphaToMask = new InlineProperty();
 		
-		public void CopyFrom( TemplateAlphaToMaskModule other , bool allData )
+		public void CopyFrom( TemplateAlphaToMaskModule other , bool allData, bool copyPropertyName = false )
 		{
 			if( allData )
 				m_independentModule = other.IndependentModule;
 
 			m_alphaToMask = other.AlphaToMask;
-			m_inlineAlphaToMask.CopyFrom( other.AlphaToMaskInlineProperty );
+			m_inlineAlphaToMask.CopyFrom( other.AlphaToMaskInlineProperty, copyPropertyName );
 		}
 
 		public void ConfigureFromTemplateData( TemplateAlphaToMaskData data )

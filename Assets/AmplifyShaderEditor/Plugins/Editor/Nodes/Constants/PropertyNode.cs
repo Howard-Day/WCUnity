@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEditor;
+using Unity.Scripting.LifecycleManagement;
 
 namespace AmplifyShaderEditor
 {
@@ -39,6 +41,7 @@ namespace AmplifyShaderEditor
 	}
 
 	[Serializable]
+	[NoAutoStaticsCleanup]
 	public class PropertyNode : ParentNode
 	{
 		private const string LongNameEnder = "... )";
@@ -47,6 +50,7 @@ namespace AmplifyShaderEditor
 		private const string TooltipFormatter = "{0}\n\nName: {1}\nValue: {2}";
 		private const string InvalidAttributeFormatter = "Attribute {0} not found on node {1}. Please click on this message to select node and review its attributes section";
 		protected string GlobalTypeWarningText = "Global variables must be set via a C# script using the Shader.SetGlobal{0}(...) method.\nPlease note that setting a global variable will affect all shaders which are using it.";
+		private const string PrecisionDisabledWarningText = "Precision cannot be changed because a matching internal property is already defined as global uniform in the template.";
 		private const string HybridInstancedStr = "Hybrid Instanced";
 		private const string AutoRegisterStr = "Auto-Register";
 		private const string IgnoreVarDeclarationStr = "Variable Mode";
@@ -86,6 +90,7 @@ namespace AmplifyShaderEditor
 		[SerializeField]
 		protected string m_precisionString;
 		protected bool m_drawPrecisionUI = true;
+		protected bool m_disablePrecisionUI = false;
 
 		[SerializeField]
 		private int m_orderIndex = -1;
@@ -123,6 +128,11 @@ namespace AmplifyShaderEditor
 		[SerializeField]
 		private List<string> m_customAttr = new List<string>();
 
+		// @diogo: opaque per-node payload owned by an external integration (see PropertyNodeExtensions).
+		//         Retained verbatim so it round-trips even when no integration is registered.
+		[SerializeField]
+		private string m_extensionData = string.Empty;
+
 		[SerializeField]
 		private bool m_hasHeaders = false;
 
@@ -146,6 +156,8 @@ namespace AmplifyShaderEditor
 
 		protected bool m_freeName;
 		protected bool m_freeType;
+		// @diogo: header dropdown pick, applied on the next Draw since GenericMenu callbacks fire outside OnGUI
+		private PropertyType? m_pendingParameterType = null;
 		protected bool m_showVariableMode = false;
 		protected bool m_propertyNameIsDirty;
 
@@ -195,7 +207,7 @@ namespace AmplifyShaderEditor
 		[SerializeField]
 		protected List<int> m_selectedAttribs = new List<int>();
 
-		//Title editing 
+		//Title editing
 		protected bool m_isEditing;
 		protected bool m_stopEditing;
 		protected bool m_startEditing;
@@ -208,6 +220,24 @@ namespace AmplifyShaderEditor
 
 		[SerializeField]
 		private bool m_addGlobalToSRPBatcher = false;
+
+		// @diogo: generic Object/Reference mode support; opted-in by Float/Int/Vector/Color nodes
+		private readonly Color ReferenceHeaderColor = new Color( 0f, 0.5f, 0.585f, 1.0f );
+		private const float ReferenceIconSize = 19;
+
+		protected bool m_canBeReferenced = false;
+		private Rect m_referenceIconPos;
+
+		[SerializeField]
+		private TexReferenceType m_propertyReferenceType = TexReferenceType.Object;
+
+		[SerializeField]
+		private int m_propertyReferenceNodeId = -1;
+
+		private PropertyNode m_propertyReference = null;
+		private string m_lastPropertyReferenceTitle = string.Empty;
+		private string m_lastPropertyReferenceValue = string.Empty;
+		private List<PropertyNode> m_propertyReferenceCandidates = new List<PropertyNode>();
 
 		public PropertyNode() : base() { }
 		public PropertyNode( int uniqueId, float x, float y, float width, float height ) : base( uniqueId, x, y, width, height ) { }
@@ -242,7 +272,7 @@ namespace AmplifyShaderEditor
 					PaddingTitleRight = Constants.PropertyPickerWidth + Constants.IconsLeftRightMargin;
 			}
 
-			m_hasLeftDropdown = m_freeType;
+			m_hasLeftDropdown = m_freeType && !IsPropertyReference;
 		}
 
 		protected void BeginDelayedDirtyProperty()
@@ -302,7 +332,14 @@ namespace AmplifyShaderEditor
 
 				if( !m_propertyName.Equals( m_oldName ) )
 				{
-					if( UIUtils.IsUniformNameAvailable( m_propertyName ) || m_allowPropertyDuplicates )
+					if( m_variableMode == VariableMode.Fetch )
+					{
+						m_oldName = m_propertyName;
+						m_propertyNameIsDirty = true;
+						m_reRegisterName = false;
+						OnPropertyNameChanged();
+					}
+					else if( UIUtils.IsUniformNameAvailable( m_propertyName ) || m_allowPropertyDuplicates )
 					{
 						UIUtils.ReleaseUniformName( UniqueId, m_oldName );
 
@@ -373,9 +410,8 @@ namespace AmplifyShaderEditor
 
 		public void ChangeParameterType( PropertyType parameterType )
 		{
-			UndoUtils.RegisterCompleteObjectUndo( m_containerGraph.ParentWindow, Constants.UndoChangePropertyTypeNodesId );
-			UndoUtils.RegisterCompleteObjectUndo( m_containerGraph, Constants.UndoChangePropertyTypeNodesId );
-			UndoUtils.RecordObject( this, Constants.UndoChangePropertyTypeNodesId );
+
+			bool wasReserving = ReservesUniformName;
 
 			if( m_currentParameterType == PropertyType.Constant || m_currentParameterType == PropertyType.Global )
 			{
@@ -385,7 +421,7 @@ namespace AmplifyShaderEditor
 			if( parameterType == PropertyType.InstancedProperty )
 			{
 				//if( m_containerGraph.IsSRP )
-				//{					
+				//{
 				//	UIUtils.ShowMessage( InstancedPropertyWarning,MessageSeverity.Warning );
 				//}
 
@@ -414,7 +450,254 @@ namespace AmplifyShaderEditor
 				CurrentVariableMode = VariableMode.Create;
 			}
 
+			// Reconcile registry ownership for the new type (C): flipping a constant into a reserving
+			// type acquires (and dedups) a name now, instead of relying on a slot it used to hold while
+			// constant; flipping back into a constant releases the slot.
+			bool willReserve = ReservesUniformName;
+			if( !wasReserving && willReserve )
+			{
+				if( UIUtils.IsUniformNameAvailable( m_propertyName ) )
+					UIUtils.RegisterUniformName( UniqueId, m_propertyName );
+				else
+					RegisterFirstAvailablePropertyName( false );
+			}
+			else if( wasReserving && !willReserve )
+			{
+				if( UIUtils.CheckUniformNameOwner( m_propertyName ) == UniqueId )
+					UIUtils.ReleaseUniformName( UniqueId, m_propertyName );
+			}
 		}
+
+		public bool IsPropertyReference { get { return m_canBeReferenced && m_propertyReferenceType == TexReferenceType.Instance; } }
+		public override int ReferencedNodeId { get { return IsPropertyReference ? m_propertyReferenceNodeId : base.ReferencedNodeId; } }
+		public override bool HasMissingReference { get { return IsPropertyReference && m_propertyReferenceNodeId <= -1; } }
+		// @diogo: reference-mode nodes borrow the source's name, so the double-click title rename is disabled;
+		// nodes with their own reference system override this with their own mode check
+		protected virtual bool IsTitleEditable { get { return !IsPropertyReference; } }
+		// @diogo: "is this node a valid reference source"; nodes with their own reference system override
+		// this and SetReferenceTo, as m_canBeReferenced only covers the property reference mechanism below
+		public virtual bool CanBeReferenced { get { return m_canBeReferenced; } }
+
+		// Single rule for "does this node own a slot in the uniform-name dedup registry".
+		// Constants inline their value and emit no name, so they never reserve. Reference nodes
+		// borrow another node's name, and Fetch-mode nodes consume an externally declared name.
+		private bool ReservesUniformName
+		{
+			get
+			{
+				return m_currentParameterType != PropertyType.Constant
+					&& m_variableMode != VariableMode.Fetch
+					&& !IsPropertyReference;
+			}
+		}
+
+		public PropertyNode PropertyReference
+		{
+			get
+			{
+				if( !IsPropertyReference )
+					return null;
+
+				if( m_propertyReference == null && m_propertyReferenceNodeId > -1 )
+				{
+					m_propertyReference = ContainerGraph.GetNode( m_propertyReferenceNodeId ) as PropertyNode;
+				}
+
+				if( m_propertyReference != null && ( m_propertyReference == this || m_propertyReference.GetType() != GetType() ) )
+				{
+					m_propertyReference = null;
+				}
+
+				return m_propertyReference;
+			}
+		}
+
+		public void SetPropertyReference( PropertyNode reference )
+		{
+			if( !m_canBeReferenced || reference == null || reference == this || reference.GetType() != GetType() )
+				return;
+
+			if( m_propertyReferenceType != TexReferenceType.Instance )
+			{
+				m_propertyReferenceType = TexReferenceType.Instance;
+				EnablePropertyReferenceMode();
+			}
+
+			m_propertyReference = reference;
+			m_propertyReferenceNodeId = reference.UniqueId;
+
+			// Leave Constant mode so material values are displayed like on the referenced node; not going through
+			// ChangeParameterType() on purpose as referencing nodes must stay out of the property node registries
+			if( m_currentParameterType == PropertyType.Constant && reference.CurrentParameterType != PropertyType.Constant )
+			{
+				m_currentParameterType = PropertyType.Property;
+			}
+
+			m_propertyNameIsDirty = true;
+			PreviewIsDirty = true;
+		}
+
+		// @diogo: single entry point for pointing a fresh node at a source, used by the Material
+		// Properties list drag&drop; overridden by nodes that reference through their own mechanism
+		public virtual void SetReferenceTo( PropertyNode reference )
+		{
+			SetPropertyReference( reference );
+		}
+
+		private void OnPropertyReferenceTypeChanged()
+		{
+			if( m_propertyReferenceType == TexReferenceType.Instance )
+			{
+				EnablePropertyReferenceMode();
+			}
+			else
+			{
+				DisablePropertyReferenceMode();
+			}
+		}
+
+		private void EnablePropertyReferenceMode()
+		{
+			// Release ownership over current property name so other nodes may use it
+			if( UIUtils.CheckUniformNameOwner( m_propertyName ) == UniqueId )
+			{
+				UIUtils.ReleaseUniformName( UniqueId, m_propertyName );
+			}
+			m_oldName = m_propertyName;
+
+			if( UIUtils.IsProperty( m_currentParameterType ) )
+			{
+				UIUtils.UnregisterPropertyNode( this );
+			}
+
+			m_propertyReference = null;
+			m_propertyReferenceNodeId = -1;
+			m_lastPropertyReferenceTitle = string.Empty;
+			m_lastPropertyReferenceValue = string.Empty;
+			m_headerColorModifier = ReferenceHeaderColor;
+			m_hasLeftDropdown = false;
+			DropdownEditing = false;
+			// @diogo: refresh the title block so an unassigned reference shows immediately
+			m_propertyNameIsDirty = true;
+		}
+
+		private void DisablePropertyReferenceMode()
+		{
+			m_headerColorModifier = Color.white;
+			m_hasLeftDropdown = m_freeType;
+			m_propertyReference = null;
+			m_propertyReferenceNodeId = -1;
+
+			if( UIUtils.IsUniformNameAvailable( m_propertyName ) )
+			{
+				UIUtils.RegisterUniformName( UniqueId, m_propertyName );
+				m_oldName = m_propertyName;
+			}
+			else if( UIUtils.CheckUniformNameOwner( m_propertyName ) != UniqueId )
+			{
+				RegisterFirstAvailablePropertyName( false );
+			}
+
+			if( UIUtils.IsProperty( m_currentParameterType ) )
+			{
+				UIUtils.RegisterPropertyNode( this );
+			}
+
+			m_propertyNameIsDirty = true;
+		}
+
+		private void RefreshPropertyReferenceCandidates()
+		{
+			m_propertyReferenceCandidates.Clear();
+			List<PropertyNode> nodes = ContainerGraph.RawPropertyNodes.NodesList;
+			int count = nodes.Count;
+			for( int i = 0; i < count; i++ )
+			{
+				// @diogo: RawPropertyNodes also holds nodes living inside Function Node interior graphs; references
+				//         resolve by node id through ContainerGraph, so a cross-graph pick breaks on reload
+				PropertyNode candidate = nodes[ i ];
+				if( candidate != null && candidate != this && candidate.ContainerGraph == ContainerGraph && candidate.GetType() == GetType() && !candidate.IsPropertyReference )
+				{
+					m_propertyReferenceCandidates.Add( candidate );
+				}
+			}
+			// @diogo: RawPropertyNodes keeps graph z-order, which shifts with clicks and save/load; sort
+			// properties by order index to follow the master node's Material Properties list, and push
+			// constants to the bottom sorted by name since they never reach that list ( id breaks ties )
+			m_propertyReferenceCandidates.Sort( ( a, b ) =>
+			{
+				bool aIsConstant = a.CurrentParameterType == PropertyType.Constant;
+				bool bIsConstant = b.CurrentParameterType == PropertyType.Constant;
+				if ( aIsConstant != bIsConstant )
+				{
+					return aIsConstant ? 1 : -1;
+				}
+				int result = aIsConstant ? a.PropertyInspectorName.CompareTo( b.PropertyInspectorName ) :
+											a.OrderIndex.CompareTo( b.OrderIndex );
+				return ( result != 0 ) ? result : a.UniqueId.CompareTo( b.UniqueId );
+			} );
+		}
+
+		private void DrawPropertyReferencePicker()
+		{
+			// @diogo: value-carrying types short enough to read inline on a constant's label
+			const WirePortDataType ValueLabelTypes = WirePortDataType.FLOAT | WirePortDataType.FLOAT2 |
+													WirePortDataType.FLOAT3 | WirePortDataType.FLOAT4 |
+													WirePortDataType.COLOR;
+
+			RefreshPropertyReferenceCandidates();
+			int count = m_propertyReferenceCandidates.Count;
+			string[] labels = new string[ count ];
+			int currentIdx = -1;
+			int firstConstantIdx = -1;
+			for( int i = 0; i < count; i++ )
+			{
+				PropertyNode candidate = m_propertyReferenceCandidates[ i ];
+				string detail;
+				if( candidate.CurrentParameterType == PropertyType.Constant )
+				{
+					if( firstConstantIdx < 0 )
+					{
+						firstConstantIdx = i;
+					}
+					// @diogo: constants carry no internal name, so show the value that gets inlined instead,
+					// spacing out the components the subtitle packs tight since the list has room for them
+					detail = ( ( candidate.OutputPorts[ 0 ].DataType & ValueLabelTypes ) != 0 ) ?
+								candidate.GetPropertyValStr().Replace( IOUtils.VECTOR_SEPARATOR.ToString(), IOUtils.VECTOR_SEPARATOR + " " ) : string.Empty;
+				}
+				else
+				{
+					// @diogo: the internal name is what the reference resolves to, so always show it
+					detail = ( candidate.PropertyName != candidate.PropertyInspectorName ) ? candidate.PropertyName : string.Empty;
+				}
+				labels[ i ] = string.IsNullOrEmpty( detail ) ? candidate.PropertyInspectorName :
+																string.Format( "{0} ({1})", candidate.PropertyInspectorName, detail );
+				if( candidate.UniqueId == m_propertyReferenceNodeId )
+				{
+					currentIdx = i;
+				}
+			}
+			labels = UIUtils.DisambiguateReferenceLabels( labels, m_propertyReferenceCandidates, 0 );
+
+			PropertyNode[] candidates = m_propertyReferenceCandidates.ToArray();
+			bool guiEnabledBuffer = GUI.enabled;
+			GUI.enabled = count > 0;
+			EditorGUILayout.BeginHorizontal();
+			SearchableDropdown.Draw( Constants.AvailableReferenceStr, currentIdx, labels, ( idx ) =>
+			{
+				if( idx != currentIdx && idx > -1 && idx < candidates.Length )
+				{
+					UndoRecordObject( "Selected property reference" );
+					SetPropertyReference( candidates[ idx ] );
+					SetDirtyFromAsyncEdit();
+				}
+			}, firstConstantIdx );
+			UIUtils.DrawReferenceFocusButton( ( currentIdx > -1 ) ? candidates[ currentIdx ] : null );
+			EditorGUILayout.EndHorizontal();
+			GUI.enabled = guiEnabledBuffer;
+		}
+
+		protected virtual void CopyPropertyReferenceValues( PropertyNode reference ) { }
 
 		void InitializeAttribsArray()
 		{
@@ -430,6 +713,36 @@ namespace AmplifyShaderEditor
 					m_selectedAttribsArr[ i ] = true;
 					m_visibleAttribsFoldout = true;
 				}
+			}
+		}
+
+		public void SetAttribute( string name, bool state )
+		{
+			if( m_availableAttribsArr == null )
+			{
+				InitializeAttribsArray();
+			}
+
+			bool changed = false;
+			for( int i = 0; i < m_availableAttribsArr.Length; i++ )
+			{
+				if ( m_availableAttribsArr[ i ] == name && m_selectedAttribsArr[ i ] != state )
+				{
+					m_selectedAttribsArr[ i ] = state;
+					changed = true;
+				}
+			}
+
+			if ( changed )
+			{
+				m_selectedAttribs.Clear();
+				for( int i = 0; i < m_selectedAttribsArr.Length; i++ )
+				{
+					if( m_selectedAttribsArr[ i ] )
+						m_selectedAttribs.Add( i );
+				}
+
+				OnAtrributesChanged();
 			}
 		}
 
@@ -603,7 +916,16 @@ namespace AmplifyShaderEditor
 			for( int i = 0; i < m_customAttrCount; i++ )
 			{
 				EditorGUI.BeginChangeCheck();
-				m_customAttr[ i ] = EditorGUILayoutTextField( "Attribute " + i, m_customAttr[ i ] );
+				{
+					// @diogo: attributes can hold a lot of text, so wrap them over a growing area; its height must
+					// be measured up front ( see NodeUtils.MeasureTextHeight ) and the label kept to a single line
+					float attrHeight = Mathf.Max( NodeUtils.MeasureTextHeight( m_customAttr[ i ], UIUtils.MainSkin.textArea, EditorGUIUtility.labelWidth ), EditorGUIUtility.singleLineHeight );
+					Rect labelRect = EditorGUILayout.GetControlRect( true, attrHeight );
+					labelRect.height = EditorGUIUtility.singleLineHeight;
+					Rect attrRect = EditorGUI.PrefixLabel( labelRect, new GUIContent( "Attribute " + i ) );
+					attrRect.height = attrHeight;
+					m_customAttr[ i ] = EditorGUITextArea( attrRect, m_customAttr[ i ], UIUtils.MainSkin.textArea );
+				}
 				if( EditorGUI.EndChangeCheck() )
 				{
 					m_customAttr[ i ] = UIUtils.RemoveInvalidAttrCharacters( m_customAttr[ i ] );
@@ -621,7 +943,7 @@ namespace AmplifyShaderEditor
 			DrawCustomAttrAddRemoveButtons();
 			EditorGUILayout.EndHorizontal();
 		}
-		
+
 		protected void DrawHeaderAttrAddRemoveButtons()
 		{
 			// Add new port
@@ -669,7 +991,7 @@ namespace AmplifyShaderEditor
 			EditorGUILayout.EndHorizontal();
 		}
 
-		
+
 		public virtual void DrawAttributes()
 		{
 			int attribCount = m_selectedAttribs.Count;
@@ -759,8 +1081,32 @@ namespace AmplifyShaderEditor
 		}
 		public virtual void DrawMainPropertyBlock()
 		{
+			EditorGUI.BeginChangeCheck();
 			EditorGUILayout.BeginVertical();
 			{
+				if( m_canBeReferenced && m_freeType )
+				{
+					EditorGUI.BeginChangeCheck();
+					m_propertyReferenceType = (TexReferenceType)EditorGUILayoutPopup( Constants.ReferenceTypeStr, (int)m_propertyReferenceType, Constants.ReferenceArrayLabels );
+					if( EditorGUI.EndChangeCheck() )
+					{
+						OnPropertyReferenceTypeChanged();
+					}
+
+					UIUtils.DrawSeparator();
+
+					if( IsPropertyReference )
+					{
+						DrawPropertyReferencePicker();
+						EditorGUILayout.EndVertical();
+						if( EditorGUI.EndChangeCheck() )
+						{
+							OnDirtyProperty();
+						}
+						return;
+					}
+				}
+
 				if( m_freeType )
 				{
 					PropertyType parameterType = (PropertyType)EditorGUILayoutEnumPopup( ParameterTypeStr, m_currentParameterType );
@@ -808,6 +1154,10 @@ namespace AmplifyShaderEditor
 				}
 			}
 			EditorGUILayout.EndVertical();
+			if ( EditorGUI.EndChangeCheck() )
+			{
+				OnDirtyProperty();
+			}
 		}
 
 		public void DrawMainPropertyBlockNoPrecision()
@@ -861,10 +1211,10 @@ namespace AmplifyShaderEditor
 			if( m_freeType || m_freeName )
 			{
 				NodeUtils.DrawPropertyGroup( ref m_propertiesFoldout, Constants.ParameterLabelStr, DrawMainPropertyBlock );
-				if( m_drawAttributes )
+				if( m_drawAttributes && !IsPropertyReference )
 					NodeUtils.DrawPropertyGroup( ref m_visibleAttribsFoldout, Constants.AttributesLaberStr, DrawAttributes );
 
-				if( m_hasEnum )
+				if( m_hasEnum && !IsPropertyReference )
 				{
 					if( m_enumModeInt == 0 )
 						NodeUtils.DrawPropertyGroup( ref m_visibleEnumsFoldout, EnumsStr, DrawEnums, DrawEnumAddRemoveButtons );
@@ -872,7 +1222,7 @@ namespace AmplifyShaderEditor
 						NodeUtils.DrawPropertyGroup( ref m_visibleEnumsFoldout, EnumsStr, DrawEnums );
 				}
 
-				if( m_drawAttributes )
+				if( m_drawAttributes && !IsPropertyReference )
 				{
 					if( m_hasHeaders )
 						NodeUtils.DrawPropertyGroup( ref m_visibleHeaderAttrFoldout, HeaderAttrStr, DrawHeaderAttributes, DrawHeaderAttrAddRemoveButtons );
@@ -880,7 +1230,10 @@ namespace AmplifyShaderEditor
 					if( m_customAttrCount > 0 )
 						NodeUtils.DrawPropertyGroup( ref m_visibleCustomAttrFoldout, CustomAttrStr, DrawCustomAttributes, DrawCustomAttrAddRemoveButtons );
 				}
-				
+
+				if( !IsPropertyReference )
+					PropertyNodeExtensions.DrawUI( this );
+
 				CheckPropertyFromInspector();
 			}
 		}
@@ -890,7 +1243,7 @@ namespace AmplifyShaderEditor
 			if( m_drawPrecisionUI )
 			{
 				bool guiEnabled = GUI.enabled;
-				GUI.enabled = m_currentParameterType == PropertyType.Constant || m_variableMode == VariableMode.Create;
+				GUI.enabled = ( m_currentParameterType == PropertyType.Constant || m_variableMode == VariableMode.Create ) && !m_disablePrecisionUI;
 				EditorGUI.BeginChangeCheck();
 				DrawPrecisionProperty();
 				if( EditorGUI.EndChangeCheck() )
@@ -898,6 +1251,10 @@ namespace AmplifyShaderEditor
 
 				GUI.enabled = guiEnabled;
 
+				if ( m_disablePrecisionUI )
+				{
+					EditorGUILayout.HelpBox( PrecisionDisabledWarningText, MessageType.Warning );
+				}
 			}
 		}
 
@@ -958,6 +1315,7 @@ namespace AmplifyShaderEditor
 			m_propertyInspectorName = EditorGUILayoutTextField( PropertyInspectorStr, m_propertyInspectorName );
 			if( EditorGUI.EndChangeCheck() )
 			{
+				SetClippedTitle( m_propertyInspectorName, m_longNameSize );
 				if( m_propertyInspectorName.Length > 0 )
 				{
 					BeginPropertyFromInspectorCheck();
@@ -1050,7 +1408,7 @@ namespace AmplifyShaderEditor
 			// Custom Editable Title
 			if( ContainerGraph.LodLevel <= ParentGraph.NodeLOD.LOD3 )
 			{
-				if( !m_isEditing && ( ( !ContainerGraph.ParentWindow.MouseInteracted && drawInfo.CurrentEventType == EventType.MouseDown && m_titleClickArea.Contains( drawInfo.MousePosition ) ) ) )
+				if( !m_isEditing && IsTitleEditable && ( ( !ContainerGraph.ParentWindow.MouseInteracted && drawInfo.CurrentEventType == EventType.MouseDown && m_titleClickArea.Contains( drawInfo.MousePosition ) ) ) )
 				{
 					if( ( EditorApplication.timeSinceStartup - m_clickTime ) < m_doubleClickTime )
 						m_startEditing = true;
@@ -1104,14 +1462,38 @@ namespace AmplifyShaderEditor
 
 				if( m_freeType )
 				{
-					if( m_dropdownEditing )
+					if( m_pendingParameterType.HasValue )
 					{
-						PropertyType parameterType = (PropertyType)EditorGUIEnumPopup( m_dropdownRect, m_currentParameterType, UIUtils.PropertyPopUp );
+						PropertyType parameterType = m_pendingParameterType.Value;
+						m_pendingParameterType = null;
 						if( parameterType != m_currentParameterType )
 						{
+							UndoRecordObject( "Changing property type on node " + m_nodeAttribs.Name );
 							ChangeParameterType( parameterType );
 							BeginPropertyFromInspectorCheck();
+						}
+					}
+
+					if( m_dropdownEditing )
+					{
+						if( IsChangeableType( GetType() ) )
+						{
 							DropdownEditing = false;
+							if( drawInfo.CurrentEventType == EventType.MouseDown )
+							{
+								ContainerGraph.ParentWindow.MouseInteracted = true;
+							}
+							ShowParameterTypeMenu();
+						}
+						else
+						{
+							PropertyType parameterType = (PropertyType)EditorGUIEnumPopup( m_dropdownRect, m_currentParameterType, UIUtils.PropertyPopUp );
+							if( parameterType != m_currentParameterType )
+							{
+								ChangeParameterType( parameterType );
+								BeginPropertyFromInspectorCheck();
+								DropdownEditing = false;
+							}
 						}
 					}
 				}
@@ -1119,13 +1501,14 @@ namespace AmplifyShaderEditor
 
 		}
 
-		public override void OnNodeLayout( DrawInfo drawInfo )
+		public override void OnNodeLayout( DrawInfo drawInfo, NodeUpdateCache cache )
 		{
-			//base.OnNodeLayout( drawInfo );
+			//base.OnNodeLayout( drawInfo, cache );
 			if( m_reRegisterName )
 			{
 				m_reRegisterName = false;
-				UIUtils.RegisterUniformName( UniqueId, m_propertyName );
+				if( ReservesUniformName )
+					UIUtils.RegisterUniformName( UniqueId, m_propertyName );
 			}
 
 			CheckDelayedDirtyProperty();
@@ -1135,7 +1518,26 @@ namespace AmplifyShaderEditor
 				m_lastParameterType = m_currentParameterType;
 				m_propertyNameIsDirty = false;
 				OnDirtyProperty();
-				if( m_currentParameterType != PropertyType.Constant )
+				if( IsPropertyReference )
+				{
+					SetClippedTitle( m_nodeAttribs.Name, m_longNameSize );
+					// @diogo: unassigned reads as Ref( None ); constants have no property name so only they show their value
+					string referenceValue;
+					if ( PropertyReference == null )
+					{
+						referenceValue = Constants.NoStringValue;
+					}
+					else if ( PropertyReference.CurrentParameterType == PropertyType.Constant )
+					{
+						referenceValue = PropertyReference.GetPropertyValStr();
+					}
+					else
+					{
+						referenceValue = PropertyReference.PropertyName;
+					}
+					SetClippedAdditionalTitle( string.Format( Constants.SubTitleRefNameFormatStr, referenceValue ), m_longNameSize, LongNameEnder );
+				}
+				else if( m_currentParameterType != PropertyType.Constant )
 				{
 					SetClippedTitle( m_propertyInspectorName, m_longNameSize );
 					//bool globalHandler = false;
@@ -1166,10 +1568,19 @@ namespace AmplifyShaderEditor
 			CheckPropertyFromInspector();
 			CheckDuplicateProperty();
 			// RUN LAYOUT CHANGES AFTER TITLES CHANGE
-			base.OnNodeLayout( drawInfo );
+			base.OnNodeLayout( drawInfo, cache );
 
 			m_titleClickArea = m_titlePos;
 			m_titleClickArea.height = Constants.NODE_HEADER_HEIGHT;
+
+			if( IsPropertyReference )
+			{
+				m_referenceIconPos = m_globalPosition;
+				m_referenceIconPos.width = ReferenceIconSize * drawInfo.InvertedZoom;
+				m_referenceIconPos.height = ReferenceIconSize * drawInfo.InvertedZoom;
+				m_referenceIconPos.y = m_globalPosition.y + m_headerPosition.height * 0.5f - m_referenceIconPos.height * 0.5f;
+				m_referenceIconPos.x += 5 * drawInfo.InvertedZoom;
+			}
 		}
 
 		public override void OnNodeRepaint( DrawInfo drawInfo )
@@ -1184,6 +1595,11 @@ namespace AmplifyShaderEditor
 			{
 				GUI.Label( m_titleClickArea, m_content, UIUtils.GetCustomStyle( CustomStyle.NodeTitle ) );
 			}
+
+			if( IsPropertyReference )
+			{
+				GUI.Label( m_referenceIconPos, string.Empty, UIUtils.GetCustomStyle( CustomStyle.SamplerTextureIcon ) );
+			}
 		}
 
 		public void RegisterFirstAvailablePropertyName( bool releaseOldOne, bool appendIndexToCurrOne = false )
@@ -1191,10 +1607,38 @@ namespace AmplifyShaderEditor
 			if( releaseOldOne )
 				UIUtils.ReleaseUniformName( UniqueId, m_oldName );
 
-			if( m_isNodeBeingCopied || appendIndexToCurrOne )
+			if( !ReservesUniformName )
+			{
+				// C: constants (and fetch / reference nodes) don't reserve a slot. Give a plain default
+				// pair only when none exists yet; never scan for uniqueness or register.
+				if( string.IsNullOrEmpty( m_propertyName ) )
+				{
+					UIUtils.GetDefaultName( m_outputPorts[ 0 ].DataType, out m_propertyName, out m_propertyInspectorName, !string.IsNullOrEmpty( m_customPrefix ), m_customPrefix );
+
+					// @diogo: a brand new node dedups its default the same way duplicating one does; load and
+					// paste skip it since they overwrite this name from their own data right afterwards
+					if ( !ContainerGraph.IsLoading && !m_isNodeBeingCopied && AdvanceInspectorName() )
+					{
+						m_propertyName = UIUtils.GeneratePropertyName( m_propertyInspectorName, PropertyType.Property );
+					}
+				}
+				else if ( ( m_isNodeBeingCopied || appendIndexToCurrOne ) && m_currentParameterType == PropertyType.Constant && !IsPropertyReference )
+				{
+					// @diogo: constants dedup by display name instead, so duplicating "Color 0" advances to "Color 1"
+					if ( AdvanceInspectorName() )
+					{
+						m_propertyName = UIUtils.GeneratePropertyName( m_propertyInspectorName, PropertyType.Property );
+					}
+				}
+			}
+			else if( m_isNodeBeingCopied || appendIndexToCurrOne )
 			{
 				if( string.IsNullOrEmpty( m_propertyName ) )
 					return;
+
+				// @diogo: display name advances on its own base, so an internal name decoupled from it
+				// ( lock closed ) never leaks into the title
+				AdvanceInspectorName();
 
 				string newPropertyName = UIUtils.GetUniqueUniformName( m_propertyName );
 				if( newPropertyName != m_propertyName )
@@ -1221,9 +1665,60 @@ namespace AmplifyShaderEditor
 			OnPropertyNameChanged();
 		}
 
+		// @diogo: advance the display name over its own trailing number ( "Exposed" -> "Exposed 1" ), following
+		// the default naming convention ( "Float 0", "Texture Sample 0" ); returns whether it changed
+		private bool AdvanceInspectorName()
+		{
+			if ( string.IsNullOrEmpty( m_propertyInspectorName ) || !IsInspectorNameTaken( m_propertyInspectorName ) )
+			{
+				return false;
+			}
+
+			string digits = Regex.Match( m_propertyInspectorName, "[0-9]*$" ).Value;
+			string baseName = m_propertyInspectorName.Substring( 0, m_propertyInspectorName.Length - digits.Length ).TrimEnd();
+			if ( baseName.Length == 0 )
+			{
+				return false;
+			}
+
+			int index;
+			int.TryParse( digits, out index );
+			string candidate;
+			do
+			{
+				index++;
+				candidate = baseName + " " + index;
+			} while ( IsInspectorNameTaken( candidate ) );
+
+			m_propertyInspectorName = candidate;
+			return true;
+		}
+
+		// @diogo: display-name collision scan for nodes without a uniform registry slot ( constants )
+		private bool IsInspectorNameTaken( string name )
+		{
+			List<PropertyNode> nodes = ContainerGraph.RawPropertyNodes.NodesList;
+			int count = nodes.Count;
+			for ( int i = 0; i < count; i++ )
+			{
+				if ( nodes[ i ] != null && nodes[ i ] != this && nodes[ i ].PropertyInspectorName == name )
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+
 		public void SetRawPropertyName( string name )
 		{
 			m_propertyName = name;
+		}
+
+		// @diogo: generation helpers borrow a texture's mode to decide if they declare, and must not
+		// disturb the uniform name registry that CurrentVariableMode drives
+		public void SetRawVariableMode( VariableMode mode )
+		{
+			m_variableMode = mode;
 		}
 
 		public void RegisterPropertyName( bool releaseOldOne, string newName, bool autoGlobal = true, bool forceUnderscore = false )
@@ -1266,7 +1761,9 @@ namespace AmplifyShaderEditor
 			if( m_propertyName.Equals( propertyName ) )
 				return;
 
-			if( UIUtils.IsUniformNameAvailable( propertyName ) || m_allowPropertyDuplicates )
+			// Non-reserving nodes (constants) accept any display name without touching the registry;
+			// reserving nodes need the name to be free.
+			if( !ReservesUniformName || UIUtils.IsUniformNameAvailable( propertyName ) || m_allowPropertyDuplicates )
 			{
 				if( releaseOldOne )
 					UIUtils.ReleaseUniformName( UniqueId, m_oldName );
@@ -1277,7 +1774,8 @@ namespace AmplifyShaderEditor
 					m_propertyInspectorName = newName;
 				m_propertyNameIsDirty = true;
 				m_reRegisterName = false;
-				UIUtils.RegisterUniformName( UniqueId, propertyName );
+				if( ReservesUniformName )
+					UIUtils.RegisterUniformName( UniqueId, propertyName );
 				OnPropertyNameChanged();
 			}
 			else
@@ -1295,9 +1793,9 @@ namespace AmplifyShaderEditor
 
 		public virtual void CheckIfAutoRegister( ref MasterNodeDataCollector dataCollector )
 		{
-			// Also testing inside shader function because node can be used indirectly over a custom expression and directly over a Function Output node 
+			// Also testing inside shader function because node can be used indirectly over a custom expression and directly over a Function Output node
 			// That isn't being used externaly making it to not be registered ( since m_connStatus it set to Connected by being connected to an output node
-			if( CurrentParameterType != PropertyType.Constant && m_autoRegister && ( m_connStatus != NodeConnectionStatus.Connected || InsideShaderFunction ) )
+			if( CurrentParameterType != PropertyType.Constant && m_autoRegister && !IsPropertyReference && ( m_connStatus != NodeConnectionStatus.Connected || InsideShaderFunction ) )
 			{
 				RegisterProperty( ref dataCollector );
 			}
@@ -1315,8 +1813,8 @@ namespace AmplifyShaderEditor
 			{
 				case PropertyType.Property:
 				{
-					//Debug.Log( this.GetInstanceID()+" "+ OrderIndex+" "+GetPropertyValue() );
-					dataCollector.AddToProperties( UniqueId, GetPropertyValue(), OrderIndex );
+					if( m_variableMode == VariableMode.Create )
+						dataCollector.AddToProperties( UniqueId, GetPropertyValue(), OrderIndex );
 					string dataType = string.Empty;
 					string dataName = string.Empty;
 					bool fullValue = false;
@@ -1418,6 +1916,9 @@ namespace AmplifyShaderEditor
 				m_availableAttribs.Clear();
 
 			m_availableAttribs = null;
+
+			m_propertyReference = null;
+			m_propertyReferenceCandidates.Clear();
 		}
 		private const string HeaderFormatStr = "[Header({0})]";
 		string BuildHeader()
@@ -1450,14 +1951,18 @@ namespace AmplifyShaderEditor
 			return result;
 		}
 
+		// Canonical serialized form of the external integration payload (see PropertyNodeExtensions).
+		public string ExtensionData
+		{
+			get { return m_extensionData; }
+			set { m_extensionData = value; }
+		}
+
 		public string PropertyAttributes
 		{
 			get
 			{
 				int attribCount = m_selectedAttribs.Count;
-
-				if( m_selectedAttribs.Count == 0 && m_customAttrCount == 0 )
-					return string.Empty;
 
 				string attribs = string.Empty;
 				for( int i = 0; i < attribCount; i++ )
@@ -1475,15 +1980,47 @@ namespace AmplifyShaderEditor
 					if( !string.IsNullOrEmpty( m_customAttr[ i ] ) )
 						attribs += "[" + m_customAttr[ i ] + "]";
 				}
+
+				attribs += PropertyNodeExtensions.BuildAttributes( this );
 				return attribs;
 			}
 		}
-		public virtual void OnDirtyProperty() { }
+		public string PropertyAttributesSeparator
+		{
+			get
+			{
+				return string.IsNullOrEmpty( PropertyAttributes ) ? string.Empty : " ";
+			}
+		}
+
+		public virtual void OnDirtyProperty()
+		{
+			// @diogo: Look for an existing global property hard coded into the template. If found,
+			//         disable precision control and force a precision type matching the template.
+
+			m_disablePrecisionUI = false;
+
+			if ( m_currentParameterType != PropertyType.Constant )
+			{
+				var templateMasterNode = ContainerGraph.CurrentMasterNode as TemplateMultiPassMasterNode;
+				if ( templateMasterNode != null && templateMasterNode.CurrentTemplate != null )
+				{
+					var data = templateMasterNode.CurrentTemplate.GetGlobalShaderPropertyData( m_propertyName );
+					if ( data != null )
+					{
+						m_currentPrecisionType = data.PrecisionType;
+						m_disablePrecisionUI = true;
+					}
+				}
+			}
+		}
+
 		public virtual void OnPropertyNameChanged() { UIUtils.UpdatePropertyDataNode( UniqueId, PropertyInspectorName ); }
 		public virtual void DrawSubProperties() { }
 		public virtual void DrawMaterialProperties() { }
 
 		public virtual string GetPropertyValue() { return string.Empty; }
+		public virtual string GetDefaultValue() { return string.Empty; }
 
 		public string GetInstancedUniformValue( bool isTemplate, bool isSRP )
 		{
@@ -1554,6 +2091,13 @@ namespace AmplifyShaderEditor
 		public override void WriteToString( ref string nodeInfo, ref string connectionsInfo )
 		{
 			base.WriteToString( ref nodeInfo, ref connectionsInfo );
+			WritePropertyData( ref nodeInfo );
+		}
+
+		// @diogo: shared property block ( name, order, attributes, enums, ... ) split out of WriteToString so
+		//         the right-click type change can round-trip just this state onto a different property node type.
+		protected void WritePropertyData( ref string nodeInfo )
+		{
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_currentParameterType );
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_propertyName );
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_propertyInspectorName );
@@ -1598,6 +2142,17 @@ namespace AmplifyShaderEditor
 			}
 
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_hybridInstanced );
+
+			if( m_canBeReferenced )
+			{
+				IOUtils.AddFieldValueToString( ref nodeInfo, m_propertyReferenceType );
+				IOUtils.AddFieldValueToString( ref nodeInfo, ( PropertyReference != null ) ? m_propertyReference.UniqueId : -1 );
+			}
+
+			// @diogo: opaque per-node extension payload (see PropertyNodeExtensions). Always written so the
+			//         stream stays in sync; empty when no integration is registered.
+			m_extensionData = PropertyNodeExtensions.WriteData( this, m_extensionData );
+			IOUtils.AddFieldValueToString( ref nodeInfo, m_extensionData );
 		}
 
 		int IdForAttrib( string name )
@@ -1605,7 +2160,7 @@ namespace AmplifyShaderEditor
 			int attribCount = m_availableAttribs.Count;
 			for( int i = 0; i < attribCount; i++ )
 			{
-				if( m_availableAttribs[ i ].Attribute.Equals( name ) || 
+				if( m_availableAttribs[ i ].Attribute.Equals( name ) ||
 					(m_availableAttribs[ i ].HasDeprecatedValue && m_availableAttribs[ i ].DeprecatedValue.Equals( name ) ) )
 					return i;
 			}
@@ -1615,6 +2170,14 @@ namespace AmplifyShaderEditor
 		public override void ReadFromString( ref string[] nodeParams )
 		{
 			base.ReadFromString( ref nodeParams );
+			ReadPropertyData( ref nodeParams );
+		}
+
+		// @diogo: counterpart to WritePropertyData. The type change feeds this a synthetic param array captured
+		//         from another property node ( see ApplyChangedPropertyData ), reusing the exact load logic
+		//         ( attribute-by-string mapping, uniform-name re-registration, order index, ... ).
+		protected void ReadPropertyData( ref string[] nodeParams )
+		{
 			if( UIUtils.CurrentShaderVersion() < 2505 )
 			{
 				string property = GetCurrentParam( ref nodeParams );
@@ -1729,6 +2292,27 @@ namespace AmplifyShaderEditor
 				m_hybridInstanced = Convert.ToBoolean( GetCurrentParam( ref nodeParams ) );
 			}
 
+			if( m_canBeReferenced && UIUtils.CurrentShaderVersion() > 19909 )
+			{
+				m_propertyReferenceType = (TexReferenceType)Enum.Parse( typeof( TexReferenceType ), GetCurrentParam( ref nodeParams ) );
+				m_propertyReferenceNodeId = Convert.ToInt32( GetCurrentParam( ref nodeParams ) );
+				if( IsPropertyReference )
+				{
+					m_headerColorModifier = ReferenceHeaderColor;
+					m_hasLeftDropdown = false;
+					if( UIUtils.IsProperty( m_currentParameterType ) )
+					{
+						UIUtils.UnregisterPropertyNode( this );
+					}
+				}
+			}
+
+			if( UIUtils.CurrentShaderVersion() >= 19910 )
+			{
+				m_extensionData = GetCurrentParam( ref nodeParams );
+				PropertyNodeExtensions.ReadData( this, m_extensionData );
+			}
+
 			CheckEnumAttribute();
 			CheckHeaderAttribute();
 			if( m_enumCount > 0 )
@@ -1741,9 +2325,20 @@ namespace AmplifyShaderEditor
 			{
 				if( m_variableMode != VariableMode.Fetch || m_currentParameterType == PropertyType.Constant )
 				{
-					UIUtils.ReleaseUniformName( UniqueId, m_oldName );
-					UIUtils.RegisterUniformName( UniqueId, m_propertyName );
-					m_oldName = m_propertyName;
+					if( IsPropertyReference )
+					{
+						// Referencing nodes don't own a property name; release the auto-registered one
+						UIUtils.ReleaseUniformName( UniqueId, m_oldName );
+						m_oldName = m_propertyName;
+					}
+					else
+					{
+						UIUtils.ReleaseUniformName( UniqueId, m_oldName );
+						// C: constants keep their saved name but never reserve a registry slot.
+						if( m_currentParameterType != PropertyType.Constant )
+							UIUtils.RegisterUniformName( UniqueId, m_propertyName );
+						m_oldName = m_propertyName;
+					}
 				}
 			}
 			else
@@ -1752,14 +2347,133 @@ namespace AmplifyShaderEditor
 			}
 
 			ReleaseRansomedProperty();
-			
+
+		}
+
+		// @diogo: concrete property node types the canvas right-click "Change Type" can convert between ( #635 ).
+		//         The deprecated Int node stays out on purpose: its material value lives in a float slot, so
+		//         converting it to Integer would silently drop that value.
+		public static readonly System.Type[] ChangeableTypes =
+		{
+			typeof( RangedFloatNode ),
+			typeof( IntegerNode ),
+			typeof( Vector2Node ),
+			typeof( Vector3Node ),
+			typeof( Vector4Node ),
+			typeof( ColorNode )
+		};
+
+		// @diogo: header dropdown for changeable nodes, so "Change Type" is reachable without the right-click menu
+		void ShowParameterTypeMenu()
+		{
+			GenericMenu menu = new GenericMenu();
+			foreach( PropertyType parameterType in Enum.GetValues( typeof( PropertyType ) ) )
+			{
+				menu.AddItem( new GUIContent( ObjectNames.NicifyVariableName( parameterType.ToString() ) ), parameterType == m_currentParameterType, () =>
+				{
+					m_pendingParameterType = parameterType;
+				} );
+			}
+			menu.AddSeparator( string.Empty );
+			ContainerGraph.ParentWindow.AddPropertyTypeChangeItems( menu, this );
+			menu.DropDown( m_dropdownRect );
+		}
+
+		public static bool IsChangeableType( System.Type type )
+		{
+			for( int i = 0; i < ChangeableTypes.Length; i++ )
+			{
+				if( ChangeableTypes[ i ] == type )
+					return true;
+			}
+			return false;
+		}
+
+		// @diogo: serialize only the shared property block into a self-contained JSON node line, reusing the
+		//         graph metadata format so field values ( names, attributes, ... ) are escaped exactly as on save.
+		public string SerializePropertyData()
+		{
+			string data = string.Empty;
+			JsonGraphFormat.BeginNodeLine( ref data, string.Empty, 0, Vector2.zero );
+			WritePropertyData( ref data );
+			JsonGraphFormat.EndNodeLine( ref data );
+			return data;
+		}
+
+		// @diogo: apply a property block captured from another node ( type change ). SplitInstruction returns
+		//         [ NodeParam, type, id, pos, params... ], so the first property param sits at index 4.
+		//         Relies on every load path ending with LoadedShaderVersion = VersionInfo.FullNumber, so the
+		//         version gates in ReadPropertyData consume exactly what WritePropertyData just emitted
+		//         ( clipboard paste depends on the same invariant ).
+		public void ApplyChangedPropertyData( string data )
+		{
+			string[] nodeParams = JsonGraphFormat.SplitInstruction( data );
+			m_currentReadParamIdx = 4;
+			ReadPropertyData( ref nodeParams );
+		}
+
+		// @diogo: best-effort constant value carried across a type change as a common Vector4; each changeable
+		//         node overrides these to map its own components ( unused components read/write as 0 ).
+		public virtual Vector4 TypeChangeDefaultValue { get { return Vector4.zero; } }
+		public virtual Vector4 TypeChangeMaterialValue { get { return Vector4.zero; } }
+		public virtual void SetTypeChangeValues( Vector4 defaultValue, Vector4 materialValue ) { }
+
+		// @diogo: min/max ( and the slider mode derived from min == max ) carried across a type change;
+		//         only Float and Int have a range, so only they override.
+		public virtual Vector2 TypeChangeRangeValue { get { return Vector2.zero; } }
+		public virtual void SetTypeChangeRange( Vector2 range ) { }
+
+		// Preserve the property foldout states across a snapshot-undo reload; without this they are
+		// lost ( the attribute foldout, for instance, only re-derives open from ReadFromString when
+		// the node still has attributes, so undoing the last attribute would otherwise collapse it ).
+		public override void WriteUndoViewState( List<string> data )
+		{
+			base.WriteUndoViewState( data );
+			data.Add( m_visibleAttribsFoldout ? "1" : "0" );
+			data.Add( m_visibleEnumsFoldout ? "1" : "0" );
+			data.Add( m_visibleCustomAttrFoldout ? "1" : "0" );
+			data.Add( m_visibleHeaderAttrFoldout ? "1" : "0" );
+		}
+
+		public override void ReadUndoViewState( string[] data, ref int index )
+		{
+			base.ReadUndoViewState( data, ref index );
+			m_visibleAttribsFoldout = ReadUndoViewBool( data, ref index, m_visibleAttribsFoldout );
+			m_visibleEnumsFoldout = ReadUndoViewBool( data, ref index, m_visibleEnumsFoldout );
+			m_visibleCustomAttrFoldout = ReadUndoViewBool( data, ref index, m_visibleCustomAttrFoldout );
+			m_visibleHeaderAttrFoldout = ReadUndoViewBool( data, ref index, m_visibleHeaderAttrFoldout );
+		}
+
+		public override void ReconnectClipboardReferences( Clipboard clipboard )
+		{
+			base.ReconnectClipboardReferences( clipboard );
+			if( m_canBeReferenced && m_propertyReferenceNodeId > -1 )
+			{
+				int newId = clipboard.GeNewNodeId( m_propertyReferenceNodeId );
+				if( newId > -1 )
+				{
+					m_propertyReferenceNodeId = newId;
+				}
+				m_propertyReference = null;
+			}
+		}
+
+		public override void RefreshExternalReferences()
+		{
+			base.RefreshExternalReferences();
+			if( IsPropertyReference )
+			{
+				m_propertyReference = null;
+				m_headerColorModifier = ReferenceHeaderColor;
+				m_hasLeftDropdown = false;
+			}
 		}
 
 		public virtual void ReleaseRansomedProperty()
 		{
 			if( m_variableMode == VariableMode.Fetch/* && m_autoGlobalName */)
 			{
-				//Fooling setter to have a different value 
+				//Fooling setter to have a different value
 				m_variableMode = VariableMode.Create;
 				CurrentVariableMode = VariableMode.Fetch;
 			}
@@ -1835,7 +2549,14 @@ namespace AmplifyShaderEditor
 					}
 					else
 					{
-						if( !m_propertyName.Equals( m_oldName ) )
+						if( !ReservesUniformName )
+						{
+							// C: constant / reference nodes don't hold a registry slot on Create.
+							if( UIUtils.CheckUniformNameOwner( m_oldName ) == UniqueId )
+								UIUtils.ReleaseUniformName( UniqueId, m_oldName );
+							m_oldName = m_propertyName;
+						}
+						else if( !m_propertyName.Equals( m_oldName ) )
 						{
 							if( UIUtils.IsUniformNameAvailable( m_propertyName ) )
 							{
@@ -1867,7 +2588,7 @@ namespace AmplifyShaderEditor
 				}
 			}
 		}
-		
+
 		public string PropertyData( MasterNodePortCategory portCategory )
 		{
 			return ( m_currentParameterType == PropertyType.InstancedProperty ) ? m_outputPorts[ 0 ].LocalValue( portCategory ) : m_propertyName;
@@ -1880,6 +2601,48 @@ namespace AmplifyShaderEditor
 			{
 				FetchGlobalValue();
 				m_globalFetchTimestamp = EditorApplication.timeSinceStartup;
+			}
+
+			// Keep the property picker hidden while in Reference mode; AfterCommonInit() may run after
+			// ReadFromString() or domain reloads and turn it back on
+			if( m_canBeReferenced && m_freeType )
+			{
+				m_hasLeftDropdown = !IsPropertyReference;
+			}
+
+			if( IsPropertyReference )
+			{
+				PropertyNode reference = PropertyReference;
+				// @diogo: a node in Reference mode can't itself be a source ( no chaining ), so a source
+				// switched into Reference mode no longer counts as resolved
+				if( reference != null && reference.IsPropertyReference )
+				{
+					reference = null;
+				}
+
+				if( reference != null )
+				{
+					CopyPropertyReferenceValues( reference );
+					// @diogo: track what the Ref( ... ) subtitle actually displays so source renames refresh it
+					string referenceValue = ( reference.CurrentParameterType == PropertyType.Constant ) ? reference.GetPropertyValStr() : reference.PropertyName;
+					if( !m_lastPropertyReferenceTitle.Equals( reference.PropertyInspectorName ) || !m_lastPropertyReferenceValue.Equals( referenceValue ) )
+					{
+						m_lastPropertyReferenceTitle = reference.PropertyInspectorName;
+						m_lastPropertyReferenceValue = referenceValue;
+						m_propertyNameIsDirty = true;
+					}
+				}
+				else if( m_propertyReferenceNodeId > -1 )
+				{
+					// @diogo: the target is gone, retyped, or is itself a reference; drop the dangling link
+					// fully so no stale name/outline/wire lingers while the picker already reads None
+					m_propertyReference = null;
+					m_propertyReferenceNodeId = -1;
+					m_lastPropertyReferenceTitle = string.Empty;
+					m_lastPropertyReferenceValue = string.Empty;
+					m_propertyNameIsDirty = true;
+					PreviewIsDirty = true;
+				}
 			}
 		}
 
@@ -1913,11 +2676,6 @@ namespace AmplifyShaderEditor
 		public bool FreeType { get { return m_freeType; } set { m_freeType = value; } }
 		public bool ReRegisterName { get { return m_reRegisterName; } set { m_reRegisterName = value; } }
 		public string CustomPrefix { get { return m_customPrefix; } set { m_customPrefix = value; } }
-		public override void RefreshOnUndo()
-		{
-			base.RefreshOnUndo();
-			BeginPropertyFromInspectorCheck();
-		}
 		public override string DataToArray { get { return PropertyInspectorName; } }
 		public bool RegisterPropertyOnInstancing { get { return m_registerPropertyOnInstancing; } set { m_registerPropertyOnInstancing = value; } }
 		public bool SrpBatcherCompatible { get { return m_srpBatcherCompatible; } }

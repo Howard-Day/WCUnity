@@ -35,6 +35,8 @@ namespace AmplifyShaderEditor
 		private List<ClipboardData> m_clipboardStrData;
 		private Dictionary<int, ClipboardData> m_clipboardAuxData;
 		private Dictionary<string, ClipboardData> m_multiPassMasterNodeData;
+		// @diogo: ASE version that wrote the clipboard data; 0 means the payload predates stamping
+		private int m_clipboardVersion = 0;
 
 		public Clipboard()
 		{
@@ -62,6 +64,7 @@ namespace AmplifyShaderEditor
 					string connection = string.Empty;
 					System.Threading.Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
 					masterNodes[ i ].FullWriteToString( ref data, ref connection );
+					JsonGraphFormat.EndNodeLine( ref data );
 					System.Threading.Thread.CurrentThread.CurrentCulture = System.Threading.Thread.CurrentThread.CurrentUICulture;
 					ClipboardData clipboardData = new ClipboardData( data, connection, masterNodes[ i ].UniqueId );
 					m_multiPassMasterNodeData.Add( masterNodes[ i ].PassUniqueName + lodId, clipboardData );
@@ -78,7 +81,7 @@ namespace AmplifyShaderEditor
 				if( m_multiPassMasterNodeData.ContainsKey( clipboardDataId ) )
 				{
 					ClipboardData nodeData = m_multiPassMasterNodeData[ clipboardDataId ];
-					string[] nodeParams = nodeData.Data.Split( IOUtils.FIELD_SEPARATOR );
+					string[] nodeParams = JsonGraphFormat.SplitInstruction( nodeData.Data );
 					System.Threading.Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
 					masterNodes[ i ].FullReadFromString( ref nodeParams );
 					System.Threading.Thread.CurrentThread.CurrentCulture = System.Threading.Thread.CurrentThread.CurrentUICulture;
@@ -97,14 +100,20 @@ namespace AmplifyShaderEditor
 
 		}
 
-		public void AddToClipboard( List<ParentNode> selectedNodes , Vector3 initialPosition, ParentGraph graph )
+		// mirrorToSystem also leaves the payload in the OS clipboard, so a copy can travel between
+		// projects. Only the Copy command asks for it: duplicate pastes straight back, and share
+		// replaces the clipboard with its link.
+		public void AddToClipboard( List<ParentNode> selectedNodes , Vector3 initialPosition, ParentGraph graph, bool mirrorToSystem )
 		{
 			//m_clipboardStrData.Clear();
 			//m_clipboardAuxData.Clear();
 
-			string clipboardData = IOUtils.Vector3ToString( initialPosition ) + ClipboardTagId[ 0 ];
+			// @diogo: the version rides as a fourth component because StringToVector3 reads only the first
+			// three, so older ASE builds still parse the position out of a stamped clipboard
+			string clipboardData = IOUtils.Vector3ToString( initialPosition ) + IOUtils.VECTOR_SEPARATOR + VersionInfo.FullNumber + ClipboardTagId[ 0 ];
 			int masterNodeId = UIUtils.CurrentWindow.CurrentGraph.CurrentMasterNodeId;
 			int count = selectedNodes.Count;
+			int writtenCount = 0;
 			for ( int i = 0; i < count; i++ )
 			{
 				if ( UIUtils.CurrentWindow.IsShaderFunctionWindow || !graph.IsMasterNode( selectedNodes[ i ] ))
@@ -112,6 +121,7 @@ namespace AmplifyShaderEditor
 					string nodeData = string.Empty;
 					string connections = string.Empty;
 					selectedNodes[ i ].ClipboardFullWriteToString( ref nodeData, ref connections );
+					JsonGraphFormat.EndNodeLine( ref nodeData );
 					clipboardData += nodeData;
 					if ( !string.IsNullOrEmpty( connections ) )
 					{
@@ -120,6 +130,8 @@ namespace AmplifyShaderEditor
 					}
 					if ( i < count - 1 )
 						clipboardData += ClipboardTagId[ 0 ];
+
+					writtenCount++;
 
 					//ClipboardData data = new ClipboardData( nodeData, connections, selectedNodes[ i ].UniqueId );
 					//m_clipboardStrData.Add( data );
@@ -130,6 +142,14 @@ namespace AmplifyShaderEditor
 			if ( !string.IsNullOrEmpty( clipboardData ) )
 			{
 				EditorPrefs.SetString( ClipboardId, clipboardData );
+			}
+
+			// @diogo: mirrored so a payload left in the OS clipboard, which PasteFromClipboard reads
+			// first, can no longer outrank this copy; also lets copies travel between projects.
+			// Skipped on an empty copy, which would otherwise wipe the OS clipboard for nothing
+			if ( mirrorToSystem && writtenCount > 0 )
+			{
+				EditorGUIUtility.systemCopyBuffer = ClipboardId + ";" + clipboardData;
 			}
 			//for ( int i = 0; i < selectedNodes.Count; i++ )
 			//{
@@ -152,11 +172,18 @@ namespace AmplifyShaderEditor
 			Vector3 initialPos = Vector3.zero;
 			m_clipboardStrData.Clear();
 			m_clipboardAuxData.Clear();
+			m_clipboardVersion = 0;
 			string clipboardData = EditorPrefs.GetString( ClipboardId, string.Empty );
 			if ( !string.IsNullOrEmpty( clipboardData ) )
 			{
 				string[] clipboardDataArray = clipboardData.Split( ClipboardTagId, StringSplitOptions.None );
 				initialPos = IOUtils.StringToVector3( clipboardDataArray[0] );
+				// @diogo: 4th component, if present, is the version stamp added in AddToClipboard
+				string[] initialPosComponents = clipboardDataArray[ 0 ].Split( IOUtils.VECTOR_SEPARATOR );
+				if ( initialPosComponents.Length > 3 )
+				{
+					int.TryParse( initialPosComponents[ 3 ], out m_clipboardVersion );
+				}
 				for ( int i = 1; i < clipboardDataArray.Length; i++ )
 				{
 					if ( !string.IsNullOrEmpty( clipboardDataArray[ i ] ) )
@@ -173,7 +200,7 @@ namespace AmplifyShaderEditor
 							nodeData = clipboardDataArray[ i ].Substring( 0, wiresIndex );
 							connections = clipboardDataArray[ i ].Substring( wiresIndex + 1 );
 						}
-						string[] nodeDataArr = nodeData.Split( IOUtils.FIELD_SEPARATOR );
+						string[] nodeDataArr = JsonGraphFormat.SplitInstruction( nodeData );
 						if ( nodeDataArr.Length > 2 )
 						{
 							int nodeId = Convert.ToInt32( nodeDataArr[ 2 ] );
@@ -236,6 +263,7 @@ namespace AmplifyShaderEditor
 			m_clipboardStrData.Clear();
 			m_clipboardAuxData.Clear();
 			m_multiPassMasterNodeData.Clear();
+			m_clipboardVersion = 0;
 		}
 
 		public ClipboardData GetClipboardData( int oldNodeId )
@@ -258,5 +286,7 @@ namespace AmplifyShaderEditor
 		}
 
 		public bool HasCachedMasterNodes { get { return m_multiPassMasterNodeData.Count > 0; } }
+
+		public int ClipboardVersion { get { return m_clipboardVersion; } }
 	}
 }

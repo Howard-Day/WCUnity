@@ -2,7 +2,8 @@ Shader "Hidden/ComponentMaskNode"
 {
 	Properties
 	{
-		_A ("_A", 2D) = "white" {}
+		_A ("_A", 2DArray) = "white" {}
+		_B ("_B", 2DArray) = "white" {}
 	}
 	SubShader
 	{
@@ -10,16 +11,35 @@ Shader "Hidden/ComponentMaskNode"
 		{
 			CGPROGRAM
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#pragma vertex vert_img
 			#pragma fragment frag
+			#pragma target 3.5
 
-			sampler2D _A;
+			ASE_PORT( _A );
+			ASE_PORT( _B );
 			float _Singular;
 			float4 _Order;
+			float _Mode;
+			float _Count;
+			float _Clamp;
 
 			float4 frag( v2f_img i ) : SV_Target
 			{
-				float4 a = tex2D( _A, i.uv );
+				float4 a = ASE_SAMPLE_PORT( _A, i.uv );
+
+				if(_Mode == 1)
+				{
+					if(_Count == 0)
+						return a;
+
+					float index = ASE_SAMPLE_PORT( _B, i.uv ).r;
+					if(_Clamp == 1)
+						index = clamp( index, 0, _Count - 1 );
+
+					return a[ (int)index ];
+				}
+
 				float4 r = 0;
 				if(_Singular == 0)
 					r = a.x;

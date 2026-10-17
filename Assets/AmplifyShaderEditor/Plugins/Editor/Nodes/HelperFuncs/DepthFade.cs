@@ -14,6 +14,8 @@ namespace AmplifyShaderEditor
 		private const string SaturateStr = "Saturate";
 		private const string MirrorStr = "Mirror";
 
+		private const string EyeDepthFuncHeader = "ASELinearEyeDepth( {0} )";
+
 		[SerializeField]
 		private bool m_convertToLinear = true;
 
@@ -21,7 +23,7 @@ namespace AmplifyShaderEditor
 		private bool m_saturate = false;
 
 		[SerializeField]
-		private bool m_mirror = true;
+		private bool m_mirror = false;
 
 		protected override void CommonInit( int uniqueId )
 		{
@@ -52,7 +54,7 @@ namespace AmplifyShaderEditor
 			{
 				if( dataCollector.IsTemplate && dataCollector.CurrentSRPType == TemplateSRPType.URP )
 				{
-					dataCollector.AddToDirectives( Constants.CameraDepthTextureLWEnabler, -1, AdditionalLineType.Define );
+					dataCollector.AddToDirectives( Constants.CameraDepthTextureURPEnabler, -1, AdditionalLineType.Define );
 				}
 				else
 				{
@@ -61,12 +63,20 @@ namespace AmplifyShaderEditor
 				}
 			}
 
-			string screenPosNorm = string.Empty;
+			string screenPosNorm;
 			InputPort vertexPosPort = GetInputPortByUniqueId( 1 );
 			if( vertexPosPort.IsConnected )
 			{
 				string vertexPosVar = "vertexPos" + OutputId;
-				GenerateInputInVertex( ref dataCollector, 1, vertexPosVar, false );
+				if ( dataCollector.IsTemplate || !dataCollector.TesselationActive )
+				{
+					GenerateInputInVertex( ref dataCollector, 1, vertexPosVar, false );
+				}
+				else
+				{
+					// @diogo: surface shader + tessellation? can't add interpolators, so generate everything in fragment
+					vertexPosVar = vertexPosPort.GeneratePortInstructions( ref dataCollector );
+				}
 				screenPosNorm = GeneratorUtils.GenerateScreenPositionNormalizedForValue( vertexPosVar, OutputId, ref dataCollector, UniqueId, CurrentPrecisionType, !dataCollector.UsingCustomScreenPos );
 			}
 			else
@@ -92,10 +102,7 @@ namespace AmplifyShaderEditor
 			string screenDepth = TemplateHelperFunctions.CreateDepthFetch( dataCollector, screenPosNorm );
 			if( m_convertToLinear )
 			{
-				if( dataCollector.IsTemplate && dataCollector.IsSRP )
-					screenDepth = string.Format( "LinearEyeDepth({0},_ZBufferParams)", screenDepth );
-				else
-					screenDepth = string.Format( "LinearEyeDepth({0})", screenDepth );
+				screenDepth = GenerateEyeDepth( ref dataCollector, screenDepth );
 			}
 			else
 			{
@@ -106,12 +113,10 @@ namespace AmplifyShaderEditor
 
 			dataCollector.AddLocalVariable( UniqueId, "float screenDepth" + OutputId + " = " + screenDepth + ";" );
 
+			string surfaceDepth = GenerateEyeDepth( ref dataCollector, screenPosNorm + ".z" );
+
 			string finalVarName = "distanceDepth" + OutputId;
-			string finalVarValue = string.Empty;
-			if( dataCollector.IsTemplate && dataCollector.IsSRP )
-				finalVarValue  = "( screenDepth" + OutputId + " - LinearEyeDepth( " + screenPosNorm + ".z,_ZBufferParams ) ) / ( " + distance + " )";
-			else
-				finalVarValue =  "( screenDepth" + OutputId + " - LinearEyeDepth( " + screenPosNorm + ".z ) ) / ( " + distance + " )";
+			string finalVarValue = "( screenDepth" + OutputId + " - " + surfaceDepth + " ) / ( " + distance + " )";
 
 			if( m_mirror )
 			{
@@ -126,6 +131,24 @@ namespace AmplifyShaderEditor
 			dataCollector.AddLocalVariable( UniqueId, CurrentPrecisionType, WirePortDataType.FLOAT, finalVarName, finalVarValue );
 			m_outputPorts[ 0 ].SetLocalValue( finalVarName, dataCollector.PortCategory );
 			return GetOutputColorItem( 0, outputId, finalVarName );
+		}
+
+		// Converts a raw depth buffer value into eye depth, on both perspective and orthographic cameras.
+		private string GenerateEyeDepth( ref MasterNodeDataCollector dataCollector, string rawDepth )
+		{
+			string perspDepth = ( dataCollector.IsTemplate && dataCollector.IsSRP ) ? "LinearEyeDepth( rawDepth, _ZBufferParams )" : "LinearEyeDepth( rawDepth )";
+
+			string body = string.Empty;
+			IOUtils.AddFunctionHeader( ref body, "float ASELinearEyeDepth( float rawDepth )" );
+			IOUtils.AddFunctionLine( ref body, "#if UNITY_REVERSED_Z" );
+			IOUtils.AddFunctionLine( ref body, "float orthoDepth = _ProjectionParams.z - ( _ProjectionParams.z - _ProjectionParams.y ) * rawDepth;" );
+			IOUtils.AddFunctionLine( ref body, "#else" );
+			IOUtils.AddFunctionLine( ref body, "float orthoDepth = _ProjectionParams.y + ( _ProjectionParams.z - _ProjectionParams.y ) * rawDepth;" );
+			IOUtils.AddFunctionLine( ref body, "#endif" );
+			IOUtils.AddFunctionLine( ref body, string.Format( "return ( unity_OrthoParams.w == 0 ) ? {0} : orthoDepth;", perspDepth ) );
+			IOUtils.CloseFunctionBody( ref body );
+
+			return dataCollector.AddFunctions( EyeDepthFuncHeader, body, rawDepth );
 		}
 
 		public override void DrawProperties()

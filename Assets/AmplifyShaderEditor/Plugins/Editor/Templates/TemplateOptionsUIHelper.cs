@@ -79,7 +79,7 @@ namespace AmplifyShaderEditor
 		public void DrawCustomOptions( TemplateMultiPassMasterNode owner )
 		{
 			m_owner = owner;
-			
+
 			if( m_passCustomOptionsUI.Count > 0 )
 			{
 				NodeUtils.DrawNestedPropertyGroup( ref m_passCustomOptionsFoldout, m_passCustomOptionsLabel, DrawCustomOptionsBlock );
@@ -121,11 +121,58 @@ namespace AmplifyShaderEditor
 			return port;
 		}
 
-		public void OnCustomOptionSelected( bool actionFromUser, bool isRefreshing, bool invertAction, TemplateMultiPassMasterNode owner, TemplateOptionUIItem uiItem, params TemplateActionItem[] validActions )
+		private bool TestActionItemConditional( TemplateActionItem actionItem, TemplateActionItemConditional conditional )
+		{
+			bool succeeded = true;
+			if ( conditional != null && conditional.IsValid )
+			{
+				TemplateOptionUIItem referenceItem = m_passCustomOptionsUI.Find( x => ( x.Options.Name.Equals( conditional.Option ) ) );
+				if ( referenceItem != null )
+				{
+					bool equal = conditional.Value.Equals( referenceItem.Options.Options[ referenceItem.CurrentOption ] );
+					if ( conditional.Condition == TemplateActionItemConditional.Conditional.Equal )
+					{
+						succeeded = equal;
+					}
+					else if ( conditional.Condition == TemplateActionItemConditional.Conditional.NotEqual )
+					{
+						succeeded = !equal;
+					}
+				}
+			}
+			return succeeded;
+		}
+
+		// During shader load the per-pass option cascade can run before every pass has an instantiated
+		// master node (e.g. a shader saved before new passes were added to the template); those are
+		// reconciled by the deferred options refresh. Only warn when the pass is genuinely missing from
+		// the template definition, which points to an actual authoring typo.
+		private void LogMissingPass( TemplateMultiPassMasterNode owner, TemplateActionItem action )
+		{
+			if ( owner.CurrentTemplate != null && owner.CurrentTemplate.ContainsPass( action.PassName ) )
+			{
+				return;
+			}
+			Debug.LogFormat( "Could not find pass {0} for action {1} '{2}' on template {3}", action.PassName, action.ActionType, action.ActionData, owner.CurrentTemplate.DefaultShaderName );
+		}
+
+		public void OnCustomOptionSelected( bool actionFromUser, bool isRefreshing, bool invertAction, TemplateMultiPassMasterNode owner, TemplateOptionUIItem uiItem, int recursionLevel, params TemplateActionItem[] validActions )
 		{
 			uiItem.CheckOnExecute = false;
 			for( int i = 0; i < validActions.Length; i++ )
 			{
+				// @diogo: test option conditional before continuing
+				if ( !TestActionItemConditional( validActions[ i ], validActions[ i ].OptionConditional ) )
+				{
+					continue;
+				}
+
+				// @diogo: test action conditional before continuing
+				if ( !TestActionItemConditional( validActions[ i ], validActions[ i ].ActionConditional ) )
+				{
+					continue;
+				}
+
 				AseOptionsActionType actionType = validActions[ i ].ActionType;
 				if( invertAction )
 				{
@@ -135,9 +182,24 @@ namespace AmplifyShaderEditor
 					}
 				}
 
-
 				switch( actionType )
 				{
+					case AseOptionsActionType.RefreshOption:
+					{
+						if ( !uiItem.IsVisible || recursionLevel > 0 )
+							break;
+
+						TemplateOptionUIItem item = m_passCustomOptionsUI.Find( x => ( x.Options.Name.Equals( validActions[ i ].ActionData ) ) );
+						if ( item != null )
+						{
+							item.Update( recursionLevel + 1, isRefreshing );
+						}
+						else
+						{
+							Debug.LogFormat( "Could not find Option {0} for action '{1}' on template {2}", validActions[ i ].ActionData, validActions[ i ].ActionType, owner.CurrentTemplate.DefaultShaderName );
+						}
+					}
+					break;
 					case AseOptionsActionType.ShowOption:
 					{
 						TemplateOptionUIItem item = m_passCustomOptionsUI.Find( x => ( x.Options.Name.Equals( validActions[ i ].ActionData ) ) );
@@ -146,7 +208,7 @@ namespace AmplifyShaderEditor
 							if( isRefreshing )
 							{
 								string optionId = validActions[ i ].PassName + validActions[ i ].ActionData + "Option";
-								owner.ContainerGraph.ParentWindow.TemplatesManagerInstance.SetOptionsValue( optionId, true );
+								TemplatesManager.Instance.SetOptionsValue( optionId, true );
 							}
 
 							// this prevents options from showing up when loading by checking if they were hidden by another option
@@ -159,7 +221,7 @@ namespace AmplifyShaderEditor
 							if( !invertAction && validActions[ i ].ActionDataIdx > -1 )
 								item.CurrentOption = validActions[ i ].ActionDataIdx;
 
-							item.CheckEnDisable( actionFromUser );
+							item.CheckEnDisable( actionFromUser, isRefreshing );
 						}
 						else
 						{
@@ -176,14 +238,22 @@ namespace AmplifyShaderEditor
 							if( isRefreshing )
 							{
 								string optionId = validActions[ i ].PassName + validActions[ i ].ActionData + "Option";
-								flag = owner.ContainerGraph.ParentWindow.TemplatesManagerInstance.SetOptionsValue( optionId, false );
+								flag = TemplatesManager.Instance.SetOptionsValue( optionId, false );
+
+								// @diogo: a hidden driver's disable cascade must force its child hidden; the accumulator's
+								// "show wins" bias would otherwise keep e.g. _TessValue visible after Tessellation is turned
+								// off, because the Type sub-option showed it earlier in the timestamp-ordered replay
+								if( !uiItem.IsVisible )
+								{
+									flag = false;
+								}
 							}
 
 							item.IsVisible = false || flag;
 							if( !invertAction && validActions[ i ].ActionDataIdx > -1 )
 								item.CurrentOption = validActions[ i ].ActionDataIdx;
 
-							item.CheckEnDisable( actionFromUser );
+							item.CheckEnDisable( actionFromUser, isRefreshing );
 						}
 						else
 						{
@@ -200,7 +270,7 @@ namespace AmplifyShaderEditor
 						if( item != null )
 						{
 							item.CurrentOption = validActions[ i ].ActionDataIdx;
-							item.Update( isRefreshing );
+							item.Update( recursionLevel, isRefreshing );
 						}
 						else
 						{
@@ -224,7 +294,7 @@ namespace AmplifyShaderEditor
 								if( isRefreshing )
 								{
 									string optionId = validActions[ i ].PassName + port.Name;
-									owner.ContainerGraph.ParentWindow.TemplatesManagerInstance.SetOptionsValue( optionId, port.IsConnected );
+									TemplatesManager.Instance.SetOptionsValue( optionId, port.IsConnected );
 									port.Visible = port.IsConnected;
 								}
 								else
@@ -240,7 +310,7 @@ namespace AmplifyShaderEditor
 						}
 						else
 						{
-							Debug.LogFormat( "Could not find pass {0} for action {1} '{2}' on template {3}", validActions[ i ].PassName, validActions[ i ].ActionType, validActions[ i ].ActionData, owner.CurrentTemplate.DefaultShaderName );
+							LogMissingPass( owner, validActions[ i ] );
 						}
 					}
 					break;
@@ -263,7 +333,7 @@ namespace AmplifyShaderEditor
 								if( isRefreshing )
 								{
 									string optionId = validActions[ i ].PassName + port.Name;
-									owner.ContainerGraph.ParentWindow.TemplatesManagerInstance.SetOptionsValue( optionId, true );
+									TemplatesManager.Instance.SetOptionsValue( optionId, true );
 								}
 
 								port.Visible = true;
@@ -276,7 +346,7 @@ namespace AmplifyShaderEditor
 						}
 						else
 						{
-							Debug.LogFormat( "Could not find pass {0} for action {1} '{2}' on template {3}", validActions[ i ].PassName, validActions[ i ].ActionType, validActions[ i ].ActionData, owner.CurrentTemplate.DefaultShaderName );
+							LogMissingPass( owner, validActions[ i ] );
 						}
 					}
 					break;
@@ -306,7 +376,7 @@ namespace AmplifyShaderEditor
 						}
 						else
 						{
-							Debug.LogFormat( "Could not find pass {0}, {1} for action '{2}' on template {3}", validActions[ i ].PassName, validActions[ i ].ActionType, validActions[ i ].ActionData, owner.CurrentTemplate.DefaultShaderName );
+							LogMissingPass( owner, validActions[ i ] );
 						}
 					}
 					break;
@@ -335,7 +405,7 @@ namespace AmplifyShaderEditor
 							}
 							if( isRefreshing )
 							{
-								owner.ContainerGraph.ParentWindow.TemplatesManagerInstance.SetOptionsValue( defineValue, true );
+								TemplatesManager.Instance.SetOptionsValue( defineValue, true );
 							}
 							List<TemplateMultiPassMasterNode> nodes = owner.ContainerGraph.GetMultiPassMasterNodes( owner.LODIndex );
 							int count = nodes.Count;
@@ -364,13 +434,13 @@ namespace AmplifyShaderEditor
 								if( isRefreshing )
 								{
 									string optionsId = validActions[ i ].PassName + defineValue;
-									owner.ContainerGraph.ParentWindow.TemplatesManagerInstance.SetOptionsValue( optionsId, true );
+									TemplatesManager.Instance.SetOptionsValue( optionsId, true );
 								}
 								passMasterNode.OptionsDefineContainer.AddDirective( defineValue, false, isPragma );
 							}
 							else
 							{
-								Debug.LogFormat( "Could not find pass {0} for action {1} '{2}' on template {3}", validActions[ i ].PassName, validActions[ i ].ActionType, validActions[ i ].ActionData, owner.CurrentTemplate.DefaultShaderName );
+								LogMissingPass( owner, validActions[ i ] );
 							}
 						}
 						else
@@ -398,7 +468,7 @@ namespace AmplifyShaderEditor
 							bool flag = false;
 							if( isRefreshing )
 							{
-								flag = owner.ContainerGraph.ParentWindow.TemplatesManagerInstance.SetOptionsValue( defineValue, false );
+								flag = TemplatesManager.Instance.SetOptionsValue( defineValue, false );
 							}
 
 							if( !flag )
@@ -430,7 +500,7 @@ namespace AmplifyShaderEditor
 								if( isRefreshing )
 								{
 									string optionId = validActions[ i ].PassName + defineValue;
-									flag = owner.ContainerGraph.ParentWindow.TemplatesManagerInstance.SetOptionsValue( optionId, false );
+									flag = TemplatesManager.Instance.SetOptionsValue( optionId, false );
 								}
 								if( !flag )
 								{
@@ -439,7 +509,7 @@ namespace AmplifyShaderEditor
 							}
 							else
 							{
-								Debug.LogFormat( "Could not find pass {0} for action {1} '{2}' on template {3}", validActions[ i ].PassName, validActions[ i ].ActionType, validActions[ i ].ActionData, owner.CurrentTemplate.DefaultShaderName );
+								LogMissingPass( owner, validActions[ i ] );
 							}
 						}
 						else
@@ -461,7 +531,7 @@ namespace AmplifyShaderEditor
 							string defineValue = "#undef " + validActions[ i ].ActionData;
 							if( isRefreshing )
 							{
-								owner.ContainerGraph.ParentWindow.TemplatesManagerInstance.SetOptionsValue( defineValue, true );
+								TemplatesManager.Instance.SetOptionsValue( defineValue, true );
 							}
 							List<TemplateMultiPassMasterNode> nodes = owner.ContainerGraph.GetMultiPassMasterNodes(owner.LODIndex);
 							int count = nodes.Count;
@@ -479,13 +549,13 @@ namespace AmplifyShaderEditor
 								if( isRefreshing )
 								{
 									string optionsId = validActions[ i ].PassName + defineValue;
-									owner.ContainerGraph.ParentWindow.TemplatesManagerInstance.SetOptionsValue( optionsId, true );
+									TemplatesManager.Instance.SetOptionsValue( optionsId, true );
 								}
 								passMasterNode.OptionsDefineContainer.AddDirective( defineValue, false );
 							}
 							else
 							{
-								Debug.LogFormat( "Could not find pass {0} for action {1} '{2}' on template {3}", validActions[ i ].PassName, validActions[ i ].ActionType, validActions[ i ].ActionData, owner.CurrentTemplate.DefaultShaderName );
+								LogMissingPass( owner, validActions[ i ] );
 							}
 						}
 						else
@@ -502,7 +572,7 @@ namespace AmplifyShaderEditor
 							bool flag = false;
 							if( isRefreshing )
 							{
-								flag = owner.ContainerGraph.ParentWindow.TemplatesManagerInstance.SetOptionsValue( defineValue, false );
+								flag = TemplatesManager.Instance.SetOptionsValue( defineValue, false );
 							}
 
 							if( !flag )
@@ -525,7 +595,7 @@ namespace AmplifyShaderEditor
 								if( isRefreshing )
 								{
 									string optionId = validActions[ i ].PassName + defineValue;
-									flag = owner.ContainerGraph.ParentWindow.TemplatesManagerInstance.SetOptionsValue( optionId, false );
+									flag = TemplatesManager.Instance.SetOptionsValue( optionId, false );
 								}
 
 								if( !flag )
@@ -535,7 +605,7 @@ namespace AmplifyShaderEditor
 							}
 							else
 							{
-								Debug.LogFormat( "Could not find pass {0} for action {1} '{2}' on template {3}", validActions[ i ].PassName, validActions[ i ].ActionType, validActions[ i ].ActionData, owner.CurrentTemplate.DefaultShaderName );
+								LogMissingPass( owner, validActions[ i ] );
 							}
 						}
 						else
@@ -547,10 +617,10 @@ namespace AmplifyShaderEditor
 					case AseOptionsActionType.ExcludePass:
 					{
 						string optionId = validActions[ i ].ActionData + "Pass";
-						//bool flag = isRefreshing ? owner.ContainerGraph.ParentWindow.TemplatesManagerInstance.SetOptionsValue( optionId, false ) : false;
+						//bool flag = isRefreshing ? TemplatesManager.Instance.SetOptionsValue( optionId, false ) : false;
 						//if( !flag )
 						//	owner.SetPassVisible( validActions[ i ].ActionData, false );
-						owner.ContainerGraph.ParentWindow.TemplatesManagerInstance.SetOptionsValue( optionId , false ) ;
+						TemplatesManager.Instance.SetOptionsValue( optionId , false ) ;
 						owner.SetPassVisible( validActions[ i ].ActionData , false );
 					}
 					break;
@@ -561,8 +631,14 @@ namespace AmplifyShaderEditor
 						if( !uiItem.IsVisible )
 							break;
 
+						// @diogo: on refresh the saved Available Passes selection wins over the option's include
+						if( isRefreshing )
+						{
+							break;
+						}
+
 						string optionId = validActions[ i ].ActionData + "Pass";
-						owner.ContainerGraph.ParentWindow.TemplatesManagerInstance.SetOptionsValue( optionId, true );
+						TemplatesManager.Instance.SetOptionsValue( optionId, true );
 						owner.SetPassVisible( validActions[ i ].ActionData, true );
 					}
 					break;
@@ -571,7 +647,7 @@ namespace AmplifyShaderEditor
 						//Debug.Log( "PASSPROP " + validActions[ i ].ActionData );
 						//Refresh happens on hotcode reload and shader load and in those situation
 						// The property own serialization handles its setup
-						if( isRefreshing )
+						if( isRefreshing && ( !owner.ApplyOptionPropertyActionsOnRefresh || !uiItem.IsVisible ) )
 							continue;
 
 						if( !string.IsNullOrEmpty( validActions[ i ].PassName ) )
@@ -583,7 +659,7 @@ namespace AmplifyShaderEditor
 							}
 							else
 							{
-								Debug.LogFormat( "Could not find pass {0} for action {1} '{2}' on template {3}", validActions[ i ].PassName, validActions[ i ].ActionType, validActions[ i ].ActionData, owner.CurrentTemplate.DefaultShaderName );
+								LogMissingPass( owner, validActions[ i ] );
 							}
 						}
 						else
@@ -596,7 +672,7 @@ namespace AmplifyShaderEditor
 					{
 						//Refresh happens on hotcode reload and shader load and in those situation
 						// The property own serialization handles its setup
-						if( isRefreshing )
+						if( isRefreshing && ( !owner.ApplyOptionPropertyActionsOnRefresh || !uiItem.IsVisible ) )
 							continue;
 
 						owner.SetPropertyActionFromItem( actionFromUser, owner.SubShaderModule, validActions[ i ] );
@@ -604,13 +680,13 @@ namespace AmplifyShaderEditor
 					break;
 					case AseOptionsActionType.SetShaderProperty:
 					{
-						//This action is only check when shader is compiled over 
+						//This action is only check when shader is compiled over
 						//the TemplateMultiPassMasterNode via the on CheckPropertyChangesOnOptions() method
 					}
 					break;
 					case AseOptionsActionType.ExcludeAllPassesBut:
 					{
-						//This action is only check when shader is compiled over 
+						//This action is only check when shader is compiled over
 						//the TemplateMultiPassMasterNode via the on CheckExcludeAllPassOptions() method
 					}
 					break;
@@ -632,8 +708,8 @@ namespace AmplifyShaderEditor
 								else
 									owner.ContainerGraph.CurrentMaterial.SetInt( prop, (int)uiItem.CurrentFieldValue );
 
-								if( ASEMaterialInspector.Instance != null )
-									ASEMaterialInspector.Instance.Repaint();
+								if( MaterialInspector.Instance != null )
+									MaterialInspector.Instance.Repaint();
 							}
 						}
 					}
@@ -778,7 +854,7 @@ namespace AmplifyShaderEditor
 			if( masterNode == null )
 				return;
 
-			
+
 			//for( int i = 0; i < m_passCustomOptionsPorts.Count; i++ )
 			//{
 			//	if( string.IsNullOrEmpty( m_passCustomOptionsPorts[ i ].Options.Id ) ||
@@ -787,10 +863,10 @@ namespace AmplifyShaderEditor
 			//		m_passCustomOptionsPorts[ i ].FillDataCollector( masterNode, ref dataCollector );
 			//	}
 			//}
-			
+
 			for( int i = 0; i < m_passCustomOptionsPorts.Count; i++ )
-			{	
-				m_passCustomOptionsPorts[ i ].SubShaderFillDataCollector( masterNode, ref dataCollector );	
+			{
+				m_passCustomOptionsPorts[ i ].SubShaderFillDataCollector( masterNode, ref dataCollector );
 			}
 		}
 
@@ -815,6 +891,11 @@ namespace AmplifyShaderEditor
 			for( int i = 0; i < savedOptions; i++ )
 			{
 				string optionName = nodeParams[ index++ ];
+
+				// @diogo: In cases like "Category,InvertActionOnDeselection", the actual name should only be the first
+				//        part, to avoid conflicts with the template definition.
+				optionName = optionName.Split( TemplateOptionsToolsHelper.OptionsDataSeparator )[ 0 ];
+
 				string optionSelection = nodeParams[ index++ ];
 				Int64 optionTimestamp = ( UIUtils.CurrentShaderVersion() > 18929 ) ? Convert.ToInt64( nodeParams[ index++ ] ):0;
 				m_readOptions.Add( new ReadOptions() { Name = optionName , Selection = optionSelection , Timestamp = optionTimestamp });
@@ -851,6 +932,11 @@ namespace AmplifyShaderEditor
 						if( m_passCustomOptionsUIDict[ m_readOptions[ i ].Name ].Options.Type == AseOptionsType.Field )
 						{
 							m_passCustomOptionsUIDict[ m_readOptions[ i ].Name ].FieldValue.ReadFromSingle( m_readOptions[ i ].Selection );
+
+							// @diogo: option fields aren't tracked by InlinePropertyTable (their FieldValue lives on the
+							//         shared/cached template option), so revert a dangling reference here, once the graph is loaded
+							m_passCustomOptionsUIDict[ m_readOptions[ i ].Name ].FieldValue.RevertIfUnresolved();
+
 							foreach( var item in m_passCustomOptionsUIDict[ m_readOptions[ i ].Name ].Options.ActionsPerOption.Rows )
 							{
 								if( item.Columns.Length > 0 && item.Columns[ 0 ].ActionType == AseOptionsActionType.SetMaterialProperty )
@@ -867,6 +953,28 @@ namespace AmplifyShaderEditor
 						}
 						else
 							m_passCustomOptionsUIDict[ m_readOptions[ i ].Name ].CurrentOptionIdx = Convert.ToInt32( m_readOptions[ i ].Selection );
+					}
+				}
+			}
+		}
+
+		// @diogo: applies only the saved non-field option selections, so the load-time reservation/visibility
+		// cascade ( RegisterProperties ) runs from the saved state instead of template defaults. Field options
+		// are left to the deferred SetReadOptions, whose RevertIfUnresolved needs the fully-loaded graph.
+		public void SetReadOptionSelections()
+		{
+			if( m_readOptions == null )
+				return;
+
+			for( int i = 0 ; i < m_readOptions.Count ; i++ )
+			{
+				if( m_passCustomOptionsUIDict.ContainsKey( m_readOptions[ i ].Name ) )
+				{
+					TemplateOptionUIItem item = m_passCustomOptionsUIDict[ m_readOptions[ i ].Name ];
+					if( item.Options.Type != AseOptionsType.Field )
+					{
+						item.LastClickedTimestamp = m_readOptions[ i ].Timestamp;
+						item.CurrentOptionIdx = Convert.ToInt32( m_readOptions[ i ].Selection );
 					}
 				}
 			}
@@ -892,10 +1000,10 @@ namespace AmplifyShaderEditor
 			int count = m_passCustomOptionsUI.Count;
 			for( int i = 0; i < count; i++ )
 			{
-				m_passCustomOptionsUI[ i ].CheckEnDisable(false);
+				m_passCustomOptionsUI[ i ].CheckEnDisable( false, false );
 			}
 		}
-	
+
 		public List<TemplateOptionUIItem> PassCustomOptionsUI { get { return m_passCustomOptionsUI; } }
 	}
 }

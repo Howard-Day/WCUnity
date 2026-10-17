@@ -59,7 +59,7 @@ namespace AmplifyShaderEditor
 
 			if ( m_procedural )
 			{
-				if ( dataCollector.IsSRP && ( dataCollector.CurrentPassName.Contains( "Forward" ) || dataCollector.CurrentPassName.Contains( "GBuffer" ) ) )
+				if ( dataCollector.IsSRP && ( dataCollector.CurrentPassNameContains( "Forward" ) || dataCollector.CurrentPassNameContains( "GBuffer" ) ) )
 				{
 					dataCollector.AddToPragmas( UniqueId, "instancing_options renderinglayer procedural:ASEProceduralSetup" );
 				}

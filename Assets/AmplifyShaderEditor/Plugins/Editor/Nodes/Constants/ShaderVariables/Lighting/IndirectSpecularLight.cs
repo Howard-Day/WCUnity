@@ -8,7 +8,7 @@ using UnityEditor;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Indirect Specular Light", "Lighting", "Indirect Specular Light", NodeAvailabilityFlags = (int)( NodeAvailability.CustomLighting | NodeAvailability.TemplateShader ) )]
+	[NodeAttributes( "Indirect Specular Light", "Lighting", "Indirect Specular Light" )]
 	public sealed class IndirectSpecularLight : ParentNode
 	{
 		[SerializeField]
@@ -16,7 +16,9 @@ namespace AmplifyShaderEditor
 		[SerializeField]
 		private bool m_normalize = true;
 
-		private const string DefaultErrorMessage = "This node only returns correct information using a custom light model, otherwise returns 0";
+		private const string DefaultErrorMessage = "This node only returns correct information using a custom light model, otherwise returns 0.";
+		private const string UpgradeErrorMessage = "Smoothness port was previously being used as Roughness, please check if you are correctly using it and save to confirm.";
+		private const string UnsupportedMessage = "Only valid on BiRP and URP templates.";
 		private bool m_upgradeMessage = false;
 
 		protected override void CommonInit( int uniqueId )
@@ -43,6 +45,28 @@ namespace AmplifyShaderEditor
 			base.PropagateNodeData( nodeData, ref dataCollector );
 			if( m_inputPorts[ 0 ].IsConnected )
 				dataCollector.DirtyNormal = true;
+		}
+
+		public override void OnNodeLogicUpdate( DrawInfo drawInfo )
+		{
+			base.OnNodeLogicUpdate( drawInfo );
+
+			if ( m_upgradeMessage || ( ContainerGraph.CurrentStandardSurface != null && ContainerGraph.CurrentStandardSurface.CurrentLightingModel != StandardShaderLightModel.CustomLighting ) )
+			{
+				m_errorMessageTypeIsError = m_upgradeMessage ? NodeMessageType.Warning : NodeMessageType.Error;
+				m_errorMessageTooltip = m_upgradeMessage ? UpgradeErrorMessage : DefaultErrorMessage;
+				m_showErrorMessage = true;
+			}
+			else if ( ContainerGraph.CurrentCanvasMode == NodeAvailability.TemplateShader && ( ContainerGraph.CurrentSRPType != TemplateSRPType.URP && ContainerGraph.CurrentSRPType != TemplateSRPType.BiRP ) )
+			{
+				m_errorMessageTypeIsError = NodeMessageType.Error;
+				m_errorMessageTooltip = UnsupportedMessage;
+				m_showErrorMessage = true;
+			}
+			else
+			{
+				m_showErrorMessage = false;
+			}
 		}
 
 		public override void SetPreviewInputs()
@@ -80,6 +104,11 @@ namespace AmplifyShaderEditor
 				m_inputPorts[ 1 ].FloatInternalData = EditorGUILayout.FloatField( m_inputPorts[ 1 ].Name, m_inputPorts[ 1 ].FloatInternalData );
 			if( !m_inputPorts[ 2 ].IsConnected )
 				m_inputPorts[ 2 ].FloatInternalData = EditorGUILayout.FloatField( m_inputPorts[ 2 ].Name, m_inputPorts[ 2 ].FloatInternalData );
+
+			if ( m_showErrorMessage )
+			{
+				EditorGUILayout.HelpBox( m_errorMessageTooltip, ( m_errorMessageTypeIsError == NodeMessageType.Error ) ? MessageType.Error : MessageType.Warning );
+			}
 		}
 
 		private void UpdatePort()
@@ -92,15 +121,6 @@ namespace AmplifyShaderEditor
 			m_sizeIsDirty = true;
 		}
 
-		public override void Draw( DrawInfo drawInfo )
-		{
-			base.Draw( drawInfo );
-			if( m_upgradeMessage || ( ContainerGraph.CurrentStandardSurface != null && ContainerGraph.CurrentStandardSurface.CurrentLightingModel != StandardShaderLightModel.CustomLighting ) )
-				m_showErrorMessage = true;
-			else
-				m_showErrorMessage = false;
-		}
-
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
 		{
 			if( dataCollector.IsTemplate )
@@ -109,7 +129,7 @@ namespace AmplifyShaderEditor
 				{
 					dataCollector.AddToIncludes( UniqueId, Constants.UnityLightingLib );
 					string worldPos = dataCollector.TemplateDataCollectorInstance.GetWorldPos();
-					string worldViewDir = dataCollector.TemplateDataCollectorInstance.GetViewDir( false, MasterNodePortCategory.Fragment );
+					string worldViewDir = dataCollector.TemplateDataCollectorInstance.GetViewDir( useMasterNodeCategory:false, customCategory:MasterNodePortCategory.Fragment );
 
 					string worldNormal = string.Empty;
 					if( m_inputPorts[ 0 ].IsConnected )
@@ -152,7 +172,7 @@ namespace AmplifyShaderEditor
 				{
 					if( dataCollector.CurrentSRPType == TemplateSRPType.URP )
 					{
-						string worldViewDir = dataCollector.TemplateDataCollectorInstance.GetViewDir( false, MasterNodePortCategory.Fragment );
+						string worldViewDir = dataCollector.TemplateDataCollectorInstance.GetViewDir( useMasterNodeCategory: false, customCategory: MasterNodePortCategory.Fragment );
 						string worldNormal = string.Empty;
 						if( m_inputPorts[ 0 ].IsConnected )
 						{
@@ -163,14 +183,41 @@ namespace AmplifyShaderEditor
 						}
 						else
 						{
-							worldNormal = dataCollector.TemplateDataCollectorInstance.GetWorldNormal( PrecisionType.Float, false, MasterNodePortCategory.Fragment );
+							worldNormal = dataCollector.TemplateDataCollectorInstance.GetWorldNormal( precisionType:PrecisionType.Float, useMasterNodeCategory: false, customCategory: MasterNodePortCategory.Fragment );
 						}
 
 						string tempsmoothness = m_inputPorts[ 1 ].GeneratePortInstructions( ref dataCollector );
 						string tempocclusion = m_inputPorts[ 2 ].GeneratePortInstructions( ref dataCollector );
 
 						dataCollector.AddLocalVariable( UniqueId, "half3 reflectVector" + OutputId + " = reflect( -" + worldViewDir + ", " + worldNormal + " );" );
-						dataCollector.AddLocalVariable( UniqueId, "float3 indirectSpecular" + OutputId + " = GlossyEnvironmentReflection( reflectVector" + OutputId + ", 1.0 - " + tempsmoothness + ", " + tempocclusion + " );" );
+						if ( ASEPackageManagerHelper.PackageSRPVersion >= ( int )SRPBaseline.ASE_SRP_14_X )
+						{
+							if ( ASEPackageManagerHelper.PackageSRPVersion >= ( int )SRPBaseline.ASE_SRP_17_X )
+							{
+								// @diogo: note the conditions; this pragma is only valid for 6000.0
+								dataCollector.AddToPragmas( UniqueId, "multi_compile _ _FORWARD_PLUS", "UNITY_VERSION < 60010000" );
+
+								// @diogo: valid for 6000.1 and above, fragment-only from 6000.7; guards match "SRP Additional Light"
+								// so the pragma merge collapses them instead of declaring the keyword twice
+								dataCollector.AddToPragmas( UniqueId, "multi_compile _ _CLUSTER_LIGHT_LOOP", "(UNITY_VERSION >= 60010000) && (UNITY_VERSION < 60070000)" );
+								dataCollector.AddToPragmas( UniqueId, "multi_compile_fragment _ _CLUSTER_LIGHT_LOOP", "(UNITY_VERSION >= 60070000)" );
+								dataCollector.AddToPragmas( UniqueId, "multi_compile_fragment _ _REFLECTION_PROBE_ATLAS", "UNITY_VERSION >= 60010000" );
+							}
+							else
+							{
+								dataCollector.AddToPragmas( UniqueId, "multi_compile _ _FORWARD_PLUS" );
+							}
+
+							string worldPos = dataCollector.TemplateDataCollectorInstance.GetWorldPos( useMasterNodeCategory: false, customCategory: MasterNodePortCategory.Fragment );
+							string normalizedScreenUV = dataCollector.TemplateDataCollectorInstance.GetScreenPosNormalized( CurrentPrecisionType, useMasterNodeCategory: false, customCategory: MasterNodePortCategory.Fragment );
+
+							dataCollector.AddLocalVariable( UniqueId, string.Format( "float3 indirectSpecular{0} = GlossyEnvironmentReflection( reflectVector{0}, {1}, 1.0 - {2}, {3}, {4}.xy );",
+								OutputId, worldPos, tempsmoothness, tempocclusion, normalizedScreenUV ) );
+						}
+						else
+						{
+							dataCollector.AddLocalVariable( UniqueId, "float3 indirectSpecular" + OutputId + " = GlossyEnvironmentReflection( reflectVector" + OutputId + ", 1.0 - " + tempsmoothness + ", " + tempocclusion + " );" );
+						}
 						return "indirectSpecular" + OutputId;
 					}
 					else if( dataCollector.CurrentSRPType == TemplateSRPType.HDRP )
@@ -187,7 +234,7 @@ namespace AmplifyShaderEditor
 			string normal = string.Empty;
 			if( m_inputPorts[ 0 ].IsConnected )
 			{
-				dataCollector.AddToInput( UniqueId, SurfaceInputs.WORLD_NORMAL, CurrentPrecisionType );
+				dataCollector.AddToInput( UniqueId, SurfaceInputs.WORLD_NORMAL, UIUtils.CurrentWindow.CurrentGraph.CurrentPrecision );
 				dataCollector.AddToInput( UniqueId, SurfaceInputs.INTERNALDATA, addSemiColon: false );
 				dataCollector.ForceNormal = true;
 
@@ -208,7 +255,7 @@ namespace AmplifyShaderEditor
 			{
 				if( dataCollector.IsFragmentCategory )
 				{
-					dataCollector.AddToInput( UniqueId, SurfaceInputs.WORLD_NORMAL, CurrentPrecisionType );
+					dataCollector.AddToInput( UniqueId, SurfaceInputs.WORLD_NORMAL, UIUtils.CurrentWindow.CurrentGraph.CurrentPrecision );
 					if( dataCollector.DirtyNormal )
 					{
 						dataCollector.AddToInput( UniqueId, SurfaceInputs.INTERNALDATA, addSemiColon: false );
@@ -260,7 +307,6 @@ namespace AmplifyShaderEditor
 
 			if( UIUtils.CurrentShaderVersion() < 13804 )
 			{
-				m_errorMessageTooltip = "Smoothness port was previously being used as Roughness, please check if you are correctly using it and save to confirm.";
 				m_upgradeMessage = true;
 				UIUtils.ShowMessage( UniqueId, "Indirect Specular Light node: Smoothness port was previously being used as Roughness, please check if you are correctly using it and save to confirm." );
 			}
@@ -272,8 +318,6 @@ namespace AmplifyShaderEditor
 		{
 			base.WriteToString( ref nodeInfo, ref connectionsInfo );
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_normalSpace );
-
-			m_errorMessageTooltip = DefaultErrorMessage;
 			m_upgradeMessage = false;
 		}
 	}

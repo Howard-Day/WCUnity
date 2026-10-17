@@ -1,4 +1,4 @@
-Shader /*ase_name*/"Hidden/Templates/Legacy/Sprites Default"/*end*/
+Shader /*ase_name*/"Hidden/Built-In/Sprites Default"/*end*/
 {
 	Properties
 	{
@@ -12,10 +12,10 @@ Shader /*ase_name*/"Hidden/Templates/Legacy/Sprites Default"/*end*/
 	SubShader
 	{
 		Tags
-		{ 
-			"Queue"="Transparent" 
-			"IgnoreProjector"="True" 
-			"RenderType"="Transparent" 
+		{
+			"Queue"="Transparent"
+			"IgnoreProjector"="True"
+			"RenderType"="Transparent"
 			"PreviewType"="Plane"
 			"CanUseSpriteAtlas"="True"
 		}
@@ -24,7 +24,7 @@ Shader /*ase_name*/"Hidden/Templates/Legacy/Sprites Default"/*end*/
 		Lighting Off
 		ZWrite Off
 		Blend One OneMinusSrcAlpha
-		
+
 		/*ase_pass*/
 		Pass
 		{
@@ -34,7 +34,7 @@ Shader /*ase_name*/"Hidden/Templates/Legacy/Sprites Default"/*end*/
 			#endif
 			#pragma vertex vert
 			#pragma fragment frag
-			#pragma target 3.0
+			#pragma target 3.5
 			#pragma multi_compile _ PIXELSNAP_ON
 			#pragma multi_compile _ ETC1_EXTERNAL_ALPHA
 			#include "UnityCG.cginc"
@@ -58,13 +58,13 @@ Shader /*ase_name*/"Hidden/Templates/Legacy/Sprites Default"/*end*/
 				UNITY_VERTEX_OUTPUT_STEREO
 				/*ase_interp(1,):sp=sp.xyzw;uv0=tc0.xy;c=c*/
 			};
-			
+
 			uniform fixed4 _Color;
 			uniform float _EnableExternalAlpha;
 			uniform sampler2D _MainTex;
 			uniform sampler2D _AlphaTex;
 			/*ase_globals*/
-			
+
 			v2f vert( appdata_t IN /*ase_vert_input*/ )
 			{
 				v2f OUT;
@@ -72,8 +72,8 @@ Shader /*ase_name*/"Hidden/Templates/Legacy/Sprites Default"/*end*/
 				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(OUT);
 				UNITY_TRANSFER_INSTANCE_ID(IN, OUT);
 				/*ase_vert_code:IN=appdata_t;OUT=v2f*/
-				
-				IN.vertex.xyz += /*ase_vert_out:Offset;Float3*/ float3(0,0,0) /*end*/; 
+
+				IN.vertex.xyz += /*ase_vert_out:Offset;Float3*/ float3(0,0,0) /*end*/;
 				OUT.vertex = UnityObjectToClipPos(IN.vertex);
 				OUT.texcoord = IN.texcoord;
 				OUT.color = IN.color * _Color;
@@ -96,7 +96,7 @@ Shader /*ase_name*/"Hidden/Templates/Legacy/Sprites Default"/*end*/
 
 				return color;
 			}
-			
+
 			fixed4 frag(v2f IN /*ase_frag_input*/ ) : SV_Target
 			{
 				UNITY_SETUP_INSTANCE_ID( IN );
@@ -110,5 +110,5 @@ Shader /*ase_name*/"Hidden/Templates/Legacy/Sprites Default"/*end*/
 		ENDCG
 		}
 	}
-	CustomEditor "ASEMaterialInspector"
+	CustomEditor "AmplifyShaderEditor.MaterialInspector"
 }

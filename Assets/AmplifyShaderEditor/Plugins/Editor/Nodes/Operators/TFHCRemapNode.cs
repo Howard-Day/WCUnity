@@ -66,7 +66,7 @@ namespace AmplifyShaderEditor
 			string oldMax = m_inputPorts[ 2 ].GenerateShaderForOutput( ref dataCollector, m_inputPorts[ 0 ].DataType, ignoreLocalvar, true );
 			string newMin = m_inputPorts[ 3 ].GenerateShaderForOutput( ref dataCollector, m_inputPorts[ 0 ].DataType, ignoreLocalvar, true );
 			string newMax = m_inputPorts[ 4 ].GenerateShaderForOutput( ref dataCollector, m_inputPorts[ 0 ].DataType, ignoreLocalvar, true );
-			string strout = "(" + newMin + " + (" + value + " - " + oldMin + ") * (" + newMax + " - " + newMin + ") / (" + oldMax + " - " + oldMin + "))";
+			string strout = " (" + newMin + " + ( " + value + " - " + oldMin + " ) * ( " + newMax + " - " + newMin + " ) / ( " + oldMax + " - " + oldMin + " ) )";
 
 			return CreateOutputLocalVariable( 0, strout, ref dataCollector );
 		}

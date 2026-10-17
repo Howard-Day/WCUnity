@@ -105,7 +105,7 @@ namespace AmplifyShaderEditor
 		private const string WidthPropertyNameInstanced = "UNITY_ACCESS_INSTANCED_PROP(_ASEOutlineWidth)";
 
 
-		
+
 		private const string ColorPropertyDec = "_ASEOutlineColor( \"Outline Color\", Color ) = ({0})";
 		private const string OutlinePropertyDec = "_ASEOutlineWidth( \"Outline Width\", Float ) = {0}";
 
@@ -136,6 +136,7 @@ namespace AmplifyShaderEditor
 		private CullMode m_cullMode = CullMode.Front;
 		private int m_zTestMode = 0;
 		private int m_zWriteMode = 0;
+		private int m_zClipMode = 0;
 		private bool m_dirtyInput = false;
 		private string m_inputs = string.Empty;
 		private List<PropertyDataCollector> m_inputList = new List<PropertyDataCollector>();
@@ -163,7 +164,7 @@ namespace AmplifyShaderEditor
 			GUI.color = new Color( cachedColor.r, cachedColor.g, cachedColor.b, 0.5f );
 			EditorGUILayout.BeginHorizontal( toolbarstyle );
 			GUI.color = cachedColor;
-			owner.ContainerGraph.ParentWindow.InnerWindowVariables.OutlineActiveMode = owner.GUILayoutToggle( owner.ContainerGraph.ParentWindow.InnerWindowVariables.OutlineActiveMode , EditorVariablesManager.OutlineActiveMode.LabelName, UIUtils.MenuItemToggleStyle, GUILayout.ExpandWidth( true ) );
+			owner.ContainerGraph.ParentWindow.InnerWindowVariables.OutlineActiveMode = NodeUtils.FoldoutToggle( owner.ContainerGraph.ParentWindow.InnerWindowVariables.OutlineActiveMode, EditorVariablesManager.OutlineActiveMode.LabelName, GUILayout.ExpandWidth( true ) );
 			EditorGUI.BeginChangeCheck();
 			m_enabled = owner.EditorGUILayoutToggle( string.Empty, m_enabled, UIUtils.MenuItemEnableStyle, GUILayout.Width( 16 ) );
 			if( EditorGUI.EndChangeCheck() )
@@ -291,20 +292,27 @@ namespace AmplifyShaderEditor
 			}
 
 		}
-		public string[] OutlineFunctionBody( ref MasterNodeDataCollector dataCollector, bool instanced, bool isShadowCaster, string shaderName, string[] billboardInfo, ref TessellationOpHelper tessOpHelper, string target, PrecisionType precision )
+		public string[] OutlineFunctionBody( ref MasterNodeDataCollector dataCollector, bool instanced, bool isShadowCaster, string shaderName, string[] billboardInfo, ref TessellationOpHelper tessOpHelper, string target, PrecisionType precision, StencilBufferOpHelper stencilBufferHelper, UndoParentNode nodeObject )
 		{
 			List<string> body = new List<string>();
 			body.Add( ModeTags[ dataCollector.CustomOutlineSelectedAlpha ] );
 			if( !string.IsNullOrEmpty( m_grabPasses ))
-				body.Add( m_grabPasses.Replace( "\t\t",string.Empty ));	
+				body.Add( m_grabPasses.Replace( "\t\t",string.Empty ));
 
 			if( m_zWriteMode != 0 )
 				body.Add( "ZWrite " + ZBufferOpHelper.ZWriteModeValues[ m_zWriteMode ] );
+			if( m_zClipMode != 0 )
+				body.Add( "ZClip " + ZBufferOpHelper.ZClipModeValues[ m_zClipMode ] );
 			if( m_zTestMode != 0 )
 				body.Add( "ZTest " + ZBufferOpHelper.ZTestModeValues[ m_zTestMode ] );
 
 			body.Add( "Cull " + m_cullMode );
-			
+
+			if( stencilBufferHelper.Active )
+			{
+				body.Add(stencilBufferHelper.CreateStencilOp(nodeObject));
+			}
+
 			//Color Mask
 			{
 				int count = 0;
@@ -414,7 +422,7 @@ namespace AmplifyShaderEditor
 				//{
 				//	body.Add( OutlineBodyInstancedEnd[ i ] );
 				//}
-				
+
 				//Instanced block name must differ from used on main shader so it won't throw a duplicate name error
 				shaderName = shaderName+ "Outline";
 				bool openCBuffer = true;
@@ -627,8 +635,10 @@ namespace AmplifyShaderEditor
 
 		public bool UsingCullMode { get { return m_cullMode != CullMode.Front; } }
 		public bool UsingZWrite { get { return m_zWriteMode != 0; } }
+		public bool UsingZClip { get { return m_zClipMode != 0; } }
 		public bool UsingZTest { get { return m_zTestMode != 0; } }
 		public int ZWriteMode { get { return m_zWriteMode; } set { m_zWriteMode = value; } }
+		public int ZClipMode { get { return m_zClipMode; } set { m_zClipMode = value; } }
 		public int ZTestMode { get { return m_zTestMode; } set { m_zTestMode = value; } }
 		public CullMode OutlineCullMode { get { return m_cullMode; } set { m_cullMode = value; } }
 		public bool[] ColorMask
@@ -681,3 +691,4 @@ namespace AmplifyShaderEditor
 		public bool CustomNoFog { get { return m_customNoFog; } set { m_customNoFog = value; } }
 	}
 }
+

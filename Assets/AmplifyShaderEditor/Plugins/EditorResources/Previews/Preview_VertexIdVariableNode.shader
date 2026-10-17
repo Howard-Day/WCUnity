@@ -6,6 +6,7 @@ Shader "Hidden/VertexIdVariableNode"
 		{
 			CGPROGRAM
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#pragma vertex vert
 			#pragma fragment frag
 

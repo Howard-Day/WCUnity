@@ -13,6 +13,7 @@ Shader "Hidden/ClipPlanes"
 			#pragma vertex vert_img
 			#pragma fragment frag
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 
 			int _PlaneId;
 			float4 frag( v2f_img i ) : SV_Target

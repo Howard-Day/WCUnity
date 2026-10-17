@@ -16,7 +16,7 @@ namespace AmplifyShaderEditor
 		private const string IntNameStr = "Int ";
 		private const string FloatNameStr = "Float ";
 		private const string ColorNameStr = "Color ";
-		
+
 		[SerializeField]
 		private int[] m_availableUVChannelsArray = { -1, -1, -1, -1 };
 		private string[] m_availableUVChannelsNamesArray = { "null",
@@ -27,6 +27,9 @@ namespace AmplifyShaderEditor
 		private Dictionary<string, int> m_availablePropertyNames = new Dictionary<string, int>();
 		private Dictionary<string, int> m_availableUniformNames = new Dictionary<string, int>();
 		private Dictionary<string, int> m_availableLocalVariableNames = new Dictionary<string, int>();
+
+		// Read access to the registered uniform names (name => owner node id); used for inspection panels
+		public Dictionary<string, int> AvailableUniformNames { get { return m_availableUniformNames; } }
 
 		public void ReleaseAllUVChannels()
 		{
@@ -175,7 +178,7 @@ namespace AmplifyShaderEditor
 					return true;
 				}
 			}
-			
+
 			m_availableUniformNames.Add( name, nodeId );
 			return true;
 		}
@@ -241,7 +244,7 @@ namespace AmplifyShaderEditor
 			m_availableLocalVariableNames.Clear();
 		}
 
-		public void GetFirstAvailableName( int nodeId, WirePortDataType type , out string outProperty , out string outInspector, bool useCustomPrefix = false, string customPrefix = null)
+		private string ResolveDefaultBaseName( WirePortDataType type, bool useCustomPrefix, string customPrefix )
 		{
 			string name = string.Empty;
 			if ( useCustomPrefix && customPrefix != null )
@@ -270,6 +273,7 @@ namespace AmplifyShaderEditor
 						name = VectorNameStr;
 					}
 					break;
+					case WirePortDataType.FLOAT2x2:
 					case WirePortDataType.FLOAT3x3:
 					case WirePortDataType.FLOAT4x4:
 					{
@@ -283,6 +287,22 @@ namespace AmplifyShaderEditor
 					break;
 				}
 			}
+			return name;
+		}
+
+		// Read-only counterpart to GetFirstAvailableName: returns the plain default pair (count 0)
+		// without scanning for uniqueness or registering. Used by nodes that don't reserve a uniform
+		// slot (e.g. constants), so two of them may legitimately share the same default name.
+		public void GetDefaultName( WirePortDataType type, out string outProperty, out string outInspector, bool useCustomPrefix = false, string customPrefix = null )
+		{
+			string name = ResolveDefaultBaseName( type, useCustomPrefix, customPrefix );
+			outInspector = name + 0;
+			outProperty = UIUtils.GeneratePropertyName( outInspector, PropertyType.Property );
+		}
+
+		public void GetFirstAvailableName( int nodeId, WirePortDataType type , out string outProperty , out string outInspector, bool useCustomPrefix = false, string customPrefix = null)
+		{
+			string name = ResolveDefaultBaseName( type, useCustomPrefix, customPrefix );
 
 			int count = 0;
 			bool foundName = false;
@@ -290,7 +310,7 @@ namespace AmplifyShaderEditor
 			{
 				string inspectorName = name + count;
 				string propertyName =  UIUtils.GeneratePropertyName( inspectorName , PropertyType.Property );
-				
+
 				if ( IsUniformNameAvailable( propertyName ) )
 				{
 					outInspector = inspectorName;

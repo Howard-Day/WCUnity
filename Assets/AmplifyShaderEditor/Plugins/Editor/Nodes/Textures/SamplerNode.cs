@@ -4,6 +4,7 @@
 using UnityEngine;
 using UnityEditor;
 using System;
+using System.Collections.Generic;
 
 namespace AmplifyShaderEditor
 {
@@ -44,7 +45,7 @@ namespace AmplifyShaderEditor
 		private float InstanceIconWidth = 19;
 		private float InstanceIconHeight = 19;
 
-		private readonly Color ReferenceHeaderColor = new Color( 2.66f, 1.02f, 0.6f, 1.0f );
+		private readonly Color ReferenceHeaderColor = new Color( 0f, 0.5f, 0.585f, 1.0f );
 
 		public readonly static int[] AvailableAutoCast = { 0, 1, 2, 3, 4 };
 		public readonly static string[] AvailableAutoCastStr = { "Auto", "Locked To Texture 1D", "Locked To Texture 2D", "Locked To Texture 3D", "Locked To Cube" };
@@ -118,11 +119,6 @@ namespace AmplifyShaderEditor
 		protected override void CommonInit( int uniqueId )
 		{
 			base.CommonInit( uniqueId );
-			if( m_useSamplerArrayIdx < 0 )
-			{
-				m_useSamplerArrayIdx = 0;
-			}
-
 			m_defaultTextureValue = TexturePropertyValues.white;
 			AddInputPort( WirePortDataType.SAMPLER2D, false, "Tex" );
 			m_inputPorts[ 0 ].CreatePortRestrictions( WirePortDataType.SAMPLER1D, WirePortDataType.SAMPLER2D, WirePortDataType.SAMPLER3D, WirePortDataType.SAMPLERCUBE, WirePortDataType.SAMPLER2DARRAY, WirePortDataType.OBJECT );
@@ -205,10 +201,12 @@ namespace AmplifyShaderEditor
 				m_typeId = Shader.PropertyToID( "_Type" );
 
 			bool usingTexture = false;
-			if( m_texPort.IsConnected )
+
+			// @diogo: we can't use the preview texture, in this case, because output preview RenderTextures have no mips
+			if( m_texPort.IsConnected && TextureProperty != null && TextureProperty.Value == null )
 			{
 				usingTexture = true;
-				SetPreviewTexture( m_texPort.InputPreviewTexture( ContainerGraph ) );
+				SetPreviewTexture( m_texPort.InputPreviewTexture2D( ContainerGraph, ASEPreviewSlices.ReferenceScratchIndex ) );
 			}
 			else if( SoftValidReference && m_referenceSampler.TextureProperty != null )
 			{
@@ -220,7 +218,14 @@ namespace AmplifyShaderEditor
 				else
 				{
 					usingTexture = true;
-					SetPreviewTexture( m_referenceSampler.PreviewTexture );
+					// @diogo: reference read bypasses InputPorts; the referenced sampler may be pooled and RT-less,
+					// so pull it and, when we are live, mark it so it settles as a persistent frontier RT (QA #5c).
+					m_referenceSampler.EnsurePreviewRendered();
+					if( PreviewLive )
+					{
+						m_referenceSampler.MarkFeedsLiveConsumer();
+					}
+					SetPreviewTexture( m_referenceSampler.PreviewTexture2D( ASEPreviewSlices.ReferenceScratchIndex ) );
 				}
 			}
 			else if( TextureProperty != null )
@@ -255,10 +260,21 @@ namespace AmplifyShaderEditor
 				UIUtils.RegisterSamplerNode( this );
 				UIUtils.RegisterPropertyNode( this );
 			}
+			else
+			{
+				// @diogo: a reference borrows the source's property, so undo the base's unconditional
+				// registrations; paste reassigns the id after ReadFromString, making this the last gate to run
+				UIUtils.UnregisterPropertyNode( this );
+				UIUtils.UnregisterTexturePropertyNode( this );
+			}
 			m_textureProperty = this;
 
-			if( UniqueId > -1 )
+			if ( UniqueId > -1 )
+			{
+				// @diogo: paste assigns the id twice, so this runs twice while Destroy unsubscribes once
+				ContainerGraph.SamplerNodes.OnReorderEventComplete -= OnReorderEventComplete;
 				ContainerGraph.SamplerNodes.OnReorderEventComplete += OnReorderEventComplete;
+			}
 		}
 
 		private void OnReorderEventComplete()
@@ -342,6 +358,16 @@ namespace AmplifyShaderEditor
 					ConfigTextureData( m_currentType );
 					ConfigureInputPorts();
 					ConfigureOutputPorts();
+				}
+			}
+
+			if ( !ContainerGraph.IsSRP )
+			{
+				// @diogo: only BiRP for now
+				m_assignKeyword = EditorGUILayoutToggle( "Assign Keyword", m_assignKeyword );
+				if ( m_assignKeyword )
+				{
+					EditorGUILayout.HelpBox( string.Format( AssignKeywordInfoStr, PropertyName.ToUpper() ), MessageType.Info );
 				}
 			}
 		}
@@ -573,8 +599,43 @@ namespace AmplifyShaderEditor
 			m_headerColorModifier = ( m_referenceType == TexReferenceType.Object ) ? Color.white : ReferenceHeaderColor;
 		}
 
+		public override bool CanBeReferenced { get { return true; } }
+
+		protected override bool IsTitleEditable { get { return m_referenceType == TexReferenceType.Object; } }
+
+		public override void SetReferenceTo( PropertyNode reference )
+		{
+			SetToReference( reference as SamplerNode );
+		}
+
+		public void SetToReference( SamplerNode reference )
+		{
+			if( reference == null || reference == this )
+				return;
+
+			if( m_referenceType == TexReferenceType.Object )
+			{
+				UIUtils.UnregisterSamplerNode( this );
+				UIUtils.UnregisterPropertyNode( this );
+				if( !m_texPort.IsConnected )
+					UIUtils.UnregisterTexturePropertyNode( this );
+			}
+
+			m_referenceType = TexReferenceType.Instance;
+			m_referenceSampler = reference;
+			m_referenceNodeId = reference.UniqueId;
+			m_referenceArrayId = ContainerGraph.SamplerNodes.GetNodeRegisterIdx( reference.UniqueId );
+			UpdateHeaderColor();
+		}
+
 		void ShowSamplerUI()
 		{
+			// @diogo: undo can restore a register snapshot still listing this Instance node; realign so it can't offer itself
+			if ( m_referenceType == TexReferenceType.Instance && ContainerGraph.TexturePropertyNodes.GetNodeRegisterIdx( UniqueId ) > -1 )
+			{
+				ContainerGraph.TexturePropertyNodes.RemoveNode( this );
+			}
+
 			EditorGUI.BeginDisabledGroup( m_samplerPort.IsConnected );
 			string[] contents = UIUtils.TexturePropertyNodeArr();
 			string[] arr = new string[ contents.Length + 1 ];
@@ -583,7 +644,28 @@ namespace AmplifyShaderEditor
 			{
 				arr[ i ] = contents[ i - 1 ];
 			}
-			m_useSamplerArrayIdx = EditorGUILayoutPopup( "Reference Sampler", m_useSamplerArrayIdx, arr );
+			// @diogo: the id is authoritative; the register index is derived per-draw so re-sorts can't retarget it
+			int samplerIdx = UIUtils.GetTexturePropertyNodeRegisterId( m_useSamplerNodeId ) + 1;
+			// @diogo: selection is async, so snapshot the candidate ids the labels were built from
+			int[] candidateIds = new int[ contents.Length ];
+			for ( int i = 0; i < contents.Length; i++ )
+			{
+				TexturePropertyNode candidate = UIUtils.GetTexturePropertyNode( i );
+				candidateIds[ i ] = ( candidate != null ) ? candidate.UniqueId : -1;
+			}
+			arr = UIUtils.DisambiguateReferenceLabels( arr, ContainerGraph.TexturePropertyNodes.NodesList, 1 );
+			EditorGUILayout.BeginHorizontal();
+			SearchableDropdown.Draw( "Sampler State", samplerIdx, arr, ( idx ) =>
+			{
+				if ( idx != samplerIdx )
+				{
+					UndoRecordObject( "Selected sampler state source" );
+					m_useSamplerNodeId = ( idx > 0 && idx - 1 < candidateIds.Length ) ? candidateIds[ idx - 1 ] : -1;
+					SetDirtyFromAsyncEdit();
+				}
+			} );
+			UIUtils.DrawReferenceFocusButton( UIUtils.GetNode( m_useSamplerNodeId ) );
+			EditorGUILayout.EndHorizontal();
 			EditorGUI.EndDisabledGroup();
 		}
 
@@ -621,9 +703,32 @@ namespace AmplifyShaderEditor
 			{
 				m_normalPort.FloatInternalData = EditorGUILayoutFloatField( NormalScaleStr, m_normalPort.FloatInternalData );
 			}
-
 			if( EditorGUI.EndChangeCheck() )
 			{
+				if ( m_autoUnpackNormals )
+				{
+					TexturePropertyNode textureNode = null;
+					if ( SoftValidReference )
+					{
+						if ( m_referenceSampler.TexPort.IsConnected )
+						{
+							textureNode = m_referenceSampler.TexPort.GetOutputNodeWhichIsNotRelay( 0 ) as TexturePropertyNode;
+						}
+						else
+						{
+							textureNode = m_referenceSampler;
+						}
+					}
+					else if ( m_texPort.IsConnected )
+					{
+						textureNode = m_texPort.GetOutputNodeWhichIsNotRelay( 0 ) as TexturePropertyNode;
+					}
+
+					textureNode = ( textureNode == null ) ? this : textureNode;
+					textureNode.DefaultTextureValue = TexturePropertyValues.bump;
+					textureNode.SetAttribute( "Normal", true );
+
+				}
 				ConfigureInputPorts();
 				ConfigureOutputPorts();
 				//ResizeNodeToPreview();
@@ -662,9 +767,13 @@ namespace AmplifyShaderEditor
 					UIUtils.UnregisterPropertyNode( this );
 					if( !m_texPort.IsConnected )
 						UIUtils.UnregisterTexturePropertyNode( this );
+					// @diogo: reset the compare cache so the Instance-mode subtitle callback re-fires after a mode round-trip
+					m_previousAdditonalTitle = string.Empty;
 				}
 				UpdateHeaderColor();
 			}
+
+			UIUtils.DrawSeparator();
 
 			if( m_referenceType == TexReferenceType.Object )
 			{
@@ -699,21 +808,34 @@ namespace AmplifyShaderEditor
 					GUI.enabled = false;
 				}
 
-				EditorGUI.BeginChangeCheck();
-				m_referenceArrayId = EditorGUILayoutPopup( Constants.AvailableReferenceStr, m_referenceArrayId, arr );
-				if( EditorGUI.EndChangeCheck() )
+				arr = UIUtils.DisambiguateReferenceLabels( arr, ContainerGraph.SamplerNodes.NodesList, 0 );
+				EditorGUILayout.BeginHorizontal();
+				SearchableDropdown.Draw( Constants.AvailableReferenceStr, m_referenceArrayId, arr, ( idx ) =>
 				{
-					m_referenceSampler = ContainerGraph.SamplerNodes.GetNode( m_referenceArrayId );
-					if( m_referenceSampler != null )
+					if( idx != m_referenceArrayId )
 					{
-						m_referenceNodeId = m_referenceSampler.UniqueId;
+						UndoRecordObject( "Selected texture sampler reference" );
+						m_referenceArrayId = idx;
+						m_referenceSampler = ContainerGraph.SamplerNodes.GetNode( m_referenceArrayId );
+						if( m_referenceSampler != null )
+						{
+							m_referenceNodeId = m_referenceSampler.UniqueId;
+							// @diogo: the assigned reference supersedes the Tex input, so drop its wire for good
+							if ( m_texPort.IsConnected )
+							{
+								m_texPort.ForceClearConnection();
+							}
+						}
+						else
+						{
+							m_referenceArrayId = -1;
+							m_referenceNodeId = -1;
+						}
+						SetDirtyFromAsyncEdit();
 					}
-					else
-					{
-						m_referenceArrayId = -1;
-						m_referenceNodeId = -1;
-					}
-				}
+				} );
+				UIUtils.DrawReferenceFocusButton( m_referenceSampler );
+				EditorGUILayout.EndHorizontal();
 				GUI.enabled = guiEnabledBuffer;
 
 				DrawSamplerOptions();
@@ -760,11 +882,56 @@ namespace AmplifyShaderEditor
 
 			if( m_previewTextProp == null )
 				m_previewTextProp = this;
+
+			// @diogo: the left slot belongs to the reference icon, so the property-type picker hides in reference mode
+			m_hasLeftDropdown = ( m_state != ReferenceState.Instance );
+			if ( m_state == ReferenceState.Instance )
+			{
+				DropdownEditing = false;
+			}
+
+			CheckSamplerSourceUsable();
 		}
 
-		public override void OnNodeLayout( DrawInfo drawInfo )
+		// @diogo: warn in the node itself when the chosen sampler state won't reach the generated code,
+		// either because the macro path is off or because the borrow can't be honored
+		private void CheckSamplerSourceUsable()
 		{
-			base.OnNodeLayout( drawInfo );
+			TexturePropertyNode samplerDonor = null;
+			if ( m_samplerPort.IsConnected )
+			{
+				samplerDonor = m_samplerPort.GetOutputNodeWhichIsNotRelay() as TexturePropertyNode;
+			}
+			else if ( m_useSamplerNodeId > -1 )
+			{
+				samplerDonor = UIUtils.GetNode( m_useSamplerNodeId ) as TexturePropertyNode;
+			}
+
+			bool usesMacros = UIUtils.CurrentWindow.OutsideGraph.SamplingMacros || m_currentType == TextureType.Texture2DArray;
+			bool hasCustomSampler = m_samplerPort.IsConnected || m_useSamplerNodeId > -1;
+
+			// @diogo: an unused node generates no code, so its sampler choice has no consequence to warn about
+			if ( !IsEffectivelySampled( this ) )
+			{
+				HideTab();
+			}
+			else if ( !usesMacros && hasCustomSampler && ContainerGraph.CurrentShaderFunction == null )
+			{
+				ShowTab( NodeMessageType.Warning, SamplerStateNode.MessageCustomSamplerIgnored );
+			}
+			else if ( usesMacros && samplerDonor != null && !CanBorrowSampler( samplerDonor ) )
+			{
+				ShowTab( NodeMessageType.Warning, WithWarningPasses( string.Format( "Sampler State source {0} is not in use, so its sampler won't exist in the compiled shader. Falling back to this node's own sampler state.", samplerDonor.PropertyName ) ) );
+			}
+			else
+			{
+				HideTab();
+			}
+		}
+
+		public override void OnNodeLayout( DrawInfo drawInfo, NodeUpdateCache cache )
+		{
+			base.OnNodeLayout( drawInfo, cache );
 
 			if( m_drawPreview )
 			{
@@ -772,8 +939,16 @@ namespace AmplifyShaderEditor
 				m_iconPos.width = InstanceIconWidth * drawInfo.InvertedZoom;
 				m_iconPos.height = InstanceIconHeight * drawInfo.InvertedZoom;
 
-				m_iconPos.y += 10 * drawInfo.InvertedZoom;
-				m_iconPos.x += m_globalPosition.width - m_iconPos.width - 5 * drawInfo.InvertedZoom;
+				m_iconPos.y = m_globalPosition.y + m_headerPosition.height * 0.5f - m_iconPos.height * 0.5f;
+				// @diogo: references show the link icon on the left slot like the other reference nodes; inputs keep it right
+				if ( m_state == ReferenceState.Instance )
+				{
+					m_iconPos.x += 5 * drawInfo.InvertedZoom;
+				}
+				else
+				{
+					m_iconPos.x += m_globalPosition.width - m_iconPos.width - 5 * drawInfo.InvertedZoom;
+				}
 			}
 		}
 
@@ -802,6 +977,13 @@ namespace AmplifyShaderEditor
 					//	m_additionalContent.text = string.Concat( "Value( ", tempVal, " )" );
 					//}
 
+					// @diogo: an Instance sampler with no source picked still reads as a reference
+					if ( m_referenceType == TexReferenceType.Instance )
+					{
+						SetTitleText( m_nodeAttribs.Name );
+						SetAdditonalTitleTextOnCallback( Constants.NoStringValue, Constants.SubTitleRefNameFormatStr, ( instance, newSubTitle ) => instance.AdditonalTitleContent.text = string.Format( Constants.SubTitleRefNameFormatStr, newSubTitle ) );
+					}
+
 					m_drawPicker = true;
 				}
 				break;
@@ -829,12 +1011,12 @@ namespace AmplifyShaderEditor
 					//m_previousAdditionalText = m_previewTextProp.AdditonalTitleContent.text;
 					//SetAdditonalTitleText( m_previousAdditionalText );
 
-					SetTitleTextOnCallback( m_previewTextProp.PropertyInspectorName, ( instance, newTitle ) => instance.TitleContent.text = newTitle + Constants.InstancePostfixStr );
-					if( m_previewTextProp.AdditonalTitleContent.text != m_additionalContent.text )
+					SetTitleText( m_nodeAttribs.Name );
+					SetAdditonalTitleTextOnCallback( m_previewTextProp.PropertyName, Constants.SubTitleRefNameFormatStr, ( instance, newSubTitle ) =>
 					{
+						instance.AdditonalTitleContent.text = string.Format( Constants.SubTitleRefNameFormatStr, newSubTitle );
 						PreviewIsDirty = true;
-					}
-					SetAdditonalTitleText( m_previewTextProp.AdditonalTitleContent.text );
+					} );
 
 					// Draw chain lock
 					GUI.Label( m_iconPos, string.Empty, UIUtils.GetCustomStyle( CustomStyle.SamplerTextureIcon ) );
@@ -853,7 +1035,8 @@ namespace AmplifyShaderEditor
 				return;
 			}
 
-			if( m_referenceArrayId > -1 )
+			// @diogo: a valid node id must still enter the repair scan below even when the array index is lost
+			if ( m_referenceArrayId > -1 || m_referenceNodeId > -1 )
 			{
 				ParentNode newNode = ContainerGraph.SamplerNodes.GetNode( m_referenceArrayId );
 				if( newNode == null || newNode.UniqueId != m_referenceNodeId )
@@ -873,6 +1056,8 @@ namespace AmplifyShaderEditor
 				}
 				else
 				{
+					// @diogo: pointer isn't serialized; resolve it from the register so the deref below survives a domain reload
+					m_referenceSampler = newNode as SamplerNode;
 					m_texPort.DataType = m_referenceSampler.TexPort.DataType;
 					// Set current type
 					TextureType newTextureType = m_referenceSampler.CurrentType;
@@ -898,6 +1083,9 @@ namespace AmplifyShaderEditor
 			{
 				m_referenceNodeId = -1;
 				m_referenceArrayId = -1;
+				// @diogo: referenced node is gone; drop its leftover title/subtitle (repaint skips Self-state title updates)
+				SetTitleText( m_propertyInspectorName );
+				SetAdditonalTitleText( string.Format( Constants.PropertyValueLabel, GetPropertyValStr() ) );
 			}
 		}
 
@@ -940,8 +1128,15 @@ namespace AmplifyShaderEditor
 			newPos.width = previewSizeX * drawInfo.InvertedZoom;
 			newPos.height = previewSizeY * drawInfo.InvertedZoom;
 
-			SetTitleText( texProp.PropertyInspectorName + ( instance ? Constants.InstancePostfixStr : " (Input)" ) );
-			SetAdditonalTitleText( texProp.AdditonalTitleContent.text );
+			SetTitleText( instance ? m_nodeAttribs.Name : texProp.PropertyInspectorName + " (Input)" );
+			if ( instance )
+			{
+				SetAdditonalTitleTextOnCallback( texProp.PropertyName, Constants.SubTitleRefNameFormatStr, ( node, newSubTitle ) => node.AdditonalTitleContent.text = string.Format( Constants.SubTitleRefNameFormatStr, newSubTitle ) );
+			}
+			else
+			{
+				SetAdditonalTitleText( texProp.AdditonalTitleContent.text );
+			}
 
 			if( m_referenceStyle == null )
 			{
@@ -1063,22 +1258,120 @@ namespace AmplifyShaderEditor
 			return sampler;
 		}
 
+		// @diogo: on D3D11 a texture-coupled sampler only binds if its texture survives compilation, so the
+		// borrowed texture must itself be sampled somewhere in the shader; otherwise we fall back to our own
+		public static bool CanBorrowSampler( TexturePropertyNode donor )
+		{
+			// @diogo: fetch-mode donors are declared outside ASE, so usage analysis proves nothing; trust the borrow
+			if ( donor.CurrentVariableMode == VariableMode.Fetch )
+			{
+				return true;
+			}
+
+			if ( donor is SamplerNode sampler )
+			{
+				return IsEffectivelySampled( sampler );
+			}
+			return IsOutputSampled( donor.ContainerGraph, donor.OutputPorts[ 0 ] );
+		}
+
+		// @diogo: wire status is blind to Instance references — a source used only through a connected
+		// instance still gets its texture sampled in the compiled shader
+		private static bool IsEffectivelySampled( SamplerNode sampler )
+		{
+			if ( sampler.IsConnected )
+			{
+				return true;
+			}
+
+			List<ParentNode> nodes = sampler.ContainerGraph.AllNodes;
+			for ( int i = 0; i < nodes.Count; i++ )
+			{
+				if ( nodes[ i ] is SamplerNode instance && instance.m_referenceType == TexReferenceType.Instance &&
+					instance.m_referenceNodeId == sampler.UniqueId && instance.IsConnected )
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+
+		// @diogo: the port's node can sit outside the graph being generated — a shader function samples through
+		// its own inner graph — so consumer ids resolve against its container, not the ambient graph
+		public static bool IsOutputSampled( ParentGraph graph, OutputPort outPort )
+		{
+			for ( int i = 0; i < outPort.ExternalReferences.Count; i++ )
+			{
+				ParentNode consumer = graph.GetNode( outPort.ExternalReferences[ i ].NodeId );
+				if ( consumer is WireNode relay )
+				{
+					if ( IsOutputSampled( graph, relay.OutputPorts[ 0 ] ) )
+					{
+						return true;
+					}
+				}
+				else if ( consumer is SamplerNode consumerSampler )
+				{
+					if ( IsEffectivelySampled( consumerSampler ) )
+					{
+						return true;
+					}
+				}
+				else if ( consumer != null && consumer.IsConnected )
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+
+		// @diogo: a graph-wide borrow still breaks on passes and programs that don't sample the donor, so the
+		// pass gets to choose between the borrowed sampler and this node's own one (#7, #549)
+		private string RegisterBorrowedSampler( ref MasterNodeDataCollector dataCollector, TexturePropertyNode donor, string borrowedSampler, string propertyName, VariableMode varMode )
+		{
+			// @diogo: fetch-mode donors are sampled outside ASE, so pass code proves nothing; trust the borrow
+			if ( donor.CurrentVariableMode == VariableMode.Fetch )
+			{
+				return borrowedSampler;
+			}
+
+			string fallbackSampler = string.Format( Constants.SamplerFormat, propertyName );
+			bool declareFallback = varMode == VariableMode.Create;
+			string retargetedToken = dataCollector.RetargetBorrowedSampler( borrowedSampler, UniqueId, fallbackSampler, declareFallback );
+			if ( retargetedToken != null )
+			{
+				return retargetedToken;
+			}
+
+			// @diogo: a name with no sampler prefix to strip isn't a texture-coupled sampler to begin with
+			string donorProperty = GeneratorUtils.GetPropertyFromSamplerState( borrowedSampler );
+			if ( donorProperty.Equals( borrowedSampler ) )
+			{
+				return borrowedSampler;
+			}
+
+			return dataCollector.RegisterBorrowedSampler( UniqueId, donorProperty, borrowedSampler, fallbackSampler, declareFallback );
+		}
+
 		public string SampleTexture( ref MasterNodeDataCollector dataCollector, bool ignoreLocalVar, string portProperty, MipType currMipMode, string propertyName , VariableMode varMode )
 		{
 			string samplerValue = string.Empty;
-			string uvCoords = GetUVCoords( ref dataCollector, ignoreLocalVar, portProperty );
-			
+			string uvCoords = GetUVCoords( ref dataCollector, CurrentPrecisionType, ignoreLocalVar, portProperty );
+
 			bool isVertex = ( dataCollector.PortCategory == MasterNodePortCategory.Vertex || dataCollector.PortCategory == MasterNodePortCategory.Tessellation );
 
 			bool useMacros = false;
 
+			// @diogo: a template-declared legacy sampler can only be sampled through the texXD intrinsics (#241)
+			bool legacySampler = GeneratorUtils.IsLegacyTemplateSampler( SoftValidReference ? m_referenceSampler.TexPort : m_texPort );
+
 			ParentGraph outsideGraph = UIUtils.CurrentWindow.OutsideGraph;
-			if( outsideGraph.SamplingMacros || m_currentType == TextureType.Texture2DArray )
+			if( !legacySampler && ( outsideGraph.SamplingMacros || m_currentType == TextureType.Texture2DArray ) )
 			{
 				useMacros = Constants.TexSampleSRPMacros.ContainsKey( m_currentType );
 			}
-			
-			if( useMacros || m_currentType == TextureType.Texture2DArray )
+
+			if( !legacySampler && ( useMacros || m_currentType == TextureType.Texture2DArray ) )
 			{
 				string suffix = string.Empty;
 				switch( currMipMode )
@@ -1094,41 +1387,54 @@ namespace AmplifyShaderEditor
 					suffix = "_LOD";
 
 				string samplerToUse = string.Empty;
-				
-				if( !m_samplerPort.IsConnected && m_useSamplerArrayIdx > 0 )
+
+				if( !m_samplerPort.IsConnected && m_useSamplerNodeId > -1 )
 				{
-					TexturePropertyNode samplerNode = UIUtils.GetTexturePropertyNode( m_useSamplerArrayIdx - 1 );
+					TexturePropertyNode samplerNode = UIUtils.GetNode( m_useSamplerNodeId ) as TexturePropertyNode;
 					if( samplerNode != null )
 					{
-						if( samplerNode.IsConnected )
+						if( CanBorrowSampler( samplerNode ) )
 						{
 							string property = samplerNode.CurrentPropertyReference;
 							samplerToUse = GeneratorUtils.GenerateSamplerState( ref dataCollector, UniqueId, property, varMode );
+							samplerToUse = RegisterBorrowedSampler( ref dataCollector, samplerNode, samplerToUse, propertyName, varMode );
 						}
 						else
 						{
-							UIUtils.ShowMessage( UniqueId, string.Format( "{0} attempting to use sampler from unconnected {1} node. Reference Sampler nodes must be in use for their samplers to be created.", m_propertyName, samplerNode.PropertyName ), MessageSeverity.Warning );
-							dataCollector.AddToUniforms( UniqueId, string.Format( Constants.SamplerDeclarationSRPMacros[ m_currentType ], propertyName ) );
-							samplerToUse = propertyName;
+							dataCollector.ShowPassWarning( UniqueId, string.Format( "{0} attempting to use sampler from unused {1} node. Reference Sampler nodes must be in use for their samplers to be created.", m_propertyName, samplerNode.PropertyName ) );
+							samplerToUse = GeneratorUtils.GenerateSamplerState( ref dataCollector, UniqueId, propertyName, varMode );
 						}
 					}
 					else
 					{
-						UIUtils.ShowMessage( UniqueId, m_propertyName + " attempting to use sampler from invalid node.", MessageSeverity.Warning );
-						dataCollector.AddToUniforms( UniqueId, string.Format( Constants.SamplerDeclarationSRPMacros[ m_currentType ], propertyName ) );
-						samplerToUse = propertyName;
+						dataCollector.ShowPassWarning( UniqueId, m_propertyName + " attempting to use sampler from invalid node." );
+						samplerToUse = GeneratorUtils.GenerateSamplerState( ref dataCollector, UniqueId, propertyName, varMode );
 					}
 				}
 				else
 				{
-					string samplerState = m_samplerPort.GeneratePortInstructions( ref dataCollector );
-					if( m_samplerPort.IsConnected && !string.IsNullOrEmpty( samplerState ) && !samplerState.Equals( "0" ) )
+					// @diogo: guard the wire path like the dropdown one, and skip the donor's port codegen on fallback
+					TexturePropertyNode wireDonor = m_samplerPort.IsConnected ? m_samplerPort.GetOutputNodeWhichIsNotRelay() as TexturePropertyNode : null;
+					if( wireDonor != null && !CanBorrowSampler( wireDonor ) )
 					{
-						samplerToUse = samplerState;
+						dataCollector.ShowPassWarning( UniqueId, string.Format( "{0} attempting to use sampler from unused {1} node. Reference Sampler nodes must be in use for their samplers to be created.", m_propertyName, wireDonor.PropertyName ) );
+						samplerToUse = GeneratorUtils.GenerateSamplerState( ref dataCollector, UniqueId, propertyName, varMode );
 					}
 					else
 					{
-						samplerToUse = GeneratorUtils.GenerateSamplerState( ref dataCollector, UniqueId, propertyName , varMode );
+						string samplerState = m_samplerPort.GeneratePortInstructions( ref dataCollector );
+						if( m_samplerPort.IsConnected && !string.IsNullOrEmpty( samplerState ) && !samplerState.Equals( "0" ) )
+						{
+							samplerToUse = samplerState;
+							if ( wireDonor != null )
+							{
+								samplerToUse = RegisterBorrowedSampler( ref dataCollector, wireDonor, samplerState, propertyName, varMode );
+							}
+						}
+						else
+						{
+							samplerToUse = GeneratorUtils.GenerateSamplerState( ref dataCollector, UniqueId, propertyName , varMode );
+						}
 					}
 				}
 
@@ -1146,6 +1452,11 @@ namespace AmplifyShaderEditor
 			}
 			else
 			{
+				if ( m_samplerPort.IsConnected || m_useSamplerNodeId > -1 )
+				{
+					dataCollector.ShowPassWarning( UniqueId, SamplerStateNode.MessageCustomSamplerIgnored );
+				}
+
 				string mipType = "";
 				if( dataCollector.PortCategory == MasterNodePortCategory.Vertex || dataCollector.PortCategory == MasterNodePortCategory.Tessellation )
 				{
@@ -1166,6 +1477,12 @@ namespace AmplifyShaderEditor
 					break;
 				}
 				samplerValue = m_samplerType + mipType + "( " + propertyName + ", " + uvCoords + " )";
+			}
+
+			// @diogo: both emission paths keep implicit derivatives unless the vertex/LOD suffix took over
+			if ( !isVertex && RequiresImplicitDerivatives( currMipMode ) )
+			{
+				dataCollector.NotifyDivergenceHazard( UniqueId );
 			}
 
 			return samplerValue;
@@ -1251,6 +1568,12 @@ namespace AmplifyShaderEditor
 						else
 						{
 							lodBias = "Lod";
+						}
+
+						// @diogo: the virtual texture sampler has no gradient form, so only an explicit mip level is safe (#365)
+						if ( dataCollector.IsFragmentCategory && m_mipMode != MipType.MipLevel )
+						{
+							dataCollector.NotifyDivergenceHazard( UniqueId );
 						}
 
 						int virtualCoordId = dataCollector.GetVirtualCoordinatesId( UniqueId, GetVirtualUVCoords( ref dataCollector, ignoreLocalVar, portProperty ), lodBias );
@@ -1346,7 +1669,7 @@ namespace AmplifyShaderEditor
 				if( m_outputPorts[ i ].IsConnected )
 				{
 					connectedPorts += 1;
-					if( connectedPorts > 1 || m_outputPorts[ i ].ConnectionCount > 1 )
+					if( connectedPorts > 1 || ActiveConnectionCount( m_outputPorts[ i ] ) > 1 || dataCollector.RequiresHazardDeclaration( this ) )
 					{
 						// Create common local var and mark as fetched
 						string textureFetchedValue = m_samplerType + "Node" + OutputId;
@@ -1369,7 +1692,7 @@ namespace AmplifyShaderEditor
 			return samplerOp;
 		}
 
-		public string GetUVCoords( ref MasterNodeDataCollector dataCollector, bool ignoreLocalVar, string portProperty )
+		public string GetUVCoords( ref MasterNodeDataCollector dataCollector, PrecisionType precisionType, bool ignoreLocalVar, string portProperty )
 		{
 			bool isVertex = ( dataCollector.PortCategory == MasterNodePortCategory.Vertex || dataCollector.PortCategory == MasterNodePortCategory.Tessellation );
 
@@ -1400,7 +1723,7 @@ namespace AmplifyShaderEditor
 
 				int coordSet = ( ( m_textureCoordSet < 0 ) ? 0 : m_textureCoordSet );
 				string uvName = IOUtils.GetUVChannelName( propertyName, coordSet );
-				string dummyPropUV = "_tex" /*+ ( coordSize != 2 ? "" + coordSize : "" )*/ + "coord" + ( coordSet > 0 ? ( coordSet + 1 ).ToString() : "" );
+				string dummyPropUV = "_texcoord" + ( coordSet > 0 ? ( coordSet + 1 ).ToString() : "" );
 				string dummyUV = "uv" + ( coordSet > 0 ? ( coordSet + 1 ).ToString() : "" ) + dummyPropUV;
 
 				string attr = GetPropertyValue();
@@ -1417,17 +1740,12 @@ namespace AmplifyShaderEditor
 						m_texCoordsHelper.ContainerGraph = ContainerGraph;
 						m_texCoordsHelper.SetBaseUniqueId( UniqueId, true );
 						m_texCoordsHelper.RegisterPropertyOnInstancing = false;
-						m_texCoordsHelper.AddGlobalToSRPBatcher = true;
 					}
 
-					if( UIUtils.CurrentWindow.OutsideGraph.IsInstancedShader )
-					{
-						m_texCoordsHelper.CurrentParameterType = PropertyType.InstancedProperty;
-					}
-					else
-					{
-						m_texCoordsHelper.CurrentParameterType = PropertyType.Global;
-					}
+					m_texCoordsHelper.AddGlobalToSRPBatcher = ( TextureProperty.CurrentParameterType != PropertyType.Global );
+					m_texCoordsHelper.CurrentParameterType = PropertyType.Global;
+					m_texCoordsHelper.SetRawVariableMode( VarModeReference );
+
 					m_texCoordsHelper.ResetOutputLocals();
 					m_texCoordsHelper.SetRawPropertyName( propertyName + "_ST" );
 					texCoordsST = m_texCoordsHelper.GenerateShaderForOutput( 0, ref dataCollector, false );
@@ -1440,7 +1758,6 @@ namespace AmplifyShaderEditor
 				}
 				else
 				{
-					dataCollector.AddToProperties( UniqueId, "[HideInInspector] " + dummyPropUV + "( \"\", 2D ) = \"white\" {}", 9999 );
 					if( isVertex )
 					{
 						coordInput = Constants.VertexShaderInputStr + ".texcoord";
@@ -1457,7 +1774,7 @@ namespace AmplifyShaderEditor
 				if( dataCollector.MasterNodeCategory == AvailableShaderTypes.Template )
 				{
 					string result = string.Empty;
-					if( dataCollector.TemplateDataCollectorInstance.GetCustomInterpolatedData( TemplateHelperFunctions.IntToUVChannelInfo[ m_textureCoordSet ], m_uvPort.DataType, PrecisionType.Float, ref result, false, dataCollector.PortCategory ) )
+					if( dataCollector.TemplateDataCollectorInstance.GetCustomInterpolatedData( TemplateHelperFunctions.IntToUVChannelInfo[ m_textureCoordSet ], m_uvPort.DataType, precisionType, ref result, false, dataCollector.PortCategory ) )
 					{
 						coordInput = result;
 					}
@@ -1466,6 +1783,10 @@ namespace AmplifyShaderEditor
 						coordInput = dataCollector.TemplateDataCollectorInstance.GetUVName( m_textureCoordSet, m_uvPort.DataType );
 					else
 						coordInput = dataCollector.TemplateDataCollectorInstance.RegisterUV( m_textureCoordSet, m_uvPort.DataType );
+				}
+				else
+				{
+					dataCollector.AddToProperties( UniqueId, "[HideInInspector] " + dummyPropUV + "( \"\", 2D ) = \"white\" {}", 9999 );
 				}
 
 				if( !scaleOffset )
@@ -1490,10 +1811,10 @@ namespace AmplifyShaderEditor
 					if( scaleOffset )
 					{
 						string scaleOffsetValue = GeneratorUtils.GenerateScaleOffsettedUV( m_currentType , coordInput , texCoordsST, false );
-						dataCollector.AddLocalVariable( UniqueId , PrecisionType.Float , m_uvPort.DataType , uvName , scaleOffsetValue );
+						dataCollector.AddLocalVariable( UniqueId , precisionType, m_uvPort.DataType , uvName , scaleOffsetValue );
 					}
 					else
-						dataCollector.AddLocalVariable( UniqueId , PrecisionType.Float , m_uvPort.DataType , uvName , coordInput );
+						dataCollector.AddLocalVariable( UniqueId , precisionType, m_uvPort.DataType , uvName , coordInput );
 				}
 
 				uvs = uvName;
@@ -1518,7 +1839,7 @@ namespace AmplifyShaderEditor
 				if( ( outsideGraph.SamplingMacros || m_currentType == TextureType.Texture2DArray ) && m_currentType != TextureType.Texture1D )
 					return uvs + ", " + lodLevel;
 				else
-					return UIUtils.PrecisionWirePortToCgType( PrecisionType.Float, WirePortDataType.FLOAT4 ) + "( " + uvs + uvAppendix + lodLevel + ")";
+					return UIUtils.PrecisionWirePortToCgType( precisionType, WirePortDataType.FLOAT4 ) + "( " + uvs + uvAppendix + lodLevel + ")";
 			}
 			else
 			{
@@ -1528,7 +1849,7 @@ namespace AmplifyShaderEditor
 					if( ( outsideGraph.SamplingMacros || m_currentType == TextureType.Texture2DArray ) && m_currentType != TextureType.Texture1D )
 						return uvs + ", " + lodLevel;
 					else
-						return UIUtils.PrecisionWirePortToCgType( PrecisionType.Float, WirePortDataType.FLOAT4 ) + "( " + uvs + uvAppendix + lodLevel + ")";
+						return UIUtils.PrecisionWirePortToCgType( precisionType, WirePortDataType.FLOAT4 ) + "( " + uvs + uvAppendix + lodLevel + ")";
 				}
 				else if( m_mipMode == MipType.Derivative )
 				{
@@ -1589,7 +1910,10 @@ namespace AmplifyShaderEditor
 					}
 					else
 					{
-						dataCollector.AddToUniforms( UniqueId, "uniform float4 " + propertyName + "_ST;" );
+						if ( VarModeReference == VariableMode.Create )
+						{
+							dataCollector.AddToUniforms( UniqueId, "uniform float4 " + propertyName + "_ST;" );
+						}
 						dataCollector.AddLocalVariable( UniqueId , PrecisionType.Float , WirePortDataType.FLOAT2 , uvChannelName , GeneratorUtils.GenerateScaleOffsettedUV( m_currentType , uvName , propertyName,true ) );
 					}
 					uvCoord = uvChannelName;
@@ -1627,7 +1951,10 @@ namespace AmplifyShaderEditor
 						}
 						else
 						{
-							dataCollector.AddToUniforms( UniqueId, "uniform float4 " + propertyName + "_ST;" );
+							if ( VarModeReference == VariableMode.Create )
+							{
+								dataCollector.AddToUniforms( UniqueId, "uniform float4 " + propertyName + "_ST;" );
+							}
 							string offsettedUV = GeneratorUtils.GenerateScaleOffsettedUV( m_currentType , dummyUV , propertyName,true );
 							dataCollector.AddToLocalVariables( UniqueId, PrecisionType.Float, WirePortDataType.FLOAT2, uvChannelName, Constants.InputVarStr + "." + offsettedUV );
 						}
@@ -1718,6 +2045,8 @@ namespace AmplifyShaderEditor
 				{
 					UIUtils.UnregisterSamplerNode( this );
 					UIUtils.UnregisterPropertyNode( this );
+					// @diogo: the base registered this unconditionally on id assignment, before the mode was read
+					UIUtils.UnregisterTexturePropertyNode( this );
 				}
 				UpdateHeaderColor();
 
@@ -1779,7 +2108,7 @@ namespace AmplifyShaderEditor
 					{
 						int newId = VersionConvertInputPortId( i );
 						string InternalData = string.Empty;
-						
+
 						if( UIUtils.CurrentShaderVersion() > 23 )
 						{
 							Enum.Parse( typeof( WirePortDataType ), nodeParams[ m_currentReadParamIdx++ ] );
@@ -1877,6 +2206,8 @@ namespace AmplifyShaderEditor
 				{
 					UIUtils.UnregisterSamplerNode( this );
 					UIUtils.UnregisterPropertyNode( this );
+					// @diogo: the base registered this unconditionally on id assignment, before the mode was read
+					UIUtils.UnregisterTexturePropertyNode( this );
 				}
 				UpdateHeaderColor();
 			}
@@ -1886,6 +2217,11 @@ namespace AmplifyShaderEditor
 
 			if( UIUtils.CurrentShaderVersion() > 3201 )
 				m_currentType = (TextureType)Enum.Parse( typeof( TextureType ), GetCurrentParam( ref nodeParams ) );
+
+			if( UIUtils.CurrentShaderVersion() >= 19902 )
+			{
+				m_assignKeyword = Convert.ToBoolean( GetCurrentParam( ref nodeParams ) );
+			}
 
 			if( m_defaultValue == null )
 			{
@@ -1923,15 +2259,6 @@ namespace AmplifyShaderEditor
 			base.RefreshExternalReferences();
 			ForceInputPortsChange();
 
-			if( m_useSamplerArrayIdx > -1 )
-			{
-				m_useSamplerArrayIdx = UIUtils.GetTexturePropertyNodeRegisterId( m_useSamplerArrayIdx ) + 1;
-			}
-			else
-			{
-				m_useSamplerArrayIdx = 0;
-			}
-
 			EditorGUI.BeginChangeCheck();
 			if( m_referenceType == TexReferenceType.Instance )
 			{
@@ -1958,6 +2285,17 @@ namespace AmplifyShaderEditor
 			}
 		}
 
+		public override void ReconnectClipboardReferences( Clipboard clipboard )
+		{
+			// validate node first
+			int newId = clipboard.GeNewNodeId( m_referenceNodeId );
+			if ( ContainerGraph.GetNode( newId ) != null )
+			{
+				m_referenceNodeId = newId;
+			}
+			RefreshExternalReferences();
+		}
+
 		public override void ReadAdditionalData( ref string[] nodeParams ) { }
 
 		public override void WriteToString( ref string nodeInfo, ref string connectionsInfo )
@@ -1975,6 +2313,7 @@ namespace AmplifyShaderEditor
 			IOUtils.AddFieldValueToString( ref nodeInfo, ( ( m_referenceSampler != null ) ? m_referenceSampler.UniqueId : -1 ) );
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_mipMode );
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_currentType );
+			IOUtils.AddFieldValueToString( ref nodeInfo, m_assignKeyword );
 		}
 
 		public override void WriteAdditionalToString( ref string nodeInfo, ref string connectionsInfo ) { }
@@ -2082,24 +2421,24 @@ namespace AmplifyShaderEditor
 			{
 				case TextureType.Texture1D:
 				{
-					return PropertyAttributes + GetTexture1DPropertyValue();
+					return PropertyAttributes + PropertyAttributesSeparator + GetTexture1DPropertyValue();
 				}
 				case TextureType.ProceduralTexture:
 				case TextureType.Texture2D:
 				{
-					return PropertyAttributes + GetTexture2DPropertyValue();
+					return PropertyAttributes + PropertyAttributesSeparator + GetTexture2DPropertyValue();
 				}
 				case TextureType.Texture3D:
 				{
-					return PropertyAttributes + GetTexture3DPropertyValue();
+					return PropertyAttributes + PropertyAttributesSeparator + GetTexture3DPropertyValue();
 				}
 				case TextureType.Cube:
 				{
-					return PropertyAttributes + GetCubePropertyValue();
+					return PropertyAttributes + PropertyAttributesSeparator + GetCubePropertyValue();
 				}
 				case TextureType.Texture2DArray:
 				{
-					return PropertyAttributes + GetTexture2DArrayPropertyValue();
+					return PropertyAttributes + PropertyAttributesSeparator + GetTexture2DArrayPropertyValue();
 				}
 			}
 			return string.Empty;
@@ -2244,6 +2583,25 @@ namespace AmplifyShaderEditor
 				return false;
 			}
 		}
+		public override int ReferencedNodeId { get { return ( m_referenceType == TexReferenceType.Instance && m_referenceNodeId > -1 ) ? m_referenceNodeId : base.ReferencedNodeId; } }
+
+		// @diogo: both links stand in for an input this node already shows, so each dashed wire lands on
+		// the port it replaces - the referenced sampler on Tex, the borrowed sampler state on SS
+		public override void GetReferenceWires( List<ReferenceWire> wires )
+		{
+			if ( ReferencedNodeId > -1 )
+			{
+				wires.Add( new ReferenceWire( ReferencedNodeId, m_texPort.PortId ) );
+			}
+
+			if ( m_useSamplerNodeId > -1 )
+			{
+				wires.Add( new ReferenceWire( m_useSamplerNodeId, m_samplerPort.PortId ) );
+			}
+		}
+
+		// @diogo: a wired Tex port still feeds an instance-mode sampler, so nothing is actually missing
+		public override bool HasMissingReference { get { return m_referenceType == TexReferenceType.Instance && m_referenceNodeId <= -1 && !m_texPort.IsConnected; } }
 		public override void ForceUpdateFromMaterial( Material material )
 		{
 			if( UIUtils.IsProperty( m_currentParameterType ) && material.HasProperty( PropertyName ) )
@@ -2286,7 +2644,7 @@ namespace AmplifyShaderEditor
 			if( dataCollector.IsTemplate )
 			{
 				if( !m_texPort.IsConnected )
-					dataCollector.TemplateDataCollectorInstance.SetUVUsage( m_textureCoordSet , m_uvPort.DataType );
+					dataCollector.TemplateDataCollectorInstance.SetUVUsage( m_textureCoordSet, m_uvPort.DataType, nodeData.Category );
 			}
 			else
 			{
@@ -2302,5 +2660,19 @@ namespace AmplifyShaderEditor
 
 		private InputPort TexPort { get { return m_texPort; } }
 		public bool IsObject { get { return ( m_referenceType == TexReferenceType.Object ) || ( m_referenceSampler == null ); } }
+		public MipType MipMode { get { return m_mipMode; } }
+
+		// @diogo: explicit gradients survive only on the 2D paths - the virtual texture sampler ignores them and
+		// the 3D/Cube/Array macros degrade to an implicit fetch on targets without SampleGrad (#365)
+		public bool RequiresImplicitDerivatives( MipType mipMode )
+		{
+			bool result = mipMode == MipType.Auto || mipMode == MipType.MipBias;
+			if ( !result && mipMode == MipType.Derivative )
+			{
+				result = TextureProperty is VirtualTextureObject || m_currentType == TextureType.Texture3D ||
+					m_currentType == TextureType.Cube || m_currentType == TextureType.Texture2DArray;
+			}
+			return result;
+		}
 	}
 }

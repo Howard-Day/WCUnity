@@ -22,6 +22,14 @@ namespace AmplifyShaderEditor
 			AddInputPort( WirePortDataType.FLOAT, false, "A" );
 			AddInputPort( WirePortDataType.FLOAT, false, "B" );
 			AddInputPort( WirePortDataType.FLOAT, false, "Alpha" );
+
+			// @diogo: a texture object is bound, not assigned, so it cannot be an operand of the lerp
+			for ( int i = 0; i < m_inputPorts.Count; i++ )
+			{
+				m_inputPorts[ i ].AddPortForbiddenTypes( WirePortDataType.SAMPLER1D, WirePortDataType.SAMPLER2D, WirePortDataType.SAMPLER3D,
+					WirePortDataType.SAMPLERCUBE, WirePortDataType.SAMPLER2DARRAY, WirePortDataType.SAMPLERSTATE );
+			}
+
 			AddOutputPort( WirePortDataType.FLOAT,Constants.EmptyPortValue);
 			m_useInternalPortData = true;
 			m_previewShaderGUID = "34d9c4cdcf1fadb49af2de3f90bbc57d";

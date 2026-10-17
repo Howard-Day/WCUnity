@@ -15,7 +15,7 @@ namespace AmplifyShaderEditor
 	}
 
 	[Serializable]
-	[NodeAttributes( "Standard Surface Light", "Lighting", "Provides a way to create a standard surface light model in custom lighting mode", NodeAvailabilityFlags = (int)NodeAvailability.CustomLighting )]
+	[NodeAttributes( "Standard Surface Light", "Lighting", "Provides a way to create a standard surface light model in custom lighting mode", NodeAvailabilityFlags = (int)( NodeAvailability.CustomLighting | NodeAvailability.ShaderFunction ) )]
 	public sealed class CustomStandardSurface : ParentNode
 	{
 		private const string WorkflowStr = "Workflow";
@@ -106,7 +106,7 @@ namespace AmplifyShaderEditor
 			if( m_workflow == ASEStandardSurfaceWorkflow.Specular )
 				specularMode = "Specular";
 
-			dataCollector.AddToInput( UniqueId, SurfaceInputs.WORLD_NORMAL, CurrentPrecisionType );
+			dataCollector.AddToInput( UniqueId, SurfaceInputs.WORLD_NORMAL, UIUtils.CurrentWindow.CurrentGraph.CurrentPrecision );
 
 			if( dataCollector.DirtyNormal )
 			{

@@ -26,6 +26,13 @@ namespace AmplifyShaderEditor
 			AddInputPort( WirePortDataType.FLOAT, false, "Max", -1, MasterNodePortCategory.Fragment, 2 );
 			m_maxPortId = m_inputPorts.Count - 1;
 
+			// @diogo: a texture object is bound, not assigned, so it cannot be an operand of the smoothstep
+			for ( int i = 0; i < m_inputPorts.Count; i++ )
+			{
+				m_inputPorts[ i ].AddPortForbiddenTypes( WirePortDataType.SAMPLER1D, WirePortDataType.SAMPLER2D, WirePortDataType.SAMPLER3D,
+					WirePortDataType.SAMPLERCUBE, WirePortDataType.SAMPLER2DARRAY, WirePortDataType.SAMPLERSTATE );
+			}
+
 			GetInputPortByUniqueId( m_maxPortId ).FloatInternalData = 1;
 
 			AddOutputPort( WirePortDataType.FLOAT, Constants.EmptyPortValue );

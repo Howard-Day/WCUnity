@@ -8,6 +8,7 @@ Shader "Hidden/ObjSpaceLightDirHlpNode"
 			#pragma vertex vert_img
 			#pragma fragment frag
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 
 			float4 _EditorWorldLightPos;
 

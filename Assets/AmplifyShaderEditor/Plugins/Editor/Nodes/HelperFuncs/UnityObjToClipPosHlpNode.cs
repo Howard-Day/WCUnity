@@ -13,8 +13,8 @@ namespace AmplifyShaderEditor
 			base.CommonInit( uniqueId );
 			m_funcType = "UnityObjectToClipPos";
 			//TODO: revisit this later
-			m_funcLWFormatOverride = "TransformWorldToHClip(TransformObjectToWorld({0}))";
-			m_funcHDFormatOverride = "TransformWorldToHClip(TransformObjectToWorld({0}))";
+			m_funcLWFormatOverride = "TransformWorldToHClip( TransformObjectToWorld( ( {0} ).xyz ) )";
+			m_funcHDFormatOverride = "TransformWorldToHClip( TransformObjectToWorld( ( {0} ).xyz ) )";
 			m_inputPorts[ 0 ].ChangeType( WirePortDataType.FLOAT3, false );
 			m_outputPorts[ 0 ].ChangeType( WirePortDataType.FLOAT4, false );
 			m_outputPorts[ 0 ].Name = "XYZW";

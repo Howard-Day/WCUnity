@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78b2425a2284af743826c689403a4924, type: 3}
+  m_Name: Fade Transition
+  m_EditorClassIdentifier: 
+  m_functionInfo: "// Made with Amplify Shader Editor v1.9.7\n// Available at the
+    Unity Asset Store - http://u3d.as/y3X \n/*ASEBEGIN\nVersion=19700\nNode;AmplifyShaderEditor.SimpleMultiplyOpNode;9;80,80;Inherit;False;2;2;0;FLOAT;0;False;1;FLOAT;0;False;1;FLOAT;0\nNode;AmplifyShaderEditor.SimpleAddOpNode;15;240,160;Inherit;False;2;2;0;FLOAT;0;False;1;FLOAT;0;False;1;FLOAT;0\nNode;AmplifyShaderEditor.SaturateNode;16;384,160;Inherit;False;1;0;FLOAT;0;False;1;FLOAT;0\nNode;AmplifyShaderEditor.SimpleAddOpNode;10;-208,96;Inherit;False;2;2;0;FLOAT;1;False;1;FLOAT;1;False;1;FLOAT;0\nNode;AmplifyShaderEditor.FunctionInput;8;-176,-32;Inherit;False;Fade
+    Value;1;1;False;1;0;FLOAT;0.5;False;1;FLOAT;0\nNode;AmplifyShaderEditor.FunctionInput;14;-496,304;Inherit;False;Noise
+    Value;1;0;False;1;0;FLOAT;0.5;False;1;FLOAT;0\nNode;AmplifyShaderEditor.FunctionInput;11;-496,176;Inherit;False;Fade
+    Contrast;1;2;False;1;0;FLOAT;1;False;1;FLOAT;0\nNode;AmplifyShaderEditor.SimpleSubtractOpNode;13;-288,304;Inherit;False;2;0;FLOAT;0;False;1;FLOAT;1;False;1;FLOAT;0\nNode;AmplifyShaderEditor.SimpleMultiplyOpNode;12;-64,176;Inherit;False;2;2;0;FLOAT;0;False;1;FLOAT;0;False;1;FLOAT;0\nNode;AmplifyShaderEditor.FunctionOutput;0;560,160;Inherit;False;True;-1;Fade;0;True;1;0;FLOAT;0;False;1;FLOAT;0\nWireConnection;9;0;8;0\nWireConnection;9;1;10;0\nWireConnection;15;0;9;0\nWireConnection;15;1;12;0\nWireConnection;16;0;15;0\nWireConnection;10;0;11;0\nWireConnection;13;0;14;0\nWireConnection;12;0;11;0\nWireConnection;12;1;13;0\nWireConnection;0;0;16;0\nASEEND*/\n//CHKSM=9FCA8037D4796154519081315442000D48E49A75"
+  m_functionName: 
+  m_description: "The Fade Transition method introduces variation by adding noise
+    during a function's transition between on and off states. This node takes a fade
+    input and remaps it based on a noise value, typically derived from a texture.\n\nWhen
+    Fade Value is set to 0, the output will be 0, and when Fade Value is 1, the output
+    reaches exactly 1. Between 0 and 1, the transition pattern is defined by the
+    noise.\n\nThis node can be used to manage LOD transitions.\r\n\r\n* Noise: The
+    noise variation applied to modify the fade effect.\n\n* Fade Value: Controls
+    the extent of the transition.\r\n\n* Fade Contrast: Adjusts the sharpness of
+    transition edges; higher values.\n result in crisper edges as pixels shift from
+    transparent to opaque.\r\n\n* \rFade: The final computed fade value."
+  m_additionalIncludes:
+    m_additionalIncludes: []
+    m_outsideIncludes: []
+  m_additionalPragmas:
+    m_additionalPragmas: []
+    m_outsidePragmas: []
+  m_additionalDirectives:
+    m_validData: 0
+    m_isDirty: 0
+    m_moduleName: ' Additional Directives'
+    m_independentModule: 1
+    m_customEdited: 0
+    m_additionalDirectives: []
+    m_shaderFunctionDirectives: []
+    m_nativeDirectives: []
+    m_nativeDirectivesIndex: -1
+    m_nativeDirectivesFoldout: 0
+    m_directivesSaveItems: []
+  m_nodeCategory: 1
+  m_headerStyle: 1
+  m_headerColor: {r: 0.5882353, g: 0.078431375, b: 0.23921569, a: 1}
+  m_customNodeCategory: Scene
+  m_previewPosition: 0
+  m_hidden: 0
+  m_url: 

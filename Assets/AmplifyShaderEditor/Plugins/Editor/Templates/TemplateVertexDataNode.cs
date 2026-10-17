@@ -9,7 +9,7 @@ using System.Collections.Generic;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Template Vertex Data" , "Vertex Data" , "Select and use available vertex data from the template" )]
+	[NodeAttributes( "Template Vertex Data" , "Template" , "Select and use available vertex data from the template", NodeAvailabilityFlags = (int)NodeAvailability.TemplateShader )]
 	public class TemplateVertexDataNode : TemplateNodeParent
 	{
 		private List<TemplateVertexData> m_interpolatorData = null;

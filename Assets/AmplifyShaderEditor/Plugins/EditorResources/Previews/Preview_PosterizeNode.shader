@@ -2,8 +2,8 @@ Shader "Hidden/PosterizeNode"
 {
 	Properties
 	{
-		_A ( "_RGBA",  2D ) = "white" {}
-		_B ( "_Power",  2D ) = "white" {}
+		_A ( "_RGBA",  2DArray ) = "white" {}
+		_B ( "_Power",  2DArray ) = "white" {}
 	}
 
 	SubShader
@@ -12,16 +12,18 @@ Shader "Hidden/PosterizeNode"
 		{
 			CGPROGRAM
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#pragma vertex vert_img
 			#pragma fragment frag
+			#pragma target 3.5
 
-			uniform sampler2D _A;
-			uniform sampler2D _B;
+			ASE_PORT( _A );
+			ASE_PORT( _B );
 			
 			float4 frag ( v2f_img i ) : SV_Target
 			{
-				float4 rgba = tex2D ( _B, i.uv );
-				float power = tex2D ( _A, i.uv ).r;
+				float4 rgba = ASE_SAMPLE_PORT( _B, i.uv );
+				float power = ASE_SAMPLE_PORT( _A, i.uv ).r;
 				if ( power < 1 )
 					return float4(0,0,0,0);
 				float divideOp = 256.0 / float ( (int)power );

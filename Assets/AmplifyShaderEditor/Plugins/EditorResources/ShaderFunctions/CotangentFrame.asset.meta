@@ -1,8 +1,15 @@
 fileFormatVersion: 2
 guid: 62ce0f00f1417804bb4f2b38501ba0d0
-timeCreated: 1522316215
-licenseType: Store
 NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 0
   userData: 
   assetBundleName: 
   assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 68570
+  packageName: Amplify Shader Editor
+  packageVersion: 1.9.9.14
+  assetPath: Assets/AmplifyShaderEditor/Plugins/EditorResources/ShaderFunctions/CotangentFrame.asset
+  uploadId: 1019702

@@ -28,6 +28,13 @@ namespace AmplifyShaderEditor
 														WirePortDataType.COLOR ,
 														WirePortDataType.INT);
 
+			// @diogo: a texture object is bound, not assigned, so neither term of the clip can be one
+			for ( int i = 1; i < m_inputPorts.Count; i++ )
+			{
+				m_inputPorts[ i ].AddPortForbiddenTypes( WirePortDataType.SAMPLER1D, WirePortDataType.SAMPLER2D, WirePortDataType.SAMPLER3D,
+					WirePortDataType.SAMPLERCUBE, WirePortDataType.SAMPLER2DARRAY, WirePortDataType.SAMPLERSTATE );
+			}
+
 			m_previewShaderGUID = "1fca7774f364aee4d8c64e8634ef4be4";
 		}
 

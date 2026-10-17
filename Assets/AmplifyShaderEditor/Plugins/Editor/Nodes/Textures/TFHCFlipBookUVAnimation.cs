@@ -107,8 +107,8 @@ namespace AmplifyShaderEditor
 			//  round( fmod( x, y ) ) can be replaced with a faster
 			//  floor( frac( x / y ) * y + 0.5 ) => div can be muls with 1/y, almost always static/constant
 			//
-			if( m_outputPorts[ 0 ].IsLocalValue( dataCollector.PortCategory ) )
-				return GetOutputVectorItem( 0, outputId, m_outputPorts[ 0 ].LocalValue( dataCollector.PortCategory ) );
+			if ( m_outputPorts[ outputId ].IsLocalValue( dataCollector.PortCategory ) )
+				return m_outputPorts[ outputId ].LocalValue( dataCollector.PortCategory );
 
 			string uv = m_inputPorts[ 0 ].GeneratePortInstructions( ref dataCollector );
 			string columns = m_inputPorts[ 1 ].GeneratePortInstructions( ref dataCollector );
@@ -136,7 +136,7 @@ namespace AmplifyShaderEditor
 			{
 				vtotaltiles = "float fbtotaltiles" + OutputId + " = " + columns + " * " + rows + ";";
 			}
-			
+
 			string vcomment3 = "// Offsets for cols and rows of Flipbook Texture";
 			string vcolsoffset = "float fbcolsoffset" + OutputId + " = 1.0f / " + columns + ";";
 			string vrowssoffset = "float fbrowsoffset" + OutputId + " = 1.0f / " + rows + ";";
@@ -203,7 +203,7 @@ namespace AmplifyShaderEditor
 			string voffset = "float2 fboffset" + OutputId + " = float2(fboffsetx" + OutputId + ", fboffsety" + OutputId + ");";
 			//string voffset = "float2 fboffset" + m_uniqueId + " = float2( ( ( (int)fmod( fbspeed" + m_uniqueId + " , fbtotaltiles" +  m_uniqueId + ") % (int)" + columns + " ) * fbcolsoffset" + m_OutputId + " ) , ( ( (int)" + rows + " - ( (int)( ( (int)fmod( fbspeed" + m_uniqueId + " , fbtotaltiles" + m_uniqueId + " ) - ( (int)fmod( fbspeed" + m_uniqueId + " , fbtotaltiles" + m_uniqueId + " ) % (int)" + columns + " ) ) / " + columns + " ) % (int)" + rows + " ) ) * fbrowsoffset" + m_uniqueId + " ) );";
 			string vcomment15 = "// Flipbook UV";
-			string vfbuv = "half2 fbuv" + OutputId + " = " + uv + " * fbtiling" + OutputId + " + fboffset" + OutputId + ";";
+			string vfbuv = "float2 fbuv" + OutputId + " = " + uv + " * fbtiling" + OutputId + " + fboffset" + OutputId + ";";
 			string vcomment16 = "// *** END Flipbook UV Animation vars ***";
 			string result = "fbuv" + OutputId;
 
@@ -249,6 +249,8 @@ namespace AmplifyShaderEditor
 			dataCollector.AddLocalVariable( UniqueId, frame );
 
 			m_outputPorts[ 0 ].SetLocalValue( result, dataCollector.PortCategory );
+			m_outputPorts[ 1 ].SetLocalValue( result + ".x", dataCollector.PortCategory );
+			m_outputPorts[ 2 ].SetLocalValue( result + ".y", dataCollector.PortCategory );
 			m_outputPorts[ 3 ].SetLocalValue( "flipbookFrame" + OutputId, dataCollector.PortCategory );
 
 			return m_outputPorts[ outputId ].LocalValue( dataCollector.PortCategory );

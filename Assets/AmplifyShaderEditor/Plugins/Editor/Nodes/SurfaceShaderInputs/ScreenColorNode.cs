@@ -21,7 +21,8 @@ namespace AmplifyShaderEditor
 			"#endif"
 		};
 
-		private readonly Color ReferenceHeaderColor = new Color( 0.6f , 3.0f , 1.25f , 1.0f );
+		// @diogo: red kept at 0.5 instead of the shared 0 so the red-dominant category darkens instead of going black
+		private readonly Color ReferenceHeaderColor = new Color( 0.5f, 0.5f, 0.585f, 1.0f );
 
 		private const string SamplerType = "tex2D";
 		private const string GrabTextureDefault = "_GrabTexture";
@@ -56,22 +57,35 @@ namespace AmplifyShaderEditor
 		[SerializeField]
 		private bool m_isURP2D = false;
 
+		[SerializeField]
+		private bool m_urpExposure = true;
+
 		//SRP specific code
 		private const string OpaqueTextureDefine = "REQUIRE_OPAQUE_TEXTURE 1";
 		private const string FetchVarName = "fetchOpaqueVal";
 
-		//private string LWFetchOpaqueTexture = "SAMPLE_TEXTURE2D( _CameraOpaqueTexture, sampler_CameraOpaqueTexture, {0})";
+		private string URPFetchOpaqueTexture = "float4( SHADERGRAPH_SAMPLE_SCENE_COLOR( {0}.xy ), 1.0 )";
+		private const string URPFetchUnexposedOpaqueTexture = "float4( SHADERGRAPH_SAMPLE_SCENE_COLOR( {0}.xy ) * ASEURPInvExposureMultiplier(), 1.0 )";
+		private readonly string[] URPInvExposureFunc =
+		{
+			"float ASEURPInvExposureMultiplier()\n",
+			"{\n",
+			"#if ( UNITY_VERSION >= 60070000 )\n",
+			"\treturn GetInvPreExposureMultiplier();\n",
+			"#else\n",
+			"\treturn 1.0;\n",
+			"#endif\n",
+			"}\n"
+		};
+		private const string URPExposureTooltip = "URP 6000.7+ stores the opaque texture pre-exposed. Uncheck to remove the exposure, e.g. when feeding a lit output that applies it again.";
 
-		private string LWFetchOpaqueTexture = "float4( SHADERGRAPH_SAMPLE_SCENE_COLOR( {0} ), 1.0 )";
-
-#if UNITY_2021_1_OR_NEWER
 		private const string URP2DHelpBox = "For the Grab Screen Color to properly work a proper setup is required:" +
 											"\n- On the 2D Asset Renderer the \"Foremost Sorting Layer\" must be set to the last layer which is going to be caught by the Grab Screen Color" +
 											"\n- The \"Sorting Layer\" of the sprite itself which will be using the shader with the Grab Screen Color must be set to one which is above the one specified on the previous step";
 
 		private readonly string[] URP2DDeclaration = {  "TEXTURE2D_X( _CameraSortingLayerTexture );",
 														"SAMPLER( sampler_CameraSortingLayerTexture );" };
-		private readonly string URP2DFunctionHeader = "float4( ASESample2DSortingLayer({0}), 1.0 )";
+		private readonly string URP2DFunctionHeader = "float4( ASESample2DSortingLayer({0}.xy), 1.0 )";
 		private readonly string[] URP2DFunctionBody =
 		{
 			"float3 ASESample2DSortingLayer( float2 uv )\n" +
@@ -79,9 +93,8 @@ namespace AmplifyShaderEditor
 			"\treturn SAMPLE_TEXTURE2D_X(_CameraSortingLayerTexture, sampler_CameraSortingLayerTexture, UnityStereoTransformScreenSpaceTex(uv)).rgb;\n"+
 			"}\n"
 		};
-#endif
 
-		private const string HDSampleSceneColorHeader5 = "ASEHDSampleSceneColor({0}, {1}, {2})";
+		private const string HDSampleSceneColorHeader5 = "ASEHDSampleSceneColor({0}.xy, {1}, {2})";
 		private readonly string[] HDSampleSceneColorFunc5 =
 		{
 			"float4 ASEHDSampleSceneColor(float2 uv, float lod, float exposureMultiplier)\n",
@@ -93,7 +106,7 @@ namespace AmplifyShaderEditor
 			"}\n",
 		};
 
-		private const string HDSampleSceneColorHeader4 = "ASEHDSampleSceneColor({0})";
+		private const string HDSampleSceneColorHeader4 = "ASEHDSampleSceneColor({0}.xy)";
 		private readonly string[] HDSampleSceneColorFunc4 =
 		{
 			"float4 ASEHDSampleSceneColor( float2 uv )\n",
@@ -130,15 +143,18 @@ namespace AmplifyShaderEditor
 			m_globalDefaultBehavior = false;
 			m_showVariableMode = true;
 		}
-		
+
 		protected override void OnUniqueIDAssigned()
 		{
 			base.OnUniqueIDAssigned();
 			if( m_referenceType == TexReferenceType.Object )
 				UIUtils.RegisterScreenColorNode( this );
 
-			if( UniqueId > -1 )
+			if ( UniqueId > -1 )
+			{
+				ContainerGraph.ScreenColorNodes.OnReorderEventComplete -= OnReorderEventComplete;
 				ContainerGraph.ScreenColorNodes.OnReorderEventComplete += OnReorderEventComplete;
+			}
 
 		}
 
@@ -160,12 +176,18 @@ namespace AmplifyShaderEditor
 			base.OnNodeLogicUpdate( drawInfo );
 			if( m_referenceNodeId > -1 && m_referenceNode == null )
 			{
-				m_referenceNode = UIUtils.GetScreenColorNode( m_referenceNodeId ) as ScreenColorNode;
-				if( m_referenceNode == null )
+				// @diogo: was fetching by register index with a node id; resolve by id and realign the index
+				m_referenceNode = UIUtils.GetNode( m_referenceNodeId ) as ScreenColorNode;
+				if ( m_referenceNode == null || m_referenceNode == this )
 				{
+					m_referenceNode = null;
 					m_referenceNodeId = -1;
 					m_referenceArrayId = -1;
 					m_sizeIsDirty = true;
+				}
+				else
+				{
+					m_referenceArrayId = UIUtils.GetScreenColorNodeRegisterId( m_referenceNodeId );
 				}
 			}
 
@@ -201,8 +223,7 @@ namespace AmplifyShaderEditor
 
 			if( SoftValidReference )
 			{
-				m_content.text = m_referenceNode.TitleContent.text + Constants.InstancePostfixStr;
-				SetAdditonalTitleText( m_referenceNode.AdditonalTitleContent.text );
+				m_content.text = m_nodeAttribs.Name;
 
 				if( m_referenceIconStyle == null )
 				{
@@ -213,12 +234,15 @@ namespace AmplifyShaderEditor
 				iconPos.width = 19 * drawInfo.InvertedZoom;
 				iconPos.height = 19 * drawInfo.InvertedZoom;
 
-				iconPos.y += 6 * drawInfo.InvertedZoom;
-				iconPos.x += m_globalPosition.width - iconPos.width - 7 * drawInfo.InvertedZoom;
+				// @diogo: link icon sits on the left slot like the other reference nodes
+				iconPos.y = m_globalPosition.y + m_headerPosition.height * 0.5f - iconPos.height * 0.5f;
+				iconPos.x += 5 * drawInfo.InvertedZoom;
 
-				if( GUI.Button( iconPos, string.Empty, m_referenceIconStyle ) )
+				// @diogo: plain label like the other reference nodes; a button here sits on the node's grab
+				// area and hijacks the drag's hot control, then its click fires a camera focus jump
+				if ( drawInfo.CurrentEventType == EventType.Repaint )
 				{
-					UIUtils.FocusOnNode( m_referenceNode, 1, true );
+					GUI.Label( iconPos, string.Empty, m_referenceIconStyle );
 				}
 			}
 		}
@@ -230,7 +254,8 @@ namespace AmplifyShaderEditor
 				return;
 			}
 
-			if( m_referenceArrayId > -1 )
+			// @diogo: a valid node id must still enter the repair scan below even when the array index is lost
+			if ( m_referenceArrayId > -1 || m_referenceNodeId > -1 )
 			{
 				ParentNode newNode = UIUtils.GetScreenColorNode( m_referenceArrayId );
 				if( newNode == null || newNode.UniqueId != m_referenceNodeId )
@@ -254,6 +279,9 @@ namespace AmplifyShaderEditor
 			{
 				m_referenceNodeId = -1;
 				m_referenceArrayId = -1;
+				// @diogo: referenced node is gone; drop its leftover title (mirrors the Object-mode switch below)
+				m_content.text = m_propertyInspectorName;
+				m_sizeIsDirty = true;
 			}
 		}
 
@@ -272,14 +300,13 @@ namespace AmplifyShaderEditor
 				else
 				{
 					UIUtils.UnregisterScreenColorNode( this );
-					if( SoftValidReference )
-					{
-						m_content.text = m_referenceNode.TitleContent.text + Constants.InstancePostfixStr;
-					}
+					m_content.text = m_nodeAttribs.Name;
 				}
 				UpdateHeaderColor();
 			}
-			
+
+			UIUtils.DrawSeparator();
+
 			if( m_referenceType == TexReferenceType.Object )
 			{
 				EditorGUI.BeginDisabledGroup( m_containerGraph.IsSRP );
@@ -304,6 +331,11 @@ namespace AmplifyShaderEditor
 			}
 			else
 			{
+				// @diogo: undo can restore a register snapshot still listing this Instance node; realign so it can't offer itself
+				if ( UIUtils.GetScreenColorNodeRegisterId( UniqueId ) > -1 )
+				{
+					UIUtils.UnregisterScreenColorNode( this );
+				}
 				string[] arr = UIUtils.ScreenColorNodeArr();
 				bool guiEnabledBuffer = GUI.enabled;
 				if( arr != null && arr.Length > 0 )
@@ -316,7 +348,27 @@ namespace AmplifyShaderEditor
 					GUI.enabled = false;
 				}
 
-				m_referenceArrayId = EditorGUILayoutPopup( Constants.AvailableReferenceStr, m_referenceArrayId, arr );
+				arr = UIUtils.DisambiguateReferenceLabels( arr, ContainerGraph.ScreenColorNodes.NodesList, 0 );
+				EditorGUILayout.BeginHorizontal();
+				SearchableDropdown.Draw( Constants.AvailableReferenceStr, m_referenceArrayId, arr, ( idx ) =>
+				{
+					if( idx != m_referenceArrayId )
+					{
+						// @diogo: async pick can land on a stale index; resolve it and refuse null or self
+						ScreenColorNode picked = UIUtils.GetScreenColorNode( idx );
+						if ( picked == null || picked == this )
+						{
+							return;
+						}
+						UndoRecordObject( "Selected grab screen reference" );
+						m_referenceArrayId = idx;
+						m_referenceNode = picked;
+						m_referenceNodeId = picked.UniqueId;
+						SetDirtyFromAsyncEdit();
+					}
+				} );
+				UIUtils.DrawReferenceFocusButton( m_referenceNode );
+				EditorGUILayout.EndHorizontal();
 				GUI.enabled = guiEnabledBuffer;
 				EditorGUI.BeginDisabledGroup( m_containerGraph.IsSRP );
 				{
@@ -331,21 +383,24 @@ namespace AmplifyShaderEditor
 			}
 			ShowVariableMode();
 			ShowAutoRegister();
+			// @diogo: precision types the sampled value, not the sampler, so it must skip ShowPrecision()'s Fetch gate
+			DrawPrecisionProperty();
 			if( ContainerGraph.IsHDRP || ContainerGraph.ParentWindow.IsShaderFunctionWindow )
 			{
-				m_exposure = EditorGUILayoutToggle( "Exposure", m_exposure );
+				m_exposure = EditorGUILayoutToggle( ContainerGraph.ParentWindow.IsShaderFunctionWindow ? "HDRP Exposure" : "Exposure", m_exposure );
 			}
 
-#if UNITY_2021_1_OR_NEWER
-			if( ( ContainerGraph.IsLWRP || ContainerGraph.ParentWindow.IsShaderFunctionWindow ) && ASEPackageManagerHelper.CurrentHDRPBaseline >= ASESRPBaseline.ASE_SRP_11 )
+			if ( ContainerGraph.IsURP || ContainerGraph.ParentWindow.IsShaderFunctionWindow )
 			{
+				EditorGUI.BeginDisabledGroup( m_isURP2D );
+				m_urpExposure = EditorGUILayoutToggle( new GUIContent( ContainerGraph.ParentWindow.IsShaderFunctionWindow ? "URP Exposure" : "Exposure", URPExposureTooltip ), m_urpExposure );
+				EditorGUI.EndDisabledGroup();
 				m_isURP2D = EditorGUILayoutToggle( "2D Renderer" , m_isURP2D);
 				if( m_isURP2D )
 				{
 					EditorGUILayout.HelpBox( URP2DHelpBox , MessageType.Info );
 				}
 			}
-#endif
 		}
 
 		private void UpdatePort()
@@ -358,14 +413,24 @@ namespace AmplifyShaderEditor
 
 		public override void DrawTitle( Rect titlePos )
 		{
+			bool instanceMode = m_referenceType == TexReferenceType.Instance;
 			if( !m_isEditing && ContainerGraph.LodLevel <= ParentGraph.NodeLOD.LOD3 )
 			{
-				GUI.Label( titlePos, "Grab Screen Color", UIUtils.GetCustomStyle( CustomStyle.NodeTitle ) );
+				// @diogo: the node's own name only matters when a custom grab pass exists; otherwise show the type name
+				bool showOwnName = !instanceMode && m_useCustomGrab;
+				GUI.Label( titlePos, showOwnName ? PropertyInspectorName : "Grab Screen Color", UIUtils.GetCustomStyle( CustomStyle.NodeTitle ) );
 			}
 
-			if( m_useCustomGrab || SoftValidReference )
+			if( instanceMode )
 			{
-				base.DrawTitle( titlePos );
+				// @diogo: subtitle set here with a raw compare value; going through base.DrawTitle cached the
+				// FORMATTED text into m_previousAdditonalTitle, so the compare failed and re-dirtied the size
+				// every repaint — and ChangeSize() re-anchors the snap-drag gesture, sending dragged nodes flying
+				string subTitle = SoftValidReference ? m_referenceNode.GetPropertyValStr() : Constants.NoStringValue;
+				SetAdditonalTitleTextOnCallback( subTitle, Constants.SubTitleRefNameFormatStr, ( node, newSubTitle ) => node.AdditonalTitleContent.text = string.Format( Constants.SubTitleRefNameFormatStr, newSubTitle ) );
+			}
+			else if( m_useCustomGrab )
+			{
 				m_previousAdditonalTitle = m_additionalContent.text;
 			}
 			else
@@ -399,10 +464,8 @@ namespace AmplifyShaderEditor
 				valueName = FetchVarName + OutputId;
 				dataCollector.AddToDirectives( OpaqueTextureDefine, -1 , AdditionalLineType.Define);
 				string uvCoords = GetUVCoords( ref dataCollector, ignoreLocalVar, false );
-				if( dataCollector.TemplateDataCollectorInstance.IsLWRP )
+				if( dataCollector.TemplateDataCollectorInstance.IsURP )
 				{
-
-#if UNITY_2021_1_OR_NEWER
 					if( m_isURP2D )
 					{
 						dataCollector.AddToUniforms( UniqueId , URP2DDeclaration[ 0 ] );
@@ -411,9 +474,14 @@ namespace AmplifyShaderEditor
 						dataCollector.AddLocalVariable( UniqueId , CurrentPrecisionType , WirePortDataType.FLOAT4 , valueName , string.Format( URP2DFunctionHeader , uvCoords ) );
 					}
 					else
-#endif
 					{
-						dataCollector.AddLocalVariable( UniqueId , CurrentPrecisionType , WirePortDataType.FLOAT4 , valueName , string.Format( LWFetchOpaqueTexture , uvCoords ) );
+						string fetchFormat = URPFetchOpaqueTexture;
+						if( !m_urpExposure )
+						{
+							dataCollector.AddFunction( URPInvExposureFunc[ 0 ], URPInvExposureFunc, false );
+							fetchFormat = URPFetchUnexposedOpaqueTexture;
+						}
+						dataCollector.AddLocalVariable( UniqueId, CurrentPrecisionType, WirePortDataType.FLOAT4, valueName, string.Format( fetchFormat, uvCoords ) );
 					}
 				}
 				else
@@ -421,7 +489,7 @@ namespace AmplifyShaderEditor
 					string lod = m_inputPorts[ 1 ].GeneratePortInstructions( ref dataCollector );
 					dataCollector.AddFunction( HDSampleSceneColorFunc5[ 0 ], HDSampleSceneColorFunc5, false );
 					string exposureValue = m_exposure ? "1.0" : "GetInverseCurrentExposureMultiplier()";
-					dataCollector.AddLocalVariable( UniqueId, m_currentPrecisionType, WirePortDataType.FLOAT4, valueName, string.Format( HDSampleSceneColorHeader5, uvCoords, lod, exposureValue ) );					
+					dataCollector.AddLocalVariable( UniqueId, CurrentPrecisionType, WirePortDataType.FLOAT4, valueName, string.Format( HDSampleSceneColorHeader5, uvCoords, lod, exposureValue ) );
 				}
 			}
 			else
@@ -487,7 +555,7 @@ namespace AmplifyShaderEditor
 				string customScreenPos = null;
 
 				if( dataCollector.IsTemplate )
-					customScreenPos = dataCollector.TemplateDataCollectorInstance.GetScreenPos( CurrentPrecisionType );
+					customScreenPos = dataCollector.TemplateDataCollectorInstance.GetScreenPosRaw( CurrentPrecisionType );
 
 				if( isProjecting )
 					result = GeneratorUtils.GenerateGrabScreenPosition( ref dataCollector, UniqueId, CurrentPrecisionType, !dataCollector.UsingCustomScreenPos, customScreenPos );
@@ -512,6 +580,8 @@ namespace AmplifyShaderEditor
 				ContainerGraph.ScreenColorNodes.OnReorderEventComplete -= OnReorderEventComplete;
 		}
 
+		protected override bool IsTitleEditable { get { return m_referenceType == TexReferenceType.Object && m_useCustomGrab; } }
+
 		public bool SoftValidReference
 		{
 			get
@@ -534,6 +604,8 @@ namespace AmplifyShaderEditor
 				return false;
 			}
 		}
+		public override int ReferencedNodeId { get { return ( m_referenceType == TexReferenceType.Instance && m_referenceNodeId > -1 ) ? m_referenceNodeId : base.ReferencedNodeId; } }
+		public override bool HasMissingReference { get { return m_referenceType == TexReferenceType.Instance && m_referenceNodeId <= -1; } }
 
 		public string CurrentPropertyReference
 		{
@@ -605,6 +677,11 @@ namespace AmplifyShaderEditor
 				m_isURP2D = Convert.ToBoolean( GetCurrentParam( ref nodeParams ) );
 			}
 
+			if( UIUtils.CurrentShaderVersion() >= 19913 )
+			{
+				m_urpExposure = Convert.ToBoolean( GetCurrentParam( ref nodeParams ) );
+			}
+
 			if( !m_isNodeBeingCopied && m_referenceType == TexReferenceType.Object )
 			{
 				ContainerGraph.ScreenColorNodes.UpdateDataOnNode( UniqueId, DataToArray );
@@ -620,6 +697,7 @@ namespace AmplifyShaderEditor
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_normalize );
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_exposure );
 			IOUtils.AddFieldValueToString( ref nodeInfo , m_isURP2D );
+			IOUtils.AddFieldValueToString( ref nodeInfo, m_urpExposure );
 		}
 
 		public override void RefreshExternalReferences()
@@ -649,6 +727,17 @@ namespace AmplifyShaderEditor
 				else
 					m_normalize = false;
 			}
+		}
+
+		public override void ReconnectClipboardReferences( Clipboard clipboard )
+		{
+			// validate node first
+			int newId = clipboard.GeNewNodeId( m_referenceNodeId );
+			if ( ContainerGraph.GetNode( newId ) != null )
+			{
+				m_referenceNodeId = newId;
+			}
+			RefreshExternalReferences();
 		}
 
 		public override string PropertyName

@@ -1,44 +1,29 @@
-Shader "Hidden/WorldPosInputsNode"
+Shader "Hidden/ViewDir"
 {
+	CGINCLUDE
+		#include "Preview.cginc"
+	ENDCG
+
 	SubShader
 	{
-		Pass //world space
+
+		Pass // 0 => Tangent Space
 		{
 			CGPROGRAM
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#pragma vertex vert_img
 			#pragma fragment frag
 
 			float4 frag(v2f_img i) : SV_Target
 			{
-				float2 xy = 2 * i.uv - 1;
-				float z = -sqrt(1-saturate(dot(xy,xy)));
-				float3 vertexPos = float3(xy, z);
-				float3 worldViewDir = normalize(float3(0,0,-5) - vertexPos);
-
-				return float4(worldViewDir, 1);
-			}
-			ENDCG
-		}
-
-		Pass //tangent space
-		{
-			CGPROGRAM
-			#include "UnityCG.cginc"
-			#pragma vertex vert_img
-			#pragma fragment frag
-
-			float4 frag(v2f_img i) : SV_Target
-			{
-				float2 xy = 2 * i.uv - 1;
-				float z = -sqrt(1-saturate(dot(xy,xy)));
-				float3 vertexPos = float3(xy, z);
-				float3 worldViewDir = normalize(float3(0,0,-5) - vertexPos);
+				float3 vertexPos = PreviewFragmentPositionOS( i.uv );
+				float3 worldViewDir = normalize(preview_WorldSpaceCameraPos - vertexPos);
 
 				float3 normal = normalize(vertexPos);
 				float3 worldNormal = UnityObjectToWorldNormal(normal);
 
-				float3 tangent = normalize(float3( -z, xy.y*0.01, xy.x ));
+				float3 tangent = PreviewFragmentTangentOS( i.uv );
 				float3 worldPos = mul(unity_ObjectToWorld, float4(vertexPos,1)).xyz;
 				float3 worldTangent = UnityObjectToWorldDir(tangent);
 				float tangentSign = -1;
@@ -53,5 +38,64 @@ Shader "Hidden/WorldPosInputsNode"
 			}
 			ENDCG
 		}
+
+		Pass // 1 => World Space
+		{
+			CGPROGRAM
+			#include "UnityCG.cginc"
+			#include "Preview.cginc"
+			#pragma vertex vert_img
+			#pragma fragment frag
+
+			float4 frag(v2f_img i) : SV_Target
+			{
+				float3 vertexPos = PreviewFragmentPositionOS( i.uv );
+				float3 worldViewDir = PreviewWorldSpaceViewDir( vertexPos, true );
+
+				return float4(worldViewDir, 1);
+			}
+			ENDCG
+		}
+
+		Pass // 2 => Object Space
+		{
+			CGPROGRAM
+			#include "UnityCG.cginc"
+			#include "Preview.cginc"
+			#pragma vertex vert_img
+			#pragma fragment frag
+
+			float4 frag(v2f_img i) : SV_Target
+			{
+				float3 vertexPos = PreviewFragmentPositionOS( i.uv );
+				float3 worldViewDir = PreviewWorldSpaceViewDir( vertexPos, false );
+				float3 objViewDir = PreviewWorldToObjectDir( worldViewDir, true );
+
+				return float4(objViewDir, 1);
+			}
+			ENDCG
+		}
+
+		Pass // 3 => View Space
+		{
+			CGPROGRAM
+			#include "UnityCG.cginc"
+			#include "Preview.cginc"
+			#pragma vertex vert_img
+			#pragma fragment frag
+
+			float4 frag(v2f_img i) : SV_Target
+			{
+				float3 vertexPos = PreviewFragmentPositionOS( i.uv );
+				float3 normal = PreviewFragmentNormalOS( i.uv );
+				float3 worldViewDir = PreviewWorldSpaceViewDir( vertexPos, false );
+				float3 viewViewDir = PreviewWorldToViewDir( worldViewDir, true );
+	
+				return float4(viewViewDir, 1);
+			}
+			ENDCG
+		}
+
+		
 	}
 }

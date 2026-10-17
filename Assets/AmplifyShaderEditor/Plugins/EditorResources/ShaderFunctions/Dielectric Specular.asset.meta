@@ -1,8 +1,16 @@
 fileFormatVersion: 2
 guid: cf90616a2350c5c4cba1069366c98fa1
-timeCreated: 1632734570
-licenseType: Store
 NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 0
   userData: 
   assetBundleName: 
   assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 68570
+  packageName: Amplify Shader Editor
+  packageVersion: 1.9.9.14
+  assetPath: Assets/AmplifyShaderEditor/Plugins/EditorResources/ShaderFunctions/Dielectric
+    Specular.asset
+  uploadId: 1019702

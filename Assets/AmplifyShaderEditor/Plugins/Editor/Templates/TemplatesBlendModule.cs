@@ -104,6 +104,13 @@ namespace AmplifyShaderEditor
 		[SerializeField]
 		private InlineProperty m_blendOpAlphaInline = new InlineProperty();
 
+		private bool m_sourceFactorRGBDirty = false;
+		private bool m_destFactorRGBDirty = false;
+		private bool m_sourceFactorAlphaDirty = false;
+		private bool m_destFactorAlphaDirty = false;
+		private bool m_blendOpRGBDirty = false;
+		private bool m_blendOpAlphaDirty = false;
+
 		public TemplatesBlendModule() : base( "Blend Mode and Ops" )
 		{
 			m_commonBlendTypesArr = new string[ m_commonBlendTypes.Count ];
@@ -138,6 +145,68 @@ namespace AmplifyShaderEditor
 			m_destFactorAlphaInline = other.DestFactorAlphaInline;
 			m_blendOpRGBInline = other.BlendOpRGBInline;
 			m_blendOpAlphaInline = other.BlendOpAlphaInline;
+		}
+
+		// Copies only the blend fields both modules declare and the user just edited; the preset
+		// indices are recomputed from the factors like the inspector does.
+		public bool MirrorFrom( TemplatesBlendModule other )
+		{
+			bool mirrored = false;
+			if ( m_validBlendMode && other.ValidBlendMode )
+			{
+				if ( other.SourceFactorRGBDirty )
+				{
+					m_sourceFactorRGB = other.SourceFactorRGB;
+					m_sourceFactorRGBInline.CopyFrom( other.SourceFactorRGBInline, true );
+					mirrored = true;
+				}
+
+				if ( other.DestFactorRGBDirty )
+				{
+					m_destFactorRGB = other.DestFactorRGB;
+					m_destFactorRGBInline.CopyFrom( other.DestFactorRGBInline, true );
+					mirrored = true;
+				}
+
+				if ( other.SourceFactorAlphaDirty )
+				{
+					m_sourceFactorAlpha = other.SourceFactorAlpha;
+					m_sourceFactorAlphaInline.CopyFrom( other.SourceFactorAlphaInline, true );
+					mirrored = true;
+				}
+
+				if ( other.DestFactorAlphaDirty )
+				{
+					m_destFactorAlpha = other.DestFactorAlpha;
+					m_destFactorAlphaInline.CopyFrom( other.DestFactorAlphaInline, true );
+					mirrored = true;
+				}
+
+				if ( mirrored )
+				{
+					CheckRGBIndex();
+					CheckAlphaIndex();
+				}
+			}
+
+			if ( m_validBlendOp && other.ValidBlendOp )
+			{
+				if ( other.BlendOpRGBDirty )
+				{
+					m_blendOpRGB = other.BlendOpRGB;
+					m_blendOpRGBInline.CopyFrom( other.BlendOpRGBInline, true );
+					mirrored = true;
+				}
+
+				if ( other.BlendOpAlphaDirty )
+				{
+					m_blendOpAlpha = other.BlendOpAlpha;
+					m_blendOpAlphaInline.CopyFrom( other.BlendOpAlphaInline, true );
+					mirrored = true;
+				}
+			}
+
+			return mirrored;
 		}
 
 		public void ConfigureFromTemplateData( TemplateBlendData blendData )
@@ -284,6 +353,14 @@ namespace AmplifyShaderEditor
 
 		void DrawBlock( UndoParentNode owner, bool style )
 		{
+			// @diogo: per-field flags only describe the last draw, so the mirror can copy just what was touched
+			m_sourceFactorRGBDirty = false;
+			m_destFactorRGBDirty = false;
+			m_sourceFactorAlphaDirty = false;
+			m_destFactorAlphaDirty = false;
+			m_blendOpRGBDirty = false;
+			m_blendOpAlphaDirty = false;
+
 			EditorGUI.BeginChangeCheck();
 			{
 				var cache = EditorGUIUtility.labelWidth;
@@ -305,6 +382,11 @@ namespace AmplifyShaderEditor
 							m_destFactorRGB = m_commonBlendTypes[ m_currentRGBIndex ].DestFactor;
 							m_destFactorRGBInline.IntValue = (int)m_destFactorRGB;
 							m_destFactorRGBInline.SetInlineNodeValue();
+							m_sourceFactorRGBDirty = true;
+							m_destFactorRGBDirty = true;
+							// @diogo: the outer change check misses the preset popup, so mark the module here
+							m_isDirty = true;
+							CustomEdited = true;
 						}
 					}
 					EditorGUI.BeginDisabledGroup( m_currentRGBIndex == 0 );
@@ -322,14 +404,18 @@ namespace AmplifyShaderEditor
 
 					EditorGUILayout.BeginHorizontal();
 					//m_sourceFactorRGB = (AvailableBlendFactor)owner.EditorGUILayoutEnumPopup( SourceFactorStr, m_sourceFactorRGB );
+					EditorGUI.BeginChangeCheck();
 					m_sourceFactorRGBInline.CustomDrawer( ref owner, ( x ) => { m_sourceFactorRGB = (AvailableBlendFactor)x.EditorGUILayoutEnumPopup( SourceFactorStr, m_sourceFactorRGB ); }, SourceFactorStr );
+					m_sourceFactorRGBDirty = m_sourceFactorRGBDirty || EditorGUI.EndChangeCheck();
 					if( style )
 					{
 						EditorGUI.indentLevel--;
 						EditorGUIUtility.labelWidth = 25;
 					}
 					//m_destFactorRGB = (AvailableBlendFactor)owner.EditorGUILayoutEnumPopup( DstFactorStr, m_destFactorRGB );
+					EditorGUI.BeginChangeCheck();
 					m_destFactorRGBInline.CustomDrawer( ref owner, ( x ) => { m_destFactorRGB = (AvailableBlendFactor)x.EditorGUILayoutEnumPopup( DstFactorStr, m_destFactorRGB ); }, DstFactorStr );
+					m_destFactorRGBDirty = m_destFactorRGBDirty || EditorGUI.EndChangeCheck();
 					if( style )
 						EditorGUI.indentLevel++;
 
@@ -345,6 +431,7 @@ namespace AmplifyShaderEditor
 
 				if( m_blendOpEnabled )
 				{
+					EditorGUI.BeginChangeCheck();
 					// Both these tests should be removed on a later stage
 					// ASE v154dev004 changed AvailableBlendOps.OFF value from -1 to 0
 					// If importing the new package into an already opened ASE window makes 
@@ -354,6 +441,7 @@ namespace AmplifyShaderEditor
 
 					//m_blendOpRGB = (AvailableBlendOps)owner.EditorGUILayoutEnumPopup( BlendOpsRGBStr, m_blendOpRGB );
 					m_blendOpRGBInline.CustomDrawer( ref owner, ( x ) => { m_blendOpRGB = (AvailableBlendOps)x.EditorGUILayoutPopup( BlendOpsRGBStr, (int)m_blendOpRGB, BlendOpsHelper.BlendOpsLabels ); }, BlendOpsRGBStr );
+					m_blendOpRGBDirty = EditorGUI.EndChangeCheck();
 				}
 				
 				if( m_blendModeEnabled )
@@ -374,6 +462,11 @@ namespace AmplifyShaderEditor
 							m_destFactorAlpha = m_commonBlendTypes[ m_currentAlphaIndex ].DestFactor;
 							m_destFactorAlphaInline.IntValue = (int)m_destFactorAlpha;
 							m_destFactorAlphaInline.SetInlineNodeValue();
+							m_sourceFactorAlphaDirty = true;
+							m_destFactorAlphaDirty = true;
+							// @diogo: the outer change check misses the preset popup, so mark the module here
+							m_isDirty = true;
+							CustomEdited = true;
 						}
 					}
 					EditorGUI.BeginDisabledGroup( m_currentAlphaIndex == 0 );
@@ -390,14 +483,18 @@ namespace AmplifyShaderEditor
 					}
 					EditorGUILayout.BeginHorizontal();
 					//m_sourceFactorAlpha = (AvailableBlendFactor)owner.EditorGUILayoutEnumPopup( SourceFactorStr, m_sourceFactorAlpha );
+					EditorGUI.BeginChangeCheck();
 					m_sourceFactorAlphaInline.CustomDrawer( ref owner, ( x ) => { m_sourceFactorAlpha = (AvailableBlendFactor)x.EditorGUILayoutEnumPopup( SourceFactorStr, m_sourceFactorAlpha ); }, SourceFactorStr );
+					m_sourceFactorAlphaDirty = m_sourceFactorAlphaDirty || EditorGUI.EndChangeCheck();
 					if( style )
 					{
 						EditorGUI.indentLevel--;
 						EditorGUIUtility.labelWidth = 25;
 					}
 					//m_destFactorAlpha = (AvailableBlendFactor)owner.EditorGUILayoutEnumPopup( DstFactorStr, m_destFactorAlpha );
+					EditorGUI.BeginChangeCheck();
 					m_destFactorAlphaInline.CustomDrawer( ref owner, ( x ) => { m_destFactorAlpha = (AvailableBlendFactor)x.EditorGUILayoutEnumPopup( DstFactorStr, m_destFactorAlpha ); }, DstFactorStr );
+					m_destFactorAlphaDirty = m_destFactorAlphaDirty || EditorGUI.EndChangeCheck();
 					if( style )
 						EditorGUI.indentLevel++;
 					EditorGUILayout.EndHorizontal();
@@ -414,11 +511,13 @@ namespace AmplifyShaderEditor
 
 				if( m_blendOpEnabled )
 				{
+					EditorGUI.BeginChangeCheck();
 					if( (int)m_blendOpAlpha == -1 )
 						m_blendOpAlpha = AvailableBlendOps.OFF;
 
 					//m_blendOpAlpha = (AvailableBlendOps)owner.EditorGUILayoutEnumPopup( BlendOpsAlphaStr, m_blendOpAlpha );
 					m_blendOpAlphaInline.CustomDrawer( ref owner, ( x ) => { m_blendOpAlpha = (AvailableBlendOps)x.EditorGUILayoutPopup( BlendOpsAlphaStr, (int)m_blendOpAlpha, BlendOpsHelper.BlendOpsLabels ); }, BlendOpsAlphaStr );
+					m_blendOpAlphaDirty = EditorGUI.EndChangeCheck();
 				}
 
 				EditorGUIUtility.labelWidth = cache;
@@ -672,7 +771,13 @@ namespace AmplifyShaderEditor
 		public string Target { get { return m_target; } }
 		public bool ValidBlendMode { get { return m_validBlendMode; } }
 		public bool ValidBlendOp { get { return m_validBlendOp; } }
-		public int CurrentRGBIndex { get { return m_currentRGBIndex; } }
+		public bool SourceFactorRGBDirty { get { return m_sourceFactorRGBDirty; } }
+		public bool DestFactorRGBDirty { get { return m_destFactorRGBDirty; } }
+		public bool SourceFactorAlphaDirty { get { return m_sourceFactorAlphaDirty; } }
+		public bool DestFactorAlphaDirty { get { return m_destFactorAlphaDirty; } }
+		public bool BlendOpRGBDirty { get { return m_blendOpRGBDirty; } }
+		public bool BlendOpAlphaDirty { get { return m_blendOpAlphaDirty; } }
+		public int CurrentRGBIndex { get { return m_currentRGBIndex; } set { m_currentRGBIndex = value; } }
 
 		public AvailableBlendFactor SourceFactorRGB
 		{

@@ -8,7 +8,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[System.Serializable]
-	[NodeAttributes( "Vector2", "Constants And Properties", "Vector2 property", null, KeyCode.Alpha2 )]
+	[NodeAttributes( "Vector2", "Constants And Properties", "Vector2 property", null, KeyCode.Alpha2, tags: "vec2 v2 2" )]
 	public sealed class Vector2Node : PropertyNode
 	{
 		[SerializeField]
@@ -24,9 +24,13 @@ namespace AmplifyShaderEditor
 		private bool m_isEditingFields;
 		private Vector2 m_previousValue = Vector2.zero;
 		private string[] m_fieldText = new string[] { "0", "0" };
-		
+
 		public Vector2Node() : base() { }
 		public Vector2Node( int uniqueId, float x, float y, float width, float height ) : base( uniqueId, x, y, width, height ) { }
+
+		// @diogo: preview frag returns a single constant value, independent of UV (QA #5).
+		public override bool ConstantPreview { get { return true; } }
+
 		protected override void CommonInit( int uniqueId )
 		{
 			base.CommonInit( uniqueId );
@@ -38,6 +42,7 @@ namespace AmplifyShaderEditor
 			m_previewShaderGUID = "88b4191eb06084d4da85d1dd2f984085";
 			m_srpBatcherCompatible = true;
 			m_showHybridInstancedUI = true;
+			m_canBeReferenced = true;
 		}
 
 		public override void CopyDefaultsToMaterial()
@@ -63,7 +68,7 @@ namespace AmplifyShaderEditor
 		public override void SetPreviewInputs()
 		{
 			base.SetPreviewInputs();
-			
+
 			if ( m_cachedPropertyId == -1 )
 				m_cachedPropertyId = Shader.PropertyToID( "_InputVector" );
 
@@ -73,9 +78,9 @@ namespace AmplifyShaderEditor
 				PreviewMaterial.SetVector( m_cachedPropertyId, new Vector4( m_defaultValue[ 0 ], m_defaultValue[ 1 ], 0, 0 ) );
 		}
 
-		public override void OnNodeLayout( DrawInfo drawInfo )
+		public override void OnNodeLayout( DrawInfo drawInfo, NodeUpdateCache cache )
 		{
-			base.OnNodeLayout( drawInfo );
+			base.OnNodeLayout( drawInfo, cache );
 
 			m_propertyDrawPos = m_remainingBox;
 			m_propertyDrawPos.x = m_remainingBox.x - LabelWidth * drawInfo.InvertedZoom;
@@ -86,6 +91,12 @@ namespace AmplifyShaderEditor
 		public override void DrawGUIControls( DrawInfo drawInfo )
 		{
 			base.DrawGUIControls( drawInfo );
+
+			if ( IsPropertyReference )
+			{
+				m_isEditingFields = false;
+				return;
+			}
 
 			if ( drawInfo.CurrentEventType != EventType.MouseDown )
 				return;
@@ -105,7 +116,7 @@ namespace AmplifyShaderEditor
 				m_isEditingFields = false;
 			}
 		}
-		
+
 		public override void Draw( DrawInfo drawInfo )
 		{
 			base.Draw( drawInfo );
@@ -190,12 +201,19 @@ namespace AmplifyShaderEditor
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
 		{
+			PropertyNode reference = PropertyReference;
+			if ( reference != null )
+			{
+				OrderIndex = reference.RawOrderIndex;
+				return reference.GenerateShaderForOutput( outputId, ref dataCollector, ignoreLocalvar );
+			}
+
 			base.GenerateShaderForOutput( outputId,ref dataCollector, ignoreLocalvar );
 			m_precisionString = UIUtils.PrecisionWirePortToCgType( CurrentPrecisionType, m_outputPorts[ 0 ].DataType );
 
 			if ( m_currentParameterType != PropertyType.Constant )
 				return GetOutputVectorItem( 0, outputId, PropertyData( dataCollector.PortCategory ) );
-			
+
 			if ( m_outputPorts[ outputId ].IsLocalValue( dataCollector.PortCategory ) )
 			{
 				return m_outputPorts[ outputId ].LocalValue( dataCollector.PortCategory );
@@ -239,13 +257,14 @@ namespace AmplifyShaderEditor
 		{
 			string x = UIUtils.PropertyFloatToString( m_defaultValue.x );
 			string y = UIUtils.PropertyFloatToString( m_defaultValue.y );
-			return PropertyAttributes + m_propertyName + "(\"" + m_propertyInspectorName + "\", Vector) = (" + x + "," + y + ",0,0)";
+			return PropertyAttributes + PropertyAttributesSeparator + m_propertyName + "( \"" + m_propertyInspectorName +
+				"\", Vector ) = ( " + x + ", " + y + ", 0, 0 )";
 		}
-		
+
 		public override void UpdateMaterial( Material mat )
 		{
 			base.UpdateMaterial( mat );
-			if ( UIUtils.IsProperty( m_currentParameterType ) && !InsideShaderFunction )
+			if ( UIUtils.IsProperty( m_currentParameterType ) && !InsideShaderFunction && !IsPropertyReference )
 			{
 				mat.SetVector( m_propertyName, m_materialValue );
 			}
@@ -277,6 +296,28 @@ namespace AmplifyShaderEditor
 				m_materialValue = IOUtils.StringToVector2( GetCurrentParam( ref nodeParams ) );
 		}
 
+		protected override void CopyPropertyReferenceValues( PropertyNode reference )
+		{
+			Vector2Node node = reference as Vector2Node;
+			if ( node == null )
+				return;
+
+			if ( m_defaultValue != node.m_defaultValue || m_materialValue != node.m_materialValue )
+			{
+				m_defaultValue = node.m_defaultValue;
+				m_materialValue = node.m_materialValue;
+				PreviewIsDirty = true;
+			}
+		}
+
+		public override Vector4 TypeChangeDefaultValue { get { return new Vector4( m_defaultValue.x, m_defaultValue.y, 0, 0 ); } }
+		public override Vector4 TypeChangeMaterialValue { get { return new Vector4( m_materialValue.x, m_materialValue.y, 0, 0 ); } }
+		public override void SetTypeChangeValues( Vector4 defaultValue, Vector4 materialValue )
+		{
+			m_defaultValue = new Vector2( defaultValue.x, defaultValue.y );
+			m_materialValue = new Vector2( materialValue.x, materialValue.y );
+		}
+
 		public override void SetGlobalValue() { Shader.SetGlobalVector( m_propertyName, m_defaultValue ); }
 		public override void FetchGlobalValue() { m_materialValue = Shader.GetGlobalVector( m_propertyName ); }
 		public override void WriteToString( ref string nodeInfo, ref string connectionsInfo )
@@ -285,7 +326,7 @@ namespace AmplifyShaderEditor
 			IOUtils.AddFieldValueToString( ref nodeInfo, IOUtils.Vector2ToString( m_defaultValue ) );
 			IOUtils.AddFieldValueToString( ref nodeInfo, IOUtils.Vector2ToString( m_materialValue ) );
 		}
-		
+
 		public override string GetPropertyValStr()
 		{
 			return ( m_materialMode && m_currentParameterType != PropertyType.Constant ) ? m_materialValue.x.ToString( Mathf.Abs( m_materialValue.x ) > 1000 ? Constants.PropertyBigVectorFormatLabel : Constants.PropertyVectorFormatLabel ) + IOUtils.VECTOR_SEPARATOR +

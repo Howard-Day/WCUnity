@@ -1,9 +1,16 @@
 fileFormatVersion: 2
 guid: ecb3048ef0eec1645bad1d72a98d8279
-timeCreated: 1515421907
-licenseType: Store
 ShaderImporter:
+  externalObjects: {}
   defaultTextures: []
+  nonModifiableTextures: []
   userData: 
   assetBundleName: 
   assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 68570
+  packageName: Amplify Shader Editor
+  packageVersion: 1.9.9.14
+  assetPath: Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_PosterizeNode.shader
+  uploadId: 1019702

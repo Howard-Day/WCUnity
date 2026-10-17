@@ -7,8 +7,8 @@ namespace AmplifyShaderEditor
 	public class ParentTransfNode : ParentNode
 	{
 		protected string m_matrixName;
-		protected string m_matrixHDName;
-		protected string m_matrixLWName;
+		protected string m_matrixNameHDRP;
+		protected string m_matrixNameURP;
 
 		protected override void CommonInit( int uniqueId )
 		{
@@ -28,13 +28,13 @@ namespace AmplifyShaderEditor
 			string matrixName = string.Empty;
 			if( dataCollector.IsTemplate  )
 			{
-				if( dataCollector.TemplateDataCollectorInstance.CurrentSRPType == TemplateSRPType.HDRP && !string.IsNullOrEmpty( m_matrixHDName ) )
+				if( dataCollector.TemplateDataCollectorInstance.CurrentSRPType == TemplateSRPType.HDRP && !string.IsNullOrEmpty( m_matrixNameHDRP ) )
 				{
-					matrixName = m_matrixHDName;
+					matrixName = m_matrixNameHDRP;
 				}
-				else if( dataCollector.TemplateDataCollectorInstance.CurrentSRPType == TemplateSRPType.URP && !string.IsNullOrEmpty( m_matrixLWName ) )
+				else if( dataCollector.TemplateDataCollectorInstance.CurrentSRPType == TemplateSRPType.URP && !string.IsNullOrEmpty( m_matrixNameURP ) )
 				{
-					matrixName = m_matrixLWName;
+					matrixName = m_matrixNameURP;
 				}
 				else
 				{

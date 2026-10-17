@@ -9,7 +9,7 @@ using System.Collections.Generic;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Register Local Var", "Miscellaneous", "Forces a local variable to be written with the given name. Can then be fetched at any place with a <b>Get Local Var</b> node.", null, KeyCode.R )]
+	[NodeAttributes( "Register Local Var", "Miscellaneous", "Forces a local variable to be written with the given name. Can then be fetched at any place with a <b>Get Local Var</b> node.", null, KeyCode.R, tags: "set" )]
 	public sealed class RegisterLocalVarNode : ParentNode
 	{
 		private const double MaxEditingTimestamp = 1;
@@ -18,16 +18,11 @@ namespace AmplifyShaderEditor
 		private const string LocalVarNameStr = "Var Name";
 		private const string OrderIndexStr = "Order Index";
 		private const string AutoOrderIndexStr = "Auto Order";
-		private const string ReferencesStr = "References";
 
-		private const string GetLocalVarLabel = "( {0} ) Get Local Var";
 		private string m_oldName = string.Empty;
 		private bool m_reRegisterName = false;
 		private int m_autoOrderIndex = int.MaxValue;
 		private bool m_forceUpdate = true;
-		private bool m_refSelect = false;
-
-		private bool m_referencesVisible = false;
 
 		[SerializeField]
 		private string m_variableName = LocalDefaultNameStr;
@@ -56,9 +51,6 @@ namespace AmplifyShaderEditor
 			m_textLabelWidth = 85;
 			m_customPrecision = true;
 
-			if( m_containerGraph != null )
-				m_variableName += m_containerGraph.LocalVarNodes.NodesList.Count;
-
 			m_oldName = m_variableName;
 			UpdateTitle();
 			m_previewShaderGUID = "5aaa1d3ea9e1fa64781647e035a82334";
@@ -67,21 +59,53 @@ namespace AmplifyShaderEditor
 		protected override void OnUniqueIDAssigned()
 		{
 			base.OnUniqueIDAssigned();
+
+			// @diogo: the container graph is not available in CommonInit, so a brand new node picks its
+			// default name here; load and paste bring their own and must not consume one
+			if ( UniqueId > -1 && !m_containerGraph.IsLoading && !m_isNodeBeingCopied )
+			{
+				RegisterFirstAvailableName();
+			}
+
 			m_containerGraph.LocalVarNodes.AddNode( this );
+		}
+
+		// Claims the first unused default name so two new nodes never start out sharing one; the first
+		// takes the bare name and the rest number up from 1, matching how AfterDuplication advances.
+		void RegisterFirstAvailableName()
+		{
+			DuplicatePreventionBuffer buffer = m_containerGraph.ParentWindow.DuplicatePrevBufferInstance;
+			string candidate = LocalDefaultNameStr;
+			int index = 0;
+			while ( !buffer.IsLocalvariableNameAvailable( candidate ) )
+			{
+				index++;
+				candidate = LocalDefaultNameStr + index;
+			}
+
+			m_variableName = candidate;
+			m_oldName = m_variableName;
+			buffer.RegisterLocalVariableName( UniqueId, m_variableName );
+			UpdateTitle();
 		}
 
 		public override void OnInputPortConnected( int portId, int otherNodeId, int otherPortId, bool activateNode = true )
 		{
 			base.OnInputPortConnected( portId, otherNodeId, otherPortId, activateNode );
 			m_inputPorts[ 0 ].MatchPortToConnection();
-			m_outputPorts[ 0 ].ChangeType( m_inputPorts[ 0 ].DataType, false );
+			m_outputPorts[ 0 ].ChangeType( m_inputPorts[ 0 ].DataType, m_inputPorts[ 0 ].StructName, false );
+
+			for ( int i = 0; i < m_registeredGetLocalVars.Count; i++ )
+			{
+				m_registeredGetLocalVars[ i ].UpdateLocalVar();
+			}
 		}
 
 		public override void OnConnectedOutputNodeChanges( int outputPortId, int otherNodeId, int otherPortId, string name, WirePortDataType type )
 		{
 			base.OnConnectedOutputNodeChanges( outputPortId, otherNodeId, otherPortId, name, type );
 			m_inputPorts[ 0 ].MatchPortToConnection();
-			m_outputPorts[ 0 ].ChangeType( m_inputPorts[ 0 ].DataType, false );
+			m_outputPorts[ 0 ].ChangeType( m_inputPorts[ 0 ].DataType, m_inputPorts[ 0 ].StructName, false );
 
 			for( int i = 0 ; i < m_registeredGetLocalVars.Count ; i++ )
 			{
@@ -121,6 +145,26 @@ namespace AmplifyShaderEditor
 		public override void AfterDuplication()
 		{
 			base.AfterDuplication();
+			// @diogo: a pasted copy lands with the source's name and m_oldName, so CheckAndChangeName's
+			// revert-on-collision keeps the duplicate; advance the trailing number first
+			if ( !m_containerGraph.ParentWindow.DuplicatePrevBufferInstance.IsLocalvariableNameAvailable( m_variableName ) )
+			{
+				int baseLength = m_variableName.Length;
+				while ( baseLength > 0 && char.IsDigit( m_variableName[ baseLength - 1 ] ) )
+				{
+					baseLength--;
+				}
+				string nameBase = ( baseLength > 0 ) ? m_variableName.Substring( 0, baseLength ) : m_variableName;
+				int index;
+				int.TryParse( m_variableName.Substring( baseLength ), out index );
+				string candidate;
+				do
+				{
+					index++;
+					candidate = nameBase + index;
+				} while ( !m_containerGraph.ParentWindow.DuplicatePrevBufferInstance.IsLocalvariableNameAvailable( candidate ) );
+				m_variableName = candidate;
+			}
 			CheckAndChangeName();
 		}
 
@@ -158,37 +202,9 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		void DrawReferences()
-		{
-			int count = m_registeredGetLocalVars.Count;
-			if( m_registeredGetLocalVars.Count > 0 )
-			{
-				for( int i = 0; i < count; i++ )
-				{
-					EditorGUILayout.BeginHorizontal();
-					EditorGUILayout.LabelField( string.Format( GetLocalVarLabel, m_registeredGetLocalVars[ i ].UniqueId ) );
-					if( GUILayout.Button( "\u25BA", "minibutton", GUILayout.Width( 17 ) ) )
-					{
-						m_containerGraph.ParentWindow.FocusOnNode( m_registeredGetLocalVars[ i ], 0, false );
-					}
-					EditorGUILayout.EndHorizontal();
-				}
-
-				if( GUILayout.Button( "Back" ) )
-				{
-					m_containerGraph.ParentWindow.FocusOnNode( this, 0, false );
-				}
-			}
-			else
-			{
-				EditorGUILayout.HelpBox( "This node is not being referenced by any Get Local Var.", MessageType.Info );
-			}
-		}
-
 		public override void DrawProperties()
 		{
 			NodeUtils.DrawPropertyGroup( ref m_propertiesFoldout, Constants.ParameterLabelStr, DrawMainProperties );
-			NodeUtils.DrawPropertyGroup( ref m_referencesVisible, ReferencesStr, DrawReferences );
 			//EditorGUILayout.LabelField(ConnStatus.ToString()+" "+m_activeConnections);
 		}
 
@@ -196,28 +212,6 @@ namespace AmplifyShaderEditor
 		{
 			base.OnEnable();
 			m_reRegisterName = true;
-		}
-
-		public void CheckReferenceSelection()
-		{
-			m_refSelect = false;
-			int count = m_registeredGetLocalVars.Count;
-			for( int i = 0; i < count; i++ )
-			{
-				if( m_registeredGetLocalVars[ i ].Selected )
-					m_refSelect = true;
-			}
-		}
-
-		public override void OnNodeRepaint( DrawInfo drawInfo )
-		{
-			base.OnNodeRepaint( drawInfo );
-			if( m_isVisible && m_refSelect && !m_selected )
-			{
-				GUI.color = Constants.SpecialRegisterLocalVarSelectionColor;
-				GUI.Label( m_globalPosition, string.Empty, UIUtils.GetCustomStyle( CustomStyle.NodeWindowOn ) );
-				GUI.color = m_colorBuffer;
-			}
 		}
 
 		public override void Draw( DrawInfo drawInfo )
@@ -235,6 +229,11 @@ namespace AmplifyShaderEditor
 				m_forceUpdate = false;
 				UpdateTitle();
 			}
+		}
+
+		public override StructFieldMask FieldDemandForInput( int inputIndex, StructFieldMask received )
+		{
+			return ( inputIndex == 0 ) ? received : StructFieldMask.All;
 		}
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
@@ -317,7 +316,6 @@ namespace AmplifyShaderEditor
 			if( !m_registeredGetLocalVars.Contains( node ) )
 			{
 				m_registeredGetLocalVars.Add( node );
-				CheckReferenceSelection();
 			}
 		}
 
@@ -326,7 +324,6 @@ namespace AmplifyShaderEditor
 			if( m_registeredGetLocalVars.Contains( node ) )
 			{
 				m_registeredGetLocalVars.Remove( node );
-				CheckReferenceSelection();
 			}
 		}
 
@@ -353,6 +350,7 @@ namespace AmplifyShaderEditor
 		{
 			base.ActivateNode( signalGenNodeId, signalGenPortId, signalGenNodeType );
 		}
+		protected override string UnreferencedMessage { get { return "This node is not being referenced by any Get Local Var."; } }
 		public override string DataToArray { get { return m_variableName; } }
 		public List<GetLocalVarNode> NodeReferences { get { return m_registeredGetLocalVars; } }
 	}

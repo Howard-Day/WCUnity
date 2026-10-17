@@ -1,9 +1,16 @@
 fileFormatVersion: 2
 guid: f4ff76282a117c2429a1bcd8ba3a9112
-timeCreated: 1488289785
-licenseType: Store
 ShaderImporter:
+  externalObjects: {}
   defaultTextures: []
+  nonModifiableTextures: []
   userData: 
   assetBundleName: 
   assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 68570
+  packageName: Amplify Shader Editor
+  packageVersion: 1.9.9.14
+  assetPath: Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_TFHCCompareGreaterEqual.shader
+  uploadId: 1019702

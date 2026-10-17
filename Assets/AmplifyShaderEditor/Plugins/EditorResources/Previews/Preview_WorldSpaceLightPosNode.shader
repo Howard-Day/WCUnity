@@ -4,6 +4,7 @@ Shader "Hidden/WorldSpaceLightPosNode"
 	{
 		CGINCLUDE
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#pragma vertex vert_img
 			#pragma fragment frag
 		ENDCG

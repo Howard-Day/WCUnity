@@ -2,16 +2,17 @@ Shader "Hidden/NoiseGeneratorNode"
 {
 	Properties
 	{
-		_A ("_RGB", 2D) = "white" {}
-		_B ("_RGB", 2D) = "white" {}
+		_A ("_RGB", 2DArray) = "white" {}
+		_B ("_RGB", 2DArray) = "white" {}
 		_To01Range ("_To01Range", Float) = 0
 	}
 	
 	SubShader
 	{
 		CGINCLUDE
-		sampler2D _A;
-		sampler2D _B;
+		#include "Preview.cginc"
+		ASE_PORT( _A );
+		ASE_PORT( _B );
 		float _To01Range;
 		ENDCG
 
@@ -19,8 +20,10 @@ Shader "Hidden/NoiseGeneratorNode"
 		{
 			CGPROGRAM
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#pragma vertex vert_img
 			#pragma fragment frag
+			#pragma target 3.5
 
 
 			float3 mod2D289 ( float3 x ) { return x - floor ( x * ( 1.0 / 289.0 ) ) * 289.0; }
@@ -53,8 +56,8 @@ Shader "Hidden/NoiseGeneratorNode"
 			}
 			float4 frag(v2f_img i) : SV_Target
 			{
-				float2 size = tex2D( _A, i.uv ).rg;
-				float scale = tex2D (_B, i.uv).r;
+				float2 size = ASE_SAMPLE_PORT( _A, i.uv ).rg;
+				float scale = ASE_SAMPLE_PORT( _B, i.uv).r;
 				float noiseVal = snoise ( size * scale );
 				noiseVal = (_To01Range > 0) ? noiseVal * 0.5 + 0.5 : noiseVal;
 				return float4( noiseVal.xxx, 1);
@@ -66,8 +69,10 @@ Shader "Hidden/NoiseGeneratorNode"
 		{
 			CGPROGRAM
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#pragma vertex vert_img
 			#pragma fragment frag
+			#pragma target 3.5
 
 			float3 mod3D289 ( float3 x ) { return x - floor ( x / 289.0 ) * 289.0; }
 
@@ -122,8 +127,8 @@ Shader "Hidden/NoiseGeneratorNode"
 
 			float4 frag ( v2f_img i ) : SV_Target
 			{
-				float3 size = tex2D ( _A, i.uv ).rgb;
-				float scale = tex2D (_B, i.uv).r;
+				float3 size = ASE_SAMPLE_PORT( _A, i.uv ).rgb;
+				float scale = ASE_SAMPLE_PORT( _B, i.uv).r;
 				float noiseVal = snoise ( size * scale );
 				noiseVal = (_To01Range > 0) ? noiseVal * 0.5 + 0.5 : noiseVal;
 				return float4( noiseVal.xxx, 1 );
@@ -135,8 +140,10 @@ Shader "Hidden/NoiseGeneratorNode"
 		{
 			CGPROGRAM
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#pragma vertex vert_img
 			#pragma fragment frag
+			#pragma target 3.5
 
 			//https://www.shadertoy.com/view/XdXGW8
 			float2 GradientNoiseDir (float2 x)
@@ -160,8 +167,8 @@ Shader "Hidden/NoiseGeneratorNode"
 
 			float4 frag (v2f_img i) : SV_Target
 			{
-				float3 size = tex2D (_A, i.uv).rgb;
-				float scale = tex2D (_B, i.uv).r;
+				float3 size = ASE_SAMPLE_PORT( _A, i.uv).rgb;
+				float scale = ASE_SAMPLE_PORT( _B, i.uv).r;
 				float noiseVal = GradientNoise (size , scale);
 				noiseVal = (_To01Range > 0) ? noiseVal * 0.5 + 0.5 : noiseVal;
 				return float4(noiseVal.xxx, 1);
@@ -173,8 +180,10 @@ Shader "Hidden/NoiseGeneratorNode"
 		{
 			CGPROGRAM
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#pragma vertex vert_img
 			#pragma fragment frag
+			#pragma target 3.5
 
 			float2 UnityGradientNoiseDir (float2 p)
 			{
@@ -200,8 +209,8 @@ Shader "Hidden/NoiseGeneratorNode"
 
 			float4 frag (v2f_img i) : SV_Target
 			{
-				float3 size = tex2D (_A, i.uv).rgb;
-				float scale = tex2D (_B, i.uv).r;
+				float3 size = ASE_SAMPLE_PORT( _A, i.uv).rgb;
+				float scale = ASE_SAMPLE_PORT( _B, i.uv).r;
 				float noiseVal = UnityGradientNoise(size , scale);
 				noiseVal = (_To01Range > 0) ? noiseVal * 0.5 + 0.5 : noiseVal;
 				return float4(noiseVal.xxx, 1);
@@ -213,8 +222,10 @@ Shader "Hidden/NoiseGeneratorNode"
 		{
 			CGPROGRAM
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#pragma vertex vert_img
 			#pragma fragment frag
+			#pragma target 3.5
 
 			inline float noise_randomValue (float2 uv) { return frac(sin(dot(uv, float2(12.9898, 78.233)))*43758.5453); }
 			inline float noise_interpolate (float a, float b, float t) { return (1.0-t)*a + (t*b); }
@@ -255,8 +266,8 @@ Shader "Hidden/NoiseGeneratorNode"
 
 			float4 frag (v2f_img i) : SV_Target
 			{
-				float3 size = tex2D (_A, i.uv).rgb;
-				float scale = tex2D (_B, i.uv).r;
+				float3 size = ASE_SAMPLE_PORT( _A, i.uv).rgb;
+				float scale = ASE_SAMPLE_PORT( _B, i.uv).r;
 				float noiseVal = SimpleNoise(size * scale);
 				noiseVal = (_To01Range == 0) ? noiseVal * 2 - 1 : noiseVal;
 				return float4(noiseVal.xxx, 1);

@@ -48,23 +48,31 @@ namespace AmplifyShaderEditor
 			SetPreviewInputs();
 			if( !Preferences.User.DisablePreviews )
 			{
+				PreparePooledPreview();
+
+				RenderTexture temp = RenderTexture.active;
 				int count = m_outputPorts.Count;
 				for( int i = 0 ; i < count ; i++ )
 				{
-					RenderTexture temp = RenderTexture.active;
-					RenderTexture.active = m_outputPorts[ i ].OutputPreviewTexture;
-					Graphics.Blit( null , m_outputPorts[ i ].OutputPreviewTexture , PreviewMaterial , Mathf.Min( i , 3 ) );
-					RenderTexture.active = temp;
+					m_outputPorts[ i ].BlitPreview( PreviewMaterial , Mathf.Min( i , 3 ) );
 				}
+
+				// @diogo: refresh the unconnected default-value slice here, inside the RT save/restore; PreviewSlice
+				// is read while drawing, where a Blit retargets the rest of the window's repaint
+				if( !m_inputPorts[ 0 ].IsConnected )
+				{
+					m_inputPorts[ 0 ].InputPreviewSlice( ContainerGraph );
+				}
+				RenderTexture.active = temp;
 			}
-			PreviewIsDirty = m_continuousPreviewRefresh;
+			PreviewIsDirty = ContinuousPreviewRefresh;
 		}
 
-		public override RenderTexture PreviewTexture
+		public override ASEPreviewSlice PreviewSlice
 		{
 			get
 			{
-				return m_inputPorts[ 0 ].InputPreviewTexture( ContainerGraph );
+				return m_inputPorts[ 0 ].IsConnected ? m_inputPorts[ 0 ].InputPreviewSlice( ContainerGraph ) : m_inputPorts[ 0 ].OwnedInputPreviewSlice;
 			}
 		}
 
@@ -134,6 +142,19 @@ namespace AmplifyShaderEditor
 					for( int i = 0; i < 4; i++ )
 					{
 						m_outputPorts[ i ].ChangeProperties( VectorPortNames[ i ], WirePortDataType.FLOAT, false );
+						m_outputPorts[ i ].Visible = true;
+					}
+					for( int i = 4; i < m_outputPorts.Count; i++ )
+					{
+						m_outputPorts[ i ].Visible = false;
+					}
+				}
+				break;
+				case WirePortDataType.FLOAT2x2:
+				{
+					for( int i = 0; i < 4; i++ )
+					{
+						m_outputPorts[ i ].ChangeProperties( "[" + (int)( i / 2 ) + "][" + i % 2 + "]", WirePortDataType.FLOAT, false );
 						m_outputPorts[ i ].Visible = true;
 					}
 					for( int i = 4; i < m_outputPorts.Count; i++ )
@@ -274,6 +295,10 @@ namespace AmplifyShaderEditor
 				case WirePortDataType.COLOR:
 				{
 					return GetOutputColorItem( 0, outputId + 1, value );
+				}
+				case WirePortDataType.FLOAT2x2:
+				{
+					return value + "[ " + ( (int)( outputId / 2 ) ) + " ][ " + ( outputId % 2 ) + " ]";
 				}
 				case WirePortDataType.FLOAT3x3:
 				{

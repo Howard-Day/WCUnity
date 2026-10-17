@@ -1,4 +1,4 @@
-Shader /*ase_name*/ "Hidden/Templates/Legacy/PostProcess" /*end*/
+Shader /*ase_name*/ "Hidden/Built-In/PostProcess" /*end*/
 {
 	Properties
 	{
@@ -9,19 +9,19 @@ Shader /*ase_name*/ "Hidden/Templates/Legacy/PostProcess" /*end*/
 	SubShader
 	{
 		Tags{ }
-		
+
 		ZTest Always
 		Cull Off
 		ZWrite Off
 
 		/*ase_pass*/
 		Pass
-		{ 
-			CGPROGRAM 
+		{
+			CGPROGRAM
 
-			#pragma vertex vert_img_custom 
+			#pragma vertex vert_img_custom
 			#pragma fragment frag
-			#pragma target 3.0
+			#pragma target 3.5
 			#include "UnityCG.cginc"
 			/*ase_pragma*/
 
@@ -47,7 +47,7 @@ Shader /*ase_name*/ "Hidden/Templates/Legacy/PostProcess" /*end*/
 			uniform sampler2D _MainTex;
 			uniform half4 _MainTex_TexelSize;
 			uniform half4 _MainTex_ST;
-			
+
 			/*ase_globals*/
 
 			v2f_img_custom vert_img_custom ( appdata_img_custom v /*ase_vert_input*/ )
@@ -76,8 +76,8 @@ Shader /*ase_name*/ "Hidden/Templates/Legacy/PostProcess" /*end*/
 				#else
 					half2 uv = i.uv;
 					half2 stereoUV = i.stereoUV;
-				#endif	
-				
+				#endif
+
 				half4 finalColor;
 
 				// ase common template code
@@ -86,9 +86,9 @@ Shader /*ase_name*/ "Hidden/Templates/Legacy/PostProcess" /*end*/
 				finalColor = /*ase_frag_out:Frag Color;Float4*/half4( 1, 1, 1, 1 )/*end*/;
 
 				return finalColor;
-			} 
-			ENDCG 
+			}
+			ENDCG
 		}
 	}
-	CustomEditor "ASEMaterialInspector"
+	CustomEditor "AmplifyShaderEditor.MaterialInspector"
 }

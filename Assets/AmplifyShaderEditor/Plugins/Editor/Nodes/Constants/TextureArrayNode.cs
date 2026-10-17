@@ -142,7 +142,14 @@ namespace AmplifyShaderEditor
 				if( (ParentNode)m_referenceSampler != m_referenceSampler.PreviewTextProp )
 				{
 					PreviewMaterial.SetInt( m_texConnectedId, 1 );
-					PreviewMaterial.SetTexture( "_G", m_referenceSampler.PreviewTextProp.PreviewTexture );
+					// @diogo: reference read bypasses InputPorts; the referenced node may be pooled and RT-less,
+					// so pull it and, when we are live, mark it so it settles as a persistent frontier RT (QA #5c).
+					m_referenceSampler.PreviewTextProp.EnsurePreviewRendered();
+					if( PreviewLive )
+					{
+						m_referenceSampler.PreviewTextProp.MarkFeedsLiveConsumer();
+					}
+					m_referenceSampler.PreviewTextProp.BindPreview( PreviewMaterial, Shader.PropertyToID( "_G" ), ASEPreviewSlices.ReferenceScratchIndex, this );
 				}
 				else
 				{
@@ -171,8 +178,11 @@ namespace AmplifyShaderEditor
 				UIUtils.RegisterPropertyNode( this );
 			}
 
-			if( UniqueId > -1 )
+			if ( UniqueId > -1 )
+			{
+				ContainerGraph.TextureArrayNodes.OnReorderEventComplete -= OnReorderEventComplete;
 				ContainerGraph.TextureArrayNodes.OnReorderEventComplete += OnReorderEventComplete;
+			}
 
 		}
 
@@ -257,6 +267,8 @@ namespace AmplifyShaderEditor
 				UpdateHeaderColor();
 			}
 
+			UIUtils.DrawSeparator();
+
 			if( m_referenceType == TexReferenceType.Object )
 			{
 				EditorGUI.BeginChangeCheck();
@@ -280,7 +292,15 @@ namespace AmplifyShaderEditor
 					GUI.enabled = false;
 				}
 
-				m_referenceArrayId = EditorGUILayoutPopup( Constants.AvailableReferenceStr, m_referenceArrayId, arr );
+				SearchableDropdown.Draw( Constants.AvailableReferenceStr, m_referenceArrayId, arr, ( idx ) =>
+				{
+					if( idx != m_referenceArrayId )
+					{
+						UndoRecordObject( "Selected texture array reference" );
+						m_referenceArrayId = idx;
+						SetDirtyFromAsyncEdit();
+					}
+				} );
 				GUI.enabled = guiEnabledBuffer;
 
 				ShowDefaults();
@@ -428,9 +448,9 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		public override void OnNodeLayout( DrawInfo drawInfo )
+		public override void OnNodeLayout( DrawInfo drawInfo, NodeUpdateCache cache )
 		{
-			base.OnNodeLayout( drawInfo );
+			base.OnNodeLayout( drawInfo, cache );
 
 			if( m_drawPreview )
 			{
@@ -438,7 +458,7 @@ namespace AmplifyShaderEditor
 				m_iconPos.width = 19 * drawInfo.InvertedZoom;
 				m_iconPos.height = 19 * drawInfo.InvertedZoom;
 
-				m_iconPos.y += 10 * drawInfo.InvertedZoom;
+				m_iconPos.y = m_globalPosition.y + m_headerPosition.height * 0.5f - m_iconPos.height * 0.5f;
 				m_iconPos.x += m_globalPosition.width - m_iconPos.width - 5 * drawInfo.InvertedZoom;
 			}
 
@@ -602,6 +622,12 @@ namespace AmplifyShaderEditor
 			GUI.Label( newRect, string.Empty, UIUtils.GetCustomStyle( CustomStyle.SamplerFrame ) );
 		}
 
+		// @diogo: the picker path above draws the preview RT with m_drawPreview off, so root the preview pass here too
+		public override bool IsPreviewVisible
+		{
+			get { return base.IsPreviewVisible || ( m_drawPicker && ( m_materialMode ? m_materialTextureArray : m_defaultTextureArray ) != null ); }
+		}
+
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
 		{
 			if( m_outputPorts[ 0 ].IsLocalValue( dataCollector.PortCategory ) )
@@ -700,15 +726,15 @@ namespace AmplifyShaderEditor
 				if( m_mipMode == MipType.MipBias )
 				{
 					GeneratorUtils.AddCustomArraySamplingMacros( ref dataCollector );
-					result = "ASE_SAMPLE_TEX2DARRAY_GRAD(" + propertyName + ", float3(" + uvs + ", " + index + "), " + m_ddxPort.GeneratePortInstructions( ref dataCollector ) + ", " + m_ddyPort.GeneratePortInstructions( ref dataCollector ) + " )";
+					result = "ASE_SAMPLE_TEX2DARRAY_GRAD( " + propertyName + ", float3( " + uvs + ", " + index + " ), " + m_ddxPort.GeneratePortInstructions( ref dataCollector ) + ", " + m_ddyPort.GeneratePortInstructions( ref dataCollector ) + " )";
 				}
 				else if( m_lodPort.Visible || isVertex )
 				{
-					result = "UNITY_SAMPLE_TEX2DARRAY_LOD(" + propertyName + ", float3(" + uvs + ", " + index + "), " + level + " )";
+					result = "UNITY_SAMPLE_TEX2DARRAY_LOD( " + propertyName + ", float3( " + uvs + ", " + index + " ), " + level + " )";
 				}
 				else
 				{
-					result = "UNITY_SAMPLE_TEX2DARRAY" + ( m_lodPort.Visible || isVertex ? "_LOD" : "" ) + "(" + propertyName + ", float3(" + uvs + ", " + index + ") " + ( m_lodPort.Visible || isVertex ? ", " + level : "" ) + " )";
+					result = "UNITY_SAMPLE_TEX2DARRAY" + ( m_lodPort.Visible || isVertex ? "_LOD" : "" ) + "( " + propertyName + ", float3( " + uvs + ", " + index + " ) " + ( m_lodPort.Visible || isVertex ? ", " + level : "" ) + " )";
 				}
 			}
 
@@ -763,7 +789,7 @@ namespace AmplifyShaderEditor
 
 		public override string GetPropertyValue()
 		{
-			return PropertyAttributes + PropertyName + "(\"" + PropertyInspectorName + "\", 2DArray ) = \"\" {}";
+			return PropertyAttributes + PropertyAttributesSeparator + PropertyName + "( \"" + PropertyInspectorName + "\", 2DArray ) = \"\" {}";
 		}
 
 		public override bool GetUniformData( out string dataType, out string dataName, ref bool fullValue )
@@ -826,6 +852,17 @@ namespace AmplifyShaderEditor
 			m_referenceSampler = UIUtils.GetNode( m_referenceNodeId ) as TextureArrayNode;
 			m_referenceArrayId = UIUtils.GetTextureArrayNodeRegisterId( m_referenceNodeId );
 			OnPropertyNameChanged();
+		}
+
+		public override void ReconnectClipboardReferences( Clipboard clipboard )
+		{
+			// validate node first
+			int newId = clipboard.GeNewNodeId( m_referenceNodeId );
+			if ( ContainerGraph.GetNode( newId ) != null )
+			{
+				m_referenceNodeId = newId;
+			}
+			RefreshExternalReferences();
 		}
 
 		public override void WriteToString( ref string nodeInfo, ref string connectionsInfo )
@@ -928,6 +965,7 @@ namespace AmplifyShaderEditor
 
 			return m_referenceSampler != null;
 		}
+		public override int ReferencedNodeId { get { return ( m_referenceType == TexReferenceType.Instance && m_referenceNodeId > -1 ) ? m_referenceNodeId : base.ReferencedNodeId; } }
 
 		public override void SetupFromCastObject( UnityEngine.Object obj )
 		{

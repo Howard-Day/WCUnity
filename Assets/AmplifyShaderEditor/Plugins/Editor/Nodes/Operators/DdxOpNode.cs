@@ -11,6 +11,7 @@ namespace AmplifyShaderEditor
 		{
 			base.CommonInit( uniqueId );
 			m_opName = "ddx";
+			m_isDerivativeOp = true;
 			m_previewShaderGUID = "b54ea73d5568b3540977557813eb9c3c";
 			m_inputPorts[ 0 ].CreatePortRestrictions( WirePortDataType.OBJECT,
 														WirePortDataType.FLOAT,

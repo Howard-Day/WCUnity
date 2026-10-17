@@ -26,6 +26,13 @@ namespace AmplifyShaderEditor
 
 		private TexturePropertyNode m_referenceNode = null;
 
+		// @diogo: Triplanar's Top/Mid/Bot all carry the Triplanar's own id, so only the name tells them apart
+		[SerializeField]
+		private string m_referenceName = string.Empty;
+
+		// @diogo: name last rendered in the subtitle; source renames don't notify us, so UpdateTitle polls it
+		private string m_previousReferenceName = null;
+
 		private Vector4Node m_texCoordsHelper;
 
 		private UpperLeftWidgetHelper m_upperLeftWidget = new UpperLeftWidgetHelper();
@@ -77,20 +84,20 @@ namespace AmplifyShaderEditor
 
 			if( !Preferences.User.DisablePreviews )
 			{
+				PreparePooledPreview();
+
 				RenderTexture temp = RenderTexture.active;
 
-				RenderTexture.active = m_outputPorts[ 0 ].OutputPreviewTexture;
 				PreviewMaterial.SetInt( "_PreviewID" , 0 );
-				Graphics.Blit( null , m_outputPorts[ 0 ].OutputPreviewTexture , PreviewMaterial , m_previewMaterialPassId );
+				m_outputPorts[ 0 ].BlitPreview( PreviewMaterial , m_previewMaterialPassId );
 
-				RenderTexture.active = m_outputPorts[ 1 ].OutputPreviewTexture;
 				PreviewMaterial.SetInt( "_PreviewID" , 1 );
-				Graphics.Blit( null , m_outputPorts[ 1 ].OutputPreviewTexture , PreviewMaterial , m_previewMaterialPassId );
+				m_outputPorts[ 1 ].BlitPreview( PreviewMaterial , m_previewMaterialPassId );
 				RenderTexture.active = temp;
 
 			}
 
-			PreviewIsDirty = m_continuousPreviewRefresh;
+			PreviewIsDirty = ContinuousPreviewRefresh;
 			FinishPreviewRender = true;
 		}
 
@@ -136,7 +143,7 @@ namespace AmplifyShaderEditor
 			base.SetPreviewInputs();
 			if( m_inputPorts[ 0 ].IsConnected )
 			{
-				SetPreviewTexture( m_inputPorts[ 0 ].InputPreviewTexture( ContainerGraph ) );
+				SetPreviewTexture( m_inputPorts[ 0 ].InputPreviewTexture2D( ContainerGraph, ASEPreviewSlices.ReferenceScratchIndex ) );
 			}
 			else if( m_referenceNode != null )
 			{
@@ -146,7 +153,14 @@ namespace AmplifyShaderEditor
 				}
 				else
 				{
-					SetPreviewTexture( m_referenceNode.PreviewTexture );
+					// @diogo: reference read bypasses InputPorts; the referenced property may be pooled and RT-less,
+					// so pull it and, when we are live, mark it so it settles as a persistent frontier RT (QA #5c).
+					m_referenceNode.EnsurePreviewRendered();
+					if( PreviewLive )
+					{
+						m_referenceNode.MarkFeedsLiveConsumer();
+					}
+					SetPreviewTexture( m_referenceNode.PreviewTexture2D( ASEPreviewSlices.ReferenceScratchIndex ) );
 				}
 			}
 		}
@@ -176,58 +190,135 @@ namespace AmplifyShaderEditor
 
 		void UpdateTitle()
 		{
-			if( m_inputReferenceNode != null )
+			string referenceName;
+			if ( m_inputReferenceNode != null )
 			{
-				m_additionalContent.text = string.Format( Constants.PropertyValueLabel, m_inputReferenceNode.PropertyInspectorName );
+				referenceName = m_inputReferenceNode.PropertyInspectorName;
 			}
-			else if( m_referenceSamplerId > -1 && m_referenceNode != null )
+			else if ( m_referenceSamplerId > -1 && m_referenceNode != null )
 			{
-				m_additionalContent.text = string.Format( Constants.PropertyValueLabel, m_referenceNode.PropertyInspectorName );
+				referenceName = m_referenceNode.PropertyInspectorName;
 			}
 			else
 			{
-				m_additionalContent.text = string.Empty;
+				referenceName = string.Empty;
 			}
-			m_sizeIsDirty = true;
+
+			// @diogo: diff the source name, not the formatted text, so polling never allocates or resizes
+			if ( !string.Equals( m_previousReferenceName, referenceName ) )
+			{
+				m_previousReferenceName = referenceName;
+				m_additionalContent.text = ( referenceName.Length > 0 ) ? string.Format( Constants.PropertyValueLabel, referenceName ) : string.Empty;
+				m_sizeIsDirty = true;
+			}
+		}
+
+		public override void OnNodeLogicUpdate( DrawInfo drawInfo )
+		{
+			base.OnNodeLogicUpdate( drawInfo );
+			CheckReference();
+			UpdateTitle();
+		}
+
+		// @diogo: the sorted register shifts indices on rename/add/remove; re-anchor the index to the property
+		void CheckReference()
+		{
+			if ( m_referenceNodeId > -1 )
+			{
+				if ( m_referenceNode != null )
+				{
+					// @diogo: the live pointer wins, so mirror its name before any index driven re-resolve
+					m_referenceName = m_referenceNode.PropertyName;
+				}
+
+				if ( m_referenceNode == null || UIUtils.GetTexturePropertyNode( m_referenceSamplerId ) != m_referenceNode )
+				{
+					// @diogo: an id that outlived its target later resolves to whatever node inherits it;
+					// Triplanar is an exception, it owns off-graph texture properties that carry its own id
+					ParentNode owner = ContainerGraph.GetNode( m_referenceNodeId );
+					if ( owner is TexturePropertyNode || owner is TriplanarNode )
+					{
+						m_referenceNode = UIUtils.GetTexturePropertyNodeByReference( m_referenceNodeId, m_referenceName );
+						m_referenceSamplerId = UIUtils.GetTexturePropertyNodeRegisterId( m_referenceNode );
+					}
+					else
+					{
+						m_referenceNodeId = -1;
+						m_referenceSamplerId = -1;
+						m_referenceNode = null;
+						m_referenceName = string.Empty;
+						UpdateTitle();
+					}
+				}
+			}
 		}
 
 		public override void DrawProperties()
 		{
 			base.DrawProperties();
 			bool guiEnabledBuffer = GUI.enabled;
-			EditorGUI.BeginChangeCheck();
 			List<string> arr = new List<string>( UIUtils.TexturePropertyNodeArr() );
 
 			if( arr != null && arr.Count > 0 )
 			{
 				arr.Insert( 0, "None" );
 				GUI.enabled = true && ( !m_inputPorts[ 0 ].IsConnected );
-				m_referenceSamplerId = EditorGUILayoutPopup( Constants.AvailableReferenceStr, m_referenceSamplerId + 1, arr.ToArray() ) - 1;
+				EditorGUILayout.BeginHorizontal();
+				SearchableDropdown.Draw( Constants.AvailableReferenceStr, m_referenceSamplerId + 1, UIUtils.DisambiguateReferenceLabels( arr.ToArray(), ContainerGraph.TexturePropertyNodes.NodesList, 1 ), ( idx ) =>
+				{
+					if( idx - 1 != m_referenceSamplerId )
+					{
+						UndoRecordObject( "Selected texture reference" );
+						m_referenceSamplerId = idx - 1;
+						m_referenceNode = UIUtils.GetTexturePropertyNode( m_referenceSamplerId );
+						if( m_referenceNode != null )
+						{
+							m_referenceNodeId = m_referenceNode.UniqueId;
+							m_referenceName = m_referenceNode.PropertyName;
+						}
+						else
+						{
+							m_referenceNodeId = -1;
+							m_referenceSamplerId = -1;
+							m_referenceName = string.Empty;
+						}
+						UpdateTitle();
+						SetDirtyFromAsyncEdit();
+					}
+				} );
+				UIUtils.DrawReferenceFocusButton( m_referenceNode );
+				EditorGUILayout.EndHorizontal();
 			}
 			else
 			{
 				m_referenceSamplerId = -1;
 				GUI.enabled = false;
-				EditorGUILayoutPopup( Constants.AvailableReferenceStr, m_referenceSamplerId, Dummy );
+				SearchableDropdown.Draw( Constants.AvailableReferenceStr, m_referenceSamplerId, Dummy, null );
 			}
 
 			GUI.enabled = guiEnabledBuffer;
-			if( EditorGUI.EndChangeCheck() )
-			{
-				m_referenceNode = UIUtils.GetTexturePropertyNode( m_referenceSamplerId );
-				if( m_referenceNode != null )
-				{
-					m_referenceNodeId = m_referenceNode.UniqueId;
-				}
-				else
-				{
-					m_referenceNodeId = -1;
-					m_referenceSamplerId = -1;
-				}
-				UpdateTitle();
-			}
 
-			m_instanced = EditorGUILayoutToggle( InstancedLabelStr, m_instanced );
+			bool instanced = EditorGUILayoutToggle( InstancedLabelStr, m_instanced );
+			if ( instanced != m_instanced )
+			{
+				m_instanced = instanced;
+				UpdateInstancedCount( m_instanced );
+			}
+		}
+
+		// @diogo: the helper property emits an instanced access macro, but the master node only writes the
+		// matching UNITY_INSTANCING_BUFFER block ( and flags the material ) while the graph counts at least
+		// one instanced property, so this node keeps that count like PropertyNode does ( #507 )
+		void UpdateInstancedCount( bool instanced )
+		{
+			if ( instanced )
+			{
+				UIUtils.CurrentWindow.OutsideGraph.AddInstancePropertyCount();
+			}
+			else
+			{
+				UIUtils.CurrentWindow.OutsideGraph.RemoveInstancePropertyCount();
+			}
 		}
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
@@ -236,15 +327,21 @@ namespace AmplifyShaderEditor
 			{
 				base.GenerateShaderForOutput( outputId, ref dataCollector, ignoreLocalvar );
 				string texTransform = string.Empty;
+				VariableMode texVarMode = VariableMode.Create;
 
 				if( m_inputPorts[ 0 ].IsConnected )
 				{
 					texTransform = m_inputPorts[ 0 ].GeneratePortInstructions( ref dataCollector ) + "_ST";
+					if ( m_inputPorts[ 0 ].GetOutputNodeWhichIsNotRelay( 0 ) is TexturePropertyNode connectedTexProp )
+					{
+						texVarMode = connectedTexProp.CurrentVariableMode;
+					}
 				}
 				else if( m_referenceNode != null )
 				{
 					m_referenceNode.BaseGenerateShaderForOutput( outputId, ref dataCollector, ignoreLocalvar );
 					texTransform = m_referenceNode.PropertyName + "_ST";
+					texVarMode = m_referenceNode.CurrentVariableMode;
 				}
 				else
 				{
@@ -261,17 +358,23 @@ namespace AmplifyShaderEditor
 					m_texCoordsHelper.ContainerGraph = ContainerGraph;
 					m_texCoordsHelper.SetBaseUniqueId( UniqueId, true );
 					m_texCoordsHelper.RegisterPropertyOnInstancing = false;
-					m_texCoordsHelper.AddGlobalToSRPBatcher = true;
+
 				}
 
-				if( m_instanced )
+				if ( m_instanced )
 				{
+					// TODO: Enable instanced graph
 					m_texCoordsHelper.CurrentParameterType = PropertyType.InstancedProperty;
 				}
 				else
 				{
+
+					m_texCoordsHelper.AddGlobalToSRPBatcher = ( m_referenceNode != null ) ? ( m_referenceNode.CurrentParameterType != PropertyType.Global ) : true;
 					m_texCoordsHelper.CurrentParameterType = PropertyType.Global;
 				}
+
+				m_texCoordsHelper.SetRawVariableMode( texVarMode );
+
 				m_texCoordsHelper.ResetOutputLocals();
 				m_texCoordsHelper.SetRawPropertyName( texTransform );
 				texTransform = m_texCoordsHelper.GenerateShaderForOutput( 0, ref dataCollector, false );
@@ -312,11 +415,13 @@ namespace AmplifyShaderEditor
 				if( m_referenceNode != null )
 				{
 					m_referenceNodeId = m_referenceNode.UniqueId;
+					m_referenceName = m_referenceNode.PropertyName;
 				}
 				else
 				{
 					m_referenceNodeId = -1;
 					m_referenceSamplerId = -1;
+					m_referenceName = string.Empty;
 				}
 				UpdateTitle();
 			}
@@ -325,9 +430,21 @@ namespace AmplifyShaderEditor
 		public override void RefreshExternalReferences()
 		{
 			base.RefreshExternalReferences();
-			m_referenceNode = UIUtils.GetNode( m_referenceNodeId ) as TexturePropertyNode;
-			m_referenceSamplerId = UIUtils.GetTexturePropertyNodeRegisterId( m_referenceNodeId );
+			m_referenceNode = UIUtils.GetTexturePropertyNodeByReference( m_referenceNodeId, m_referenceName );
+			m_referenceSamplerId = UIUtils.GetTexturePropertyNodeRegisterId( m_referenceNode );
 			UpdateTitle();
+		}
+		public override int ReferencedNodeId { get { return m_referenceNodeId > -1 ? m_referenceNodeId : base.ReferencedNodeId; } }
+
+		public override void ReconnectClipboardReferences( Clipboard clipboard )
+		{
+			// validate node first
+			int newId = clipboard.GeNewNodeId( m_referenceNodeId );
+			if ( ContainerGraph.GetNode( newId ) != null )
+			{
+				m_referenceNodeId = newId;
+			}
+			RefreshExternalReferences();
 		}
 
 		public override void ReadFromString( ref string[] nodeParams )
@@ -337,6 +454,15 @@ namespace AmplifyShaderEditor
 			if( UIUtils.CurrentShaderVersion() > 17200 )
 			{
 				m_instanced = Convert.ToBoolean( GetCurrentParam( ref nodeParams ) );
+				if ( m_instanced )
+				{
+					UpdateInstancedCount( true );
+				}
+			}
+
+			if ( UIUtils.CurrentShaderVersion() >= 19913 )
+			{
+				m_referenceName = GetCurrentParam( ref nodeParams );
 			}
 		}
 
@@ -345,11 +471,16 @@ namespace AmplifyShaderEditor
 			base.WriteToString( ref nodeInfo, ref connectionsInfo );
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_referenceNodeId );
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_instanced );
+			IOUtils.AddFieldValueToString( ref nodeInfo, m_referenceName );
 		}
 
 		public override void Destroy()
 		{
 			base.Destroy();
+			if ( m_instanced )
+			{
+				UpdateInstancedCount( false );
+			}
 			m_referenceNode = null;
 			m_inputReferenceNode = null;
 			m_upperLeftWidget = null;

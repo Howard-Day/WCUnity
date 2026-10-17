@@ -1,8 +1,15 @@
 fileFormatVersion: 2
 guid: 45dff16e78a0685469fed8b5b46e4d96
-timeCreated: 1542724676
-licenseType: Store
 NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 0
   userData: 
   assetBundleName: 
   assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 68570
+  packageName: Amplify Shader Editor
+  packageVersion: 1.9.9.14
+  assetPath: Assets/AmplifyShaderEditor/Plugins/EditorResources/ShaderFunctions/PerturbNormalHQ.asset
+  uploadId: 1019702

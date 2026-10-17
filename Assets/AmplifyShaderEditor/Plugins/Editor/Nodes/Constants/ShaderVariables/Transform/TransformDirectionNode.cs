@@ -39,60 +39,60 @@ namespace AmplifyShaderEditor
 		private const string SafeNormalizeOptionStr = "Safe";
 
 		private const string AseObjectToWorldDirVarName = "objToWorldDir";
-		private const string AseObjectToWorldDirFormat = "mul( unity_ObjectToWorld, float4( {0}, 0 ) ).xyz";
-		private const string AseSRPObjectToWorldDirFormat = "mul( GetObjectToWorldMatrix(), float4( {0}, 0 ) ).xyz";
+		private const string AseObjectToWorldDirFormat = "mul( unity_ObjectToWorld, float4( {0}, 0.0 ) ).xyz";
+		private const string AseSRPObjectToWorldDirFormat = "mul( GetObjectToWorldMatrix(), float4( {0}, 0.0 ) ).xyz";
 
 		private const string AseObjectToViewDirVarName = "objToViewDir";
-		private const string AseObjectToViewDirFormat = "mul( UNITY_MATRIX_IT_MV, float4( {0}, 0 ) ).xyz";
-		private const string AseHDObjectToViewDirFormat = "TransformWorldToViewDir( TransformObjectToWorldDir( {0} ))";
+		private const string AseObjectToViewDirFormat = "mul( UNITY_MATRIX_IT_MV, float4( {0}, 0.0 ) ).xyz";
+		private const string AseHDObjectToViewDirFormat = "TransformWorldToViewDir( TransformObjectToWorldDir( {0} ) )";
 
 		private const string AseWorldToObjectDirVarName = "worldToObjDir";
-		private const string AseWorldToObjectDirFormat = "mul( unity_WorldToObject, float4( {0}, 0 ) ).xyz";
-		private const string AseSRPWorldToObjectDirFormat = "mul( GetWorldToObjectMatrix(), float4( {0}, 0 ) ).xyz";
+		private const string AseWorldToObjectDirFormat = "mul( unity_WorldToObject, float4( {0}, 0.0 ) ).xyz";
+		private const string AseSRPWorldToObjectDirFormat = "mul( GetWorldToObjectMatrix(), float4( {0}, 0.0 ) ).xyz";
 
 
 		private const string AseWorldToViewDirVarName = "worldToViewDir";
-		private const string AseWorldToViewDirFormat = "mul( UNITY_MATRIX_V, float4( {0}, 0 ) ).xyz";
+		private const string AseWorldToViewDirFormat = "mul( UNITY_MATRIX_V, float4( {0}, 0.0 ) ).xyz";
 
 		private const string AseViewToObjectDirVarName = "viewToObjDir";
-		private const string AseViewToObjectDirFormat = "mul( UNITY_MATRIX_T_MV, float4( {0}, 0 ) ).xyz";
+		private const string AseViewToObjectDirFormat = "mul( UNITY_MATRIX_T_MV, float4( {0}, 0.0 ) ).xyz";
 
 		private const string AseViewToWorldDirVarName = "viewToWorldDir";
-		private const string AseViewToWorldDirFormat = "mul( UNITY_MATRIX_I_V, float4( {0}, 0 ) ).xyz";
+		private const string AseViewToWorldDirFormat = "mul( UNITY_MATRIX_I_V, float4( {0}, 0.0 ) ).xyz";
 
 		///////////////////////////////////////////////////////////
 		private const string AseObjectToClipDirVarName = "objectToClipDir";
-		private const string AseObjectToClipDirFormat = "mul(UNITY_MATRIX_VP, mul(unity_ObjectToWorld, float4({0}, 0.0)))";
-		private const string AseSRPObjectToClipDirFormat = "TransformWorldToHClipDir(TransformObjectToWorldDir({0}))";
+		private const string AseObjectToClipDirFormat = "mul( UNITY_MATRIX_VP, mul( unity_ObjectToWorld, float4( {0}, 0.0 ) ) ).xyz";
+		private const string AseSRPObjectToClipDirFormat = "TransformWorldToHClipDir( TransformObjectToWorldDir( {0} ) )";
 
 		private const string AseWorldToClipDirVarName = "worldToClipDir";
-		private const string AseWorldToClipDirFormat = "mul(UNITY_MATRIX_VP, float4({0}, 0.0))";
-		private const string AseSRPWorldToClipDirFormat = "TransformWorldToHClipDir({0})";
+		private const string AseWorldToClipDirFormat = "mul( UNITY_MATRIX_VP, float4( {0}, 0.0 ) ).xyz";
+		private const string AseSRPWorldToClipDirFormat = "TransformWorldToHClipDir( {0} )";
 
 		private const string AseViewToClipDirVarName = "viewToClipDir";
-		private const string AseViewToClipDirFormat = "mul(UNITY_MATRIX_P, float4({0}, 0.0))";
-		private const string AseSRPViewToClipDirFormat = "mul(GetViewToHClipMatrix(), float4({0}, 1.0))";
+		private const string AseViewToClipDirFormat = "mul( UNITY_MATRIX_P, float4( {0}, 0.0 ) ).xyz";
+		private const string AseSRPViewToClipDirFormat = "mul( GetViewToHClipMatrix(), float4( {0}, 1.0 ) ).xyz";
 		//
 		private const string AseClipToObjectDirVarName = "clipToObjectDir";
 
-		private const string AseClipToObjectDirFormat = "mul( UNITY_MATRIX_IT_MV, mul( unity_CameraInvProjection,float4({0},0)) ).xyz";
-		private const string AseClipToWorldDirFormat = "mul( UNITY_MATRIX_I_V, mul( unity_CameraInvProjection,float4({0},0)) ).xyz";
-		private const string AseClipToViewDirFormat = " mul( unity_CameraInvProjection,float4({0},0)).xyz";
-		private const string AseHDClipToObjectDirFormat = "mul( UNITY_MATRIX_I_M, mul( UNITY_MATRIX_I_VP,float4({0},0)) ).xyz";
+		private const string AseClipToObjectDirFormat = "mul( UNITY_MATRIX_IT_MV, mul( unity_CameraInvProjection, float4( {0}, 0.0 ) ) ).xyz";
+		private const string AseClipToWorldDirFormat = "mul( UNITY_MATRIX_I_V, mul( unity_CameraInvProjection, float4( {0}, 0.0 ) ) ).xyz";
+		private const string AseClipToViewDirFormat = " mul( unity_CameraInvProjection, float4( {0}, 0.0 ) ).xyz";
+		private const string AseHDClipToObjectDirFormat = "mul( UNITY_MATRIX_I_M, mul( UNITY_MATRIX_I_VP, float4( {0}, 0.0) ) ).xyz";
 
 		private const string AseClipToWorldDirVarName = "clipToWorldDir";
-		private const string AseHDClipToWorldDirFormat = "mul( UNITY_MATRIX_I_VP, float4({0},0) ).xyz";
+		private const string AseHDClipToWorldDirFormat = "mul( UNITY_MATRIX_I_VP, float4( {0}, 0.0 ) ).xyz";
 
 		private const string AseClipToViewDirVarName = "clipToViewDir";
-		private const string AseHDClipToViewDirFormat = " mul( UNITY_MATRIX_I_P,float4({0},0)).xyz";
-		private const string AseClipToNDC = "{0}.xyz/{0}.w";
+		private const string AseHDClipToViewDirFormat = " mul( UNITY_MATRIX_I_P,float4( {0}, 0.0 ) ).xyz";
+		private const string AseClipToNDC = "{0}.xyz / {0}.w";
 
 		/////////////////////////////////////////////////////
 		private const string AseObjectToTangentDirVarName = "objectToTangentDir";
 		private const string AseWorldToTangentDirVarName = "worldToTangentDir";
 		private const string AseViewToTangentDirVarName = "viewToTangentDir";
 		private const string AseClipToTangentDirVarName = "clipToTangentDir";
-		private const string ASEWorldToTangentFormat = "mul( ase_worldToTangent, {0})";
+		private const string ASEWorldToTangentFormat = "mul( ase_worldToTangent, {0} )";
 
 
 		private const string AseTangentToObjectDirVarName = "tangentTobjectDir";
@@ -125,6 +125,10 @@ namespace AmplifyShaderEditor
 			"Clip"
 		};
 
+		private static readonly int m_fromId = Shader.PropertyToID( "_From" );
+		private static readonly int m_toId = Shader.PropertyToID( "_To" );
+		private static readonly int m_normalizeId = Shader.PropertyToID( "_Normalize" );
+		private static readonly int m_safeNormalizeId = Shader.PropertyToID( "_SafeNormalize" );
 
 		protected override void CommonInit( int uniqueId )
 		{
@@ -133,7 +137,7 @@ namespace AmplifyShaderEditor
 			AddOutputVectorPorts( WirePortDataType.FLOAT3, "XYZ" );
 			m_useInternalPortData = true;
 			m_autoWrapProperties = true;
-			m_previewShaderGUID = "74e4d859fbdb2c0468de3612145f4929";
+			m_previewShaderGUID = "6b6881d8f5934d77b59253a52040c050";
 			m_textLabelWidth = 100;
 			UpdateSubtitle();
 		}
@@ -167,6 +171,15 @@ namespace AmplifyShaderEditor
 				EditorGUILayout.HelpBox( Constants.SafeNormalizeInfoStr , MessageType.Info );
 				EditorGUI.indentLevel--;
 			}
+		}
+
+		public override void SetPreviewInputs()
+		{
+			base.SetPreviewInputs();
+			PreviewMaterial.SetInt( m_fromId, (int)m_from );
+			PreviewMaterial.SetInt( m_toId, (int)m_to );
+			PreviewMaterial.SetInt( m_normalizeId, m_normalize ? 1 : 0 );
+			PreviewMaterial.SetInt( m_safeNormalizeId, m_safeNormalize ? 1 : 0 );
 		}
 
 		public override void PropagateNodeData( NodeData nodeData, ref MasterNodeDataCollector dataCollector )

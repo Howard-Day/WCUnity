@@ -20,7 +20,11 @@ namespace AmplifyShaderEditor
 	[Serializable] public class UsageListTemplateMultiPassMasterNodes : NodeUsageRegister<TemplateMultiPassMasterNode> { }
 	[Serializable] public class UsageListCustomExpressionsOnFunctionMode : NodeUsageRegister<CustomExpressionNode> { }
 	[Serializable] public class UsageListGlobalArrayNodes : NodeUsageRegister<GlobalArrayNode> { }
+	[Serializable] public class UsageListAdditionalDirectivesNodes : NodeUsageRegister<AdditionalDirectivesNode> { }
 	[Serializable] public class UsageListStaticSwitchNodes : NodeUsageRegister<StaticSwitch> { }
+	[Serializable] public class UsageListToggleSwitchNodes : NodeUsageRegister<ToggleSwitchNode> { }
+	[Serializable] public class UsageListStructNodes : NodeUsageRegister<StructNode> { }
+	[Serializable] public class UsageListSamplerStateNodes : NodeUsageRegister<SamplerStateNode> { }
 
 	[Serializable]
 	public class NodeUsageRegister<T> where T : ParentNode
@@ -62,6 +66,9 @@ namespace AmplifyShaderEditor
 		public void Clear()
 		{
 			m_nodes.Clear();
+			// @diogo: bulk teardown skips per-node RemoveNode, so these arrays must be reset here too
+			m_nodesArr = new string[ 0 ];
+			m_nodeIDs = new int[ 0 ];
 		}
 
 		public int AddNode( T node )
@@ -71,11 +78,6 @@ namespace AmplifyShaderEditor
 
 			if( !m_nodes.Contains( node ) )
 			{
-				if( m_containerGraph != null )
-				{
-					UndoUtils.RegisterCompleteObjectUndo( m_containerGraph.ParentWindow, Constants.UndoRegisterNodeId );
-					UndoUtils.RegisterCompleteObjectUndo( m_containerGraph, Constants.UndoRegisterNodeId );
-				}
 				m_nodes.Add( node );
 				ReorderNodes();
 				UpdateNodeArr();
@@ -85,7 +87,7 @@ namespace AmplifyShaderEditor
 			{
 				UpdateNodeArr();
 			}
-			
+
 			return -1;
 		}
 
@@ -99,13 +101,14 @@ namespace AmplifyShaderEditor
 			if( node == null )
 				return;
 
+			// @diogo: skip the per-node sort + array rebuild only when this registry's own graph is being torn down ( its lists get discarded wholesale right after ); a node registered here from another graph's teardown ( e.g. a shader function's Custom Expression ) must still unregister
+			if ( ParentGraph.IsGraphBulkDestroying( m_containerGraph ) )
+			{
+				return;
+			}
+
 			if( m_nodes.Contains( node ) )
 			{
-				if( m_containerGraph != null )
-				{
-					UndoUtils.RegisterCompleteObjectUndo( m_containerGraph.ParentWindow, Constants.UndoUnregisterNodeId );
-					UndoUtils.RegisterCompleteObjectUndo( m_containerGraph, Constants.UndoUnregisterNodeId );
-				}
 
 				m_nodes.Remove( node );
 				ReorderNodes();
@@ -118,7 +121,12 @@ namespace AmplifyShaderEditor
 			if( ReorderOnChange )
 			{
 				UnityEngine.Profiling.Profiler.BeginSample( "ReorderNodes_Sort" );
-				m_nodes.Sort( ( x, y ) => ( x.DataToArray.CompareTo( y.DataToArray ) ) );
+				// @diogo: id tie-break keeps same-named entries in a stable order across sorts and save/load
+				m_nodes.Sort( ( x, y ) =>
+				{
+					int result = x.DataToArray.CompareTo( y.DataToArray );
+					return ( result != 0 ) ? result : x.UniqueId.CompareTo( y.UniqueId );
+				} );
 				UnityEngine.Profiling.Profiler.EndSample();
 
 				if( OnReorderEventComplete != null )
@@ -168,6 +176,12 @@ namespace AmplifyShaderEditor
 		public int GetNodeRegisterIdx( int uniqueId )
 		{
 			return m_nodes.FindIndex( x => x.UniqueId == uniqueId );
+		}
+
+		// @diogo: id lookups collapse when entries share an id ( Triplanar's Top/Mid/Bot ); anchor to the instance
+		public int GetNodeRegisterIdx( T node )
+		{
+			return m_nodes.IndexOf( node );
 		}
 
 		public void UpdateDataOnNode( int uniqueId, string data )

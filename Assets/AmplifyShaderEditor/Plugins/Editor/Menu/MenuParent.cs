@@ -1,6 +1,7 @@
 // Amplify Shader Editor - Visual Shader Editing Tool
 // Copyright (c) Amplify Creations, Lda <info@amplify.pt>
 
+using System;
 using UnityEngine;
 using UnityEditor;
 
@@ -27,6 +28,7 @@ namespace AmplifyShaderEditor
 		NONE
 	}
 
+	[Serializable]
 	public class MenuParent
 	{
 		protected AmplifyShaderEditorWindow m_parentWindow = null;
@@ -59,6 +61,10 @@ namespace AmplifyShaderEditor
 
 		protected bool m_isResizing = false;
 		protected bool m_resizable = false;
+		// @diogo: panel anchored on the opposite side, if any; bounds this one's growth and gets pushed by it
+		protected MenuParent m_oppositeMenu = null;
+		// @diogo: width the user last asked for; the panel shrinks under it to fit the window, never over it
+		protected float m_desiredWidth;
 		protected GUIStyle m_resizeAreaStyle;
 		protected bool m_isMouseInside = false;
 		protected Vector2 m_currentScrollPos;
@@ -68,6 +74,7 @@ namespace AmplifyShaderEditor
 			m_anchor = anchor;
 			m_autoSize = autoSize;
 			m_maximizedArea = new Rect( x, y, width, height );
+			m_desiredWidth = width;
 			m_content = new GUIContent( GUIContent.none );
 			m_content.text = name;
 			m_transformedArea = new Rect();
@@ -308,6 +315,7 @@ namespace AmplifyShaderEditor
 			{
 				m_isMaximized = !m_isMaximized;
 				m_resizeDelta = 0;
+				m_desiredWidth = m_maximizedArea.width;
 			}
 
 			if ( m_resizable && m_isMaximized )
@@ -330,35 +338,71 @@ namespace AmplifyShaderEditor
 
 				if ( m_realWidth < buttonArea.width )
 				{
-					// Auto-minimize
-					m_isMaximized = false;
-					m_resizeDelta = 0;
-					m_isResizing = false;
+					// @diogo: minimizing on Layout would leave the paired Repaint drawing a different control
+					// set ( the panel content is skipped when minimized ), unbalancing GUILayout
+					if ( ParentWindow.CurrentEvent.type != EventType.Layout )
+					{
+						// Auto-minimize
+						m_isMaximized = false;
+						m_resizeDelta = 0;
+						m_desiredWidth = m_maximizedArea.width;
+						m_isResizing = false;
+					}
 				}
 				else
 				{
-					float halfSizeWindow = 0.5f * ParentWindow.position.width;
-					if ( m_realWidth > halfSizeWindow )
+					float windowWidth = ParentWindow.position.width;
+					float maxWidth = 0.5f * windowWidth;
+					if ( m_oppositeMenu != null )
 					{
-						m_realWidth = 0.5f * ParentWindow.position.width;
-						if ( m_resizeDelta > 0 )
+						// @diogo: this panel may take all the room the opposite one leaves free; while dragging,
+						// growing into it pushes its inner edge along instead of stopping at the collision.
+						// never on Layout: the opposite already drew this pass, so resizing it there would
+						// leave the paired Repaint laying it out at a different width
+						float oppositeWidth = m_oppositeMenu.RealWidth;
+						if ( m_isResizing && m_oppositeMenu.IsMaximized && m_realWidth > ( windowWidth - oppositeWidth )
+							&& ParentWindow.CurrentEvent.type != EventType.Layout )
 						{
-							m_resizeDelta = m_realWidth - m_maximizedArea.width;
+							oppositeWidth = Mathf.Max( 0, windowWidth - m_realWidth );
+							m_oppositeMenu.ResizeTo( oppositeWidth );
+							m_oppositeMenu.m_desiredWidth = oppositeWidth;
 						}
-						else
-						{
-							m_resizeDelta = m_maximizedArea.width - m_realWidth;
-						}
+						// @diogo: half the window remains guaranteed, so a stale opposite width can never squeeze this one out
+						maxWidth = Mathf.Max( maxWidth, windowWidth - oppositeWidth );
+					}
+
+					if ( m_realWidth > maxWidth )
+					{
+						m_realWidth = maxWidth;
+						ResizeTo( m_realWidth );
+					}
+
+					if ( m_isResizing )
+					{
+						m_desiredWidth = m_realWidth;
 					}
 				}
 			}
 
 			GUI.enabled = guiEnabledBuffer;
 			GUI.color = colorBuffer;
-			
+
 		}
 
-		public void OnLostFocus()
+		// @diogo: rewrites the live resize offset so the panel ends up this wide on its next draw
+		public void ResizeTo( float width )
+		{
+			if ( m_anchor == MenuAnchor.TOP_LEFT )
+			{
+				m_resizeDelta = width - m_maximizedArea.width;
+			}
+			else if ( m_anchor == MenuAnchor.TOP_RIGHT )
+			{
+				m_resizeDelta = m_maximizedArea.width - width;
+			}
+		}
+
+		virtual public void OnLostFocus()
 		{
 			if ( m_isResizing )
 			{
@@ -387,6 +431,11 @@ namespace AmplifyShaderEditor
 		public float RealWidth
 		{
 			get { return m_realWidth; }
+		}
+
+		public float DesiredWidth
+		{
+			get { return m_desiredWidth; }
 		}
 		public float Height
 		{
@@ -419,6 +468,7 @@ namespace AmplifyShaderEditor
 		}
 
 		public bool Resizable { set { m_resizable = value; } }
+		public MenuParent OppositeMenu { set { m_oppositeMenu = value; } }
 		public bool IsResizing { get { return m_isResizing; } }
 		public bool LockOnMinimize
 		{

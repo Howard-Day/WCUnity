@@ -12,6 +12,10 @@ namespace AmplifyShaderEditor
 	{
 		private int m_lastSelectedNode = -1;
 		private const string TitleStr = "Node Properties";
+		private const string ReorderFunctionInputsUndoStr = "Reordering Function Inputs";
+		private const string ReorderFunctionSwitchesUndoStr = "Reordering Function Switches";
+		private const string ReorderFunctionOutputsUndoStr = "Reordering Function Outputs";
+		private const string ReorderMaterialPropertiesUndoStr = "Reordering Material Properties";
 		private GUIStyle m_nodePropertiesStyle;
 		private GUIContent m_dummyContent = new GUIContent();
 		private GUIStyle m_propertyAdjustment;
@@ -27,6 +31,10 @@ namespace AmplifyShaderEditor
 
 		private ReorderableList m_propertyReordableList = null;
 		private int m_lastCount = 0;
+
+		// @diogo: support for dragging entries from the Material Properties list into the canvas
+		private Rect m_propertyReordableListRect;
+		private int m_propertyDragSourceIndex = -1;
 
 		private bool m_forceUpdate = false;
 
@@ -138,7 +146,9 @@ namespace AmplifyShaderEditor
 
 							EditorGUILayout.Separator();
 							//UIUtils.RecordObject( selectedNode , "Changing properties on node " + selectedNode.UniqueId);
-							m_currentScrollPos = EditorGUILayout.BeginScrollView( m_currentScrollPos, GUILayout.Width( 0 ), GUILayout.Height( 0 ) );
+							// expand instead of sizing to content; a content-sized scroll view makes the scrollbar
+							// trigger on sub-pixel rounding of the zoom-compensated area, locking it visible
+							m_currentScrollPos = EditorGUILayout.BeginScrollView( m_currentScrollPos, GUILayout.ExpandWidth( true ), GUILayout.ExpandHeight( true ) );
 							float labelWidth = EditorGUIUtility.labelWidth;
 							//if( selectedNode.TextLabelWidth > 0 )
 							//	EditorGUIUtility.labelWidth = selectedNode.TextLabelWidth;
@@ -166,9 +176,13 @@ namespace AmplifyShaderEditor
 							EditorGUILayout.LabelField( "Graph Properties", m_nodePropertiesStyle );
 							EditorGUILayout.Separator();
 
-							m_currentScrollPos = EditorGUILayout.BeginScrollView( m_currentScrollPos, GUILayout.Width( 0 ), GUILayout.Height( 0 ) );
+							m_currentScrollPos = EditorGUILayout.BeginScrollView( m_currentScrollPos, GUILayout.ExpandWidth( true ), GUILayout.ExpandHeight( true ) );
 							float labelWidth = EditorGUIUtility.labelWidth;
 							EditorGUIUtility.labelWidth = 90;
+
+							// @diogo: nothing in this panel marked the graph dirty, so a reorder was lost unless some
+							// other edit had already flagged it; scoped inside the scroll view to skip scrollbar drags
+							EditorGUI.BeginChangeCheck();
 
 							bool generalIsVisible = m_parentWindow.InnerWindowVariables.ExpandedGeneralShaderOptions;
 							NodeUtils.DrawPropertyGroup( ref generalIsVisible, " General", DrawGeneralFunction );
@@ -196,6 +210,12 @@ namespace AmplifyShaderEditor
 							bool properties = ParentWindow.InnerWindowVariables.ExpandedProperties;
 							NodeUtils.DrawPropertyGroup( ref properties, " Material Properties", DrawFunctionProperties );
 							ParentWindow.InnerWindowVariables.ExpandedProperties = properties;
+
+							changeCheck = EditorGUI.EndChangeCheck();
+							if ( changeCheck )
+							{
+								ParentWindow.SetSaveIsDirty();
+							}
 
 							EditorGUIUtility.labelWidth = labelWidth;
 							EditorGUILayout.EndScrollView();
@@ -282,6 +302,10 @@ namespace AmplifyShaderEditor
 					//{
 					//	functionInputNodes[ i ].OrderIndex = i;
 					//}
+
+					// @diogo: the drag only reordered the list the panel draws from; the nodes still hold
+					// their pre-edit order indices, so this is the last point a snapshot captures them
+					ParentWindow.RegisterGraphUndo( ReorderFunctionInputsUndoStr );
 					ForceInputReorder( ref functionInputNodes );
 				};
 
@@ -331,6 +355,7 @@ namespace AmplifyShaderEditor
 
 				m_functionSwitchesReordableList.onChangedCallback = ( list ) =>
 				{
+					ParentWindow.RegisterGraphUndo( ReorderFunctionSwitchesUndoStr );
 					ForceSwitchesReorder(ref functionSwitchNodes );
 				};
 
@@ -380,6 +405,7 @@ namespace AmplifyShaderEditor
 
 				m_functionOutputsReordableList.onChangedCallback = ( list ) =>
 				{
+					ParentWindow.RegisterGraphUndo( ReorderFunctionOutputsUndoStr );
 					for ( int i = 0; i < functionOutputNodes.Count; i++ )
 					{
 						functionOutputNodes[ i ].OrderIndex = i;
@@ -400,6 +426,11 @@ namespace AmplifyShaderEditor
 				m_functionOutputsReordableList.DoLayoutList();
 				EditorGUILayout.EndVertical();
 			}
+		}
+
+		public void InvalidateMaterialPropertyCount()
+		{
+			m_lastCount = -1;
 		}
 
 		private void RefreshVisibleList( ref List<PropertyNode> allNodes )
@@ -438,6 +469,11 @@ namespace AmplifyShaderEditor
 
 					drawElementCallback = ( Rect rect, int index, bool isActive, bool isFocused ) =>
 					{
+						if ( Event.current.type == EventType.MouseDown && Event.current.button == 0 && rect.Contains( Event.current.mousePosition ) )
+						{
+							m_propertyDragSourceIndex = index;
+						}
+
 						var first = rect;
 						first.width *= 0.60f;
 						EditorGUI.LabelField( first, m_propertyReordableNodes[ index ].PropertyInspectorName );
@@ -452,10 +488,17 @@ namespace AmplifyShaderEditor
 
 					onReorderCallback = ( list ) =>
 					{
+						ParentWindow.RegisterGraphUndo( ReorderMaterialPropertiesUndoStr );
 						ReorderList( ref nodes );
 					}
 				};
 				ReorderList( ref nodes );
+			}
+
+			if ( m_propertyReordableList != null )
+			{
+				// May abort an ongoing reorder operation by recreating the list
+				HandlePropertyDragToCanvas();
 			}
 
 			if( m_propertyReordableList != null )
@@ -468,6 +511,48 @@ namespace AmplifyShaderEditor
 				EditorGUILayout.BeginVertical( m_propertyAdjustment );
 				m_propertyReordableList.DoLayoutList();
 				EditorGUILayout.EndVertical();
+				if ( Event.current.type == EventType.Repaint )
+				{
+					m_propertyReordableListRect = GUILayoutUtility.GetLastRect();
+				}
+			}
+		}
+
+		// @diogo: mirrors MasterNode.HandlePropertyDragToCanvas so the shader function Material Properties list
+		// can also seed reference nodes when an entry is dragged out into the canvas
+		private void HandlePropertyDragToCanvas()
+		{
+			Event currentEvent = Event.current;
+			switch ( currentEvent.type )
+			{
+				case EventType.MouseDrag:
+				{
+					// Only start a drag&drop operation once the cursor leaves the list sideways, to keep
+					// the list's own vertical reordering working
+					bool draggedOutOfList = currentEvent.mousePosition.x < m_propertyReordableListRect.xMin ||
+											currentEvent.mousePosition.x > m_propertyReordableListRect.xMax;
+					if ( m_propertyDragSourceIndex > -1 && draggedOutOfList )
+					{
+						if ( m_propertyDragSourceIndex < m_propertyReordableNodes.Count )
+						{
+							DragAndDrop.PrepareStartDrag();
+							DragAndDrop.objectReferences = new UnityEngine.Object[] { m_propertyReordableNodes[ m_propertyDragSourceIndex ] };
+							DragAndDrop.StartDrag( "Dragging Material Property" );
+							// Recreate the list to abort any reorder operation in progress
+							m_propertyReordableList = null;
+							GUIUtility.hotControl = 0;
+							currentEvent.Use();
+						}
+						m_propertyDragSourceIndex = -1;
+					}
+				}
+				break;
+				case EventType.MouseUp:
+				case EventType.DragExited:
+				{
+					m_propertyDragSourceIndex = -1;
+				}
+				break;
 			}
 		}
 

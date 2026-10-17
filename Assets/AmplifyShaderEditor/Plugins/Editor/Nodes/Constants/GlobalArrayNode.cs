@@ -5,6 +5,7 @@
 // Donated by Johann van Berkel
 
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
@@ -53,7 +54,10 @@ namespace AmplifyShaderEditor
 		private bool m_autoRegister = false;
 
 		//////////////////////////////////////////////////////////////////
-		private readonly Color ReferenceHeaderColor = new Color( 0.6f , 3.0f , 1.25f , 1.0f );
+		private readonly Color ReferenceHeaderColor = new Color( 0f, 0.5f, 0.585f, 1.0f );
+
+		private const float ReferenceIconSize = 19;
+		private Rect m_iconPos;
 
 		[SerializeField]
 		private TexReferenceType m_referenceType = TexReferenceType.Object;
@@ -88,13 +92,76 @@ namespace AmplifyShaderEditor
 		protected override void OnUniqueIDAssigned()
 		{
 			base.OnUniqueIDAssigned();
-			UIUtils.CurrentWindow.OutsideGraph.GlobalArrayNodes.AddNode( this );
+			// @diogo: only Object-mode arrays are pickable references; Instance-mode ones must stay out of the register
+			if ( m_referenceType == TexReferenceType.Object )
+			{
+				EnsureUniqueArrayName();
+				UIUtils.CurrentWindow.OutsideGraph.GlobalArrayNodes.AddNode( this );
+			}
+
+			if ( UniqueId > -1 )
+			{
+				UIUtils.CurrentWindow.OutsideGraph.GlobalArrayNodes.OnReorderEventComplete -= OnReorderEventComplete;
+				UIUtils.CurrentWindow.OutsideGraph.GlobalArrayNodes.OnReorderEventComplete += OnReorderEventComplete;
+			}
+		}
+
+		private void OnReorderEventComplete()
+		{
+			if ( m_referenceType == TexReferenceType.Instance && m_referenceNode != null )
+			{
+				m_referenceArrayId = UIUtils.CurrentWindow.OutsideGraph.GlobalArrayNodes.GetNodeRegisterIdx( m_referenceNode.UniqueId );
+			}
+		}
+
+		private bool IsArrayNameTaken( string name )
+		{
+			List<GlobalArrayNode> nodes = UIUtils.CurrentWindow.OutsideGraph.GlobalArrayNodes.NodesList;
+			int count = nodes.Count;
+			for ( int i = 0; i < count; i++ )
+			{
+				if ( nodes[ i ] != null && nodes[ i ] != this && nodes[ i ].DataToArray == name )
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+
+		// @diogo: array names have no uniform registry; advance the trailing number until the name is free
+		private void EnsureUniqueArrayName()
+		{
+			if ( !IsArrayNameTaken( m_name ) )
+			{
+				return;
+			}
+
+			int baseLength = m_name.Length;
+			while ( baseLength > 0 && char.IsDigit( m_name[ baseLength - 1 ] ) )
+			{
+				baseLength--;
+			}
+			string nameBase = ( baseLength > 0 ) ? m_name.Substring( 0, baseLength ) : m_name;
+			int index;
+			int.TryParse( m_name.Substring( baseLength ), out index );
+			string candidate;
+			do
+			{
+				index++;
+				candidate = nameBase + index;
+			} while ( IsArrayNameTaken( candidate ) );
+			m_name = candidate;
+			SetAdditonalTitleText( string.Format( Constants.SubTitleValueFormatStr, m_name ) );
 		}
 
 		public override void Destroy()
 		{
 			base.Destroy();
 			UIUtils.CurrentWindow.OutsideGraph.GlobalArrayNodes.RemoveNode( this );
+			if ( UniqueId > -1 )
+			{
+				UIUtils.CurrentWindow.OutsideGraph.GlobalArrayNodes.OnReorderEventComplete -= OnReorderEventComplete;
+			}
 		}
 
 		void UpdatePorts()
@@ -131,7 +198,7 @@ namespace AmplifyShaderEditor
 
 				if( m_referenceNode != null )
 				{
-					SetAdditonalTitleText( string.Format( Constants.SubTitleValueFormatStr , m_referenceNode.DataToArray ) );
+					SetAdditonalTitleText( string.Format( Constants.SubTitleRefNameFormatStr, m_referenceNode.DataToArray ) );
 					arrayLengthPortX.Visible = false;
 					arrayLengthPortY.Visible = false;
 					if( m_referenceNode.IsJagged )
@@ -145,6 +212,12 @@ namespace AmplifyShaderEditor
 						indexYPort.Visible = false;
 					}
 				}
+			}
+			else
+			{
+				// @diogo: an unassigned reference still tints the header and reads as Ref( None )
+				m_headerColorModifier = ReferenceHeaderColor;
+				SetAdditonalTitleText( string.Format( Constants.SubTitleRefNameFormatStr, Constants.NoStringValue ) );
 			}
 			m_sizeIsDirty = true;
 		}
@@ -234,12 +307,19 @@ namespace AmplifyShaderEditor
 			m_autoRangeCheck = EditorGUILayoutToggle( AutoRangeCheckStr , m_autoRangeCheck );
 		}
 
-		public override void OnNodeLayout( DrawInfo drawInfo )
+		public override void OnNodeLayout( DrawInfo drawInfo, NodeUpdateCache cache )
 		{
-			base.OnNodeLayout( drawInfo );
+			base.OnNodeLayout( drawInfo, cache );
 			m_updated = false;
 			if( m_referenceType == TexReferenceType.Instance )
 			{
+				// @diogo: same left link icon the other reference nodes show
+				m_iconPos = m_globalPosition;
+				m_iconPos.width = ReferenceIconSize * drawInfo.InvertedZoom;
+				m_iconPos.height = ReferenceIconSize * drawInfo.InvertedZoom;
+				m_iconPos.y = m_globalPosition.y + m_headerPosition.height * 0.5f - m_iconPos.height * 0.5f;
+				m_iconPos.x += 5 * drawInfo.InvertedZoom;
+
 				if( m_referenceNodeId > -1 && m_referenceNode == null )
 				{
 					m_referenceNode = UIUtils.GetNode( m_referenceNodeId ) as GlobalArrayNode;
@@ -248,6 +328,17 @@ namespace AmplifyShaderEditor
 						m_referenceNodeId = -1;
 					}
 				}
+				// @diogo: a node in Instance mode can't itself be a source ( no chaining ); a source switched
+				// into Instance mode invalidates the link, so drop it fully to read Ref( None )
+				if ( m_referenceNode != null && m_referenceNode.m_referenceType == TexReferenceType.Instance )
+				{
+					m_referenceNode = null;
+					m_referenceArrayId = -1;
+					m_referenceNodeId = -1;
+					m_headerColorModifier = ReferenceHeaderColor;
+					SetAdditonalTitleText( string.Format( Constants.SubTitleRefNameFormatStr, Constants.NoStringValue ) );
+					m_sizeIsDirty = true;
+				}
 				if( m_referenceNode != null && m_referenceNode.Updated )
 				{
 					UpdatePorts();
@@ -255,8 +346,28 @@ namespace AmplifyShaderEditor
 			}
 		}
 
+		public override void OnNodeRepaint( DrawInfo drawInfo )
+		{
+			base.OnNodeRepaint( drawInfo );
+
+			if ( !m_isVisible )
+			{
+				return;
+			}
+
+			if ( m_referenceType == TexReferenceType.Instance )
+			{
+				GUI.Label( m_iconPos, string.Empty, UIUtils.GetCustomStyle( CustomStyle.SamplerTextureIcon ) );
+			}
+		}
+
 		void DrawInstancedProperties()
 		{
+			// @diogo: undo can restore a register snapshot still listing this Instance node; realign so it can't offer itself
+			if ( UIUtils.CurrentWindow.OutsideGraph.GlobalArrayNodes.GetNodeRegisterIdx( UniqueId ) > -1 )
+			{
+				UIUtils.CurrentWindow.OutsideGraph.GlobalArrayNodes.RemoveNode( this );
+			}
 			string[] arr = UIUtils.GlobalArrayNodeArr();
 			bool guiEnabledBuffer = GUI.enabled;
 			if( arr != null && arr.Length > 0 )
@@ -270,17 +381,25 @@ namespace AmplifyShaderEditor
 				m_referenceNode = null;
 				GUI.enabled = false;
 			}
-			EditorGUI.BeginChangeCheck();
-			m_referenceArrayId = EditorGUILayoutPopup( Constants.AvailableReferenceStr , m_referenceArrayId , arr );
-			if( EditorGUI.EndChangeCheck() )
+			arr = UIUtils.DisambiguateReferenceLabels( arr, UIUtils.CurrentWindow.CurrentGraph.GlobalArrayNodes.NodesList, 0 );
+			EditorGUILayout.BeginHorizontal();
+			SearchableDropdown.Draw( Constants.AvailableReferenceStr, m_referenceArrayId, arr, ( idx ) =>
 			{
-				m_referenceNode = UIUtils.GetGlobalArrayNode( m_referenceArrayId );
-				if( m_referenceNode != null )
+				if( idx != m_referenceArrayId )
 				{
-					m_referenceNodeId = m_referenceNode.UniqueId;
+					UndoRecordObject( "Selected global array reference" );
+					m_referenceArrayId = idx;
+					m_referenceNode = UIUtils.GetGlobalArrayNode( m_referenceArrayId );
+					if( m_referenceNode != null )
+					{
+						m_referenceNodeId = m_referenceNode.UniqueId;
+					}
+					UpdatePorts();
+					SetDirtyFromAsyncEdit();
 				}
-				UpdatePorts();
-			}
+			} );
+			UIUtils.DrawReferenceFocusButton( m_referenceNode );
+			EditorGUILayout.EndHorizontal();
 
 			GUI.enabled = guiEnabledBuffer;
 
@@ -316,8 +435,18 @@ namespace AmplifyShaderEditor
 			m_referenceType = (TexReferenceType)EditorGUILayoutPopup( Constants.ReferenceTypeStr , (int)m_referenceType , Constants.ReferenceArrayLabels );
 			if( EditorGUI.EndChangeCheck() )
 			{
+				if ( m_referenceType == TexReferenceType.Object )
+				{
+					UIUtils.CurrentWindow.OutsideGraph.GlobalArrayNodes.AddNode( this );
+				}
+				else
+				{
+					UIUtils.CurrentWindow.OutsideGraph.GlobalArrayNodes.RemoveNode( this );
+				}
 				UpdatePorts();
 			}
+
+			UIUtils.DrawSeparator();
 
 			if( m_referenceType == TexReferenceType.Object )
 				DrawObjectProperties();
@@ -338,6 +467,22 @@ namespace AmplifyShaderEditor
 			string result = string.Empty;
 			if( m_referenceNode != null )
 			{
+				// @diogo: an unconnected source never generates its uniform; declare it here through the source's own
+				// length ports so the string matches the source's declaration and the collector dedups it
+				string srcDataType = UIUtils.PrecisionWirePortToCgType( m_referenceNode.CurrentPrecisionType, AvailableTypesValues[ m_referenceNode.m_type ] );
+				InputPort srcLengthXPort = m_referenceNode.GetInputPortByUniqueId( 1 );
+				string srcLengthX = srcLengthXPort.IsConnected ? srcLengthXPort.GeneratePortInstructions( ref dataCollector ) : m_referenceNode.ArrayLengthX.ToString();
+				if ( m_referenceNode.IsJagged )
+				{
+					InputPort srcLengthYPort = m_referenceNode.GetInputPortByUniqueId( 3 );
+					string srcLengthY = srcLengthYPort.IsConnected ? srcLengthYPort.GeneratePortInstructions( ref dataCollector ) : m_referenceNode.ArrayLengthY.ToString();
+					dataCollector.AddToUniforms( m_referenceNode.UniqueId, srcDataType, string.Format( JaggedArrayFormatStr, m_referenceNode.m_name, srcLengthX, srcLengthY ) );
+				}
+				else
+				{
+					dataCollector.AddToUniforms( m_referenceNode.UniqueId, srcDataType, string.Format( ArrayFormatStr, m_referenceNode.m_name, srcLengthX ) );
+				}
+
 				InputPort indexXPort = GetInputPortByUniqueId( 0 );
 				if( m_referenceNode.IsJagged )
 				{
@@ -456,9 +601,22 @@ namespace AmplifyShaderEditor
 				m_autoRegister = Convert.ToBoolean( GetCurrentParam( ref nodeParams ) );
 				m_referenceType = (TexReferenceType)Enum.Parse( typeof( TexReferenceType ) , GetCurrentParam( ref nodeParams ) );
 				m_referenceNodeId = Convert.ToInt32( GetCurrentParam( ref nodeParams ) );
+				if ( m_referenceType == TexReferenceType.Instance )
+				{
+					UIUtils.CurrentWindow.OutsideGraph.GlobalArrayNodes.RemoveNode( this );
+				}
 			}
 			SetAdditonalTitleText( string.Format( Constants.SubTitleValueFormatStr , m_name ) );
 			UpdatePorts();
+			// @diogo: the register add ran before the name was read; dedup pasted copies, then re-push the real name
+			if ( m_referenceType == TexReferenceType.Object )
+			{
+				if ( m_isNodeBeingCopied )
+				{
+					EnsureUniqueArrayName();
+				}
+				UIUtils.CurrentWindow.OutsideGraph.GlobalArrayNodes.UpdateDataOnNode( UniqueId , m_name );
+			}
 		}
 
 		public override void RefreshExternalReferences()
@@ -467,6 +625,11 @@ namespace AmplifyShaderEditor
 			if( m_referenceType == TexReferenceType.Instance && m_referenceNodeId > -1 )
 			{
 				m_referenceNode = UIUtils.GetNode( m_referenceNodeId ) as GlobalArrayNode;
+				// @diogo: graphs saved before the register fix may carry a self-reference; drop it
+				if ( m_referenceNode == this )
+				{
+					m_referenceNode = null;
+				}
 				if( m_referenceNode != null )
 				{
 					m_referenceArrayId = UIUtils.GetGlobalArrayNodeRegisterId( m_referenceNodeId );
@@ -478,8 +641,22 @@ namespace AmplifyShaderEditor
 				}
 			}
 		}
+
+		public override void ReconnectClipboardReferences( Clipboard clipboard )
+		{
+			// validate node first
+			int newId = clipboard.GeNewNodeId( m_referenceNodeId );
+			if ( ContainerGraph.GetNode( newId ) != null )
+			{
+				m_referenceNodeId = newId;
+			}
+			RefreshExternalReferences();
+		}
+
 		public int ArrayLengthX { get { return ( m_referenceNode != null ) ? m_referenceNode.ArrayLengthX : m_arrayLengthX; } }
 		public int ArrayLengthY { get { return ( m_referenceNode != null ) ? m_referenceNode.ArrayLengthY : m_arrayLengthY; } }
+		public override int ReferencedNodeId { get { return ( m_referenceType == TexReferenceType.Instance && m_referenceNodeId > -1 ) ? m_referenceNodeId : base.ReferencedNodeId; } }
+		public override bool HasMissingReference { get { return m_referenceType == TexReferenceType.Instance && m_referenceNodeId <= -1; } }
 
 		public bool AutoRegister { get { return m_autoRegister; } }
 		public bool IsJagged { get { return m_isJagged; } }

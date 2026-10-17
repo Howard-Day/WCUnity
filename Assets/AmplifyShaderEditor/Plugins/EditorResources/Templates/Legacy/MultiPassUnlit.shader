@@ -1,10 +1,10 @@
-Shader /*ase_name*/ "Hidden/Templates/Legacy/Multi Pass Unlit" /*end*/
+Shader /*ase_name*/ "Hidden/Built-In/Multi Pass Unlit" /*end*/
 {
 	Properties
 	{
 		/*ase_props*/
 	}
-	
+
 	SubShader
 	{
 		Tags { "RenderType"="Opaque" }
@@ -12,9 +12,10 @@ Shader /*ase_name*/ "Hidden/Templates/Legacy/Multi Pass Unlit" /*end*/
 
 		Cull Off
 		CGINCLUDE
-		#pragma target 3.0 
+		#pragma target 3.5
+		#pragma exclude_renderers d3d9 // ensure rendering platforms toggle list is visible
 		ENDCG
-		
+
 		/*ase_pass*/
 		Pass
 		{
@@ -41,7 +42,7 @@ Shader /*ase_name*/ "Hidden/Templates/Legacy/Multi Pass Unlit" /*end*/
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 				/*ase_vdata:p=p;n=n*/
 			};
-			
+
 			struct v2f
 			{
 				float4 pos : SV_POSITION;
@@ -49,7 +50,7 @@ Shader /*ase_name*/ "Hidden/Templates/Legacy/Multi Pass Unlit" /*end*/
 				UNITY_VERTEX_OUTPUT_STEREO
 				/*ase_interp(1,):sp=sp.xyzw*/
 			};
-			
+
 			v2f vert ( appdata v /*ase_vert_input*/)
 			{
 				v2f o;
@@ -57,9 +58,9 @@ Shader /*ase_name*/ "Hidden/Templates/Legacy/Multi Pass Unlit" /*end*/
 				UNITY_SETUP_INSTANCE_ID(v);
 				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
-				
+
 				/*ase_vert_code:v=appdata;o=v2f*/
-				
+
 				v.vertex.xyz += /*ase_vert_out:Local Vertex;Float3;_Vertex*/ float3(0,0,0) /*end*/;
 				o.pos = UnityObjectToClipPos(v.vertex);
 				#if ASE_SHADOWS
@@ -71,14 +72,14 @@ Shader /*ase_name*/ "Hidden/Templates/Legacy/Multi Pass Unlit" /*end*/
 				#endif
 				return o;
 			}
-			
+
 			float4 frag (v2f i /*ase_frag_input*/) : SV_Target
 			{
 				float3 outColor;
 				float outAlpha;
 
 				/*ase_frag_code:i=v2f*/
-				
+
 				outColor = /*ase_frag_out:Color;Float3;_Color*/float3(1,1,1)/*end*/;
 				outAlpha = /*ase_frag_out:Alpha;Float;_Alpha*/1/*end*/;
 				clip(outAlpha);
@@ -86,13 +87,13 @@ Shader /*ase_name*/ "Hidden/Templates/Legacy/Multi Pass Unlit" /*end*/
 			}
 			ENDCG
 		}
-		
+
 		/*ase_pass*/
 		Pass
 		{
 			Name "ForwardAdd"
 			Tags { "LightMode" = "ForwardAdd" }
-			ZWrite Off 
+			ZWrite Off
 			Blend One One
 			CGPROGRAM
 			#pragma vertex vert
@@ -112,7 +113,7 @@ Shader /*ase_name*/ "Hidden/Templates/Legacy/Multi Pass Unlit" /*end*/
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 				/*ase_vdata:p=p;n=n*/
 			};
-			
+
 			struct v2f
 			{
 				float4 pos : SV_POSITION;
@@ -120,7 +121,7 @@ Shader /*ase_name*/ "Hidden/Templates/Legacy/Multi Pass Unlit" /*end*/
 				UNITY_VERTEX_OUTPUT_STEREO
 				/*ase_interp(1,):sp=sp.xyzw*/
 			};
-			
+
 			v2f vert ( appdata v /*ase_vert_input*/)
 			{
 				v2f o;
@@ -128,9 +129,9 @@ Shader /*ase_name*/ "Hidden/Templates/Legacy/Multi Pass Unlit" /*end*/
 				UNITY_SETUP_INSTANCE_ID(v);
 				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
-				
+
 				/*ase_vert_code:v=appdata;o=v2f*/
-				
+
 				v.vertex.xyz += /*ase_vert_out:Local Vertex;Float3;_Vertex*/ float3(0,0,0) /*end*/;
 				o.pos = UnityObjectToClipPos(v.vertex);
 				#if ASE_SHADOWS
@@ -142,14 +143,14 @@ Shader /*ase_name*/ "Hidden/Templates/Legacy/Multi Pass Unlit" /*end*/
 				#endif
 				return o;
 			}
-			
+
 			float4 frag (v2f i /*ase_frag_input*/) : SV_Target
 			{
 				float3 outColor;
 				float outAlpha;
 
 				/*ase_frag_code:i=v2f*/
-				
+
 				outColor = /*ase_frag_out:Color;Float3;_Color*/float3(1,1,1)/*end*/;
 				outAlpha = /*ase_frag_out:Alpha;Float;_Alpha*/1/*end*/;
 				clip(outAlpha);
@@ -183,7 +184,7 @@ Shader /*ase_name*/ "Hidden/Templates/Legacy/Multi Pass Unlit" /*end*/
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 				/*ase_vdata:p=p;n=n*/
 			};
-			
+
 			struct v2f
 			{
 				float4 pos : SV_POSITION;
@@ -191,7 +192,7 @@ Shader /*ase_name*/ "Hidden/Templates/Legacy/Multi Pass Unlit" /*end*/
 				UNITY_VERTEX_OUTPUT_STEREO
 				/*ase_interp(1,):sp=sp.xyzw*/
 			};
-			
+
 			v2f vert ( appdata v /*ase_vert_input*/)
 			{
 				v2f o;
@@ -199,9 +200,9 @@ Shader /*ase_name*/ "Hidden/Templates/Legacy/Multi Pass Unlit" /*end*/
 				UNITY_SETUP_INSTANCE_ID(v);
 				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
-				
+
 				/*ase_vert_code:v=appdata;o=v2f*/
-				
+
 				v.vertex.xyz += /*ase_vert_out:Local Vertex;Float3;_Vertex*/ float3(0,0,0) /*end*/;
 				o.pos = UnityObjectToClipPos(v.vertex);
 				#if ASE_SHADOWS
@@ -213,11 +214,11 @@ Shader /*ase_name*/ "Hidden/Templates/Legacy/Multi Pass Unlit" /*end*/
 				#endif
 				return o;
 			}
-			
+
 			void frag (v2f i /*ase_frag_input*/, out half4 outGBuffer0 : SV_Target0, out half4 outGBuffer1 : SV_Target1, out half4 outGBuffer2 : SV_Target2, out half4 outGBuffer3 : SV_Target3)
 			{
 				/*ase_frag_code:i=v2f*/
-				
+
 				outGBuffer0 = /*ase_frag_out:GBuffer0;Float4*/0/*end*/;
 				outGBuffer1 = /*ase_frag_out:GBuffer1;Float4*/0/*end*/;
 				outGBuffer2 = /*ase_frag_out:GBuffer2;Float4*/0/*end*/;
@@ -225,14 +226,14 @@ Shader /*ase_name*/ "Hidden/Templates/Legacy/Multi Pass Unlit" /*end*/
 			}
 			ENDCG
 		}
-		
+
 		/*ase_pass*/
 		Pass
 		{
 			/*ase_hide_pass:SyncP*/
 			Name "ShadowCaster"
 			Tags { "LightMode"="ShadowCaster" }
-			ZWrite On 
+			ZWrite On
 			ZTest LEqual
 			CGPROGRAM
 			#pragma vertex vert
@@ -252,7 +253,7 @@ Shader /*ase_name*/ "Hidden/Templates/Legacy/Multi Pass Unlit" /*end*/
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 				/*ase_vdata:p=p;n=n*/
 			};
-			
+
 			struct v2f
 			{
 				V2F_SHADOW_CASTER;
@@ -261,7 +262,7 @@ Shader /*ase_name*/ "Hidden/Templates/Legacy/Multi Pass Unlit" /*end*/
 				/*ase_interp(1,):sp=sp.xyzw*/
 			};
 
-			
+
 			v2f vert ( appdata v /*ase_vert_input*/)
 			{
 				v2f o;
@@ -269,21 +270,21 @@ Shader /*ase_name*/ "Hidden/Templates/Legacy/Multi Pass Unlit" /*end*/
 				UNITY_SETUP_INSTANCE_ID(v);
 				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
-				
+
 				/*ase_vert_code:v=appdata;o=v2f*/
-				
+
 				v.vertex.xyz += /*ase_vert_out:Local Vertex;Float3;_Vertex*/ float3(0,0,0) /*end*/;
 				TRANSFER_SHADOW_CASTER_NORMALOFFSET(o)
 				return o;
 			}
-			
+
 			float4 frag (v2f i /*ase_frag_input*/) : SV_Target
 			{
 				float3 outColor;
 				float outAlpha;
 
 				/*ase_frag_code:i=v2f*/
-				
+
 				outColor = /*ase_frag_out:Color;Float3;_Color*/float3(1,1,1)/*end*/;
 				outAlpha = /*ase_frag_out:Alpha;Float;_Alpha*/1/*end*/;
 				clip(outAlpha);
@@ -293,5 +294,5 @@ Shader /*ase_name*/ "Hidden/Templates/Legacy/Multi Pass Unlit" /*end*/
 		}
 		/*ase_pass_end*/
 	}
-	CustomEditor "ASEMaterialInspector"
+	CustomEditor "AmplifyShaderEditor.MaterialInspector"
 }

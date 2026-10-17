@@ -26,7 +26,11 @@ namespace AmplifyShaderEditor
 		UINT = 1 << 14,
 		SAMPLER2DARRAY = 1 << 15,
 		SAMPLERSTATE = 1 << 16,
-		UINT4 = 1 << 17
+		UINT4 = 1 << 17,
+		FLOAT2x2 = 1 << 18,
+		// @diogo: a user-defined type, named by the port rather than by this enum; OBJECT stays the
+		// nameless wildcard it has always been
+		STRUCT = 1 << 19
 	}
 
 	public enum VariableQualifiers
@@ -86,6 +90,12 @@ namespace AmplifyShaderEditor
 		[SerializeField]
 		protected WirePortDataType m_dataType = WirePortDataType.FLOAT;
 
+		// @diogo: names the user-defined type a STRUCT port carries, since the wire type alone cannot.
+		// Not part of the saved graph: it is restored from the node that defines it, or from the
+		// connection, exactly as the data type is
+		[SerializeField]
+		protected string m_structName = string.Empty;
+
 		[SerializeField]
 		protected string m_name;
 
@@ -131,6 +141,13 @@ namespace AmplifyShaderEditor
 			m_portRestrictions = -1;
 		}
 
+		// Every type is valid here, structs included. Ports that state nothing are taken to mean every
+		// type ASE can cast, which is not the same reach - see CheckValidType.
+		public void AcceptAllTypes()
+		{
+			m_portRestrictions = int.MaxValue;
+		}
+
 		public void AddPortForbiddenTypes( params WirePortDataType[] forbiddenTypes )
 		{
 			if( forbiddenTypes != null )
@@ -138,7 +155,9 @@ namespace AmplifyShaderEditor
 				if( m_portRestrictions == 0 )
 				{
 					//if no previous restrictions are detected then we set up the bit array so we can set is bit correctly
-					m_portRestrictions = int.MaxValue;
+					// @diogo: everything but a struct, which no port takes without saying so - a port that
+					// does want one calls AcceptAllTypes before naming what it forbids
+					m_portRestrictions = int.MaxValue - (int)WirePortDataType.STRUCT;
 				}
 
 				for( int i = 0; i < forbiddenTypes.Length; i++ )
@@ -175,10 +194,38 @@ namespace AmplifyShaderEditor
 		{
 			if( m_portRestrictions == 0 )
 			{
+				// @diogo: a port states no restrictions when it takes anything ASE can cast, which a
+				// struct never is - so it only reaches a port already holding one, or the wildcard that
+				// stands for every type. Ports that do state their types answer for structs themselves.
+				// Nothing is asked of the type going the other way: a port free to retype itself is the
+				// one that decides whether it can take what it is given
+				if ( dataType == WirePortDataType.STRUCT )
+				{
+					return m_dataType == WirePortDataType.STRUCT || m_dataType == WirePortDataType.OBJECT;
+				}
+
 				return true;
 			}
 
 			return ( m_portRestrictions & (int)dataType ) != 0;
+		}
+
+		public bool CheckValidType( WirePort other )
+		{
+			if ( !CheckValidType( other.DataType ) )
+			{
+				return false;
+			}
+
+			// @diogo: the wire type alone cannot tell two structs apart, so the names have to be
+			// compared port to port. An empty name belongs to a port that takes its type from whatever
+			// it is given, and a port that accepts every type carries a name it mirrored rather than
+			// one it declared - neither can demand a particular struct of the other end
+			bool namesApply = m_dataType == WirePortDataType.STRUCT && other.DataType == WirePortDataType.STRUCT &&
+				NotFreeForAllTypes && other.NotFreeForAllTypes &&
+				!string.IsNullOrEmpty( m_structName ) && !string.IsNullOrEmpty( other.StructName );
+
+			return !namesApply || m_structName == other.StructName;
 		}
 
 		public bool ConnectTo( WireReference port )
@@ -280,6 +327,11 @@ namespace AmplifyShaderEditor
 				//	UndoUtils.RecordObject( node, Constants.UndoChangeTypeNodesId );
 				//}
 				DataType = newType;
+				// @diogo: the name only qualifies a STRUCT, so it cannot outlive the type that carried it
+				if ( newType != WirePortDataType.STRUCT )
+				{
+					m_structName = string.Empty;
+				}
 				if( invalidateConnections )
 				{
 					InvalidateAllConnections();
@@ -373,12 +425,38 @@ namespace AmplifyShaderEditor
 			return false;
 		}
 
-		public void MatchPortToConnection( int id = 0 )
+		public virtual void MatchPortToConnection( int id = 0 )
 		{
 			if( id < m_externalReferences.Count )
 			{
 				DataType = m_externalReferences[ id ].DataType;
 			}
+		}
+
+		// @diogo: mirrors both halves of a struct type at once; the name is dropped by the plain
+		// ChangeType, which only knows about the wire type
+		public void ChangeType( WirePortDataType newType, string structName, bool invalidateConnections )
+		{
+			string newStructName = ( newType == WirePortDataType.STRUCT ) ? structName : string.Empty;
+			bool nameChanged = m_structName != newStructName;
+			bool typeChanged = m_dataType != newType;
+
+			m_structName = newStructName;
+			ChangeType( newType, invalidateConnections );
+
+			// @diogo: the plain ChangeType only notifies when the wire type changes, and one struct
+			// becoming another keeps the same type, so nothing downstream would ever hear the name move
+			if ( nameChanged && !typeChanged && !invalidateConnections )
+			{
+				NotifyExternalRefencesOnChange();
+			}
+		}
+
+		// @diogo: as above, for the callers that rename the port along with its type
+		public void ChangeProperties( string newName, WirePortDataType newType, string structName, bool invalidateConnections )
+		{
+			Name = newName;
+			ChangeType( newType, structName, invalidateConnections );
 		}
 
 		public void ResetWireReferenceStatus()
@@ -401,7 +479,7 @@ namespace AmplifyShaderEditor
 				if( ( EditorApplication.timeSinceStartup - m_lastTimeClicked ) < PortClickTime )
 				{
 					m_editingName = true;
-					GUI.FocusControl( "port" + m_nodeId.ToString() + m_portId.ToString() );
+					GUI.FocusControl( "port" + IOUtils.IntToString( m_nodeId ) + IOUtils.IntToString( m_portId ) );
 					TextEditor te = (TextEditor)GUIUtility.GetStateObject( typeof( TextEditor ), GUIUtility.keyboardControl );
 					if( te != null )
 					{
@@ -420,7 +498,7 @@ namespace AmplifyShaderEditor
 			{
 				textPos.width = m_labelSize.x;
 				EditorGUI.BeginChangeCheck();
-				GUI.SetNextControlName( "port" + m_nodeId.ToString() + m_portId.ToString() );
+				GUI.SetNextControlName( "port" + IOUtils.IntToString( m_nodeId ) + IOUtils.IntToString( m_portId ) );
 				m_name = GUI.TextField( textPos, m_name, style );
 				if( EditorGUI.EndChangeCheck() )
 				{
@@ -501,6 +579,12 @@ namespace AmplifyShaderEditor
 			set { m_dataType = value; }
 		}
 
+		public string StructName
+		{
+			get { return m_structName; }
+			set { m_structName = value; }
+		}
+
 		public bool Visible
 		{
 			get { return m_visible; }
@@ -514,15 +598,11 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		public bool Locked
+		public virtual bool Locked
 		{
 			get { return m_locked; }
 			set
 			{
-				//if ( m_locked && IsConnected )
-				//{
-				//	ForceClearConnection();
-				//}
 				m_locked = value;
 			}
 		}
@@ -576,6 +656,11 @@ namespace AmplifyShaderEditor
 		{
 			get { return m_isEditable; }
 			set { m_isEditable = value; }
+		}
+
+		public bool DataTypeIsMatrix
+		{
+			get { return DataType == WirePortDataType.FLOAT2x2 || DataType == WirePortDataType.FLOAT3x3 || DataType == WirePortDataType.FLOAT4x4; }
 		}
 
 		public bool Available { get { return m_visible && !m_locked; } }

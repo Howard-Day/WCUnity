@@ -8,7 +8,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Float", "Constants And Properties", "Float property", null, KeyCode.Alpha1 )]
+	[NodeAttributes( "Float", "Constants And Properties", "Float property", null, KeyCode.Alpha1, tags: "f" )]
 	public sealed class RangedFloatNode : PropertyNode
 	{
 		private const int OriginalFontSize = 11;
@@ -40,7 +40,10 @@ namespace AmplifyShaderEditor
 		private string[] m_fieldText = new string[] { "0", "0", "0" };
 
 		public RangedFloatNode() : base() { }
-		public RangedFloatNode( int uniqueId, float x, float y, float width, float height ) : base( uniqueId, x, y, width, height ) { }
+		public RangedFloatNode( int uniqueId, float x, float y, float width, float height ) : base( uniqueId, x, y, width, height ) {}
+
+		// @diogo: preview frag returns a single constant value, independent of UV (QA #5).
+		public override bool ConstantPreview { get { return true; } }
 
 		protected override void CommonInit( int uniqueId )
 		{
@@ -57,6 +60,7 @@ namespace AmplifyShaderEditor
 			m_availableAttribs.Add( new PropertyAttributes( "Enum", "[Enum]" ) );
 			m_previewShaderGUID = "d9ca47581ac157145bff6f72ac5dd73e";
 			m_srpBatcherCompatible = true;
+			m_canBeReferenced = true;
 		}
 
 		protected override void OnUniqueIDAssigned()
@@ -73,6 +77,7 @@ namespace AmplifyShaderEditor
 
 		public override void OnDirtyProperty()
 		{
+			base.OnDirtyProperty();
 			UIUtils.UpdateFloatIntDataNode( UniqueId, PropertyInspectorName );
 		}
 
@@ -172,9 +177,9 @@ namespace AmplifyShaderEditor
 				PreviewMaterial.SetFloat( m_cachedPropertyId, m_defaultValue );
 		}
 
-		public override void OnNodeLayout( DrawInfo drawInfo )
+		public override void OnNodeLayout( DrawInfo drawInfo, NodeUpdateCache cache )
 		{
-			base.OnNodeLayout( drawInfo );
+			base.OnNodeLayout( drawInfo, cache );
 
 			if ( m_floatMode )
 			{
@@ -194,6 +199,12 @@ namespace AmplifyShaderEditor
 		public override void DrawGUIControls( DrawInfo drawInfo )
 		{
 			base.DrawGUIControls( drawInfo );
+
+			if ( IsPropertyReference )
+			{
+				m_isEditingFields = false;
+				return;
+			}
 
 			if ( drawInfo.CurrentEventType != EventType.MouseDown )
 				return;
@@ -424,6 +435,13 @@ namespace AmplifyShaderEditor
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
 		{
+			PropertyNode reference = PropertyReference;
+			if ( reference != null )
+			{
+				OrderIndex = reference.RawOrderIndex;
+				return reference.GenerateShaderForOutput( outputId, ref dataCollector, ignoreLocalvar );
+			}
+
 			base.GenerateShaderForOutput( outputId, ref dataCollector, ignoreLocalvar );
 			m_precisionString = UIUtils.PrecisionWirePortToCgType( CurrentPrecisionType, m_outputPorts[ 0 ].DataType );
 
@@ -438,20 +456,26 @@ namespace AmplifyShaderEditor
 			string value = UIUtils.PropertyFloatToString( m_defaultValue );
 			if ( m_floatMode )
 			{
-				return PropertyAttributes + m_propertyName + "(\"" + m_propertyInspectorName + "\", Float) = " + value;
+				return PropertyAttributes + PropertyAttributesSeparator + m_propertyName + "( \"" + m_propertyInspectorName + "\", Float ) = " + value;
 			}
 			else
 			{
 				string min = UIUtils.PropertyFloatToString( m_min );
 				string max = UIUtils.PropertyFloatToString( m_max );
-				return PropertyAttributes + m_propertyName + "(\"" + m_propertyInspectorName + "\", Range( " + min + " , " + max + ")) = " + value;
+				return PropertyAttributes + PropertyAttributesSeparator + m_propertyName + "( \"" + m_propertyInspectorName +
+					"\", Range( " + min + ", " + max + " ) ) = " + value;
 			}
+		}
+
+		public override string GetDefaultValue()
+		{
+			return UIUtils.PropertyFloatToString( m_defaultValue );
 		}
 
 		public override void UpdateMaterial( Material mat )
 		{
 			base.UpdateMaterial( mat );
-			if ( UIUtils.IsProperty( m_currentParameterType ) && !InsideShaderFunction )
+			if ( UIUtils.IsProperty( m_currentParameterType ) && !InsideShaderFunction && !IsPropertyReference )
 			{
 				mat.SetFloat( m_propertyName, m_materialValue );
 			}
@@ -503,6 +527,39 @@ namespace AmplifyShaderEditor
 			return ( m_materialMode && m_currentParameterType != PropertyType.Constant ) ?
 				m_materialValue.ToString( Mathf.Abs( m_materialValue ) > 1000 ? Constants.PropertyBigFloatFormatLabel : Constants.PropertyFloatFormatLabel ) :
 				m_defaultValue.ToString( Mathf.Abs( m_defaultValue ) > 1000 ? Constants.PropertyBigFloatFormatLabel : Constants.PropertyFloatFormatLabel );
+		}
+
+		protected override void CopyPropertyReferenceValues( PropertyNode reference )
+		{
+			RangedFloatNode node = reference as RangedFloatNode;
+			if ( node == null )
+				return;
+
+			if ( m_defaultValue != node.m_defaultValue || m_materialValue != node.m_materialValue || m_min != node.m_min || m_max != node.m_max )
+			{
+				m_defaultValue = node.m_defaultValue;
+				m_materialValue = node.m_materialValue;
+				m_min = node.m_min;
+				m_max = node.m_max;
+				SetFloatMode( m_min == m_max );
+				PreviewIsDirty = true;
+			}
+		}
+
+		public override Vector4 TypeChangeDefaultValue { get { return new Vector4( m_defaultValue, 0, 0, 0 ); } }
+		public override Vector4 TypeChangeMaterialValue { get { return new Vector4( m_materialValue, 0, 0, 0 ); } }
+		public override void SetTypeChangeValues( Vector4 defaultValue, Vector4 materialValue )
+		{
+			m_defaultValue = defaultValue.x;
+			m_materialValue = materialValue.x;
+		}
+
+		public override Vector2 TypeChangeRangeValue { get { return new Vector2( m_min, m_max ); } }
+		public override void SetTypeChangeRange( Vector2 range )
+		{
+			m_min = range.x;
+			m_max = range.y;
+			SetFloatMode( m_min == m_max );
 		}
 
 		public override void SetGlobalValue() { Shader.SetGlobalFloat( m_propertyName, m_defaultValue ); }

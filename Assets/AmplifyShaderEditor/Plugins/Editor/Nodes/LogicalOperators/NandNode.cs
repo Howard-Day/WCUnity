@@ -17,6 +17,14 @@ namespace AmplifyShaderEditor
 			base.CommonInit( uniqueId );
 			AddInputPort( WirePortDataType.FLOAT, false, "A" );
 			AddInputPort( WirePortDataType.FLOAT, false, "B" );
+
+			// @diogo: a texture object is bound, not assigned, so it cannot be an operand of the nand
+			for ( int i = 0; i < m_inputPorts.Count; i++ )
+			{
+				m_inputPorts[ i ].AddPortForbiddenTypes( WirePortDataType.SAMPLER1D, WirePortDataType.SAMPLER2D, WirePortDataType.SAMPLER3D,
+					WirePortDataType.SAMPLERCUBE, WirePortDataType.SAMPLER2DARRAY, WirePortDataType.SAMPLERSTATE );
+			}
+
 			AddOutputPort( WirePortDataType.FLOAT, Constants.EmptyPortValue );
 			m_useInternalPortData = true;
 			m_previewShaderGUID = "04fb2bacb454a424d8cfeff7d95cca52";
@@ -51,9 +59,6 @@ namespace AmplifyShaderEditor
 				type2 = m_inputPorts[ 1 ].GetOutputConnection( 0 ).DataType;
 			
 			m_mainDataType = UIUtils.GetPriority( type1 ) > UIUtils.GetPriority( type2 ) ? type1 : type2;
-
-			if ( !m_inputPorts[ 0 ].IsConnected && !m_inputPorts[ 1 ].IsConnected && m_inputPorts[ 2 ].IsConnected )
-				m_mainDataType = m_inputPorts[ 2 ].GetOutputConnection( 0 ).DataType;
 
 			m_inputPorts[ 0 ].ChangeType( m_mainDataType, false );
 			m_inputPorts[ 1 ].ChangeType( m_mainDataType, false );

@@ -25,7 +25,7 @@ namespace AmplifyShaderEditor
 			ChangeOutputName( 4, "t" );
 			m_value = "_CosTime";
 			m_previewShaderGUID = "3093999b42c3c0940a71799511d7781c";
-			m_continuousPreviewRefresh = true;
+			ContinuousPreviewRefresh = true;
 		}
 
 		public override void RefreshExternalReferences()
@@ -42,7 +42,7 @@ namespace AmplifyShaderEditor
 		{
 			if( outputId > 0 && dataCollector.IsTemplate )
 			{
-				if( dataCollector.TemplateDataCollectorInstance.IsHDRP || dataCollector.TemplateDataCollectorInstance.IsLWRP )
+				if( dataCollector.TemplateDataCollectorInstance.IsHDRP || dataCollector.TemplateDataCollectorInstance.IsURP )
 					return SRPTime[ outputId - 1 ];
 			}
 			return base.GenerateShaderForOutput( outputId, ref dataCollector, ignoreLocalvar );

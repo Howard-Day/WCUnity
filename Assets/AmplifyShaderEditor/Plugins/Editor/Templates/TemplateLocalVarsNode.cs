@@ -8,7 +8,7 @@ using System.Collections.Generic;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Template Local Var Data" , "Surface Data" , "Select and use available local variable data from the template" )]
+	[NodeAttributes( "Template Local Var Data" , "Template" , "Select and use available local variable data from the template", NodeAvailabilityFlags = (int)NodeAvailability.TemplateShader )]
 	public sealed class TemplateLocalVarsNode : TemplateNodeParent
 	{
 		private List<TemplateLocalVarData> m_localVarsData = null;

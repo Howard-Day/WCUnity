@@ -3,10 +3,12 @@ using UnityEngine;
 using System;
 using System.Collections;
 using UnityEngine.Networking;
+using Unity.Scripting.LifecycleManagement;
 
 namespace AmplifyShaderEditor
 {
 	[InitializeOnLoad]
+	[NoAutoStaticsCleanup]
 	public class InvalidDataChecker
 	{
 		private static string[] m_invalidData = {	"674ea7bed6b1cd94b8057074298096db", //"/Samples",
@@ -54,7 +56,7 @@ namespace AmplifyShaderEditor
 		{
 			EditorApplication.update -= Update;
 
-			if( !EditorApplication.isPlayingOrWillChangePlaymode )
+			if( !EditorApplication.isPlayingOrWillChangePlaymode && !Application.isBatchMode )
 			{
 				Preferences.ShowOption show = Preferences.ShowOption.Never;
 				if( !EditorPrefs.HasKey( Preferences.User.Keys.StartUp ) )
@@ -99,7 +101,7 @@ namespace AmplifyShaderEditor
 				while( www.isDone == false )
 					yield return null;
 
-				if( success != null )
+				if( success != null && www.result == UnityWebRequest.Result.Success )
 					success();
 			}
 		}
@@ -122,7 +124,7 @@ namespace AmplifyShaderEditor
 
 		public static string InvalidDataCollected { get { return m_invalidDataCollected; } }
 	}
-	
+
 	public class InvalidDataPopUp : EditorWindow
 	{
 		private readonly GUIContent m_buttonContent = new GUIContent( "Remove Invalid Data" );
@@ -130,7 +132,7 @@ namespace AmplifyShaderEditor
 		public void OnGUI()
 		{
 			GUILayout.BeginVertical();
-			{	
+			{
 				GUIStyle labelStyle = new GUIStyle( EditorStyles.label );
 				labelStyle.alignment = TextAnchor.MiddleCenter;
 				labelStyle.wordWrap = true;
@@ -142,7 +144,7 @@ namespace AmplifyShaderEditor
 				GUILayout.Space( 5 );
 
 				m_scrollPosition = GUILayout.BeginScrollView( m_scrollPosition ,GUILayout.Height(85));
-				
+
 				GUILayout.TextArea( InvalidDataChecker.InvalidDataCollected );
 				GUILayout.EndScrollView();
 
@@ -162,7 +164,7 @@ namespace AmplifyShaderEditor
 				GUILayout.EndHorizontal();
 			}
 			GUILayout.EndVertical();
-	
+
 		}
 	}
 }

@@ -5,15 +5,23 @@ using UnityEngine;
 using UnityEditor;
 using System;
 using System.Linq;
+using System.Text;
 using System.Collections.Generic;
+using Unity.Scripting.LifecycleManagement;
 
 namespace AmplifyShaderEditor
 {
 	[Serializable]
+	[NoAutoStaticsCleanup]
 	public class ParentGraph : ScriptableObject, ISerializationCallbackReceiver
 	{
 		private const int MasterNodeLODIncrement = 100;
 		private const int MaxLodAmount = 9;
+
+		// @diogo: graphs currently bulk-destroying their nodes; a registry unregister is skipped only when the registry's own graph is one of these ( its lists get wholesale-cleared right after )
+		private static readonly List<ParentGraph> s_bulkDestroyingGraphs = new List<ParentGraph>();
+		public static bool IsBulkDestroying { get { return s_bulkDestroyingGraphs.Count > 0; } }
+		public static bool IsGraphBulkDestroying( ParentGraph graph ) { return graph != null && s_bulkDestroyingGraphs.Contains( graph ); }
 
 		public enum NodeLOD
 		{
@@ -25,8 +33,10 @@ namespace AmplifyShaderEditor
 			LOD5
 		}
 
+		// @diogo: mirrors the master node flag and is what codegen reads, so its default has to match
+		// MasterNode.m_samplingMacros; nothing syncs the two when a graph is created
 		[SerializeField]
-		private bool m_samplingThroughMacros = false;
+		private bool m_samplingThroughMacros = true;
 
 		private NodeLOD m_lodLevel = NodeLOD.LOD0;
 		private GUIStyle nodeStyleOff;
@@ -88,8 +98,19 @@ namespace AmplifyShaderEditor
 		[SerializeField]
 		private UsageListRegisterLocalVarNodes m_localVarNodes = new UsageListRegisterLocalVarNodes();
 
+		// @diogo: only Struct nodes owning a Local definition register here, keyed by type name, so
+		// a reference can never resolve to another reference
+		[SerializeField]
+		private UsageListStructNodes m_structNodes = new UsageListStructNodes();
+
+		[SerializeField]
+		private UsageListSamplerStateNodes m_samplerStateNodes = new UsageListSamplerStateNodes();
+
 		[SerializeField]
 		private UsageListGlobalArrayNodes m_globalArrayNodes = new UsageListGlobalArrayNodes();
+
+		[SerializeField]
+		private UsageListAdditionalDirectivesNodes m_additionalDirectivesNodes = new UsageListAdditionalDirectivesNodes();
 
 		[SerializeField]
 		private UsageListFunctionInputNodes m_functionInputNodes = new UsageListFunctionInputNodes();
@@ -117,6 +138,9 @@ namespace AmplifyShaderEditor
 
 		[SerializeField]
 		private UsageListStaticSwitchNodes m_staticSwitchNodes = new UsageListStaticSwitchNodes();
+
+		[SerializeField]
+		private UsageListToggleSwitchNodes m_toggleSwitchNodes = new UsageListToggleSwitchNodes();
 
 		[SerializeField]
 		private int m_masterNodeId = Constants.INVALID_NODE_ID;
@@ -165,6 +189,11 @@ namespace AmplifyShaderEditor
 
 		[SerializeField]
 		private List<WireReference> m_highlightedWires = new List<WireReference>();
+
+		// @diogo: scratch list reused by DrawReferenceWires to collect each node's soft-reference links
+		[NonSerialized]
+		private List<ReferenceWire> m_referenceWires = new List<ReferenceWire>();
+
 		private System.Type m_masterNodeDefaultType;
 
 		[SerializeField]
@@ -194,6 +223,13 @@ namespace AmplifyShaderEditor
 		private bool m_forceRepositionCheck = false;
 
 		private bool m_isLoading = false;
+
+		// Wires held back until their wildcard producer resolves, as { in node, in port, out node, out port }.
+		[NonSerialized]
+		private List<int[]> m_deferredWires = new List<int[]>();
+
+		// @diogo: true while CheckNodeReplacement restores cached master nodes over a template change
+		private bool m_isReplacingMasterNodes = false;
 		private bool m_isDuplicating = false;
 
 		private bool m_changedLightingModel = false;
@@ -219,6 +255,7 @@ namespace AmplifyShaderEditor
 			m_floatNodes.ContainerGraph = this;
 			m_texturePropertyNodes = new UsageListTexturePropertyNodes();
 			m_texturePropertyNodes.ContainerGraph = this;
+			m_texturePropertyNodes.ReorderOnChange = true;
 			m_textureArrayNodes = new UsageListTextureArrayNodes();
 			m_textureArrayNodes.ContainerGraph = this;
 			m_textureArrayNodes.ReorderOnChange = true;
@@ -231,14 +268,27 @@ namespace AmplifyShaderEditor
 			m_staticSwitchNodes = new UsageListStaticSwitchNodes();
 			m_staticSwitchNodes.ContainerGraph = this;
 			m_staticSwitchNodes.ReorderOnChange = true;
+			m_toggleSwitchNodes = new UsageListToggleSwitchNodes();
+			m_toggleSwitchNodes.ContainerGraph = this;
+			m_toggleSwitchNodes.ReorderOnChange = true;
 			m_screenColorNodes = new UsageListScreenColorNodes();
 			m_screenColorNodes.ContainerGraph = this;
 			m_screenColorNodes.ReorderOnChange = true;
 			m_localVarNodes = new UsageListRegisterLocalVarNodes();
 			m_localVarNodes.ContainerGraph = this;
 			m_localVarNodes.ReorderOnChange = true;
+			m_structNodes = new UsageListStructNodes();
+			m_structNodes.ContainerGraph = this;
+			m_structNodes.ReorderOnChange = true;
+			m_samplerStateNodes = new UsageListSamplerStateNodes();
+			m_samplerStateNodes.ContainerGraph = this;
+			m_samplerStateNodes.ReorderOnChange = true;
 			m_globalArrayNodes = new UsageListGlobalArrayNodes();
 			m_globalArrayNodes.ContainerGraph = this;
+			// @diogo: sorted like the other reference registers so dropdown order survives save/load
+			m_globalArrayNodes.ReorderOnChange = true;
+			m_additionalDirectivesNodes = new UsageListAdditionalDirectivesNodes();
+			m_additionalDirectivesNodes.ContainerGraph = this;
 			m_functionInputNodes = new UsageListFunctionInputNodes();
 			m_functionInputNodes.ContainerGraph = this;
 			m_functionNodes = new UsageListFunctionNodes();
@@ -314,6 +364,7 @@ namespace AmplifyShaderEditor
 			m_rawPropertyNodes.UpdateNodeArr();
 			m_customExpressionsOnFunctionMode.UpdateNodeArr();
 			m_staticSwitchNodes.UpdateNodeArr();
+			m_toggleSwitchNodes.UpdateNodeArr();
 			m_functionInputNodes.UpdateNodeArr();
 			m_functionNodes.UpdateNodeArr();
 			m_functionOutputNodes.UpdateNodeArr();
@@ -328,13 +379,19 @@ namespace AmplifyShaderEditor
 			m_textureArrayNodes.UpdateNodeArr();
 			m_screenColorNodes.UpdateNodeArr();
 			m_localVarNodes.UpdateNodeArr();
+			m_structNodes.UpdateNodeArr();
+			m_samplerStateNodes.UpdateNodeArr();
 			m_globalArrayNodes.UpdateNodeArr();
+			m_additionalDirectivesNodes.UpdateNodeArr();
 		}
 
 		public int GetValidId()
 		{
 			return m_validNodeId++;
 		}
+
+		// @diogo: the id GetValidId would hand out next, without consuming it
+		public int NextValidId { get { return m_validNodeId; } }
 
 		void UpdateIdFromNode( ParentNode node )
 		{
@@ -355,12 +412,65 @@ namespace AmplifyShaderEditor
 			}
 		}
 
+		// @diogo: incremental undo patching: reset every node's activation state before ForceSignalPropagationOnMasterNode re-propagates
+		public void ResetActivationStates()
+		{
+			for ( int i = 0; i < m_nodes.Count; i++ )
+			{
+				m_nodes[ i ].ResetActivationState();
+			}
+		}
+
 		public void CleanUnusedNodes()
 		{
+			// @diogo: wire connectivity alone misses Reference dropdown links: a kept node's reference target
+			// must survive, and so must the target's own upstream wires and references, recursively. Inactive
+			// input branches of wire-connected nodes are still cleaned as before.
+			HashSet<int> keepIds = new HashSet<int>();
+			Queue<ParentNode> pendingDependencies = new Queue<ParentNode>();
+			for ( int i = 0; i < m_nodes.Count; i++ )
+			{
+				if ( m_nodes[ i ].ConnStatus == NodeConnectionStatus.Not_Connected )
+				{
+					if ( !( m_nodes[ i ] is PropertyNode propertyNode && propertyNode.AutoRegister ) )
+					{
+						continue;
+					}
+				}
+
+				keepIds.Add( m_nodes[ i ].UniqueId );
+				KeepReferencedNode( m_nodes[ i ], keepIds, pendingDependencies );
+			}
+
+			while ( pendingDependencies.Count > 0 )
+			{
+				ParentNode dependency = pendingDependencies.Dequeue();
+				KeepReferencedNode( dependency, keepIds, pendingDependencies );
+
+				for ( int portIdx = 0; portIdx < dependency.InputPorts.Count; portIdx++ )
+				{
+					InputPort inputPort = dependency.InputPorts[ portIdx ];
+					if ( inputPort.IsConnected )
+					{
+						for ( int wireIdx = 0; wireIdx < inputPort.ExternalReferences.Count; wireIdx++ )
+						{
+							if ( keepIds.Add( inputPort.ExternalReferences[ wireIdx ].NodeId ) )
+							{
+								ParentNode inputNode = GetNode( inputPort.ExternalReferences[ wireIdx ].NodeId );
+								if ( inputNode != null )
+								{
+									pendingDependencies.Enqueue( inputNode );
+								}
+							}
+						}
+					}
+				}
+			}
+
 			List<ParentNode> unusedNodes = new List<ParentNode>();
 			for( int i = 0; i < m_nodes.Count; i++ )
 			{
-				if( m_nodes[ i ].ConnStatus == NodeConnectionStatus.Not_Connected )
+				if ( !keepIds.Contains( m_nodes[ i ].UniqueId ) )
 				{
 					unusedNodes.Add( m_nodes[ i ] );
 				}
@@ -374,6 +484,20 @@ namespace AmplifyShaderEditor
 			unusedNodes = null;
 
 			IsDirty = true;
+		}
+
+		// @diogo: pins node's soft-reference target into the kept set and queues it for its own dependency walk
+		private void KeepReferencedNode( ParentNode node, HashSet<int> keepIds, Queue<ParentNode> pendingDependencies )
+		{
+			int referencedId = node.ReferencedNodeId;
+			if ( referencedId > -1 && keepIds.Add( referencedId ) )
+			{
+				ParentNode referencedNode = GetNode( referencedId );
+				if ( referencedNode != null )
+				{
+					pendingDependencies.Enqueue( referencedNode );
+				}
+			}
 		}
 
 		// Destroy all nodes excluding Master Node
@@ -398,47 +522,64 @@ namespace AmplifyShaderEditor
 
 		public void CleanNodes()
 		{
-			for( int i = 0; i < m_nodes.Count; i++ )
+			s_bulkDestroyingGraphs.Add( this );
+			try
 			{
-				if( m_nodes[ i ] != null )
-				{					
-					UndoUtils.ClearUndo( m_nodes[ i ] );
-					m_nodes[ i ].Destroy();
-					GameObject.DestroyImmediate( m_nodes[ i ] );
+				System.Diagnostics.Stopwatch destroyTimer = new System.Diagnostics.Stopwatch();
+				for( int i = 0; i < m_nodes.Count; i++ )
+				{
+					if( m_nodes[ i ] != null )
+					{
+						// @diogo: no per-node ClearUndo: only the GraphUndoProxy is ever registered with Unity's undo
+						destroyTimer.Restart();
+						m_nodes[ i ].Destroy();
+						destroyTimer.Stop();
+						UndoProfiler.AddDestroyByType( m_nodes[ i ].GetType(), destroyTimer.Elapsed.TotalMilliseconds );
+						GameObject.DestroyImmediate( m_nodes[ i ] );
+					}
 				}
+				ClearInternalTemplateNodes();
+
+				m_masterNodeId = Constants.INVALID_NODE_ID;
+				m_validNodeId = 0;
+				m_instancePropertyCount = 0;
+				m_virtualTextureCount = 0;
+
+				m_nodesDict.Clear();
+				m_nodes.Clear();
+				m_samplerNodes.Clear();
+				m_propertyNodes.Clear();
+				m_rawPropertyNodes.Clear();
+				m_customExpressionsOnFunctionMode.Clear();
+				m_staticSwitchNodes.Clear();
+				m_toggleSwitchNodes.Clear();
+				m_functionInputNodes.Clear();
+				m_functionNodes.Clear();
+				m_functionOutputNodes.Clear();
+				m_functionSwitchNodes.Clear();
+				m_functionSwitchCopyNodes.Clear();
+				m_multiPassMasterNodes.Clear();
+				for( int i = 0; i < m_lodMultiPassMasterNodes.Count; i++ )
+				{
+					m_lodMultiPassMasterNodes[ i ].Clear();
+				}
+
+				m_texturePropertyNodes.Clear();
+				m_textureArrayNodes.Clear();
+				m_screenColorNodes.Clear();
+				m_localVarNodes.Clear();
+				m_structNodes.Clear();
+				m_samplerStateNodes.Clear();
+				m_globalArrayNodes.Clear();
+				m_additionalDirectivesNodes.Clear();
+				m_selectedNodes.Clear();
+				m_markedForDeletion.Clear();
+				m_deferredWires.Clear();
 			}
-			ClearInternalTemplateNodes();
-
-			m_masterNodeId = Constants.INVALID_NODE_ID;
-			m_validNodeId = 0;
-			m_instancePropertyCount = 0;
-			m_virtualTextureCount = 0;
-
-			m_nodesDict.Clear();
-			m_nodes.Clear();
-			m_samplerNodes.Clear();
-			m_propertyNodes.Clear();
-			m_rawPropertyNodes.Clear();
-			m_customExpressionsOnFunctionMode.Clear();
-			m_staticSwitchNodes.Clear();
-			m_functionInputNodes.Clear();
-			m_functionNodes.Clear();
-			m_functionOutputNodes.Clear();
-			m_functionSwitchNodes.Clear();
-			m_functionSwitchCopyNodes.Clear();
-			m_multiPassMasterNodes.Clear();
-			for( int i = 0; i < m_lodMultiPassMasterNodes.Count; i++ )
+			finally
 			{
-				m_lodMultiPassMasterNodes[ i ].Clear();
+				s_bulkDestroyingGraphs.Remove( this );
 			}
-			
-			m_texturePropertyNodes.Clear();
-			m_textureArrayNodes.Clear();
-			m_screenColorNodes.Clear();
-			m_localVarNodes.Clear();
-			m_globalArrayNodes.Clear();
-			m_selectedNodes.Clear();
-			m_markedForDeletion.Clear();
 		}
 
 		public void ResetHighlightedWires()
@@ -500,7 +641,7 @@ namespace AmplifyShaderEditor
 			{
 				if( node.InputPorts[ i ].ExternalReferences.Count > 0 && node.InputPorts[ i ].ExternalReferences[ 0 ].WireStatus == WireStatus.Highlighted )
 				{
-					// even though node is deselected, it receives wire highlight from a previous one 
+					// even though node is deselected, it receives wire highlight from a previous one
 					return;
 				}
 			}
@@ -538,28 +679,8 @@ namespace AmplifyShaderEditor
 
 		public void FullCleanUndoStack()
 		{
+			// @diogo: no per-node ClearUndo: only the GraphUndoProxy is ever registered with Unity's undo
 			UndoUtils.ClearUndo( this );
-			int count = m_nodes.Count;
-			for( int i = 0; i < count; i++ )
-			{
-				if( m_nodes[ i ] != null )
-				{
-					UndoUtils.ClearUndo( m_nodes[ i ] );
-				}
-			}
-		}
-
-		public void FullRegisterOnUndoStack()
-		{
-			UndoUtils.RegisterCompleteObjectUndo( this, Constants.UndoRegisterFullGrapId );
-			int count = m_nodes.Count;
-			for( int i = 0; i < count; i++ )
-			{
-				if( m_nodes[ i ] != null )
-				{
-					UndoUtils.RegisterCompleteObjectUndo( m_nodes[ i ], Constants.UndoRegisterFullGrapId );
-				}
-			}
 		}
 
 		public void CheckPropertiesAutoRegister( ref MasterNodeDataCollector dataCollector )
@@ -580,6 +701,14 @@ namespace AmplifyShaderEditor
 			}
 			globalArrayNodeList = null;
 
+			List<AdditionalDirectivesNode> additionalDirectivesList = m_additionalDirectivesNodes.NodesList;
+			int additionalDirectivesCount = additionalDirectivesList.Count;
+			for( int i = 0; i < additionalDirectivesCount; i++ )
+			{
+				additionalDirectivesList[ i ].CheckIfAutoRegister( ref dataCollector );
+			}
+			additionalDirectivesList = null;
+
 			//List<PropertyNode> propertyNodesList = m_propertyNodes.NodesList;
 			//int propertyCount = propertyNodesList.Count;
 			//for( int i = 0; i < propertyCount; i++ )
@@ -599,97 +728,111 @@ namespace AmplifyShaderEditor
 
 		public void SoftDestroy()
 		{
-			OnNodeRemovedEvent = null;
-
-			m_masterNodeId = Constants.INVALID_NODE_ID;
-			m_validNodeId = 0;
-			
-			m_nodeGrid.Destroy();
-			//m_nodeGrid = null;
-
-			ClearInternalTemplateNodes();
-
-			for( int i = 0; i < m_nodes.Count; i++ )
+			s_bulkDestroyingGraphs.Add( this );
+			try
 			{
-				if( m_nodes[ i ] != null )
+				OnNodeRemovedEvent = null;
+
+				m_masterNodeId = Constants.INVALID_NODE_ID;
+				m_validNodeId = 0;
+
+				m_nodeGrid.Destroy();
+				//m_nodeGrid = null;
+
+				ClearInternalTemplateNodes();
+
+				for( int i = 0; i < m_nodes.Count; i++ )
 				{
-					m_nodes[ i ].Destroy();
-					GameObject.DestroyImmediate( m_nodes[ i ] );
+					if( m_nodes[ i ] != null )
+					{
+						m_nodes[ i ].Destroy();
+						GameObject.DestroyImmediate( m_nodes[ i ] );
+					}
 				}
+
+				m_instancePropertyCount = 0;
+
+				m_nodes.Clear();
+				//m_nodes = null;
+
+				m_nodesDict.Clear();
+				//m_nodesDict = null;
+
+				m_samplerNodes.Clear();
+				//m_samplerNodes = null;
+
+				m_propertyNodes.Clear();
+				m_rawPropertyNodes.Clear();
+				//m_propertyNodes = null;
+
+				m_customExpressionsOnFunctionMode.Clear();
+
+				m_staticSwitchNodes.Clear();
+
+				m_toggleSwitchNodes.Clear();
+
+				m_functionInputNodes.Clear();
+				//m_functionInputNodes = null;
+
+				m_functionNodes.Clear();
+				//m_functionNodes = null;
+
+				m_functionOutputNodes.Clear();
+				//m_functionOutputNodes = null;
+
+				m_functionSwitchNodes.Clear();
+				//m_functionSwitchNodes = null;
+
+				m_functionSwitchCopyNodes.Clear();
+				//m_functionSwitchCopyNodes = null;
+
+				m_texturePropertyNodes.Clear();
+				//m_texturePropertyNodes = null;
+
+				m_textureArrayNodes.Clear();
+				//m_textureArrayNodes = null;
+
+				m_screenColorNodes.Clear();
+				//m_screenColorNodes = null;
+
+				m_localVarNodes.Clear();
+				m_structNodes.Clear();
+				m_samplerStateNodes.Clear();
+				//m_localVarNodes = null;
+
+				m_globalArrayNodes.Clear();
+
+				m_additionalDirectivesNodes.Clear();
+
+				m_selectedNodes.Clear();
+				//m_selectedNodes = null;
+
+				m_markedForDeletion.Clear();
+				//m_markedForDeletion = null;
+
+				m_nodePreviewList.Clear();
+				//m_nodePreviewList = null;
+
+				IsDirty = true;
+
+				OnNodeEvent = null;
+				OnDuplicateEvent = null;
+				//m_currentShaderFunction = null;
+
+				OnMaterialUpdatedEvent = null;
+				OnShaderUpdatedEvent = null;
+				OnEmptyGraphDetectedEvt = null;
+
+				nodeStyleOff = null;
+				nodeStyleOn = null;
+				nodeTitle = null;
+				commentaryBackground = null;
+				OnLODMasterNodesAddedEvent = null;
 			}
-
-			m_instancePropertyCount = 0;
-
-			m_nodes.Clear();
-			//m_nodes = null;
-
-			m_nodesDict.Clear();
-			//m_nodesDict = null;
-
-			m_samplerNodes.Clear();
-			//m_samplerNodes = null;
-
-			m_propertyNodes.Clear();
-			m_rawPropertyNodes.Clear();
-			//m_propertyNodes = null;
-
-			m_customExpressionsOnFunctionMode.Clear();
-
-			m_staticSwitchNodes.Clear();
-
-			m_functionInputNodes.Clear();
-			//m_functionInputNodes = null;
-
-			m_functionNodes.Clear();
-			//m_functionNodes = null;
-
-			m_functionOutputNodes.Clear();
-			//m_functionOutputNodes = null;
-
-			m_functionSwitchNodes.Clear();
-			//m_functionSwitchNodes = null;
-
-			m_functionSwitchCopyNodes.Clear();
-			//m_functionSwitchCopyNodes = null;
-
-			m_texturePropertyNodes.Clear();
-			//m_texturePropertyNodes = null;
-
-			m_textureArrayNodes.Clear();
-			//m_textureArrayNodes = null;
-
-			m_screenColorNodes.Clear();
-			//m_screenColorNodes = null;
-
-			m_localVarNodes.Clear();
-			//m_localVarNodes = null;
-
-			m_globalArrayNodes.Clear();
-
-			m_selectedNodes.Clear();
-			//m_selectedNodes = null;
-
-			m_markedForDeletion.Clear();
-			//m_markedForDeletion = null;
-
-			m_nodePreviewList.Clear();
-			//m_nodePreviewList = null;
-
-			IsDirty = true;
-
-			OnNodeEvent = null;
-			OnDuplicateEvent = null;
-			//m_currentShaderFunction = null;
-
-			OnMaterialUpdatedEvent = null;
-			OnShaderUpdatedEvent = null;
-			OnEmptyGraphDetectedEvt = null;
-
-			nodeStyleOff = null;
-			nodeStyleOn = null;
-			nodeTitle = null;
-			commentaryBackground = null;
-			OnLODMasterNodesAddedEvent = null;
+			finally
+			{
+				s_bulkDestroyingGraphs.Remove( this );
+			}
 		}
 
 
@@ -697,119 +840,143 @@ namespace AmplifyShaderEditor
 
 		public void Destroy()
 		{
-			UndoUtils.UnregisterUndoRedoCallback( OnUndoRedoCallback );
-			for( int i = 0; i < m_nodes.Count; i++ )
+			s_bulkDestroyingGraphs.Add( this );
+			try
 			{
-				if( m_nodes[ i ] != null )
+				UndoUtils.UnregisterUndoRedoCallback( OnUndoRedoCallback );
+				System.Diagnostics.Stopwatch destroyTimer = new System.Diagnostics.Stopwatch();
+				for( int i = 0; i < m_nodes.Count; i++ )
 				{
-					UndoUtils.ClearUndo( m_nodes[ i ] );
-					m_nodes[ i ].Destroy();
-					GameObject.DestroyImmediate( m_nodes[ i ] );
+					if( m_nodes[ i ] != null )
+					{
+						// @diogo: no per-node ClearUndo: only the GraphUndoProxy is ever registered with Unity's undo
+						destroyTimer.Restart();
+						m_nodes[ i ].Destroy();
+						destroyTimer.Stop();
+						UndoProfiler.AddDestroyByType( m_nodes[ i ].GetType(), destroyTimer.Elapsed.TotalMilliseconds );
+						GameObject.DestroyImmediate( m_nodes[ i ] );
+					}
 				}
+
+				//Must be before m_propertyNodes.Destroy();
+				ClearInternalTemplateNodes();
+				m_internalTemplateNodesDict = null;
+				m_internalTemplateNodesList = null;
+
+				OnNodeRemovedEvent = null;
+
+				m_masterNodeId = Constants.INVALID_NODE_ID;
+				m_validNodeId = 0;
+				m_instancePropertyCount = 0;
+
+				m_nodeGrid.Destroy();
+				m_nodeGrid = null;
+
+				m_nodes.Clear();
+				m_nodes = null;
+
+				m_samplerNodes.Destroy();
+				m_samplerNodes = null;
+
+				m_propertyNodes.Destroy();
+				m_propertyNodes = null;
+
+				m_rawPropertyNodes.Destroy();
+				m_rawPropertyNodes = null;
+
+				m_customExpressionsOnFunctionMode.Destroy();
+				m_customExpressionsOnFunctionMode = null;
+
+				m_staticSwitchNodes.Destroy();
+				m_staticSwitchNodes = null;
+
+				m_toggleSwitchNodes.Destroy();
+				m_toggleSwitchNodes = null;
+
+				m_functionInputNodes.Destroy();
+				m_functionInputNodes = null;
+
+				m_functionNodes.Destroy();
+				m_functionNodes = null;
+
+				m_functionOutputNodes.Destroy();
+				m_functionOutputNodes = null;
+
+				m_functionSwitchNodes.Destroy();
+				m_functionSwitchNodes = null;
+
+				m_functionSwitchCopyNodes.Destroy();
+				m_functionSwitchCopyNodes = null;
+
+				m_multiPassMasterNodes.Destroy();
+				m_multiPassMasterNodes = null;
+
+				for( int i = 0; i < m_lodMultiPassMasterNodes.Count; i++ )
+				{
+					m_lodMultiPassMasterNodes[ i ].Destroy();
+					m_lodMultiPassMasterNodes[ i ] = null;
+				}
+				m_lodMultiPassMasterNodes.Clear();
+				m_lodMultiPassMasterNodes = null;
+
+				m_texturePropertyNodes.Destroy();
+				m_texturePropertyNodes = null;
+
+				m_textureArrayNodes.Destroy();
+				m_textureArrayNodes = null;
+
+				m_screenColorNodes.Destroy();
+				m_screenColorNodes = null;
+
+				m_localVarNodes.Destroy();
+				m_localVarNodes = null;
+
+				m_structNodes.Destroy();
+				m_structNodes = null;
+
+				m_samplerStateNodes.Destroy();
+				m_samplerStateNodes = null;
+
+				m_globalArrayNodes.Destroy();
+				m_globalArrayNodes = null;
+
+				m_additionalDirectivesNodes.Destroy();
+				m_additionalDirectivesNodes = null;
+
+				m_selectedNodes.Clear();
+				m_selectedNodes = null;
+
+				m_markedForDeletion.Clear();
+				m_markedForDeletion = null;
+
+
+				m_nodesDict.Clear();
+				m_nodesDict = null;
+
+				m_nodePreviewList.Clear();
+				m_nodePreviewList = null;
+
+				IsDirty = true;
+
+				OnNodeEvent = null;
+				OnDuplicateEvent = null;
+				//m_currentShaderFunction = null;
+
+				OnMaterialUpdatedEvent = null;
+				OnShaderUpdatedEvent = null;
+				OnEmptyGraphDetectedEvt = null;
+
+				nodeStyleOff = null;
+				nodeStyleOn = null;
+				nodeTitle = null;
+				commentaryBackground = null;
+
+				OnLODMasterNodesAddedEvent = null;
 			}
-
-			//Must be before m_propertyNodes.Destroy();
-			ClearInternalTemplateNodes();
-			m_internalTemplateNodesDict = null;
-			m_internalTemplateNodesList = null;
-
-			OnNodeRemovedEvent = null;
-
-			m_masterNodeId = Constants.INVALID_NODE_ID;
-			m_validNodeId = 0;
-			m_instancePropertyCount = 0;
-
-			m_nodeGrid.Destroy();
-			m_nodeGrid = null;
-
-			m_nodes.Clear();
-			m_nodes = null;
-
-			m_samplerNodes.Destroy();
-			m_samplerNodes = null;
-
-			m_propertyNodes.Destroy();
-			m_propertyNodes = null;
-
-			m_rawPropertyNodes.Destroy();
-			m_rawPropertyNodes = null;
-
-			m_customExpressionsOnFunctionMode.Destroy();
-			m_customExpressionsOnFunctionMode = null;
-
-			m_staticSwitchNodes.Destroy();
-			m_staticSwitchNodes = null;
-
-			m_functionInputNodes.Destroy();
-			m_functionInputNodes = null;
-
-			m_functionNodes.Destroy();
-			m_functionNodes = null;
-
-			m_functionOutputNodes.Destroy();
-			m_functionOutputNodes = null;
-
-			m_functionSwitchNodes.Destroy();
-			m_functionSwitchNodes = null;
-
-			m_functionSwitchCopyNodes.Destroy();
-			m_functionSwitchCopyNodes = null;
-
-			m_multiPassMasterNodes.Destroy();
-			m_multiPassMasterNodes = null;
-
-			for( int i = 0; i < m_lodMultiPassMasterNodes.Count; i++ )
+			finally
 			{
-				m_lodMultiPassMasterNodes[ i ].Destroy();
-				m_lodMultiPassMasterNodes[ i ] = null;
+				s_bulkDestroyingGraphs.Remove( this );
 			}
-			m_lodMultiPassMasterNodes.Clear();
-			m_lodMultiPassMasterNodes = null;
-
-			m_texturePropertyNodes.Destroy();
-			m_texturePropertyNodes = null;
-
-			m_textureArrayNodes.Destroy();
-			m_textureArrayNodes = null;
-
-			m_screenColorNodes.Destroy();
-			m_screenColorNodes = null;
-
-			m_localVarNodes.Destroy();
-			m_localVarNodes = null;
-
-			m_globalArrayNodes.Destroy();
-			m_globalArrayNodes = null;
-
-			m_selectedNodes.Clear();
-			m_selectedNodes = null;
-
-			m_markedForDeletion.Clear();
-			m_markedForDeletion = null;
-
-
-			m_nodesDict.Clear();
-			m_nodesDict = null;
-
-			m_nodePreviewList.Clear();
-			m_nodePreviewList = null;
-
-			IsDirty = true;
-
-			OnNodeEvent = null;
-			OnDuplicateEvent = null;
-			//m_currentShaderFunction = null;
-
-			OnMaterialUpdatedEvent = null;
-			OnShaderUpdatedEvent = null;
-			OnEmptyGraphDetectedEvt = null;
-
-			nodeStyleOff = null;
-			nodeStyleOn = null;
-			nodeTitle = null;
-			commentaryBackground = null;
-
-			OnLODMasterNodesAddedEvent = null;
 		}
 
 		void OnNodeChangeSizeEvent( ParentNode node )
@@ -890,26 +1057,16 @@ namespace AmplifyShaderEditor
 
 		public void OnNodeReOrderEvent( ParentNode node, int index )
 		{
-			if( node.Depth < index )
-			{
-				Debug.LogWarning( "Reorder canceled: This is a specific method for when reordering needs to be done and a its original index is higher than the new one" );
-			}
-			else
-			{
-				m_nodes.Remove( node );
-				m_nodes.Insert( index, node );
-				m_markToReOrder = true;
-			}
+			// Final draw order is resolved by the authoritative frame pass in Draw (see m_markToReOrder);
+			// here we only need to flag that it must be recomputed.
+			m_markToReOrder = true;
 		}
 
 		public void AddNode( ParentNode node, bool updateId = false, bool addLast = true, bool registerUndo = true, bool fetchMaterialValues = true )
 		{
 			if( registerUndo )
 			{
-				UIUtils.MarkUndoAction();
-				UndoUtils.RegisterCompleteObjectUndo( ParentWindow, Constants.UndoCreateNodeId );
-				UndoUtils.RegisterCompleteObjectUndo( this, Constants.UndoCreateNodeId );
-				UndoUtils.RegisterCreatedObjectUndo( node, Constants.UndoCreateNodeId );
+				ParentWindow.RegisterGraphUndo( Constants.UndoCreateNodeId );
 			}
 
 			if( OnNodeEvent != null )
@@ -1034,17 +1191,18 @@ namespace AmplifyShaderEditor
 				break;
 				default: return;
 			}
+			propertyNode.CurrentParameterType = data.PropertyType;
 
 			propertyNode.PropertyNameFromTemplate( data );
 
-			// Create a negative unique Id to separate it from 
-			// the regular ids on the main nodes list 
+			// Create a negative unique Id to separate it from
+			// the regular ids on the main nodes list
 			// Its begins at -2 since -1 is used to detect invalid values
 			int uniqueId = -( m_internalTemplateNodesList.Count + 2 );
 			propertyNode.SetBaseUniqueId( uniqueId );
 
 			//Register into Float/Int Nodes list to be available inline
-			// Unique Id must be already set at this point to properly 
+			// Unique Id must be already set at this point to properly
 			// create array
 			if( data.PropertyDataType == WirePortDataType.FLOAT ||
 				data.PropertyDataType == WirePortDataType.INT )
@@ -1095,8 +1253,51 @@ namespace AmplifyShaderEditor
 			m_nodes = m_nodes.OrderBy( s => s.Depth ).ToList();
 		}
 
+		// @diogo: manual-parse loads (disk/undo) skip OnAfterDeserialize, so schedule the frame reorder explicitly
+		public void ScheduleFrameReorder()
+		{
+			m_markToReOrder = true;
+		}
+
+		// Frames (commentary boxes and sticky notes) always draw behind regular nodes, and a nested
+		// frame draws behind the frames and nodes it contains. The sort is stable, so selection and
+		// creation order are preserved within each tier. This is the single authoritative place that
+		// resolves frame draw order, replacing the previous incremental reordering that relied on a
+		// stale Depth cache and could leave frames painted on top of nodes (notably after loading).
+		private void ReorderFrames()
+		{
+			m_nodes = m_nodes.OrderBy( n => FrameDrawDepth( n ) ).ToList();
+		}
+
+		private int FrameDrawDepth( ParentNode node )
+		{
+			if ( !node.ReorderLocked )
+			{
+				return int.MaxValue;
+			}
+
+			int level = 0;
+			int parentId = node.CommentaryParent;
+			while ( parentId >= 0 && level < m_nodes.Count )
+			{
+				ParentNode parent = GetNode( parentId );
+				if ( parent == null )
+				{
+					break;
+				}
+
+				level++;
+				parentId = parent.CommentaryParent;
+			}
+			return level;
+		}
+
 		public bool Draw( DrawInfo drawInfo )
 		{
+			// @diogo: emptied every frame so an edited tint shows at once, while each type still resolves only
+			// once per frame
+			m_structTintCache.Clear();
+
 			MasterNode masterNode = GetNode( m_masterNodeId ) as MasterNode;
 			if( m_forceCategoryRefresh && masterNode != null )
 			{
@@ -1132,6 +1333,11 @@ namespace AmplifyShaderEditor
 				//{
 				//	m_nodes[ i ].SetContainerGraph( this );
 				//}
+
+				// Schedule the frame reorder so commentary boxes / sticky notes are pushed behind
+				// regular nodes on the first repaint after loading, instead of only once some later
+				// interaction happens to flag the order dirty.
+				m_markToReOrder = true;
 			}
 
 			if( drawInfo.CurrentEventType == EventType.Repaint )
@@ -1148,6 +1354,7 @@ namespace AmplifyShaderEditor
 				if( m_markToReOrder )
 				{
 					m_markToReOrder = false;
+					ReorderFrames();
 					int nodesCount = m_nodes.Count;
 					for( int i = 0; i < nodesCount; i++ )
 					{
@@ -1316,21 +1523,30 @@ namespace AmplifyShaderEditor
 				m_lateOptionsRefresh = false;
 				if( CurrentCanvasMode == NodeAvailability.TemplateShader )
 				{
-					RefreshLinkedMasterNodes( true );
-					OnRefreshLinkedPortsComplete();
-					//If clipboard has cached nodes then a master node replacement will take place
-					//We need to re-cache master nodes to ensure applied options are correctly cached
-					//As first cache happens before that
-					if( m_parentWindow.ClipboardInstance.HasCachedMasterNodes )
+					// @diogo: mechanical cascade, not a user edit: its DeleteConnection calls must not push undo steps
+					m_parentWindow.BeginSuppressUndoRegistration();
+					try
 					{
-						m_parentWindow.ClipboardInstance.AddMultiPassNodesToClipboard( MultiPassMasterNodes.NodesList,true,-1 );
-						for( int i = 0; i < m_lodMultiPassMasterNodes.Count; i++ )
+						RefreshLinkedMasterNodes( true );
+						OnRefreshLinkedPortsComplete();
+						//If clipboard has cached nodes then a master node replacement will take place
+						//We need to re-cache master nodes to ensure applied options are correctly cached
+						//As first cache happens before that
+						if( m_parentWindow.ClipboardInstance.HasCachedMasterNodes )
 						{
-							if( m_lodMultiPassMasterNodes[ i ].Count > 0 )
-								m_parentWindow.ClipboardInstance.AddMultiPassNodesToClipboard( m_lodMultiPassMasterNodes[ i ].NodesList, false, i );
+							m_parentWindow.ClipboardInstance.AddMultiPassNodesToClipboard( MultiPassMasterNodes.NodesList,true,-1 );
+							for( int i = 0; i < m_lodMultiPassMasterNodes.Count; i++ )
+							{
+								if( m_lodMultiPassMasterNodes[ i ].Count > 0 )
+									m_parentWindow.ClipboardInstance.AddMultiPassNodesToClipboard( m_lodMultiPassMasterNodes[ i ].NodesList, false, i );
+							}
 						}
+						//RepositionTemplateNodes( CurrentMasterNode );
 					}
-					//RepositionTemplateNodes( CurrentMasterNode );
+					finally
+					{
+						m_parentWindow.EndSuppressUndoRegistration();
+					}
 				}
 			}
 
@@ -1349,7 +1565,9 @@ namespace AmplifyShaderEditor
 			//	UIUtils.FunctionSwitchCopyList()[ i ].CheckReference();
 			//}
 
-
+			// @diogo: when loading we only need to call OnNodeChange once for every node, where branch connections to multiple inputs sometimes causes
+			//         the same node to be visited multiple times; avoid it
+			var nodeCache = new NodeUpdateCache();
 
 			// Dont use nodeCount variable because node count can change in this loop???
 			nodeCount = m_nodes.Count;
@@ -1365,7 +1583,7 @@ namespace AmplifyShaderEditor
 				node.MovingInFrame = false;
 
 				if( drawInfo.CurrentEventType == EventType.Repaint )
-					node.OnNodeLayout( drawInfo );
+					node.OnNodeLayout( drawInfo, nodeCache );
 
 				m_hasUnConnectedNodes = m_hasUnConnectedNodes ||
 										( node.ConnStatus != NodeConnectionStatus.Connected && node.ConnStatus != NodeConnectionStatus.Island );
@@ -1406,7 +1624,10 @@ namespace AmplifyShaderEditor
 
 			// Draw connection wires
 			if( drawInfo.CurrentEventType == EventType.Repaint )
+			{
 				DrawWires( ParentWindow.WireTexture, drawInfo, ParentWindow.WindowContextPallete.IsActive, ParentWindow.WindowContextPallete.CurrentPosition );
+				DrawReferenceWires( drawInfo );
+			}
 
 			// Master Draw
 			nodeCount = m_nodes.Count;
@@ -1428,8 +1649,24 @@ namespace AmplifyShaderEditor
 				}
 			}
 
+			// @diogo: Ctrl-hovering a preview reads out its pixel values; it takes over the tooltip slot while shown
+			bool showingColorPicker = false;
+			if ( drawInfo.CurrentEventType == EventType.Repaint && ParentWindow.ControlKeyPressed && !ParentWindow.LeftMouseButtonPressed )
+			{
+				nodeCount = m_nodes.Count;
+				for ( int i = nodeCount - 1; i >= 0; i-- )
+				{
+					node = m_nodes[ i ];
+					if ( node.IsVisible && !node.IsMoving && node.ShowPreviewColorPicker( drawInfo ) )
+					{
+						showingColorPicker = true;
+						break;
+					}
+				}
+			}
+
 			// Draw Tooltip
-			if( drawInfo.CurrentEventType == EventType.Repaint || drawInfo.CurrentEventType == EventType.MouseDown )
+			if( !showingColorPicker && ( drawInfo.CurrentEventType == EventType.Repaint || drawInfo.CurrentEventType == EventType.MouseDown ) )
 			{
 				nodeCount = m_nodes.Count;
 				for( int i = nodeCount - 1; i >= 0; i-- )
@@ -1446,9 +1683,9 @@ namespace AmplifyShaderEditor
 
 			if( repaintMaterialInspector )
 			{
-				if( ASEMaterialInspector.Instance != null )
+				if( MaterialInspector.Instance != null )
 				{
-					ASEMaterialInspector.Instance.Repaint();
+					MaterialInspector.Instance.Repaint();
 				}
 			}
 
@@ -1552,7 +1789,7 @@ namespace AmplifyShaderEditor
 									if( isVisible )
 									{
 
-										Rect bezierBB = DrawBezier( drawInfo.InvertedZoom, startPos, endPos, inputPort.DataType, outputPort.DataType, node.GetInputPortVisualDataTypeByArrayIdx( inputPortIdx ), outputNode.GetOutputPortVisualDataTypeById( reference.PortId ), reference.WireStatus, wireTex, node, outputNode );
+										Rect bezierBB = DrawBezier( drawInfo.InvertedZoom, startPos, endPos, inputPort.DataType, outputPort.DataType, node.GetInputPortVisualDataTypeByArrayIdx( inputPortIdx ), outputNode.GetOutputPortVisualDataTypeById( reference.PortId ), inputPort.StructName, outputPort.StructName, reference.WireStatus, wireTex, node, outputNode );
 										bezierBB.x -= Constants.OUTSIDE_WIRE_MARGIN;
 										bezierBB.y -= Constants.OUTSIDE_WIRE_MARGIN;
 
@@ -1607,7 +1844,7 @@ namespace AmplifyShaderEditor
 					}
 
 					Vector3 startPos = new Vector3( inputPort.Position.x, inputPort.Position.y );
-					DrawBezier( drawInfo.InvertedZoom, endPos, startPos, inputPort.DataType, inputPort.DataType, inputPort.DataType, inputPort.DataType, WireStatus.Default, wireTex );
+					DrawBezier( drawInfo.InvertedZoom, endPos, startPos, inputPort.DataType, inputPort.DataType, inputPort.DataType, inputPort.DataType, inputPort.StructName, inputPort.StructName, WireStatus.Default, wireTex );
 				}
 
 				if( m_parentWindow.WireReferenceUtils.OutputPortReference.IsValid )
@@ -1624,13 +1861,85 @@ namespace AmplifyShaderEditor
 						endPos = contextPaletteActive ? contextPalettePos : new Vector3( Event.current.mousePosition.x, Event.current.mousePosition.y );
 					}
 					Vector3 startPos = new Vector3( outputPort.Position.x, outputPort.Position.y );
-					DrawBezier( drawInfo.InvertedZoom, startPos, endPos, outputPort.DataType, outputPort.DataType, outputPort.DataType, outputPort.DataType, WireStatus.Default, wireTex );
+					DrawBezier( drawInfo.InvertedZoom, startPos, endPos, outputPort.DataType, outputPort.DataType, outputPort.DataType, outputPort.DataType, outputPort.StructName, outputPort.StructName, WireStatus.Default, wireTex );
 				}
 			}
 			//Handles.EndGUI();
 		}
 
-		Rect DrawBezier( float invertedZoom, Vector3 startPos, Vector3 endPos, WirePortDataType inputDataType, WirePortDataType outputDataType, WirePortDataType inputVisualDataType, WirePortDataType outputVisualDataType, WireStatus wireStatus, Texture2D wireTex, ParentNode inputNode = null, ParentNode outputNode = null )
+		// @diogo: dashed wires over soft reference links ( Reference dropdowns, Get/Register Local Var ),
+		// shown while either endpoint is selected; blue at the source and green at the referencer to match
+		// the reference selection highlight tints
+		private void DrawReferenceWires( DrawInfo drawInfo )
+		{
+			if ( !Preferences.User.ShowReferenceWires || m_selectedNodes.Count == 0 )
+			{
+				return;
+			}
+
+			for ( int nodeIdx = 0; nodeIdx < m_nodes.Count; nodeIdx++ )
+			{
+				ParentNode holder = m_nodes[ nodeIdx ];
+				if ( (object)holder == null )
+				{
+					continue;
+				}
+
+				m_referenceWires.Clear();
+				holder.GetReferenceWires( m_referenceWires );
+				for ( int wireIdx = 0; wireIdx < m_referenceWires.Count; wireIdx++ )
+				{
+					ParentNode source = GetNode( m_referenceWires[ wireIdx ].NodeId );
+					if ( source != null && source != holder && ( source.Selected || holder.Selected ) )
+					{
+						DrawReferenceWire( drawInfo, source, holder, m_referenceWires[ wireIdx ].PortId );
+					}
+				}
+			}
+		}
+
+		private void DrawReferenceWire( DrawInfo drawInfo, ParentNode source, ParentNode holder, int holderPortId )
+		{
+			// @diogo: anchored to the node outline edges, vertically centered on the node
+			Vector2 startPos = new Vector2( source.GlobalPosition.xMax, source.GlobalPosition.center.y );
+			Vector2 endPos = new Vector2( holder.GlobalPosition.x, holder.GlobalPosition.center.y );
+
+			// @diogo: a link that stands in for a specific input lands on that port instead, so two links
+			// into the same node stay apart; an invisible port has no laid-out rect and keeps the edge
+			InputPort holderPort = ( holderPortId > -1 ) ? holder.GetInputPortByUniqueId( holderPortId ) : null;
+			if ( holderPort != null && holderPort.Visible )
+			{
+				// @diogo: the dashed end only parks on the port, it never connects, so a real wire already
+				// ending there would read as two connections into one input
+				if ( holderPort.IsConnected )
+				{
+					return;
+				}
+
+				endPos.x = holderPort.Position.x + UIUtils.ScaledPortsDelta.x;
+				endPos.y = holderPort.Position.y + UIUtils.ScaledPortsDelta.y;
+			}
+
+			if ( !source.IsVisible && !holder.IsVisible )
+			{
+				Rect boundingBox = new Rect( Mathf.Min( startPos.x, endPos.x ), Mathf.Min( startPos.y, endPos.y ), Mathf.Abs( startPos.x - endPos.x ), Mathf.Abs( startPos.y - endPos.y ) );
+				if ( !drawInfo.TransformedCameraArea.Overlaps( boundingBox ) )
+				{
+					return;
+				}
+			}
+
+			float mag = ( endPos - startPos ).magnitude;
+			float resizedMag = Mathf.Min( mag * 0.66f, Constants.HORIZONTAL_TANGENT_SIZE * drawInfo.InvertedZoom );
+			Vector2 startTangent = new Vector2( startPos.x + resizedMag, startPos.y );
+			Vector2 endTangent = new Vector2( endPos.x - resizedMag, endPos.y );
+
+			float wireThickness = Mathf.Lerp( Constants.WIRE_WIDTH * ( drawInfo.InvertedZoom * -0.05f + 0.15f ), Constants.WIRE_WIDTH * ( drawInfo.InvertedZoom * 0.175f + 0.3f ), drawInfo.InvertedZoom + 0.4f );
+			float dashSize = 10f * drawInfo.InvertedZoom;
+			GLDraw.DrawDashedBezier( startPos, startTangent, endPos, endTangent, Constants.SpecialRegisterLocalVarSelectionColor, Constants.SpecialGetLocalVarSelectionColor, wireThickness, dashSize );
+		}
+
+		Rect DrawBezier( float invertedZoom, Vector3 startPos, Vector3 endPos, WirePortDataType inputDataType, WirePortDataType outputDataType, WirePortDataType inputVisualDataType, WirePortDataType outputVisualDataType, string inputStructName, string outputStructName, WireStatus wireStatus, Texture2D wireTex, ParentNode inputNode = null, ParentNode outputNode = null )
 		{
 			startPos += UIUtils.ScaledPortsDelta;
 			endPos += UIUtils.ScaledPortsDelta;
@@ -1671,9 +1980,9 @@ namespace AmplifyShaderEditor
 				GLDraw.MultiLine = true;
 				Shader.SetGlobalFloat( "_InvertedZoom", invertedZoom );
 
-				WirePortDataType smallest = ( (int)outputDataType < (int)inputDataType ? outputDataType : inputDataType );
-				smallest = ( (int)smallest < (int)outputVisualDataType ? smallest : outputVisualDataType );
-				smallest = ( (int)smallest < (int)inputVisualDataType ? smallest : inputVisualDataType );
+				WirePortDataType smallest = ( UIUtils.GetChannelsAmount( outputDataType ) < UIUtils.GetChannelsAmount( inputDataType ) ? outputDataType : inputDataType );
+				smallest = ( UIUtils.GetChannelsAmount( smallest ) < UIUtils.GetChannelsAmount( outputVisualDataType ) ? smallest : outputVisualDataType );
+				smallest = ( UIUtils.GetChannelsAmount( smallest ) < UIUtils.GetChannelsAmount( inputVisualDataType ) ? smallest : inputVisualDataType );
 
 				switch( smallest )
 				{
@@ -1703,7 +2012,7 @@ namespace AmplifyShaderEditor
 				segments = (int)( invertedZoom * 14.28f * 11 );
 
 			if( ParentWindow.Options.ColoredPorts && wireStatus != WireStatus.Highlighted )
-				boundBox = GLDraw.DrawBezier( startPos, startTangent, endPos, endTangent, UIUtils.GetColorForDataType( outputVisualDataType, false, false ), UIUtils.GetColorForDataType( inputVisualDataType, false, false ), wireThickness, segments, ty );
+				boundBox = GLDraw.DrawBezier( startPos, startTangent, endPos, endTangent, GetPortColor( outputVisualDataType, outputStructName ), GetPortColor( inputVisualDataType, inputStructName ), wireThickness, segments, ty );
 			else
 				boundBox = GLDraw.DrawBezier( startPos, startTangent, endPos, endTangent, UIUtils.GetColorFromWireStatus( wireStatus ), wireThickness, segments, ty );
 			//GLDraw.EndGroup();
@@ -1761,6 +2070,13 @@ namespace AmplifyShaderEditor
 
 		public void MoveSelectedNodes( Vector2 delta, bool snap = false )
 		{
+			// @diogo: idle auto-pan and stationary clicks reach here with a zero delta; moving by zero still arms
+			// the stopped-moving countdown, whose event marks the save dirty without any actual position change
+			if ( delta == Vector2.zero )
+			{
+				return;
+			}
+
 			//bool validMovement = delta.magnitude > 0.001f;
 			//if ( validMovement )
 			//{
@@ -1776,19 +2092,19 @@ namespace AmplifyShaderEditor
 			//	IsDirty = true;
 			//}
 
-			bool performUndo = delta.magnitude > 0.01f;
-			if( performUndo )
+			// @diogo: a selection rubber-band drags through here with nothing selected yet, and registering
+			// there pushes a step whose graph matches the live one - Ctrl+Z would only flip the selection
+			if( delta.magnitude > 0.01f && m_selectedNodes.Count > 0 )
 			{
-				UndoUtils.RegisterCompleteObjectUndo( ParentWindow, Constants.UndoMoveNodesId );
-				UndoUtils.RegisterCompleteObjectUndo( this, Constants.UndoMoveNodesId );
+				// One coalesced snapshot for the whole drag; captured before the first Move below, so
+				// it holds the pre-move positions. Reset on mouse-up ends the gesture.
+				ParentWindow.RegisterGraphUndoGesture( Constants.UndoMoveNodesId );
 			}
 
 			for( int i = 0; i < m_selectedNodes.Count; i++ )
 			{
 				if( !m_selectedNodes[ i ].MovingInFrame )
 				{
-					if( performUndo )
-						m_selectedNodes[ i ].RecordObject( Constants.UndoMoveNodesId );
 					m_selectedNodes[ i ].Move( delta, snap );
 				}
 			}
@@ -1815,14 +2131,14 @@ namespace AmplifyShaderEditor
 						return;
 					}
 
-					if( !inputPort.CheckValidType( outputPort.DataType ) )
+					if( !inputPort.CheckValidType( outputPort ) )
 					{
 						if( DebugConsoleWindow.DeveloperMode )
 							UIUtils.ShowIncompatiblePortMessage( true, inNode, inputPort, outNode, outputPort );
 						return;
 					}
 
-					if( !outputPort.CheckValidType( inputPort.DataType ) )
+					if( !outputPort.CheckValidType( inputPort ) )
 					{
 
 						if( DebugConsoleWindow.DeveloperMode )
@@ -1871,8 +2187,70 @@ namespace AmplifyShaderEditor
 			}
 		}
 
+		public void DeferWire( InputPort inputPort, OutputPort outputPort )
+		{
+			m_deferredWires.Add( new int[] { inputPort.NodeId, inputPort.PortId, outputPort.NodeId, outputPort.PortId } );
+		}
+
+		// Points the wires DeferWire holds at a node's replacement, for a node rebuilt before they apply.
+		public void RetargetDeferredWires( int oldNodeId, int newNodeId )
+		{
+			for ( int i = 0; i < m_deferredWires.Count; i++ )
+			{
+				int[] wire = m_deferredWires[ i ];
+				if ( wire[ 0 ] == oldNodeId )
+				{
+					wire[ 0 ] = newNodeId;
+				}
+
+				if ( wire[ 2 ] == oldNodeId )
+				{
+					wire[ 2 ] = newNodeId;
+				}
+			}
+		}
+
+		// Connects the wires DeferWire held back, checked against the types resolved since.
+		public void ApplyDeferredWires( bool activateNode = false )
+		{
+			for ( int i = 0; i < m_deferredWires.Count; i++ )
+			{
+				int[] wire = m_deferredWires[ i ];
+				ParentNode inNode = GetNode( wire[ 0 ] );
+				ParentNode outNode = GetNode( wire[ 2 ] );
+				InputPort inputPort = ( inNode != null ) ? inNode.GetInputPortByUniqueId( wire[ 1 ] ) : null;
+				OutputPort outputPort = ( outNode != null ) ? outNode.GetOutputPortByUniqueId( wire[ 3 ] ) : null;
+				if ( inputPort == null || outputPort == null )
+				{
+					continue;
+				}
+
+				if ( inputPort.CheckValidType( outputPort ) && outputPort.CheckValidType( inputPort ) )
+				{
+					if ( inputPort.ConnectTo( wire[ 2 ], wire[ 3 ], outputPort.DataType, false ) )
+					{
+						outputPort.ConnectTo( wire[ 0 ], wire[ 1 ], inputPort.DataType, inputPort.TypeLocked );
+
+						inNode.OnInputPortConnected( wire[ 1 ], wire[ 2 ], wire[ 3 ], activateNode );
+						outNode.OnOutputPortConnected( wire[ 3 ], wire[ 0 ], wire[ 1 ] );
+					}
+				}
+				else if ( DebugConsoleWindow.DeveloperMode )
+				{
+					UIUtils.ShowIncompatiblePortMessage( true, inNode, inputPort, outNode, outputPort );
+				}
+			}
+
+			m_deferredWires.Clear();
+		}
+
 		public void CreateConnection( int inNodeId, int inPortId, int outNodeId, int outPortId, bool registerUndo = true )
 		{
+			if( registerUndo && !m_isLoading )
+			{
+				ParentWindow.RegisterGraphUndo( Constants.UndoCreateConnectionId );
+			}
+
 			ParentNode outputNode = GetNode( outNodeId );
 			if( outputNode != null )
 			{
@@ -1882,16 +2260,26 @@ namespace AmplifyShaderEditor
 					ParentNode inputNode = GetNode( inNodeId );
 					InputPort inputPort = inputNode.GetInputPortByUniqueId( inPortId );
 
-					if( !inputPort.CheckValidType( outputPort.DataType ) )
+					// @diogo: linking only the output half would leave a one-way reference, e.g. a relay
+					// node wired to the source but not to the target
+					if ( inputPort.Locked )
 					{
-						UIUtils.ShowIncompatiblePortMessage( true, inputNode, inputPort, outputNode, outputPort );
 						return;
 					}
 
-					if( !outputPort.CheckValidType( inputPort.DataType ) )
+					if ( inputPort.NotFreeForAllTypes && outputPort.NotFreeForAllTypes )
 					{
-						UIUtils.ShowIncompatiblePortMessage( false, outputNode, outputPort, inputNode, inputPort );
-						return;
+						if ( !inputPort.CheckValidType( outputPort ) )
+						{
+							UIUtils.ShowIncompatiblePortMessage( true, inputNode, inputPort, outputNode, outputPort );
+							return;
+						}
+
+						if ( !outputPort.CheckValidType( inputPort ) )
+						{
+							UIUtils.ShowIncompatiblePortMessage( false, outputNode, outputPort, inputNode, inputPort );
+							return;
+						}
 					}
 
 					inputPort.DummyAdd( outputPort.NodeId, outputPort.PortId );
@@ -1970,17 +2358,24 @@ namespace AmplifyShaderEditor
 
 		public void DeleteAllConnectionFromNode( ParentNode node, bool registerOnLog, bool propagateCallback, bool registerUndo )
 		{
-
-			for( int i = 0; i < node.InputPorts.Count; i++ )
+			// @diogo: disconnect callbacks trim and renumber ports on extensible nodes, so walk snapshots
+			// and read each port's id at deletion time instead of indexing into the live lists
+			InputPort[] inputPorts = node.InputPorts.ToArray();
+			for ( int i = 0; i < inputPorts.Length; i++ )
 			{
-				if( node.InputPorts[ i ].IsConnected )
-					DeleteConnection( true, node.UniqueId, node.InputPorts[ i ].PortId, registerOnLog, propagateCallback, registerUndo );
+				if ( inputPorts[ i ].IsConnected )
+				{
+					DeleteConnection( true, node.UniqueId, inputPorts[ i ].PortId, registerOnLog, propagateCallback, registerUndo );
+				}
 			}
 
-			for( int i = 0; i < node.OutputPorts.Count; i++ )
+			OutputPort[] outputPorts = node.OutputPorts.ToArray();
+			for ( int i = 0; i < outputPorts.Length; i++ )
 			{
-				if( node.OutputPorts[ i ].IsConnected )
-					DeleteConnection( false, node.UniqueId, node.OutputPorts[ i ].PortId, registerOnLog, propagateCallback, registerUndo );
+				if ( outputPorts[ i ].IsConnected )
+				{
+					DeleteConnection( false, node.UniqueId, outputPorts[ i ].PortId, registerOnLog, propagateCallback, registerUndo );
+				}
 			}
 		}
 
@@ -1992,10 +2387,7 @@ namespace AmplifyShaderEditor
 
 			if( registerUndo )
 			{
-				UIUtils.MarkUndoAction();
-				UndoUtils.RegisterCompleteObjectUndo( ParentWindow, Constants.UndoDeleteConnectionId );
-				UndoUtils.RegisterCompleteObjectUndo( this, Constants.UndoDeleteConnectionId );
-				node.RecordObject( Constants.UndoDeleteConnectionId );
+				ParentWindow.RegisterGraphUndo( Constants.UndoDeleteConnectionId );
 			}
 
 			if( isInput )
@@ -2015,11 +2407,14 @@ namespace AmplifyShaderEditor
 					{
 						WireReference inputReference = inputPort.ExternalReferences[ i ];
 						ParentNode outputNode = GetNode( inputReference.NodeId );
-						if( registerUndo )
-							outputNode.RecordObject( Constants.UndoDeleteConnectionId );
-						outputNode.GetOutputPortByUniqueId( inputReference.PortId ).InvalidateConnection( inputPort.NodeId, inputPort.PortId );
-						if( propagateCallback )
-							outputNode.OnOutputPortDisconnected( inputReference.PortId );
+						// @diogo: references dangle when the peer is gone or its port was trimmed off an extensible node
+						OutputPort externalPort = ( outputNode != null ) ? outputNode.GetOutputPortByUniqueId( inputReference.PortId ) : null;
+						if ( externalPort != null )
+						{
+							externalPort.InvalidateConnection( inputPort.NodeId, inputPort.PortId );
+							if( propagateCallback )
+								outputNode.OnOutputPortDisconnected( inputReference.PortId );
+						}
 					}
 					inputPort.InvalidateAllConnections();
 					if( propagateCallback )
@@ -2038,20 +2433,23 @@ namespace AmplifyShaderEditor
 					{
 						WireReference outputReference = outputPort.ExternalReferences[ i ];
 						ParentNode inputNode = GetNode( outputReference.NodeId );
-						if( registerUndo )
-							inputNode.RecordObject( Constants.UndoDeleteConnectionId );
-						if( inputNode.ConnStatus == NodeConnectionStatus.Connected )
+						// @diogo: references dangle when the peer is gone or its port was trimmed off an extensible node
+						InputPort externalPort = ( inputNode != null ) ? inputNode.GetInputPortByUniqueId( outputReference.PortId ) : null;
+						if ( externalPort != null )
 						{
-							node.DeactivateNode( portId, false );
-							m_checkSelectedWireHighlights = true;
-						}
-						inputNode.GetInputPortByUniqueId( outputReference.PortId ).InvalidateConnection( outputPort.NodeId, outputPort.PortId );
-						if( propagateCallback )
-						{
-							// Removing WireNodes fires this after the rewiring ( and the OnInputPortConnected callback ) which causes incorrect behaviors
-							// If is connected is true then we're on that case so we don't fire the OnInputPortDisconnected
-							if( !inputNode.GetInputPortByUniqueId( outputReference.PortId ).IsConnected )
-								inputNode.OnInputPortDisconnected( outputReference.PortId );
+							if( inputNode.ConnStatus == NodeConnectionStatus.Connected )
+							{
+								node.DeactivateNode( portId, false );
+								m_checkSelectedWireHighlights = true;
+							}
+							externalPort.InvalidateConnection( outputPort.NodeId, outputPort.PortId );
+							if( propagateCallback )
+							{
+								// Removing WireNodes fires this after the rewiring ( and the OnInputPortConnected callback ) which causes incorrect behaviors
+								// If is connected is true then we're on that case so we don't fire the OnInputPortDisconnected
+								if( !externalPort.IsConnected )
+									inputNode.OnInputPortDisconnected( outputReference.PortId );
+							}
 						}
 					}
 					outputPort.InvalidateAllConnections();
@@ -2142,7 +2540,11 @@ namespace AmplifyShaderEditor
 			if( m_markedForDeletion.Contains( node ) )
 				return;
 
-			m_markedForDeletion.Add( node );
+			// @diogo: check if they're alive - meaning they're already marked for deletion - before marking them for deletion again
+			if ( node.Alive )
+			{
+				m_markedForDeletion.Add( node );
+			}
 
 			if( isInput && node.InputPorts[ 0 ].IsConnected )
 			{
@@ -2152,6 +2554,12 @@ namespace AmplifyShaderEditor
 			{
 				MarkWireNodeSequence( GetNode( node.OutputPorts[ 0 ].ExternalReferences[ 0 ].NodeId ) as WireNode, isInput );
 			}
+		}
+
+		// @diogo: incremental undo patching: drop pending WireNode auto-delete marks accumulated by patch-time disconnects
+		public void ClearMarkedForDeletion()
+		{
+			m_markedForDeletion.Clear();
 		}
 
 		public void UndoableDeleteSelectedNodes( List<ParentNode> nodeList )
@@ -2168,82 +2576,17 @@ namespace AmplifyShaderEditor
 					validNode.Add( nodeList[ i ] );
 				}
 			}
-			UIUtils.ClearUndoHelper();
 			ParentNode[] selectedNodes = new ParentNode[ validNode.Count ];
 			for( int i = 0; i < selectedNodes.Length; i++ )
 			{
 				if( validNode[ i ] != null )
 				{
 					selectedNodes[ i ] = validNode[ i ];
-					UIUtils.CheckUndoNode( selectedNodes[ i ] );
 				}
 			}
 
-			//Check nodes connected to deleted nodes to preserve connections on undo
-			List<ParentNode> extraNodes = new List<ParentNode>();
-			for( int selectedNodeIdx = 0; selectedNodeIdx < selectedNodes.Length; selectedNodeIdx++ )
-			{
-				// Check inputs
-				if( selectedNodes[ selectedNodeIdx ] != null )
-				{
-					int inputIdxCount = selectedNodes[ selectedNodeIdx ].InputPorts.Count;
-					if( inputIdxCount > 0 )
-					{
-						for( int inputIdx = 0; inputIdx < inputIdxCount; inputIdx++ )
-						{
-							if( selectedNodes[ selectedNodeIdx ].InputPorts[ inputIdx ].IsConnected )
-							{
-								int nodeIdx = selectedNodes[ selectedNodeIdx ].InputPorts[ inputIdx ].ExternalReferences[ 0 ].NodeId;
-								if( nodeIdx > -1 )
-								{
-									ParentNode node = GetNode( nodeIdx );
-									if( node != null && UIUtils.CheckUndoNode( node ) )
-									{
-										extraNodes.Add( node );
-									}
-								}
-							}
-						}
-					}
-				}
-
-				// Check outputs
-				if( selectedNodes[ selectedNodeIdx ] != null )
-				{
-					int outputIdxCount = selectedNodes[ selectedNodeIdx ].OutputPorts.Count;
-					if( outputIdxCount > 0 )
-					{
-						for( int outputIdx = 0; outputIdx < outputIdxCount; outputIdx++ )
-						{
-							int inputIdxCount = selectedNodes[ selectedNodeIdx ].OutputPorts[ outputIdx ].ExternalReferences.Count;
-							if( inputIdxCount > 0 )
-							{
-								for( int inputIdx = 0; inputIdx < inputIdxCount; inputIdx++ )
-								{
-									int nodeIdx = selectedNodes[ selectedNodeIdx ].OutputPorts[ outputIdx ].ExternalReferences[ inputIdx ].NodeId;
-									if( nodeIdx > -1 )
-									{
-										ParentNode node = GetNode( nodeIdx );
-										if( UIUtils.CheckUndoNode( node ) )
-										{
-											extraNodes.Add( node );
-										}
-									}
-								}
-							}
-						}
-					}
-
-				}
-			}
-
-			UIUtils.ClearUndoHelper();
-			//Record deleted nodes
-			UIUtils.MarkUndoAction();
-			UndoUtils.RegisterCompleteObjectUndo( ParentWindow, Constants.UndoDeleteNodeId );
-			UndoUtils.RegisterCompleteObjectUndo( this, Constants.UndoDeleteNodeId );
-			UndoUtils.RecordObjects( selectedNodes, Constants.UndoDeleteNodeId );
-			UndoUtils.RecordObjects( extraNodes.ToArray(), Constants.UndoDeleteNodeId );
+			// snapshot the whole graph once before the delete; undo restores it as a unit
+			ParentWindow.RegisterGraphUndo( Constants.UndoDeleteNodeId );
 
 			//Record deleting connections
 			for( int i = 0; i < selectedNodes.Length; i++ )
@@ -2255,9 +2598,6 @@ namespace AmplifyShaderEditor
 			//Delete
 			DeleteNodesOnArray( ref selectedNodes );
 
-			extraNodes.Clear();
-			extraNodes = null;
-
 			EditorUtility.SetDirty( ParentWindow );
 
 			ParentWindow.ForceRepaint();
@@ -2265,7 +2605,20 @@ namespace AmplifyShaderEditor
 
 		public void DeleteMarkedForDeletionNodes()
 		{
-			UndoableDeleteSelectedNodes( m_markedForDeletion );
+			// @diogo: this sweep is a mechanical cascade of whatever edit orphaned these reroutes, but it
+			// runs on a later Repaint, so its own registration lands in a separate undo group - an extra
+			// Ctrl+Z that restores dangling reroutes the very next sweep deletes again. The edit that
+			// orphaned them already snapshotted the graph with them still connected
+			ParentWindow.BeginSuppressUndoRegistration();
+			try
+			{
+				UndoableDeleteSelectedNodes( m_markedForDeletion );
+			}
+			finally
+			{
+				ParentWindow.EndSuppressUndoRegistration();
+			}
+
 			m_markedForDeletion.Clear();
 			IsDirty = true;
 
@@ -2304,7 +2657,9 @@ namespace AmplifyShaderEditor
 			DestroyNode( node );
 		}
 
-		public void DestroyNode( ParentNode node, bool registerUndo = true, bool destroyMasterNode = false )
+		// @diogo: propagateCallbacks:false destroys quietly for the incremental undo patcher - neighbor disconnect
+		// callbacks are interactive UX and mutate kept adaptive nodes; the full reload's CleanNodes never fires them
+		public void DestroyNode( ParentNode node, bool registerUndo = true, bool destroyMasterNode = false, bool propagateCallbacks = true )
 		{
 			if( node == null )
 			{
@@ -2350,8 +2705,16 @@ namespace AmplifyShaderEditor
 						{
 							WireReference inputReference = inputPort.ExternalReferences[ wireIdx ];
 							ParentNode outputNode = GetNode( inputReference.NodeId );
-							outputNode.GetOutputPortByUniqueId( inputReference.PortId ).InvalidateConnection( inputPort.NodeId, inputPort.PortId );
-							outputNode.OnOutputPortDisconnected( inputReference.PortId );
+							// @diogo: references dangle when the peer is gone or its port was trimmed off an extensible node
+							OutputPort externalPort = ( outputNode != null ) ? outputNode.GetOutputPortByUniqueId( inputReference.PortId ) : null;
+							if ( externalPort != null )
+							{
+								externalPort.InvalidateConnection( inputPort.NodeId, inputPort.PortId );
+								if ( propagateCallbacks )
+								{
+									outputNode.OnOutputPortDisconnected( inputReference.PortId );
+								}
+							}
 						}
 						inputPort.InvalidateAllConnections();
 					}
@@ -2367,10 +2730,15 @@ namespace AmplifyShaderEditor
 						{
 							WireReference outputReference = outputPort.ExternalReferences[ wireIdx ];
 							ParentNode outnode = GetNode( outputReference.NodeId );
-							if( outnode != null )
+							// @diogo: references dangle when the peer's port was trimmed off an extensible node
+							InputPort externalPort = ( outnode != null ) ? outnode.GetInputPortByUniqueId( outputReference.PortId ) : null;
+							if( externalPort != null )
 							{
-								outnode.GetInputPortByUniqueId( outputReference.PortId ).InvalidateConnection( outputPort.NodeId, outputPort.PortId );
-								outnode.OnInputPortDisconnected( outputReference.PortId );
+								externalPort.InvalidateConnection( outputPort.NodeId, outputPort.PortId );
+								if ( propagateCallbacks )
+								{
+									outnode.OnInputPortDisconnected( outputReference.PortId );
+								}
 							}
 						}
 						outputPort.InvalidateAllConnections();
@@ -2381,10 +2749,7 @@ namespace AmplifyShaderEditor
 				//UndoUtils.RecordObject( node, "Destroying node " + ( node.Attributes != null? node.Attributes.Name: node.GetType().ToString() ) );
 				if( registerUndo )
 				{
-					UIUtils.MarkUndoAction();
-					UndoUtils.RegisterCompleteObjectUndo( ParentWindow, Constants.UndoDeleteNodeId );
-					UndoUtils.RegisterCompleteObjectUndo( this, Constants.UndoDeleteNodeId );
-					node.RecordObjectOnDestroy( Constants.UndoDeleteNodeId );
+					ParentWindow.RegisterGraphUndo( Constants.UndoDeleteNodeId );
 				}
 
 				if( OnNodeRemovedEvent != null )
@@ -2400,7 +2765,7 @@ namespace AmplifyShaderEditor
 				else
 				{
 					DestroyImmediate( node );
-				}					
+				}
 				IsDirty = true;
 				m_markToReOrder = true;
 			}
@@ -2420,7 +2785,11 @@ namespace AmplifyShaderEditor
 				}
 
 				DeselectNode( node );
-				UIUtils.ShowMessage( "Attempting to destroy a master node" );
+				// @diogo: stale selections ( old saves/undo ) can still carry invisible passes; refuse those quietly
+				if ( templateMasterNode == null || !templateMasterNode.IsInvisible )
+				{
+					UIUtils.ShowMessage( "Attempting to destroy a master node" );
+				}
 			}
 		}
 
@@ -2467,6 +2836,29 @@ namespace AmplifyShaderEditor
 			}
 		}
 
+		// @diogo: batched selection reapply for snapshot restores: replaces per-node SelectNode calls,
+		// whose Contains scan and recursive wire-highlight walk go quadratic on bulk selections; wire
+		// highlighting is deferred to the existing single-sweep flag consumed by Draw
+		public void SelectNodesFromIds( int[] nodeIds )
+		{
+			DeSelectAll();
+			if ( nodeIds == null )
+			{
+				return;
+			}
+			for ( int i = 0; i < nodeIds.Length; i++ )
+			{
+				ParentNode node = GetNode( nodeIds[ i ] );
+				if ( node != null && !node.Selected )
+				{
+					node.Selected = true;
+					m_selectedNodes.Add( node );
+					node.OnNodeStoppedMovingEvent += OnNodeFinishMoving;
+				}
+			}
+			m_checkSelectedWireHighlights = true;
+		}
+
 		public void MultipleSelection( Rect selectionArea, bool appendSelection = true )
 		{
 			if( !appendSelection )
@@ -2486,6 +2878,11 @@ namespace AmplifyShaderEditor
 			{
 				for( int i = 0; i < m_nodes.Count; i++ )
 				{
+					// @diogo: invisible template passes aren't user-facing; the selection box must not catch them
+					if ( m_nodes[ i ] is TemplateMultiPassMasterNode passNode && passNode.IsInvisible )
+					{
+						continue;
+					}
 					if( !m_nodes[ i ].Selected && selectionArea.Overlaps( m_nodes[ i ].Position, true ) )
 					{
 						AddToSelectedNodes( m_nodes[ i ] );
@@ -2513,6 +2910,11 @@ namespace AmplifyShaderEditor
 		{
 			for( int i = 0; i < m_nodes.Count; i++ )
 			{
+				// @diogo: invisible template passes aren't user-facing; select-all must not catch them
+				if ( m_nodes[ i ] is TemplateMultiPassMasterNode passNode && passNode.IsInvisible )
+				{
+					continue;
+				}
 				if( !m_nodes[ i ].Selected )
 					AddToSelectedNodes( m_nodes[ i ] );
 			}
@@ -2646,21 +3048,6 @@ namespace AmplifyShaderEditor
 			IsDirty = true;
 		}
 
-		public void RefreshOnUndo()
-		{
-			if( m_nodes != null )
-			{
-				int count = m_nodes.Count;
-				for( int i = 0; i < count; i++ )
-				{
-					if( m_nodes[ i ] != null )
-					{
-						m_nodes[ i ].RefreshOnUndo();
-					}
-				}
-			}
-		}
-
 		public void DrawGrid( DrawInfo drawInfo )
 		{
 			m_nodeGrid.DrawGrid( drawInfo );
@@ -2734,14 +3121,14 @@ namespace AmplifyShaderEditor
 
 			if( HasLODs )
 			{
-				int passIdx = ( (TemplateMultiPassMasterNode)mainMasterNode ).PassIdx;
 				for( int i = 0; i < m_lodMultiPassMasterNodes.Count; i++ )
 				{
 					if( m_lodMultiPassMasterNodes.Count != 0 && m_lodMultiPassMasterNodes[ i ].NodesList.Count > 0 )
 					{
-						if( m_lodMultiPassMasterNodes[ i ].NodesList[ passIdx ] != null )
+						TemplateMultiPassMasterNode lodMasterNode = GetMainMasterNodeOfLOD( i );
+						if( lodMasterNode != null )
 						{
-							m_lodMultiPassMasterNodes[ i ].NodesList[ passIdx ].UpdateFromShader( newShader );
+							lodMasterNode.UpdateFromShader( newShader );
 						}
 						else
 						{
@@ -2772,12 +3159,11 @@ namespace AmplifyShaderEditor
 			mainMasterNode.UpdateMasterNodeMaterial( material );
 			if( HasLODs )
 			{
-				int passIdx = ( (TemplateMultiPassMasterNode)mainMasterNode ).PassIdx;
 				for( int i = 0; i < m_lodMultiPassMasterNodes.Count; i++ )
 				{
 					if( m_lodMultiPassMasterNodes.Count != 0 && m_lodMultiPassMasterNodes[ i ].NodesList.Count > 0 )
 					{
-						m_lodMultiPassMasterNodes[ i ].NodesList[ passIdx ].UpdateMasterNodeMaterial( material );
+						GetMainMasterNodeOfLOD( i ).UpdateMasterNodeMaterial( material );
 					}
 					else break;
 				}
@@ -2955,18 +3341,43 @@ namespace AmplifyShaderEditor
 					}
 				}
 			}
-			
+
 			// @diogo: replaced Sort() with OrderBy() for stable sorting
 			m_nodes = m_nodes.OrderByDescending( s => s.GraphDepth ).ToList();
 		}
 
 		public void WriteToString( ref string nodesInfo, ref string connectionsInfo )
 		{
+			// Each node serializes into its own small local buffer which is then appended to a
+			// StringBuilder. ASE's per-field serialization does myString += ... ; threading a single
+			// shared ref string through every node made every field append reallocate an ever-growing
+			// buffer ( O(n^2) - ~43s on a ~2900-node graph ). Per-node locals keep each += cheap and the
+			// StringBuilder accumulation is linear. Output is byte-identical to the previous path.
+			StringBuilder nodesBuilder = new StringBuilder( nodesInfo );
+			StringBuilder connectionsBuilder = new StringBuilder( connectionsInfo );
 			for( int i = 0; i < m_nodes.Count; i++ )
 			{
-				m_nodes[ i ].FullWriteToString( ref nodesInfo, ref connectionsInfo );
-				IOUtils.AddLineTerminator( ref nodesInfo );
+				string nodeInfo = string.Empty;
+				string nodeConnections = string.Empty;
+				m_nodes[ i ].FullWriteToString( ref nodeInfo, ref nodeConnections );
+				JsonGraphFormat.EndNodeLine( ref nodeInfo );
+				IOUtils.AddLineTerminator( ref nodeInfo );
+				nodesBuilder.Append( nodeInfo );
+				connectionsBuilder.Append( nodeConnections );
 			}
+			nodesInfo = nodesBuilder.ToString();
+			connectionsInfo = connectionsBuilder.ToString();
+		}
+
+		// @diogo: m_nodes doubles as the live z-order draw list; serialization needs graph-depth order but
+		// must not disturb it. OrderNodesByGraphDepth reassigns m_nodes to a new list, so the captured
+		// reference keeps the original order and is restored after the (identical) string is written.
+		public void WriteToStringDepthOrdered( ref string nodesInfo, ref string connectionsInfo )
+		{
+			List<ParentNode> drawOrder = m_nodes;
+			OrderNodesByGraphDepth();
+			WriteToString( ref nodesInfo, ref connectionsInfo );
+			m_nodes = drawOrder;
 		}
 
 		public void Reset()
@@ -3004,6 +3415,7 @@ namespace AmplifyShaderEditor
 				AmplifyShaderEditorWindow temp = UIUtils.CurrentWindow;
 				UIUtils.CurrentWindow = ParentWindow;
 				OnDuplicateEvent();
+				ApplyDeferredWires( true );
 				UIUtils.CurrentWindow = temp;
 			}
 		}
@@ -3086,15 +3498,7 @@ namespace AmplifyShaderEditor
 
 		public void FireMasterNodeReplacedEvent()
 		{
-			MasterNode masterNode = CurrentMasterNode;
-			int count = m_nodes.Count;
-			for( int i = 0; i < count; i++ )
-			{
-				if( m_nodes[ i ].UniqueId != m_masterNodeId )
-				{
-					m_nodes[ i ].OnMasterNodeReplaced( masterNode );
-				}
-			}
+			FireMasterNodeReplacedEvent( CurrentMasterNode );
 		}
 
 		//Used over shader functions to propagate signal into their graphs
@@ -3103,7 +3507,8 @@ namespace AmplifyShaderEditor
 			int count = m_nodes.Count;
 			for( int i = 0; i < count; i++ )
 			{
-				if( m_nodes[ i ].UniqueId != masterNode.UniqueId )
+				// @diogo: ids are graph local, so the node to skip is this graph's own output, not the outer master
+				if ( m_nodes[ i ].UniqueId != m_masterNodeId )
 				{
 					m_nodes[ i ].OnMasterNodeReplaced( masterNode );
 				}
@@ -3258,7 +3663,7 @@ namespace AmplifyShaderEditor
 			masterNodes.NodesList.Sort( ( x, y ) => ( x.SubShaderIdx * 1000 + x.PassIdx ).CompareTo( y.SubShaderIdx * 1000 + y.PassIdx ) );
 			masterNodes.UpdateNodeArr();
 
-			m_parentWindow.TemplatesManagerInstance.ResetOptionsSetupData();
+			TemplatesManager.Instance.ResetOptionsSetupData();
 			for( int i = 0; i < mpCount; i++ )
 			{
 				int visiblePorts = 0;
@@ -3273,7 +3678,12 @@ namespace AmplifyShaderEditor
 				if( masterNodes.NodesList[ i ].VisiblePorts != visiblePorts )
 				{
 					masterNodes.NodesList[ i ].VisiblePorts = visiblePorts;
-					ForceRepositionCheck = true;
+					// @diogo: a mismatch against the file value ( e.g. loading a shader saved on another
+					// template version ) must not re-stack the nodes and stomp their just-loaded positions
+					if( !m_isLoading && !m_isReplacingMasterNodes )
+					{
+						ForceRepositionCheck = true;
+					}
 				}
 
 				masterNodes.NodesList[ i ].Docking = visiblePorts <= 0;
@@ -3322,7 +3732,7 @@ namespace AmplifyShaderEditor
 					masterNode.InputPorts[ i ].Visible = true;
 				}
 			}
-			
+
 		}
 
 		public MasterNode ReplaceMasterNode( AvailableShaderTypes newType, bool writeDefaultData = false, TemplateDataParent templateData = null )
@@ -3471,16 +3881,31 @@ namespace AmplifyShaderEditor
 
 			for( int i = masterIndex - 1; i >= 0; i-- )
 			{
+				// @diogo: anchored nodes own their position ( read from file or already stacked once ); the
+				// layout only places nodes still parked at their default spot
+				if( MultiPassMasterNodes.NodesList[ i ].AnchoredPosition )
+				{
+					continue;
+				}
+
 				float forwardTracking = 0;
-				for( int j = i + 1; j <= masterIndex; j++ )
+				// @diogo: offset a node above the master by its OWN height plus the nodes between it and the master (excluding the master), so growing it pushes its top up instead of extending down into the master below it
+				for( int j = i; j < masterIndex; j++ )
 				{
 					if( !MultiPassMasterNodes.NodesList[ i ].IsInvisible && !MultiPassMasterNodes.NodesList[ j ].Docking )
 					{
-						forwardTracking += MultiPassMasterNodes.NodesList[ j ].HeightEstimate + 10;
+						forwardTracking += Mathf.Max( MultiPassMasterNodes.NodesList[ j ].HeightEstimate, MultiPassMasterNodes.NodesList[ j ].Position.height ) + 10;
 					}
 				}
 				MasterNode node = MultiPassMasterNodes.NodesList[ i ];
 				node.Vec2Position = new Vector2( node.Vec2Position.x, newMasterNode.Position.y - forwardTracking - 33 * ( dockedElementsBefore ) );
+
+				// @diogo: a visible node just got its stacked spot; from now on the user owns it. Invisible
+				// nodes stay unanchored so their first activation still stacks them into place
+				if( !MultiPassMasterNodes.NodesList[ i ].IsInvisible )
+				{
+					MultiPassMasterNodes.NodesList[ i ].AnchoredPosition = true;
+				}
 			}
 
 			for( int i = masterIndex + 1; i < MultiPassMasterNodes.Count; i++ )
@@ -3488,16 +3913,30 @@ namespace AmplifyShaderEditor
 				if( MultiPassMasterNodes.NodesList[ i ].UniqueId == newMasterNode.UniqueId || MultiPassMasterNodes.NodesList[ i ].Docking )
 					continue;
 
+				// @diogo: anchored nodes own their position ( read from file or already stacked once ); the
+				// layout only places nodes still parked at their default spot
+				if( MultiPassMasterNodes.NodesList[ i ].AnchoredPosition )
+				{
+					continue;
+				}
+
 				float backTracking = 0;
 				for( int j = i - 1; j >= masterIndex; j-- )
 				{
 					if( !MultiPassMasterNodes.NodesList[ i ].IsInvisible && !MultiPassMasterNodes.NodesList[ j ].Docking )
 					{
-						backTracking += MultiPassMasterNodes.NodesList[ j ].HeightEstimate + 10;
+						backTracking += Mathf.Max( MultiPassMasterNodes.NodesList[ j ].HeightEstimate, MultiPassMasterNodes.NodesList[ j ].Position.height ) + 10;
 					}
 				}
 				MasterNode node = MultiPassMasterNodes.NodesList[ i ];
 				node.Vec2Position = new Vector2( node.Vec2Position.x, newMasterNode.Position.y + backTracking + 33 * ( dockedElementsAfter ) );
+
+				// @diogo: a visible node just got its stacked spot; from now on the user owns it. Invisible
+				// nodes stay unanchored so their first activation still stacks them into place
+				if( !MultiPassMasterNodes.NodesList[ i ].IsInvisible )
+				{
+					MultiPassMasterNodes.NodesList[ i ].AnchoredPosition = true;
+				}
 			}
 		}
 
@@ -3523,7 +3962,7 @@ namespace AmplifyShaderEditor
 		public void CreateNewEmptyTemplate( string templateGUID )
 		{
 			CleanNodes();
-			TemplateDataParent templateData = m_parentWindow.TemplatesManagerInstance.GetTemplate( templateGUID );
+			TemplateDataParent templateData = TemplatesManager.Instance.GetTemplate( templateGUID );
 			if( templateData.TemplateType == TemplateDataType.LegacySinglePass )
 			{
 				TemplateMasterNode newMasterNode = CreateNode( typeof( TemplateMasterNode ), false ) as TemplateMasterNode;
@@ -3567,7 +4006,7 @@ namespace AmplifyShaderEditor
 						//currentPosition.y += newMasterNode.HeightEstimate + 10;
 					}
 				}
-				
+
 				RefreshLinkedMasterNodes( false );
 				OnRefreshLinkedPortsComplete();
 			}
@@ -3626,6 +4065,32 @@ namespace AmplifyShaderEditor
 			{
 				Debug.LogWarning( "Invalid virtual texture count" );
 			}
+		}
+
+		public bool HasPassWithTag( int lod, string tagKey, string tagValue = "" )
+		{
+			var passes = GetMultiPassMasterNodes( lod );
+			foreach ( TemplateMultiPassMasterNode pass in passes )
+			{
+				if ( pass.PassModule != null && pass.PassModule.TagsHelper != null && pass.PassModule.TagsHelper.HasTag( tagKey, tagValue ) )
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+
+		public TemplateMultiPassMasterNode GetPassWithTag( int lod, string tagKey, string tagValue = "" )
+		{
+			var passes = GetMultiPassMasterNodes( lod );
+			foreach ( TemplateMultiPassMasterNode pass in passes )
+			{
+				if ( pass.PassModule != null && pass.PassModule.TagsHelper != null && pass.PassModule.TagsHelper.HasTag( tagKey, tagValue ) )
+				{
+					return pass;
+				}
+			}
+			return null;
 		}
 
 		public bool HasVirtualTexture { get { return m_virtualTextureCount > 0; } }
@@ -3696,10 +4161,12 @@ namespace AmplifyShaderEditor
 		{
 			m_markedForDeletion.Add( node );
 		}
+		// @diogo: LOD masters sit in their own lists and would read as ordinary nodes without the last check
 		public bool IsMasterNode( ParentNode node )
 		{
 			return ( node.UniqueId == m_masterNodeId ) ||
-					m_multiPassMasterNodes.HasNode( node.UniqueId );
+					m_multiPassMasterNodes.HasNode( node.UniqueId ) ||
+					m_lodMultiPassMasterNodes.Exists( x => x.HasNode( node.UniqueId ) );
 		}
 
 		public TemplateMultiPassMasterNode GetMainMasterNodeOfLOD( int lod )
@@ -3707,7 +4174,13 @@ namespace AmplifyShaderEditor
 			if( lod == -1 )
 				return CurrentMasterNode as TemplateMultiPassMasterNode;
 
-			return m_lodMultiPassMasterNodes[ lod ].NodesList.Find( x => x.IsMainOutputNode );
+			return GetMainMasterNodeOf( m_lodMultiPassMasterNodes[ lod ] );
+		}
+
+		// @diogo: identifies a LOD's main node the same way generation does, instead of by list position
+		private static TemplateMultiPassMasterNode GetMainMasterNodeOf( UsageListTemplateMultiPassMasterNodes lodNodes )
+		{
+			return lodNodes.NodesList.Find( x => x.IsMainOutputNode );
 		}
 
 		public TemplateMultiPassMasterNode GetMasterNodeOfPass( string passName, int lod )
@@ -3768,12 +4241,12 @@ namespace AmplifyShaderEditor
 						//index == -2 is when user clicks on +/- buttons over the foldout UI
 						if( index == -2 )
 						{
-							shaderLod = m_lodMultiPassMasterNodes[ lod - 1 ].NodesList[ reference.PassIdx ].ShaderLOD - MasterNodeLODIncrement;
+							shaderLod = GetMainMasterNodeOfLOD( lod - 1 ).ShaderLOD - MasterNodeLODIncrement;
 						}
 						//index == -1 is when user clicks on + button over the main lod master node
 						else if( index == -1 )
 						{
-							int mainShaderLOD = m_lodMultiPassMasterNodes[ 0 ].NodesList[ reference.PassIdx ].ShaderLOD;
+							int mainShaderLOD = GetMainMasterNodeOfLOD( 0 ).ShaderLOD;
 							shaderLod = ( reference.ShaderLOD + mainShaderLOD )/2;
 						}
 						else
@@ -3782,12 +4255,12 @@ namespace AmplifyShaderEditor
 							{
 								if( m_lodMultiPassMasterNodes[ index + 1 ].Count > 0 )
 								{
-									shaderLod = (m_lodMultiPassMasterNodes[ index ].NodesList[ reference.PassIdx ].ShaderLOD +
-												m_lodMultiPassMasterNodes[ index + 1 ].NodesList[ reference.PassIdx ].ShaderLOD )/2;
+									shaderLod = ( GetMainMasterNodeOfLOD( index ).ShaderLOD +
+												GetMainMasterNodeOfLOD( index + 1 ).ShaderLOD )/2;
 								}
 								else
 								{
-									shaderLod = m_lodMultiPassMasterNodes[ index ].NodesList[ reference.PassIdx ].ShaderLOD - MasterNodeLODIncrement;
+									shaderLod = GetMainMasterNodeOfLOD( index ).ShaderLOD - MasterNodeLODIncrement;
 								}
 							}
 						}
@@ -3828,6 +4301,13 @@ namespace AmplifyShaderEditor
 			}
 		}
 
+		// @diogo: deselect first, or the destroyed node lingers on the selection
+		private void DestroyLodMasterNode( TemplateMultiPassMasterNode node )
+		{
+			DeselectNode( node );
+			DestroyNode( node, false, true );
+		}
+
 		public void DestroyLodMasterNodes( int index )
 		{
 			if( index < 0 )
@@ -3838,7 +4318,7 @@ namespace AmplifyShaderEditor
 					{
 						while( m_lodMultiPassMasterNodes[ lod ].Count > 0 )
 						{
-							DestroyNode( m_lodMultiPassMasterNodes[ lod ].NodesList[ 0 ], false, true );
+							DestroyLodMasterNode( m_lodMultiPassMasterNodes[ lod ].NodesList[ 0 ] );
 						}
 						break;
 					}
@@ -3848,7 +4328,7 @@ namespace AmplifyShaderEditor
 			{
 				while( m_lodMultiPassMasterNodes[ index ].Count > 0 )
 				{
-					DestroyNode( m_lodMultiPassMasterNodes[ index ].NodesList[ 0 ], false, true );
+					DestroyLodMasterNode( m_lodMultiPassMasterNodes[ index ].NodesList[ 0 ] );
 				}
 			}
 			SortLODMasterNodes();
@@ -3858,14 +4338,13 @@ namespace AmplifyShaderEditor
 
 		public void SortLODMasterNodes()
 		{
-			int idx = (CurrentMasterNode as TemplateMultiPassMasterNode).PassIdx;
 			m_lodMultiPassMasterNodes.Sort( ( x, y ) =>
 			{
 				if( x.Count > 0 )
 				{
 					if( y.Count > 0 )
 					{
-						return -x.NodesList[ idx ].ShaderLOD.CompareTo( y.NodesList[ idx ].ShaderLOD );
+						return -GetMainMasterNodeOf( x ).ShaderLOD.CompareTo( GetMainMasterNodeOf( y ).ShaderLOD );
 					}
 					else
 					{
@@ -3881,13 +4360,13 @@ namespace AmplifyShaderEditor
 				}
 				return 0;
 			});
-			
+
 			for( int lodIdx = 0; lodIdx < m_lodMultiPassMasterNodes.Count; lodIdx++ )
 			{
 				for( int nodeIdx = 0; nodeIdx < m_lodMultiPassMasterNodes[ lodIdx ].Count; nodeIdx++ )
 				{
 					m_lodMultiPassMasterNodes[ lodIdx ].NodesList[ nodeIdx ].LODIndex = lodIdx;
-				}	
+				}
 			}
 		}
 
@@ -3929,7 +4408,7 @@ namespace AmplifyShaderEditor
 				return null;
 			}
 		}
-		
+
 
 
 		public NodeAvailability CurrentCanvasMode { get { return m_currentCanvasMode; } set { m_currentCanvasMode = value; ParentWindow.LateRefreshAvailableNodes(); } }
@@ -3984,9 +4463,78 @@ namespace AmplifyShaderEditor
 		public UsageListPropertyNodes RawPropertyNodes { get { return m_rawPropertyNodes; } }
 		public UsageListCustomExpressionsOnFunctionMode CustomExpressionOnFunctionMode { get { return m_customExpressionsOnFunctionMode; } }
 		public UsageListStaticSwitchNodes StaticSwitchNodes { get { return m_staticSwitchNodes; } }
+		public UsageListToggleSwitchNodes ToggleSwitchNodes { get { return m_toggleSwitchNodes; } }
 		public UsageListScreenColorNodes ScreenColorNodes { get { return m_screenColorNodes; } }
 		public UsageListRegisterLocalVarNodes LocalVarNodes { get { return m_localVarNodes; } }
+		public UsageListStructNodes StructNodes { get { return m_structNodes; } }
+		public UsageListSamplerStateNodes SamplerStateNodes { get { return m_samplerStateNodes; } }
+
+		private Dictionary<string, Color> m_structTintCache = new Dictionary<string, Color>();
+
+		// @diogo: a struct name resolves through the whole graph, not only the Local registry: a Struct
+		// Create borrowing an asset definition carries a type that no Local here owns
+		public StructDefinitionData GetStructDefinition( string typeName )
+		{
+			if ( string.IsNullOrEmpty( typeName ) )
+			{
+				return null;
+			}
+
+			StructNode owner = m_structNodes.GetNodeByDataToArray( typeName );
+			if ( owner != null )
+			{
+				return owner.LocalDefinition;
+			}
+
+			for ( int i = 0; i < m_nodes.Count; i++ )
+			{
+				StructDefinitionData definition = null;
+
+				// @diogo: a passthrough is skipped rather than asked - it resolves its own type through
+				// this very method, so asking it here would recurse
+				if ( m_nodes[ i ] is StructNode node && !node.IsPassthrough )
+				{
+					definition = node.ActiveDefinition;
+				}
+				else if ( m_nodes[ i ] is FunctionInput input )
+				{
+					definition = input.DeclaredStructDefinition;
+				}
+				else if ( m_nodes[ i ] is FunctionNode call )
+				{
+					definition = call.GetBoundaryStructDefinition( typeName );
+				}
+
+				if ( definition != null && definition.CodeName.Equals( typeName ) )
+				{
+					return definition;
+				}
+			}
+
+			return null;
+		}
+
+		// The tint a struct type is drawn with: its definition's own, or the default when this graph cannot resolve it.
+		public Color GetStructTint( string typeName )
+		{
+			Color tint;
+			if ( !m_structTintCache.TryGetValue( typeName, out tint ) )
+			{
+				StructDefinitionData definition = GetStructDefinition( typeName );
+				tint = ( definition != null ) ? definition.Tint : StructDefinitionData.DefaultTint;
+				m_structTintCache.Add( typeName, tint );
+			}
+			return tint;
+		}
+
+		// The colour a port and its wires take when ports are coloured: a named struct's tint, otherwise its type's colour.
+		public Color GetPortColor( WirePortDataType dataType, string structName )
+		{
+			return ( dataType == WirePortDataType.STRUCT && !string.IsNullOrEmpty( structName ) ) ? GetStructTint( structName ) : UIUtils.GetColorForDataType( dataType, false, false );
+		}
+
 		public UsageListGlobalArrayNodes GlobalArrayNodes { get { return m_globalArrayNodes; } }
+		public UsageListAdditionalDirectivesNodes AdditionalDirectivesNodes { get { return m_additionalDirectivesNodes; } }
 		public UsageListFunctionInputNodes FunctionInputNodes { get { return m_functionInputNodes; } }
 		public UsageListFunctionNodes FunctionNodes { get { return m_functionNodes; } }
 		public UsageListFunctionOutputNodes FunctionOutputNodes { get { return m_functionOutputNodes; } }
@@ -4039,16 +4587,17 @@ namespace AmplifyShaderEditor
 		}
 
 		public bool IsLoading { get { return m_isLoading; } set { m_isLoading = value; } }
+		public bool IsReplacingMasterNodes { get { return m_isReplacingMasterNodes; } set { m_isReplacingMasterNodes = value; } }
 		public bool IsDuplicating { get { return m_isDuplicating; } set { m_isDuplicating = value; } }
 		public TemplateSRPType CurrentSRPType { get { return m_currentSRPType; }set { m_currentSRPType = value; } }
 		public bool IsSRP { get { return m_currentSRPType == TemplateSRPType.URP || m_currentSRPType == TemplateSRPType.HDRP; } }
 		public bool IsHDRP { get { return m_currentSRPType == TemplateSRPType.HDRP; } }
-		public bool IsLWRP { get { return m_currentSRPType == TemplateSRPType.URP; } }
+		public bool IsURP { get { return m_currentSRPType == TemplateSRPType.URP; } }
 		public bool IsStandardSurface { get { return GetNode( m_masterNodeId ) is StandardSurfaceOutputNode; } }
-		
-		public bool SamplingMacros { 
+
+		public bool SamplingMacros {
 			get { return m_samplingThroughMacros; }
-			set { m_samplingThroughMacros = value; } 
+			set { m_samplingThroughMacros = value; }
 		}
 		public bool HasLODs { get { return m_lodMultiPassMasterNodes[ 0 ].Count > 0; } }
 		//public bool HasLodMultiPassNodes

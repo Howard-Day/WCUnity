@@ -28,7 +28,7 @@ namespace AmplifyShaderEditor
 			ChangeOutputName( 4, "t" );
 			m_value = "_SinTime";
 			m_previewShaderGUID = "e4ba809e0badeb94994170b2cbbbba10";
-			m_continuousPreviewRefresh = true;
+			ContinuousPreviewRefresh = true;
 		}
 
 		public override void RefreshExternalReferences()
@@ -45,7 +45,7 @@ namespace AmplifyShaderEditor
 		{
 			if( outputId > 0 && dataCollector.IsTemplate )
 			{
-				if( dataCollector.TemplateDataCollectorInstance.IsHDRP || dataCollector.TemplateDataCollectorInstance.IsLWRP )
+				if( dataCollector.TemplateDataCollectorInstance.IsHDRP || dataCollector.TemplateDataCollectorInstance.IsURP )
 					return SRPTime[ outputId - 1 ];
 			}
 

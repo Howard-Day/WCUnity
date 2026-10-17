@@ -8,6 +8,7 @@ using System.IO;
 using System.Text;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using Unity.Scripting.LifecycleManagement;
 
 namespace AmplifyShaderEditor
 {
@@ -25,6 +26,7 @@ namespace AmplifyShaderEditor
 		}
 	}
 
+	[NoAutoStaticsCleanup]
 	public class ShaderBodyTokenTable
 	{
 		private int count = 0;
@@ -32,7 +34,7 @@ namespace AmplifyShaderEditor
 
 		private LinkedList<TokenDesc> tokens = new LinkedList<TokenDesc>();
 		private Dictionary<string, List<LinkedListNode<TokenDesc>>> tokensByName = new Dictionary<string, List<LinkedListNode<TokenDesc>>>();
-		private Dictionary<int, List<LinkedListNode<TokenDesc>>> tokensByLine = new Dictionary<int, List<LinkedListNode<TokenDesc>>>();			
+		private Dictionary<int, List<LinkedListNode<TokenDesc>>> tokensByLine = new Dictionary<int, List<LinkedListNode<TokenDesc>>>();
 
 		private static List<LinkedListNode<TokenDesc>> EmptyTokenList = new List<LinkedListNode<TokenDesc>>();
 
@@ -49,7 +51,7 @@ namespace AmplifyShaderEditor
 			}
 			return EmptyTokenList;
 		}
-			
+
 		public List<LinkedListNode<TokenDesc>> ListTokensByLine( int line )
 		{
 			if ( tokensByLine.TryGetValue( line, out List<LinkedListNode<TokenDesc>> list ) )
@@ -85,11 +87,7 @@ namespace AmplifyShaderEditor
 	{
 		private static double TimeSinceStartup
 		{
-		#if UNITY_2020_2_OR_NEWER
 			get { return Time.realtimeSinceStartupAsDouble; }
-		#else
-			get { return Time.realtimeSinceStartup; }
-		#endif
 		}
 
 		public static ShaderBodyTokenTable Process( string body )
@@ -151,5 +149,5 @@ namespace AmplifyShaderEditor
 			//
 			//File.WriteAllLines( "C:/Users/Diogo/Desktop/dump.txt", tokens.Keys );
 		}
-	}	
+	}
 }

@@ -2,11 +2,11 @@
 {
 	Properties
 	{
-		_A ( "_A", 2D) = "white" {}
-		_B ( "_B", 2D ) = "white" {}
-		_C ( "_AGreaterThanB", 2D ) = "white" {}
-		_D ( "_AEqualToB", 2D ) = "white" {}
-		_E ( "_ALessThanB", 2D ) = "white" {}
+		_A ( "_A", 2DArray) = "white" {}
+		_B ( "_B", 2DArray ) = "white" {}
+		_C ( "_AGreaterThanB", 2DArray ) = "white" {}
+		_D ( "_AEqualToB", 2DArray ) = "white" {}
+		_E ( "_ALessThanB", 2DArray ) = "white" {}
 	}
 	
 	SubShader
@@ -15,22 +15,24 @@
 		{
 			CGPROGRAM
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#pragma vertex vert_img
 			#pragma fragment frag
+			#pragma target 3.5
 			
-			uniform sampler2D _A;
-			uniform sampler2D _B;
-			uniform sampler2D _C;
-			uniform sampler2D _D;
-			uniform sampler2D _E;
+			ASE_PORT( _A );
+			ASE_PORT( _B );
+			ASE_PORT( _C );
+			ASE_PORT( _D );
+			ASE_PORT( _E );
 
 			float4 frag ( v2f_img i ) : SV_Target
 			{
-				float aVal = tex2D ( _A, i.uv ).r;
-				float bVal = tex2D ( _B, i.uv ).r;
-				float4 aGreaterbVal = tex2D ( _C, i.uv );
-				float4 aEqualbVal = tex2D ( _D, i.uv );
-				float4 aLessbVal = tex2D ( _E, i.uv );
+				float aVal = ASE_SAMPLE_PORT( _A, i.uv ).r;
+				float bVal = ASE_SAMPLE_PORT( _B, i.uv ).r;
+				float4 aGreaterbVal = ASE_SAMPLE_PORT( _C, i.uv );
+				float4 aEqualbVal = ASE_SAMPLE_PORT( _D, i.uv );
+				float4 aLessbVal = ASE_SAMPLE_PORT( _E, i.uv );
 				
 				if ( aVal > bVal )
 					return aGreaterbVal;

@@ -215,11 +215,93 @@ namespace AmplifyShaderEditor
 			{
 				m_depthOphelper.CopyFrom( other.DepthOphelper, false );
 			}
-			
+
 			if( m_shaderModelHelper.ValidData && other.ShaderModelHelper.ValidData )
 			{
 				m_shaderModelHelper.CopyFrom( other.ShaderModelHelper , false);
 			}
+		}
+
+		// Copies onto another helper every module the user just edited, skipping modules the template
+		// does not declare on both ends.
+		public void MirrorEditedModulesTo( TemplateModulesHelper other )
+		{
+			if ( CanMirror( m_blendOpHelper, other.BlendOpHelper ) && other.BlendOpHelper.MirrorFrom( m_blendOpHelper ) )
+			{
+				other.BlendOpHelper.CustomEdited = true;
+			}
+
+			if ( CanMirror( m_blendOpHelper1, other.BlendOpHelper1 ) && other.BlendOpHelper1.MirrorFrom( m_blendOpHelper1 ) )
+			{
+				other.BlendOpHelper1.CustomEdited = true;
+			}
+
+			if ( CanMirror( m_blendOpHelper2, other.BlendOpHelper2 ) && other.BlendOpHelper2.MirrorFrom( m_blendOpHelper2 ) )
+			{
+				other.BlendOpHelper2.CustomEdited = true;
+			}
+
+			if ( CanMirror( m_blendOpHelper3, other.BlendOpHelper3 ) && other.BlendOpHelper3.MirrorFrom( m_blendOpHelper3 ) )
+			{
+				other.BlendOpHelper3.CustomEdited = true;
+			}
+
+			if ( CanMirror( m_alphaToMaskHelper, other.AlphaToMaskHelper ) )
+			{
+				other.AlphaToMaskHelper.CopyFrom( m_alphaToMaskHelper, false, true );
+			}
+
+			if ( CanMirror( m_cullModeHelper, other.CullModeHelper ) )
+			{
+				other.CullModeHelper.CopyFrom( m_cullModeHelper, false, true );
+				other.CullModeHelper.CustomEdited = true;
+			}
+
+			if ( CanMirror( m_colorMaskHelper, other.ColorMaskHelper ) )
+			{
+				other.ColorMaskHelper.MirrorFrom( m_colorMaskHelper );
+				other.ColorMaskHelper.CustomEdited = true;
+			}
+
+			if ( CanMirror( m_colorMaskHelper1, other.ColorMaskHelper1 ) )
+			{
+				other.ColorMaskHelper1.MirrorFrom( m_colorMaskHelper1 );
+				other.ColorMaskHelper1.CustomEdited = true;
+			}
+
+			if ( CanMirror( m_colorMaskHelper2, other.ColorMaskHelper2 ) )
+			{
+				other.ColorMaskHelper2.MirrorFrom( m_colorMaskHelper2 );
+				other.ColorMaskHelper2.CustomEdited = true;
+			}
+
+			if ( CanMirror( m_colorMaskHelper3, other.ColorMaskHelper3 ) )
+			{
+				other.ColorMaskHelper3.MirrorFrom( m_colorMaskHelper3 );
+				other.ColorMaskHelper3.CustomEdited = true;
+			}
+
+			// @diogo: an inactive pass stencil emits nothing and so never shadows the subshader's;
+			// only mirror onto one that is already active and would otherwise win
+			if ( CanMirror( m_stencilBufferHelper, other.StencilBufferHelper ) && other.StencilBufferHelper.Active && other.StencilBufferHelper.MirrorFrom( m_stencilBufferHelper ) )
+			{
+				other.StencilBufferHelper.CustomEdited = true;
+			}
+
+			if ( CanMirror( m_depthOphelper, other.DepthOphelper ) && other.DepthOphelper.MirrorFrom( m_depthOphelper ) )
+			{
+				other.DepthOphelper.CustomEdited = true;
+			}
+
+			if ( CanMirror( m_shaderModelHelper, other.ShaderModelHelper ) )
+			{
+				other.ShaderModelHelper.CopyFrom( m_shaderModelHelper, false );
+			}
+		}
+
+		private static bool CanMirror( TemplateModuleParent source, TemplateModuleParent target )
+		{
+			return source.IsDirty && source.ValidData && target.ValidData;
 		}
 
 		public void FetchDataFromTemplate( TemplateModulesData module )
@@ -448,7 +530,7 @@ namespace AmplifyShaderEditor
 			m_isDirty = m_isDirty ||
 						//m_additionalDefines.IsDirty ||
 						//m_additionalIncludes.IsDirty ||
-						//m_additionalPragmas.IsDirty || 
+						//m_additionalPragmas.IsDirty ||
 						m_additionalDirectives.IsDirty;
 		}
 
@@ -514,6 +596,7 @@ namespace AmplifyShaderEditor
 			if( !DepthOphelper.IndependentModule )
 			{
 				moduleBody += DepthOphelper.CurrentZWriteMode;
+				moduleBody += DepthOphelper.CurrentZClipMode;
 				moduleBody += DepthOphelper.CurrentZTestMode;
 				if( DepthOphelper.OffsetEnabled )
 					moduleBody += DepthOphelper.CurrentOffset;
@@ -774,6 +857,7 @@ namespace AmplifyShaderEditor
 					m_colorMaskHelper2.IsDirty = false;
 					m_colorMaskHelper3.IsDirty = false;
 					m_stencilBufferHelper.IsDirty = false;
+					m_depthOphelper.IsDirty = false;
 					m_tagsHelper.IsDirty = false;
 					m_shaderModelHelper.IsDirty = false;
 					//m_additionalDefines.IsDirty = false;

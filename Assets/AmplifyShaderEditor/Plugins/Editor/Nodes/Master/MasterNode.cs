@@ -38,6 +38,7 @@ namespace AmplifyShaderEditor
 
 		private const string PropertyOrderFoldoutStr = " Material Properties";
 		private const string PropertyOrderTemplateFoldoutStr = "Material Properties";
+		private const string ReorderMaterialPropertiesUndoStr = "Reordering Material Properties";
 
 		protected MasterNodeDataCollector m_currentDataCollector;
 
@@ -60,7 +61,7 @@ namespace AmplifyShaderEditor
 		protected int m_shaderLOD = 0;
 
 		[SerializeField]
-		protected int m_shaderModelIdx = 2;
+		protected int m_shaderModelIdx = 3;
 
 		[SerializeField]
 		protected Shader m_currentShader;
@@ -87,7 +88,7 @@ namespace AmplifyShaderEditor
 		protected int m_masterNodeCategory = 0;// MasterNodeCategories.SurfaceShader;
 
 		[SerializeField]
-		protected bool m_samplingMacros = false;
+		protected bool m_samplingMacros = true;
 
 		[SerializeField]
 		protected string m_currentShaderData = string.Empty;
@@ -128,6 +129,10 @@ namespace AmplifyShaderEditor
 		//private int m_availableCount = 0;
 		private int m_lastCount = 0;
 
+		// @diogo: support for dragging entries from the Material Properties list into the canvas
+		private Rect m_propertyReordableListRect;
+		private int m_propertyDragSourceIndex = -1;
+
 		private GUIStyle m_propertyAdjustment;
 		protected bool m_shaderNameIsTitle = true;
 
@@ -147,7 +152,7 @@ namespace AmplifyShaderEditor
 
 		void InitAvailableCategories()
 		{
-			int templateCount = m_containerGraph.ParentWindow.TemplatesManagerInstance.TemplateCount;
+			int templateCount = TemplatesManager.Instance.TemplateCount;
 			m_availableCategories = new MasterNodeCategoriesData[ templateCount + 1 ];
 			m_availableCategoryLabels = new GUIContent[ templateCount + 1 ];
 
@@ -157,7 +162,7 @@ namespace AmplifyShaderEditor
 			for( int i = 0; i < templateCount; i++ )
 			{
 				int idx = i + 1;
-				TemplateDataParent templateData = m_containerGraph.ParentWindow.TemplatesManagerInstance.GetTemplate( i );
+				TemplateDataParent templateData = TemplatesManager.Instance.GetTemplate( i );
 				m_availableCategories[ idx ] = new MasterNodeCategoriesData( AvailableShaderTypes.Template, templateData.GUID );
 				m_availableCategoryLabels[ idx ] = new GUIContent( templateData.Name );
 			}
@@ -181,14 +186,17 @@ namespace AmplifyShaderEditor
 		{
 			//base.SetupNodeCategories();
 			ContainerGraph.ResetNodesData();
+			// m_currentDataCollector is null when called from the ordering path (not generation); fall back to a temporary one for cycle-detection.
+			MasterNodeDataCollector localCollector = m_currentDataCollector ?? new MasterNodeDataCollector( this );
 			int count = m_inputPorts.Count;
 			for( int i = 0; i < count; i++ )
 			{
 				if( m_inputPorts[ i ].IsConnected )
 				{
 					NodeData nodeData = new NodeData( m_inputPorts[ i ].Category );
+					nodeData.OutputPortId = m_inputPorts[ i ].GetConnection( 0 ).PortId;
 					ParentNode node = m_inputPorts[ i ].GetOutputNode();
-					node.PropagateNodeData( nodeData, ref m_currentDataCollector );
+					node.PropagateNodeData( nodeData, ref localCollector );
 				}
 				else if( m_inputPorts[ i ].HasExternalLink )
 				{
@@ -196,8 +204,9 @@ namespace AmplifyShaderEditor
 					if( linkedPort != null && linkedPort.IsConnected )
 					{
 						NodeData nodeData = new NodeData( linkedPort.Category );
+						nodeData.OutputPortId = linkedPort.GetConnection( 0 ).PortId;
 						ParentNode node = linkedPort.GetOutputNode();
-						node.PropagateNodeData( nodeData, ref m_currentDataCollector );
+						node.PropagateNodeData( nodeData, ref localCollector );
 					}
 				}
 			}
@@ -223,6 +232,9 @@ namespace AmplifyShaderEditor
 			CurrentMaterial = other.CurrentMaterial;
 			ShaderName = other.ShaderName;
 			m_masterNodeCategory = other.CurrentMasterNodeCategoryIdx;
+			// @diogo: without this a shader type switch resets the flag to the default, which would
+			// silently turn macros on for shaders saved without them
+			m_samplingMacros = other.m_samplingMacros;
 		}
 
 		protected void DrawCurrentShaderType()
@@ -230,11 +242,44 @@ namespace AmplifyShaderEditor
 			if( m_availableCategories == null )
 				InitAvailableCategories();
 
-			int oldType = m_masterNodeCategory;
-			m_masterNodeCategory = EditorGUILayoutPopup( m_categoryLabel, m_masterNodeCategory, m_availableCategoryLabels );
-			if( oldType != m_masterNodeCategory )
+			// Handle bridge templates
+			var remapOriginalToFiltered = new int[ m_availableCategories.Length ];
+			var remapFilteredToOriginal = new List<int>();
+			var filteredLabels = new List<GUIContent>();
+
+			for ( int i = 0; i < m_availableCategoryLabels.Length; i++ )
 			{
-				m_containerGraph.ParentWindow.ReplaceMasterNode( m_availableCategories[ m_masterNodeCategory ], false );
+				if ( m_availableCategoryLabels[ i ].text.Contains( "/ASEBridgeTemplates/" ) )
+				{
+					// Bridges are invisible
+					remapOriginalToFiltered[ i ] = -1;
+					continue;
+				}
+
+				remapFilteredToOriginal.Add( i );
+				remapOriginalToFiltered[ i ] = filteredLabels.Count;
+				filteredLabels.Add( m_availableCategoryLabels[ i ] );
+			}
+
+			int filteredIndex = remapOriginalToFiltered[ m_masterNodeCategory ];
+			if ( filteredIndex >= 0 )
+			{
+				int oldType = m_masterNodeCategory;
+
+				filteredIndex = EditorGUILayoutPopup( m_categoryLabel, filteredIndex, filteredLabels.ToArray() );
+				m_masterNodeCategory = remapFilteredToOriginal[ filteredIndex ];
+
+				if( oldType != m_masterNodeCategory )
+				{
+					m_containerGraph.ParentWindow.ReplaceMasterNode( m_availableCategories[ m_masterNodeCategory ], false );
+				}
+			}
+			else
+			{
+				// Show a disabled popup => This is temporary and only happens during bridge template swaps
+				GUI.enabled = false;
+				EditorGUILayoutPopup( m_categoryLabel, 0, new GUIContent [] { new GUIContent( "Please wait..." ) } );
+				GUI.enabled = true;
 			}
 		}
 
@@ -260,7 +305,7 @@ namespace AmplifyShaderEditor
 					GenericMenu menu = new GenericMenu();
 					AddMenuItem( menu, Constants.DefaultCustomInspector );
 
-					ASESRPBaseline version = ASESRPBaseline.ASE_SRP_INVALID;
+					SRPBaseline version = SRPBaseline.ASE_SRP_INVALID;
 					bool foundHDRP = ASEPackageManagerHelper.FoundHDRPVersion;
 					bool foundURP = ASEPackageManagerHelper.FoundURPVersion;
 
@@ -279,47 +324,18 @@ namespace AmplifyShaderEditor
 
 					if( foundHDRP )
 					{
-						if( version >= ASESRPBaseline.ASE_SRP_11 )
-						{
-							AddMenuItem( menu , "Rendering.HighDefinition.DecalShaderGraphGUI" );
-							AddMenuItem( menu , "Rendering.HighDefinition.LightingShaderGraphGUI" );
-							AddMenuItem( menu , "Rendering.HighDefinition.LitShaderGraphGUI" );
-							AddMenuItem( menu , "Rendering.HighDefinition.HDUnlitGUI" );
-						}
-						else
-						if( version >= ASESRPBaseline.ASE_SRP_10 )
-						{
-							AddMenuItem( menu , "Rendering.HighDefinition.DecalGUI" );
-							AddMenuItem( menu , "Rendering.HighDefinition.LitShaderGraphGUI" );
-							AddMenuItem( menu , "Rendering.HighDefinition.LightingShaderGraphGUI" );
-							AddMenuItem( menu , "Rendering.HighDefinition.HDUnlitGUI" );
-						}
-						else if( version >= ASESRPBaseline.ASE_SRP_12 )
-						{
-							AddMenuItem( menu , "Rendering.HighDefinition.DecalGUI" );
-							AddMenuItem( menu , "Rendering.HighDefinition.LitShaderGraphGUI" );
-							AddMenuItem( menu , "Rendering.HighDefinition.LightingShaderGraphGUI" );
-							AddMenuItem( menu , "Rendering.HighDefinition.HDUnlitGUI" );
-						}
-						else
-						{
-							AddMenuItem( menu , "UnityEditor.Rendering.HighDefinition.HDLitGUI" );
-						}
+						AddMenuItem( menu , "Rendering.HighDefinition.LitShaderGraphGUI" );
+						AddMenuItem( menu , "Rendering.HighDefinition.UnlitShaderGraphGUI" );
+						AddMenuItem( menu , "Rendering.HighDefinition.DecalShaderGraphGUI" );
+						AddMenuItem( menu , "Rendering.HighDefinition.LightingShaderGraphGUI" );
+
 					}
 
 					if( foundURP )
 					{
-						if( version >= ASESRPBaseline.ASE_SRP_12 )
-						{
-							AddMenuItem( menu , "UnityEditor.ShaderGraphLitGUI" );
-							AddMenuItem( menu , "UnityEditor.ShaderGraphUnlitGUI" );
-							AddMenuItem( menu , "UnityEditor.Rendering.Universal.DecalShaderGraphGUI" );
-							AddMenuItem( menu , "UnityEditor.ShaderGraphLitGUI" );
-						}
-						else
-						{
-							AddMenuItem( menu , "UnityEditor.ShaderGraph.PBRMasterGUI" );
-						}
+						AddMenuItem( menu , "UnityEditor.ShaderGraphLitGUI" );
+						AddMenuItem( menu , "UnityEditor.ShaderGraphUnlitGUI" );
+						AddMenuItem( menu , "UnityEditor.Rendering.Universal.DecalShaderGraphGUI" );
 					}
 					menu.ShowAsContext();
 				}
@@ -508,7 +524,8 @@ namespace AmplifyShaderEditor
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_shaderModelIdx );
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_customInspectorName );
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_shaderLOD );
-			IOUtils.AddFieldValueToString( ref nodeInfo, m_masterNodeCategory );
+			// @diogo: never persist a template index on a surface node; it's only transiently valid during a type switch
+			IOUtils.AddFieldValueToString( ref nodeInfo, ( this is StandardSurfaceOutputNode ) ? 0 : m_masterNodeCategory );
 		}
 
 		public override void ReadFromString( ref string[] nodeParams )
@@ -537,6 +554,10 @@ namespace AmplifyShaderEditor
 			if( UIUtils.CurrentShaderVersion() > 2404 )
 			{
 				m_customInspectorName = GetCurrentParam( ref nodeParams );
+				if ( m_customInspectorName.Equals( Constants.OldCustomInspector ) )
+				{
+					m_customInspectorName = Constants.DefaultCustomInspector;
+				}
 			}
 
 			if( UIUtils.CurrentShaderVersion() > 6101 )
@@ -638,29 +659,42 @@ namespace AmplifyShaderEditor
 
 		protected void UpdateShaderAsset( ref string pathname, ref string shaderBody, bool isFullPath )
 		{
+			shaderBody = UIUtils.ForceLFLineEnding( shaderBody );
+
 			// Generate Graph info
 			shaderBody += ContainerGraph.ParentWindow.GenerateGraphInfo();
 
 			//TODO: Remove current SaveDebugShader and uncomment SaveToDisk as soon as pathname is editable
+			string shaderDiskPath;
 			if( !String.IsNullOrEmpty( pathname ) )
 			{
-				IOUtils.StartSaveThread( shaderBody, ( isFullPath ? pathname : ( IOUtils.dataPath + pathname ) ) );
+				shaderDiskPath = isFullPath ? pathname : ( IOUtils.dataPath + pathname );
 			}
 			else
 			{
-				IOUtils.StartSaveThread( shaderBody, Application.dataPath + "/AmplifyShaderEditor/Samples/Shaders/" + m_shaderName + ".shader" );
+				shaderDiskPath = Application.dataPath + "/AmplifyShaderEditor/Samples/Shaders/" + m_shaderName + ".shader";
 			}
+			IOUtils.StartSaveThread( shaderBody, shaderDiskPath );
 
 
 			if( CurrentShader == null )
 			{
-				AssetDatabase.Refresh( ImportAssetOptions.ForceUpdate );
+				// @diogo: in Play mode import just the written file, avoiding a project-wide refresh
+				string shaderRelativePath = Application.isPlaying ? FileUtil.GetProjectRelativePath( shaderDiskPath ) : string.Empty;
+				if( Application.isPlaying && !string.IsNullOrEmpty( shaderRelativePath ) )
+				{
+					AssetDatabase.ImportAsset( shaderRelativePath, ImportAssetOptions.ForceSynchronousImport );
+				}
+				else
+				{
+					AssetDatabase.Refresh( ImportAssetOptions.ForceUpdate );
+				}
 				CurrentShader = Shader.Find( ShaderName );
 			}
 
 			//else
 			//{
-			//	// need to always get asset datapath because a user can change and asset location from the project window 
+			//	// need to always get asset datapath because a user can change and asset location from the project window
 			//	AssetDatabase.ImportAsset( AssetDatabase.GetAssetPath( m_currentShader ) );
 			//	//ShaderUtil.UpdateShaderAsset( m_currentShader, ShaderBody );
 			//	//ShaderImporter importer = (ShaderImporter)ShaderImporter.GetAtPath( AssetDatabase.GetAssetPath( CurrentShader ) );
@@ -722,19 +756,13 @@ namespace AmplifyShaderEditor
 			EditorGUILayout.BeginHorizontal( toolbarstyle );
 			GUI.color = cachedColor;
 
-			EditorGUI.BeginChangeCheck();
 			if( style )
 			{
-				ContainerGraph.ParentWindow.InnerWindowVariables.ExpandedProperties = GUILayoutToggle( ContainerGraph.ParentWindow.InnerWindowVariables.ExpandedProperties, PropertyOrderFoldoutStr, UIUtils.MenuItemToggleStyle );
+				ContainerGraph.ParentWindow.InnerWindowVariables.ExpandedProperties = NodeUtils.FoldoutToggle( ContainerGraph.ParentWindow.InnerWindowVariables.ExpandedProperties, PropertyOrderFoldoutStr );
 			}
 			else
 			{
-				ContainerGraph.ParentWindow.InnerWindowVariables.ExpandedProperties = GUILayoutToggle( ContainerGraph.ParentWindow.InnerWindowVariables.ExpandedProperties, PropertyOrderTemplateFoldoutStr, UIUtils.MenuItemToggleStyle );
-			}
-
-			if( EditorGUI.EndChangeCheck() )
-			{
-				EditorPrefs.SetBool( "ExpandedProperties", ContainerGraph.ParentWindow.InnerWindowVariables.ExpandedProperties );
+				ContainerGraph.ParentWindow.InnerWindowVariables.ExpandedProperties = NodeUtils.FoldoutToggle( ContainerGraph.ParentWindow.InnerWindowVariables.ExpandedProperties, PropertyOrderTemplateFoldoutStr );
 			}
 
 			EditorGUILayout.EndHorizontal();
@@ -764,12 +792,19 @@ namespace AmplifyShaderEditor
 
 					drawElementCallback = ( Rect rect, int index, bool isActive, bool isFocused ) =>
 					{
+						if( Event.current.type == EventType.MouseDown && Event.current.button == 0 && rect.Contains( Event.current.mousePosition ) )
+						{
+							m_propertyDragSourceIndex = index;
+						}
+
 						var first = rect;
 						first.width *= 0.60f;
 						EditorGUI.LabelField( first, m_propertyNodesVisibleList[ index ].PropertyInspectorName );
+
 						var second = rect;
 						second.width *= 0.4f;
 						second.x += first.width;
+						second.y += 4;
 						if( GUI.Button( second, m_propertyNodesVisibleList[ index ].PropertyName, new GUIStyle( "AssetLabel Partial" ) ) )
 						{
 							UIUtils.FocusOnNode( m_propertyNodesVisibleList[ index ], 1, false );
@@ -778,12 +813,21 @@ namespace AmplifyShaderEditor
 
 					onReorderCallback = ( list ) =>
 					{
+						// @diogo: the drag only reordered the list this panel draws from; the nodes still hold
+						// their pre-edit order indices, so this is the last point a snapshot captures them
+						ContainerGraph.ParentWindow.RegisterGraphUndo( ReorderMaterialPropertiesUndoStr );
 						ReorderList( ref nodes );
 						m_propertyOrderChanged = true;
 						//RecursiveLog();
 					}
 				};
 				ReorderList( ref nodes );
+			}
+
+			if( m_propertyReordableList != null )
+			{
+				// May abort an ongoing reorder operation by recreating the list
+				HandlePropertyDragToCanvas();
 			}
 
 			if( m_propertyReordableList != null )
@@ -796,8 +840,48 @@ namespace AmplifyShaderEditor
 				EditorGUILayout.BeginVertical( m_propertyAdjustment );
 				m_propertyReordableList.DoLayoutList();
 				EditorGUILayout.EndVertical();
+				if( Event.current.type == EventType.Repaint )
+				{
+					m_propertyReordableListRect = GUILayoutUtility.GetLastRect();
+				}
 			}
 			EditorGUILayout.EndVertical();
+		}
+
+		private void HandlePropertyDragToCanvas()
+		{
+			Event currentEvent = Event.current;
+			switch( currentEvent.type )
+			{
+				case EventType.MouseDrag:
+				{
+					// Only start a drag&drop operation once the cursor leaves the list sideways, to keep
+					// the list's own vertical reordering working
+					bool draggedOutOfList = currentEvent.mousePosition.x < m_propertyReordableListRect.xMin ||
+											currentEvent.mousePosition.x > m_propertyReordableListRect.xMax;
+					if( m_propertyDragSourceIndex > -1 && draggedOutOfList )
+					{
+						if( m_propertyDragSourceIndex < m_propertyNodesVisibleList.Count )
+						{
+							DragAndDrop.PrepareStartDrag();
+							DragAndDrop.objectReferences = new UnityEngine.Object[] { m_propertyNodesVisibleList[ m_propertyDragSourceIndex ] };
+							DragAndDrop.StartDrag( "Dragging Material Property" );
+							// Recreate the list to abort any reorder operation in progress
+							m_propertyReordableList = null;
+							GUIUtility.hotControl = 0;
+							currentEvent.Use();
+						}
+						m_propertyDragSourceIndex = -1;
+					}
+				}
+				break;
+				case EventType.MouseUp:
+				case EventType.DragExited:
+				{
+					m_propertyDragSourceIndex = -1;
+				}
+				break;
+			}
 		}
 
 		public void ForceReordering()
@@ -1041,7 +1125,7 @@ namespace AmplifyShaderEditor
 				m_shaderLOD = Mathf.Max( 0, value );
 			}
 		}
-		public bool SamplingMacros 
+		public bool SamplingMacros
 		{
 			get { return m_samplingMacros; }
 			set

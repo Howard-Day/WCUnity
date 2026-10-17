@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEditor;
 using System;
+using System.Globalization;
 
 namespace AmplifyShaderEditor
 {
@@ -41,13 +42,18 @@ namespace AmplifyShaderEditor
 		{
 			m_nodeId = -1;
 			m_active = false;
+			m_nodePropertyName = string.Empty;
 		}
 
-		public void CopyFrom( InlineProperty other )
+		public void CopyFrom( InlineProperty other, bool copyPropertyName = false )
 		{
 			m_value = other.m_value;
 			m_active = other.m_active;
 			m_nodeId = other.m_nodeId;
+			if ( copyPropertyName )
+			{
+				m_nodePropertyName = other.m_nodePropertyName;
+			}
 		}
 
 		public void SetInlineByName( string propertyName )
@@ -218,7 +224,14 @@ namespace AmplifyShaderEditor
 				PropertyNode node = GetPropertyNode();
 				if( node != null )
 				{
-					return parentesis ? "[" + node.PropertyName + "]" : node.PropertyName;
+					if ( node.CurrentParameterType == PropertyType.Constant )
+					{
+						return node.GetDefaultValue();
+					}
+					else
+					{
+						return parentesis ? "[" + node.PropertyName + "]" : node.PropertyName;
+					}
 				}
 				else if ( !string.IsNullOrEmpty( m_nodePropertyName ) )
 				{
@@ -244,7 +257,14 @@ namespace AmplifyShaderEditor
 				PropertyNode node = GetPropertyNode();
 				if( node != null )
 				{
-					return parentesis ? "[" + node.PropertyName + "]" : node.PropertyName;
+					if ( node.CurrentParameterType == PropertyType.Constant )
+					{
+						return node.GetDefaultValue();
+					}
+					else
+					{
+						return parentesis ? "[" + node.PropertyName + "]" : node.PropertyName;
+					}
 				}
 				else if ( !string.IsNullOrEmpty( m_nodePropertyName ) )
 				{
@@ -274,6 +294,30 @@ namespace AmplifyShaderEditor
 			if ( m_active && !string.IsNullOrEmpty( m_nodePropertyName ) )
 			{
 				m_nodeId = UIUtils.GetFloatIntNodeIdByName( m_nodePropertyName );
+				RevertIfUnresolved();
+			}
+		}
+
+		// @diogo: when an inline reference points at a property that no longer exists (e.g. it came from a node
+		//         or shader function that was since removed), revert to the template-defined value instead of
+		//         keeping a dangling reference. Relies on m_nodeId having just been resolved from the name, so a
+		//         -1 id means the property is genuinely absent from the fully-loaded graph (internal template
+		//         properties are also registered as float/int nodes, so they resolve to a valid id too).
+		public void RevertIfUnresolved()
+		{
+			if ( m_active && m_nodeId == -1 && !string.IsNullOrEmpty( m_nodePropertyName ) )
+			{
+				ResetProperty();
+			}
+		}
+
+		// Reverts to the template value when the referenced node is gone and no property with its name remains
+		public void RevertIfDangling()
+		{
+			if ( m_active && GetPropertyNode() == null )
+			{
+				m_nodeId = UIUtils.GetFloatIntNodeIdByName( m_nodePropertyName );
+				RevertIfUnresolved();
 			}
 		}
 
@@ -300,7 +344,7 @@ namespace AmplifyShaderEditor
 					m_nodePropertyName = param;
 					m_nodeId = UIUtils.GetFloatIntNodeIdByName( m_nodePropertyName );
 				}
-			}			
+			}
 		}
 
 		public void ReadFromString( ref uint index , ref string[] nodeParams , bool isInt = true )
@@ -320,31 +364,40 @@ namespace AmplifyShaderEditor
 
 		public void WriteToString( ref string nodeInfo )
 		{
+			// @diogo: only persist the property name while the inline property is active; otherwise a stale
+			// name lingers in the data and gets re-read (and possibly re-activated) on the next load
+			string propertyName = m_active ? m_nodePropertyName : string.Empty;
+
 			IOUtils.AddFieldValueToString( ref nodeInfo , m_value );
 			IOUtils.AddFieldValueToString( ref nodeInfo , m_active );
-			IOUtils.AddFieldValueToString( ref nodeInfo, m_nodePropertyName );
+			IOUtils.AddFieldValueToString( ref nodeInfo, propertyName );
 		}
 
 		public string WriteToSingle()
 		{
-			return m_value.ToString( System.Globalization.CultureInfo.InvariantCulture ) + IOUtils.VECTOR_SEPARATOR + m_active + IOUtils.VECTOR_SEPARATOR + m_nodePropertyName;
+			string propertyName = m_active ? m_nodePropertyName : string.Empty;
+			return m_value.ToString( CultureInfo.InvariantCulture ) + IOUtils.VECTOR_SEPARATOR + m_active + IOUtils.VECTOR_SEPARATOR + propertyName;
 		}
 
 		public void SetInlineNodeValue()
 		{
-			if( IsValid )
+			if ( IsValid )
 			{
-				RangedFloatNode fnode = UIUtils.GetNode( m_nodeId ) as RangedFloatNode;
-				if( fnode != null )
+				ParentNode node = UIUtils.GetNode( m_nodeId );
+				if ( node is RangedFloatNode fnode )
 				{
 					fnode.Value = m_value;
 					fnode.SetMaterialValueFromInline( m_value );
 				}
-				else
+				else if ( node is IntNode inode )
 				{
-					IntNode inode = UIUtils.GetNode( m_nodeId ) as IntNode;
-					inode.Value = (int)m_value;
-					inode.SetMaterialValueFromInline( (int)m_value );
+					inode.Value = ( int )m_value;
+					inode.SetMaterialValueFromInline( ( int )m_value );
+				}
+				else if ( node is IntegerNode integerNode )
+				{
+					integerNode.Value = ( int )m_value;
+					integerNode.SetMaterialValueFromInline( ( int )m_value );
 				}
 			}
 		}

@@ -1,8 +1,16 @@
 fileFormatVersion: 2
 guid: e7094bcbcc80eb140b2a3dbe6a861de8
-timeCreated: 1507625018
-licenseType: Store
 NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 0
   userData: 
   assetBundleName: 
   assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 68570
+  packageName: Amplify Shader Editor
+  packageVersion: 1.9.9.14
+  assetPath: Assets/AmplifyShaderEditor/Plugins/EditorResources/ShaderFunctions/Reconstruct
+    World Position From Depth.asset
+  uploadId: 1019702

@@ -97,7 +97,7 @@ namespace AmplifyShaderEditor
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalVar )
 		{
-			dataCollector.AddToInput( UniqueId, m_currentInput, CurrentPrecisionType );
+			dataCollector.AddToInput( UniqueId, m_currentInput, UIUtils.CurrentWindow.CurrentGraph.CurrentPrecision );
 			switch ( m_currentInput )
 			{
 				case SurfaceInputs.VIEW_DIR:

@@ -20,15 +20,20 @@ namespace AmplifyShaderEditor
         {
             base.OnInputPortConnected( portId, otherNodeId, otherPortId, activateNode );
             m_inputPorts[ 0 ].MatchPortToConnection();
-            m_outputPorts[ 0 ].ChangeType( m_inputPorts[ 0 ].DataType, false );
+            m_outputPorts[ 0 ].ChangeType( m_inputPorts[ 0 ].DataType, m_inputPorts[ 0 ].StructName, false );
         }
 
         public override void OnConnectedOutputNodeChanges( int outputPortId, int otherNodeId, int otherPortId, string name, WirePortDataType type )
         {
             base.OnConnectedOutputNodeChanges( outputPortId, otherNodeId, otherPortId, name, type );
             m_inputPorts[ 0 ].MatchPortToConnection();
-            m_outputPorts[ 0 ].ChangeType( m_inputPorts[ 0 ].DataType, false );
+            m_outputPorts[ 0 ].ChangeType( m_inputPorts[ 0 ].DataType, m_inputPorts[ 0 ].StructName, false );
         }
+
+		public override StructFieldMask FieldDemandForInput( int inputIndex, StructFieldMask received )
+		{
+			return ( inputIndex == 0 ) ? received : StructFieldMask.All;
+		}
 
         public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
         {

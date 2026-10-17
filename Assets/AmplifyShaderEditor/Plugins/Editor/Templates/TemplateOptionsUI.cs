@@ -12,7 +12,7 @@ namespace AmplifyShaderEditor
 	[Serializable]
 	public class TemplateOptionUIItem
 	{
-		public delegate void OnActionPerformed( bool actionFromUser, bool isRefreshing, bool invertAction, TemplateOptionUIItem uiItem, params TemplateActionItem[] validActions );
+		public delegate void OnActionPerformed( bool actionFromUser, bool isRefreshing, bool invertAction, TemplateOptionUIItem uiItem, int recursionLevel = 0, params TemplateActionItem[] validActions );
 		public event OnActionPerformed OnActionPerformedEvt;
 
 		[SerializeField]
@@ -41,6 +41,7 @@ namespace AmplifyShaderEditor
 			m_options = options;
 			if( m_options.Type == AseOptionsType.Field )
 			{
+				m_options.FieldValue.ResetProperty();
 				m_options.FieldValue.FloatValue = m_options.DefaultFieldValue;
 			}
 			else
@@ -144,15 +145,15 @@ namespace AmplifyShaderEditor
 					if( OnActionPerformedEvt != null )
 					{
 						if( m_invertActionOnDeselection )
-							OnActionPerformedEvt( true, false, lastOption != m_options.DisableIdx, this, m_options.ActionsPerOption[ lastOption ] );
+							OnActionPerformedEvt( true, false, lastOption != m_options.DisableIdx, this, 0, m_options.ActionsPerOption[ lastOption ] );
 
-						OnActionPerformedEvt( true, false, false, this, m_options.ActionsPerOption[ m_currentOption ] );
+						OnActionPerformedEvt( true, false, false, this, 0, m_options.ActionsPerOption[ m_currentOption ] );
 					}
 				}
 			}
 		}
 
-		public void CheckEnDisable( bool actionFromUser )
+		public void CheckEnDisable( bool actionFromUser, bool isRefreshing )
 		{
 			//string deb = string.Empty;// "-- Checked --" + m_options.Name+" "+ m_isVisible + " "+ m_wasVisible;
 			if( m_isVisible )
@@ -169,14 +170,14 @@ namespace AmplifyShaderEditor
 							{
 								if( i != m_currentOption && i != m_options.DisableIdx )
 								{
-									OnActionPerformedEvt( actionFromUser, false, true, this, m_options.ActionsPerOption[ i ] );
+									OnActionPerformedEvt( actionFromUser, isRefreshing, true, this, 0, m_options.ActionsPerOption[ i ] );
 								}
 							}
 						}
 
-						OnActionPerformedEvt( actionFromUser, false, false, this, m_options.ActionsPerOption[ m_currentOption ] );
+						OnActionPerformedEvt( actionFromUser, isRefreshing, false, this, 0, m_options.ActionsPerOption[ m_currentOption ] );
 						//if( !m_isVisible )
-							//OnActionPerformedEvt( isRefreshing, false, this, m_options.ActionsPerOption[ m_options.DisableIdx ] );
+							//OnActionPerformedEvt( isRefreshing, false, this, 0, m_options.ActionsPerOption[ m_options.DisableIdx ] );
 					}
 				}
 
@@ -190,7 +191,7 @@ namespace AmplifyShaderEditor
 
 				if( OnActionPerformedEvt != null )
 				{
-					OnActionPerformedEvt( actionFromUser, false, false, this, m_options.ActionsPerOption[ m_options.DisableIdx ] );
+					OnActionPerformedEvt( actionFromUser, isRefreshing, false, this, 0, m_options.ActionsPerOption[ m_options.DisableIdx ] );
 				}
 			}
 		}
@@ -218,7 +219,7 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		public void Update( bool isRefreshing = true )
+		public void Update( int recursionLevel = 0, bool isRefreshing = true )
 		{
 			if( OnActionPerformedEvt != null )
 			{
@@ -228,12 +229,12 @@ namespace AmplifyShaderEditor
 					{
 						if( i != m_currentOption && i != m_options.DisableIdx )
 						{
-							OnActionPerformedEvt( false, isRefreshing, true, this, m_options.ActionsPerOption[ i ] );
+							OnActionPerformedEvt( false, isRefreshing, true, this, recursionLevel, m_options.ActionsPerOption[ i ] );
 						}
 					}
 				}
 
-				OnActionPerformedEvt( false, isRefreshing, false, this, m_options.ActionsPerOption[ m_currentOption ] );
+				OnActionPerformedEvt( false, isRefreshing, false, this, recursionLevel, m_options.ActionsPerOption[ m_currentOption ] );
 			}
 		}
 

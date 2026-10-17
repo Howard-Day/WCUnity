@@ -77,17 +77,17 @@ namespace AmplifyShaderEditor
 			SetPreviewInputs();
 			if( !Preferences.User.DisablePreviews )
 			{
+				PreparePooledPreview();
+
 				RenderTexture temp = RenderTexture.active;
 
-				RenderTexture.active = m_outputPorts[ 0 ].OutputPreviewTexture;
-				Graphics.Blit( null , m_outputPorts[ 0 ].OutputPreviewTexture , PreviewMaterial , 0 );
-				Graphics.Blit( m_outputPorts[ 0 ].OutputPreviewTexture , m_outputPorts[ 1 ].OutputPreviewTexture );
+				m_outputPorts[ 0 ].BlitPreview( PreviewMaterial , 0 );
+				m_outputPorts[ 1 ].PreviewSlice.CopyFrom( m_outputPorts[ 0 ].PreviewSlice );
 
-				RenderTexture.active = m_outputPorts[ 2 ].OutputPreviewTexture;
-				Graphics.Blit( null , m_outputPorts[ 2 ].OutputPreviewTexture , PreviewMaterial , 1 );
+				m_outputPorts[ 2 ].BlitPreview( PreviewMaterial , 1 );
 				RenderTexture.active = temp;
 			}
-			PreviewIsDirty = m_continuousPreviewRefresh;
+			PreviewIsDirty = ContinuousPreviewRefresh;
 		}
 	}
 }

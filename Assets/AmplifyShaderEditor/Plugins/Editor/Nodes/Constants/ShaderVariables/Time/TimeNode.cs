@@ -25,7 +25,7 @@ namespace AmplifyShaderEditor
 			ChangeOutputName( 4, "t*3" );
 			m_value = "_Time";
 			m_previewShaderGUID = "73abc10c8d1399444827a7eeb9c24c2a";
-			m_continuousPreviewRefresh = true;
+			ContinuousPreviewRefresh = true;
 		}
 
 		public override void RefreshExternalReferences()
@@ -42,7 +42,7 @@ namespace AmplifyShaderEditor
 		{
 			if( outputId > 0 && dataCollector.IsTemplate )
 			{
-				if(	dataCollector.TemplateDataCollectorInstance.IsHDRP || dataCollector.TemplateDataCollectorInstance.IsLWRP )
+				if(	dataCollector.TemplateDataCollectorInstance.IsHDRP || dataCollector.TemplateDataCollectorInstance.IsURP )
 					return SRPTime[ outputId - 1 ];
 			}
 

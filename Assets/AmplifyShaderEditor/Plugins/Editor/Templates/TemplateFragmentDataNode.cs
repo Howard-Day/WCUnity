@@ -8,7 +8,7 @@ using System.Collections.Generic;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Template Fragment Data" , "Surface Data" , "Select and use available interpolated fragment data from the template" )]
+	[NodeAttributes( "Template Fragment Data" , "Template" , "Select and use available interpolated fragment data from the template", NodeAvailabilityFlags = (int)NodeAvailability.TemplateShader )]
 	public class TemplateFragmentDataNode : TemplateNodeParent
 	{
 		private List<TemplateVertexData> m_interpolatorData = null;

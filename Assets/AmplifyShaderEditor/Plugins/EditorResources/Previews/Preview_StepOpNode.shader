@@ -2,8 +2,8 @@ Shader "Hidden/StepOpNode"
 {
 	Properties
 	{
-		_A ("_A", 2D) = "white" {}
-		_B ("_B", 2D) = "white" {}
+		_A ("_A", 2DArray) = "white" {}
+		_B ("_B", 2DArray) = "white" {}
 	}
 	SubShader
 	{
@@ -11,16 +11,18 @@ Shader "Hidden/StepOpNode"
 		{
 			CGPROGRAM
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#pragma vertex vert_img
 			#pragma fragment frag
+			#pragma target 3.5
 
-			sampler2D _A;
-			sampler2D _B;
+			ASE_PORT( _A );
+			ASE_PORT( _B );
 
 			float4 frag( v2f_img i ) : SV_Target
 			{
-				float4 a = tex2D( _A, i.uv );
-				float4 b = tex2D( _B, i.uv );
+				float4 a = ASE_SAMPLE_PORT( _A, i.uv );
+				float4 b = ASE_SAMPLE_PORT( _B, i.uv );
 				return step(a, b);
 			}
 			ENDCG

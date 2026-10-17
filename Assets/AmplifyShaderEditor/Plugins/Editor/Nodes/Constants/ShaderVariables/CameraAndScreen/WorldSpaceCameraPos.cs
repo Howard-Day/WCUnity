@@ -5,7 +5,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "World Space Camera Pos", "Camera And Screen", "World Space Camera position" )]
+	[NodeAttributes( "Camera Position", "Camera And Screen", "Camera position in World Space", tags: "World Space Camera Pos" )]
 	public sealed class WorldSpaceCameraPos : ConstantShaderVariable
 	{
 		protected override void CommonInit( int uniqueId )

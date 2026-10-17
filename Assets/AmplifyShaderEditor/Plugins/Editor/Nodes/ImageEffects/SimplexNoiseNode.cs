@@ -16,9 +16,14 @@ namespace AmplifyShaderEditor
 	}
 
 	[Serializable]
-	[NodeAttributes( "[Deprecated] Simplex Noise", "Image Effects", "Noise generated via the Simplex algorithm",null,KeyCode.None,false,true)]
+	[NodeAttributes( "Simplex Noise", "Image Effects", "Noise generated via the Simplex algorithm",null,KeyCode.None,false,true)]
 	public sealed class SimplexNoiseNode : ParentNode
 	{
+		public override string DeprecationMessage
+		{
+			get { return "This node is deprecated. It has no direct replacement, but the Noise Generator node may work as an alternative."; }
+		}
+
 		private string m_randomFuncBody;
 		private string m_simplex3dFuncBody;
 		private string m_simplex3dFractalFuncBody;

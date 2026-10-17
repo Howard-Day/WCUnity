@@ -11,15 +11,15 @@ namespace AmplifyShaderEditor
 		{
 			base.CommonInit( uniqueId );
 			m_matrixName = "unity_ObjectToWorld";
-			m_matrixHDName = "GetObjectToWorldMatrix()";
-			m_matrixLWName = "GetObjectToWorldMatrix()";
+			m_matrixNameHDRP = "GetObjectToWorldMatrix()";
+			m_matrixNameURP = "GetObjectToWorldMatrix()";
 			m_previewShaderGUID = "a4044ee165813654486d0cecd0de478c";
 		}
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
 		{
 			string result = base.GenerateShaderForOutput( 0, ref dataCollector, ignoreLocalvar );
-			if( dataCollector.IsTemplate && dataCollector.TemplateDataCollectorInstance.CurrentSRPType == TemplateSRPType.HDRP && !string.IsNullOrEmpty( m_matrixHDName ) )
+			if( dataCollector.IsTemplate && dataCollector.TemplateDataCollectorInstance.CurrentSRPType == TemplateSRPType.HDRP && !string.IsNullOrEmpty( m_matrixNameHDRP ) )
 			{
 				dataCollector.AddLocalVariable( UniqueId, string.Format( "{0}.xyz", result ), string.Format( "GetAbsolutePositionWS(({0}).xyz);", result ) );
 			}

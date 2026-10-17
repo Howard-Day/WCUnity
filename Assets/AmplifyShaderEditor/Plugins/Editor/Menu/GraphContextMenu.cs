@@ -34,12 +34,10 @@ namespace AmplifyShaderEditor
 		private Dictionary<KeyCode, ShortcutKeyData> m_shortcutTypes;
 
 		private KeyCode m_lastKeyPressed;
-		private ParentGraph m_currentGraph;
 		private bool m_correctlyLoaded = false;
 
 		public GraphContextMenu( ParentGraph currentGraph )
 		{
-			m_currentGraph = currentGraph;
 			m_correctlyLoaded = RefreshNodes( currentGraph );
 		}
 
@@ -59,6 +57,9 @@ namespace AmplifyShaderEditor
 
 			m_items = new List<ContextMenuItem>();
 			m_itemFunctions = new List<ContextMenuItem>();
+
+			// @diogo: a function graph's canvas mode is not always updated, so the window flag decides
+			NodeAvailability canvasAvailability = currentGraph.ParentWindow.IsShaderFunctionWindow ? NodeAvailability.ShaderFunction : currentGraph.CurrentCanvasMode;
 
 			if( m_itemsDict != null )
 				m_itemsDict.Clear();
@@ -158,7 +159,7 @@ namespace AmplifyShaderEditor
 									m_items.Add( newItem );
 								else if( UIUtils.GetNodeAvailabilityInBitArray( attribute.NodeAvailabilityFlags , currentGraph.ParentWindow.CurrentNodeAvailability ) )
 									m_items.Add( newItem );
-								else if( UIUtils.GetNodeAvailabilityInBitArray( attribute.NodeAvailabilityFlags , currentGraph.CurrentCanvasMode ) )
+								else if ( UIUtils.GetNodeAvailabilityInBitArray( attribute.NodeAvailabilityFlags, canvasAvailability ) )
 									m_items.Add( newItem );
 
 								m_itemsDict.Add( type , attribute );
@@ -375,13 +376,7 @@ namespace AmplifyShaderEditor
 
 		public List<ContextMenuItem> MenuItems
 		{
-			get
-			{
-				if( m_currentGraph.ParentWindow.IsShaderFunctionWindow )
-					return m_itemFunctions;
-				else
-					return m_items;
-			}
+			get { return m_items; }
 		}
 
 		public List<ContextMenuItem> ItemFunctions { get { return m_itemFunctions; } }

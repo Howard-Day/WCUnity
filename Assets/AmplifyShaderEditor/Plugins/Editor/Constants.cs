@@ -3,80 +3,14 @@
 
 using UnityEngine;
 using System.Collections.Generic;
+using Unity.Scripting.LifecycleManagement;
 
 namespace AmplifyShaderEditor
 {
 
+	[NoAutoStaticsCleanup]
 	public struct Constants
 	{
-		/*public readonly static string[] CustomASEStandardArgsMacros =
-		{
-			"#if defined(SHADER_API_D3D11) || defined(SHADER_API_XBOXONE) || defined(UNITY_COMPILER_HLSLCC)//ASE Args Macros",
-			"#define ASE_TEXTURE2D_ARGS(textureName) Texture2D textureName, SamplerState sampler##textureName",
-			"#define ASE_TEXTURE3D_ARGS(textureName) Texture3D textureName, SamplerState sampler##textureName",
-			"#define ASE_TEXTURECUBE_ARGS(textureName) TextureCube textureName, SamplerState sampler##textureName",
-			"#define ASE_TEXTURE2D_PARAMS(textureName) textureName, sampler##textureName",
-			"#define ASE_TEXTURE3D_PARAMS(textureName) textureName, sampler##textureName",
-			"#define ASE_TEXTURECUBE_PARAMS(textureName) textureName, sampler##textureName",
-			"#define ASE_TEXTURE2D_ARRAY_PARAMS(textureName) textureName, sampler##textureName",
-			"#else//ASE Args Macros",
-			"#define ASE_TEXTURE2D_ARGS(textureName) sampler2D textureName",
-			"#define ASE_TEXTURE3D_ARGS(textureName) sampler3D textureName",
-			"#define ASE_TEXTURECUBE_ARGS(textureName) samplerCUBE textureName",
-			"#define ASE_TEXTURE2D_PARAMS(textureName) textureName",
-			"#define ASE_TEXTURE3D_PARAMS(textureName) textureName",
-			"#define ASE_TEXTURECUBE_PARAMS(textureName) textureName",
-			"#define ASE_TEXTURE2D_ARRAY_PARAMS(textureName) textureName",
-			"#endif//ASE Args Macros\n"
-		};
-		
-		public readonly static string[] CustomASEDeclararionMacros =
-		{
-			"#define ASE_TEXTURE2D(textureName) {0}2D(textureName)",
-			"#define ASE_TEXTURE2D_ARRAY(textureName) {0}2D_ARRAY(textureName)",
-			"#define ASE_TEXTURE3D(textureName) {0}3D(textureName)",
-			"#define ASE_TEXTURECUBE(textureName) {0}CUBE(textureName)\n"
-		};
-
-		public readonly static string[] CustomASEStandarSamplingMacrosHelper =
-		{
-			"#if defined(SHADER_API_D3D11) || defined(SHADER_API_XBOXONE) || defined(UNITY_COMPILER_HLSLCC)//ASE Sampling Macros",
-			"#else//ASE Sampling Macros",
-			"#endif//ASE Sampling Macros\n"
-		};*/
-
-		/*public readonly static string[] CustomASESamplingMacros =
-		{
-			"#define ASE_SAMPLE_TEXTURE2D(textureName,{0}coords) {1}2D{2}(textureName,{0}coords)",
-			"#define ASE_SAMPLE_TEXTURE2D_LOD(textureName, {0}coord2, lod) {1}2D{2}_LOD(textureName, {0}coord2, lod)",
-			"#define ASE_SAMPLE_TEXTURE2D_BIAS(textureName,{0}coord2, bias) {1}2D{2}_BIAS(textureName,{0}coord2, bias)",
-			"#define ASE_SAMPLE_TEXTURE2D_GRAD(textureName,{0}coord2, dpdx, dpdy) {1}2D{2}_GRAD(textureName,{0}coord2, dpdx, dpdy)",
-
-			"#define ASE_SAMPLE_TEXTURE3D(textureName,{0}coord3) {1}3D{2}(textureName,{0}coord3)",
-			"#define ASE_SAMPLE_TEXTURE3D_LOD(textureName,{0}coord3, lod) {1}3D{2}_LOD(textureName,{0}coord3, lod)",
-			"#define ASE_SAMPLE_TEXTURE3D_BIAS(textureName,{0}coord3, bias) {1}3D{2}_BIAS(textureName,{0}coord3, bias)",
-			"#define ASE_SAMPLE_TEXTURE3D_GRAD(textureName,{0}coord3, dpdx, dpdy) {1}3D{2}_GRAD(textureName,{0}coord3, dpdx, dpdy)",
-
-			"#define ASE_SAMPLE_TEXTURECUBE(textureName,{0}coord3) {1}CUBE{2}(textureName,{0}coord3)",
-			"#define ASE_SAMPLE_TEXTURECUBE_LOD(textureName,{0}coord3, lod) {1}CUBE{2}_LOD(textureName,{0}coord3, lod)",
-			"#define ASE_SAMPLE_TEXTURECUBE_BIAS(textureName,{0}coord3, bias) {1}CUBE{2}_BIAS(textureName,{0}coord3, bias)\n"
-		};*/
-
-		// SRP
-		/*public readonly static string[] CustomASESRPArgsMacros =
-		{
-			"#define ASE_TEXTURE2D_ARGS(textureName) TEXTURE2D(textureName), SAMPLER(textureName)",
-			"#define ASE_TEXTURE3D_ARGS(textureName) TEXTURE3D(textureName), SAMPLER(textureName)",
-			"#define ASE_TEXTURECUBE_ARGS(textureName) TEXTURECUBE(textureName), SAMPLER(textureName)",
-			"#define ASE_TEXTURE2D_PARAMS(textureName) textureName, sampler##textureName",
-			"#define ASE_TEXTURE3D_PARAMS(textureName) textureName, sampler##textureName",
-			"#define ASE_TEXTURECUBE_PARAMS(textureName) textureName, sampler##textureName",
-			"#define ASE_TEXTURE2D_ARRAY_PARAMS(textureName) textureName, sampler##textureName\n"
-		};*/
-
-		public readonly static RenderTextureFormat PreviewFormat = RenderTextureFormat.ARGBFloat;
-		public readonly static int PreviewSize = 128;
-
 		public readonly static List<string> UnityNativeInspectors = new List<string>
 		{
 			"Rendering.HighDefinition.LightingShaderGraphGUI",
@@ -119,7 +53,7 @@ namespace AmplifyShaderEditor
 
 
 		public readonly static string CustomASEStandardSamplerParams = "#define ASE_TEXTURE_PARAMS(textureName) textureName\n";
-		public readonly static string[] CustomASESRPTextureArrayMacros = 
+		public readonly static string[] CustomASESRPTextureArrayMacros =
 		{
 			"#define ASE_TEXTURE2D_ARRAY_ARGS(textureName) TEXTURE2D_ARRAY_ARGS(textureName,sampler##textureName)\n" ,
 			"#define ASE_TEXTURE2D_ARRAY_PARAM(textureName) TEXTURE2D_ARRAY_PARAM(textureName,sampler##textureName)\n" ,
@@ -154,7 +88,7 @@ namespace AmplifyShaderEditor
 			{ TextureType.Cube,"SAMPLER(sampler{0});"},
 			{ TextureType.Texture2DArray,"SAMPLER(sampler{0});"},
 		};
-		
+
 		public readonly static Dictionary<TextureType, string> TexDeclarationNoSamplerSRPMacros = new Dictionary<TextureType, string>
 		{
 			{ TextureType.Texture2D,"TEXTURE2D({0})"},
@@ -334,7 +268,7 @@ namespace AmplifyShaderEditor
 		"\t\t\tfloat4 texcoord3 : TEXCOORD3;\n" +
 		"\t\t\tfloat4 color : COLOR;\n" +
 		"\t\t\tUNITY_VERTEX_INPUT_INSTANCE_ID\n";
-		
+
 		public readonly static string IncludeFormat = "#include \"{0}\"";
 		public readonly static string PragmaFormat = "#pragma {0}";
 		public readonly static string DefineFormat = "#define {0}";
@@ -366,8 +300,8 @@ namespace AmplifyShaderEditor
 		public readonly static string SafeNormalizeInfoStr = "With Safe Normalize division by 0 is prevented over the normalize operation at the expense of additional instructions on shader.";
 		public readonly static string ReservedPropertyNameStr = "Property name '{0}' is reserved and cannot be used";
 		public readonly static string NumericPropertyNameStr = "Property name '{0}' is numeric thus cannot be used";
-		public readonly static string DeprecatedMessageStr = "Node '{0}' is deprecated. Use node '{1}' instead.";
-		public readonly static string DeprecatedNoAlternativeMessageStr = "Node '{0}' is deprecated and should be removed.";
+		public readonly static string DeprecatedMessageStr = "This node is deprecated. Use the '{0}' node instead.";
+		public readonly static string DeprecatedNoAlternativeMessageStr = "This node is deprecated and should be removed.";
 		public readonly static string UndoChangePropertyTypeNodesId = "Changing Property Types";
 		public readonly static string UndoChangeTypeNodesId = "Changing Nodes Types";
 		public readonly static string UndoMoveNodesId = "Moving Nodes";
@@ -385,7 +319,12 @@ namespace AmplifyShaderEditor
 		public readonly static string UndoCreateConnectionId = "Create Connection";
 
 		public readonly static float MenuDragSpeed = -0.5f;
-		public readonly static string DefaultCustomInspector = "ASEMaterialInspector";
+		// @diogo: an external integration may set PreferredCustomInspector (see PropertyNodeExtensions)
+		//         to override the inspector ASE assigns by default; null or empty keeps ASE's own.
+		public static string PreferredCustomInspector = null;
+		public readonly static string AseDefaultCustomInspector = "AmplifyShaderEditor.MaterialInspector";
+		public static string DefaultCustomInspector { get { return string.IsNullOrEmpty( PreferredCustomInspector ) ? AseDefaultCustomInspector : PreferredCustomInspector; } }
+		public readonly static string OldCustomInspector = "ASEMaterialInspector";
 		public readonly static string ReferenceTypeStr = "Mode";
 		public readonly static string AvailableReferenceStr = "Reference";
 		public readonly static string InstancePostfixStr = " (Reference) ";
@@ -400,11 +339,12 @@ namespace AmplifyShaderEditor
 		public readonly static string UnityPBSLightingLib = "UnityPBSLighting.cginc";
 		public readonly static string UnityDeferredLightLib = "UnityDeferredLibrary.cginc";
 		public readonly static string ATSharedLibGUID = "ba242738c4be3324aa88d126f7cc19f9";
+
+		public readonly static string CameraDepthTextureName = "_CameraDepthTexture";
+
 		public readonly static string CameraDepthTextureValue = "UNITY_DECLARE_DEPTH_TEXTURE( _CameraDepthTexture );";
 
-		//public readonly static string CameraDepthTextureSRPVar = "TEXTURE2D(_CameraDepthTexture);";
-		//public readonly static string CameraDepthTextureSRPSampler = "SAMPLER(sampler_CameraDepthTexture);";
-		public readonly static string CameraDepthTextureLWEnabler = "REQUIRE_DEPTH_TEXTURE 1";
+		public readonly static string CameraDepthTextureURPEnabler = "REQUIRE_DEPTH_TEXTURE 1";
 
 		public readonly static string CameraDepthTextureTexelSize = "uniform float4 _CameraDepthTexture_TexelSize;";
 		public readonly static string InstanceIdMacro = "UNITY_VERTEX_INPUT_INSTANCE_ID";
@@ -412,8 +352,6 @@ namespace AmplifyShaderEditor
 
 
 		public readonly static string HelpURL = "http://wiki.amplify.pt/index.php?title=Unity_Products:Amplify_Shader_Editor";
-		//public readonly static string NodeCommonUrl = "http://wiki.amplify.pt/index.php?title=Unity_Products:Amplify_Shader_Editor/Nodes#";
-		//public readonly static string CommunityNodeCommonUrl = "http://wiki.amplify.pt/index.php?title=Unity_Products:Amplify_Shader_Editor/Community_Nodes#";
 		public readonly static string NodeCommonUrl = "http://wiki.amplify.pt/index.php?title=Unity_Products:Amplify_Shader_Editor/";
 		public readonly static string CommunityNodeCommonUrl = "http://wiki.amplify.pt/index.php?title=Unity_Products:Amplify_Shader_Editor/";
 		public readonly static Color InfiniteLoopColor = Color.red;
@@ -433,6 +371,7 @@ namespace AmplifyShaderEditor
 		public readonly static Color NodeDefaultColor = new Color( 1f, 1f, 1f, 1f );
 		public readonly static Color NodeConnectedColor = new Color( 1.0f, 1f, 0.0f, 1f );
 		public readonly static Color NodeErrorColor = new Color( 1f, 0.5f, 0.5f, 1f );
+		public readonly static Color NodeMissingReferenceColor = new Color( 0.95f, 0.25f, 0.25f, 1f );
 		public readonly static string NoSpecifiedCategoryStr = "<None>";
 
 		public readonly static int MINIMIZE_WINDOW_LOCK_SIZE = 630;
@@ -450,6 +389,10 @@ namespace AmplifyShaderEditor
 		public readonly static float PropertyPickerHeight = 16f;
 		public readonly static float PreviewExpanderWidth = 16f;
 		public readonly static float PreviewExpanderHeight = 16f;
+		// @diogo: preview blits between GPU syncs during a preview pass; waits for the GPU on large bursts so
+		// Unity's graphics ring buffer can't overflow ( "Ran out of Graphics Ring Buffer space" ). The ring is
+		// ~16MB and a blit takes ~1.7KB ( overflow measured at ~9600 blits ), so 4096 keeps well over half free.
+		public const int PreviewGpuSyncInterval = 4096;
 		public readonly static float TextFieldFontSize = 11f;
 		public readonly static float DefaultFontSize = 14f;
 		public readonly static float DefaultTitleFontSize = 12f;
@@ -462,6 +405,11 @@ namespace AmplifyShaderEditor
 
 		public readonly static float PORT_INITIAL_Y = 41;
 		public readonly static float INPUT_PORT_DELTA_Y = 7;
+		// @diogo: node drag snap step, same on both axes; the port row pitch below stays a whole multiple of it so every port lands on a snap step
+		public readonly static float GRID_SNAP_X = 8;
+		public readonly static float GRID_SNAP_Y = 8;
+		// @diogo: fixed per-port row pitch; must stay a whole multiple of GRID_SNAP_Y so any output aligns with any input across snapped nodes
+		public readonly static float PORT_ROW_HEIGHT_Y = 24;
 		public readonly static float PORT_TO_LABEL_SPACE_X = 4;
 
 		public readonly static float NODE_HEADER_HEIGHT = 32;
@@ -485,11 +433,13 @@ namespace AmplifyShaderEditor
 		public readonly static string SubTitleNameFormatStr = "Name( {0} )";
 		public readonly static string SubTitleSpaceFormatStr = "Space( {0} )";
 		public readonly static string SubTitleTypeFormatStr = "Type( {0} )";
+		public readonly static string SubTitleModeFormatStr = "Mode( {0} )";
 		public readonly static string SubTitleValueFormatStr = "Value( {0} )";
 		public readonly static string SubTitleConstFormatStr = "Const( {0} )";
 		public readonly static string SubTitleVarNameFormatStr = "Var( {0} )";
 		public readonly static string SubTitleRefNameFormatStr = "Ref( {0} )";
 		public readonly static string SubTitleCurrentFormatStr = "Current( {0} )";
+		public readonly static string SubTitleUVChannelFormatStr = "Channel( {0}, vec{1} )";
 
 		public readonly static string CodeWrapper = "( {0} )";
 		public readonly static string InlineCodeWrapper = "{{\n{0}\n}}";
@@ -559,10 +509,9 @@ namespace AmplifyShaderEditor
 		public readonly static string IncidentVecFragStr = InputVarStr + "." + IncidentVecNameStr;
 		public readonly static string IncidentVecVertStr = VertexShaderOutputStr + "." + IncidentVecNameStr;
 		public readonly static string WorldNormalLocalDecStr = "WorldNormalVector( " + Constants.InputVarStr + " , {0}( 0,0,1 ))";
-		
-		public readonly static string IsFrontFacingVariable = "ASEIsFrontFacing";
-		public readonly static string IsFrontFacingInput = "half ASEIsFrontFacing : SV_IsFrontFacing";
-		public readonly static string IsFrontFacingInputVFACE = "half ASEIsFrontFacing : VFACE";
+
+		public readonly static string IsFrontFaceVariable = "ASEIsFrontFace";
+		public readonly static string IsFrontFaceInput = "uint ASEIsFrontFace : SV_IsFrontFace";
 
 		public readonly static string ColorVariable = "vertexColor";
 		public readonly static string ColorInput = "float4 vertexColor : COLOR";
@@ -579,7 +528,7 @@ namespace AmplifyShaderEditor
 
 		public readonly static string[] WikiInvalidChars = { "#", "<", ">", "[", "]", "|", "{", "}", "%", "+", "?", "\\", "/", ",", ";", "." };
 
-		public readonly static string[,] UrlReplacementStringValues = 
+		public readonly static string[,] UrlReplacementStringValues =
 		{
 			{ " = ", "Equals" },
 			{ " == ", "Equals" },

@@ -35,7 +35,9 @@ namespace AmplifyShaderEditor
 
 			for( int i = 0; i < m_inputPorts.Count; i++ )
 			{
-				m_inputPorts[ i ].AddPortForbiddenTypes(	WirePortDataType.FLOAT3x3,
+				m_inputPorts[ i ].AddPortForbiddenTypes(
+															WirePortDataType.FLOAT2x2,
+															WirePortDataType.FLOAT3x3,
 															WirePortDataType.FLOAT4x4,
 															WirePortDataType.SAMPLER1D,
 															WirePortDataType.SAMPLER2D,
@@ -112,6 +114,7 @@ namespace AmplifyShaderEditor
 					}
 					break;
 					case WirePortDataType.OBJECT:
+					case WirePortDataType.FLOAT2x2:
 					case WirePortDataType.FLOAT3x3:
 					case WirePortDataType.FLOAT4x4:
 					{

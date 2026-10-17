@@ -45,23 +45,23 @@ namespace AmplifyShaderEditor
 		public static readonly string[] BillboardRotIndependent = { "{0}.x *= length( unity_ObjectToWorld._m00_m10_m20 )",
 																	"{0}.y *= length( unity_ObjectToWorld._m01_m11_m21 )",
 																	"{0}.z *= length( unity_ObjectToWorld._m02_m12_m22 )",
-																	"{0} = mul( {0}, rotationCamMatrix )",
-																	"{0} = mul( unity_WorldToObject, float4( {0}.xyz, 0 ) )"};
+																	"{0}.xyz = mul( float4( {0}.xyz, 0 ), rotationCamMatrix ).xyz",
+																	"{0}.xyz = mul( unity_WorldToObject, float4( {0}.xyz, 0 ) ).xyz"};
 
 
 
-		public static readonly string[] BillboardHDRotDependent = {   "//This unfortunately must be made to take non-uniform scaling into account",
+		public static readonly string[] BillboardSRPRotDependent = {   "//This unfortunately must be made to take non-uniform scaling into account",
 																	"//Transform to world coords, apply rotation and transform back to local",
 																	"{0} = mul( {1} , GetObjectToWorldMatrix() ){2}",
 																	"{0} = mul( {1} , rotationCamMatrix ){2}",
 																	"{0} = mul( {1} , GetWorldToObjectMatrix() ){2}"};
 
 
-		public static readonly string[] BillboardHDRotIndependent = { "{0}.x *= length( GetObjectToWorldMatrix()._m00_m10_m20 )",
+		public static readonly string[] BillboardSRPRotIndependent = { "{0}.x *= length( GetObjectToWorldMatrix()._m00_m10_m20 )",
 																	"{0}.y *= length( GetObjectToWorldMatrix()._m01_m11_m21 )",
 																	"{0}.z *= length( GetObjectToWorldMatrix()._m02_m12_m22 )",
-																	"{0} = mul( {0}, rotationCamMatrix )",
-																	"{0} = mul( GetWorldToObjectMatrix(), float4( {0}.xyz, 0 ) )"};
+																	"{0}.xyz = mul( float4( {0}.xyz, 0 ), rotationCamMatrix ).xyz",
+																	"{0}.xyz = mul( GetWorldToObjectMatrix(), float4( {0}.xyz, 0 ) ).xyz"};
 
 
 		[SerializeField]
@@ -142,14 +142,14 @@ namespace AmplifyShaderEditor
 
 			if( rotationIndependent )
 			{
-				
+
 
 				for( int i = 0; i < BillboardRotIndependent.Length; i++ )
 				{
 					string value = string.Empty;
-					if( dataCollector.IsTemplate && dataCollector.TemplateDataCollectorInstance.CurrentSRPType != TemplateSRPType.BiRP )
+					if( dataCollector.IsTemplate && dataCollector.TemplateDataCollectorInstance.IsSRP )
 					{
-						value = string.Format( BillboardHDRotIndependent[ i ], vertexPosValue );
+						value = string.Format( BillboardSRPRotIndependent[ i ], vertexPosValue );
 					}
 					else
 					{
@@ -164,9 +164,9 @@ namespace AmplifyShaderEditor
 				for( int i = 0; i < BillboardRotDependent.Length; i++ )
 				{
 					string value = string.Empty;
-					if( dataCollector.IsTemplate && dataCollector.TemplateDataCollectorInstance.CurrentSRPType == TemplateSRPType.HDRP )
+					if( dataCollector.IsTemplate && dataCollector.TemplateDataCollectorInstance.IsSRP )
 					{
-						value = ( i > 1 ) ? string.Format( BillboardHDRotDependent[ i ], vertexPosValue, vertexPosConverted, ( vertexIsFloat3 ? ".xyz" : string.Empty ) ) : BillboardHDRotDependent[ i ];
+						value = ( i > 1 ) ? string.Format( BillboardSRPRotDependent[ i ], vertexPosValue, vertexPosConverted, ( vertexIsFloat3 ? ".xyz" : string.Empty ) ) : BillboardSRPRotDependent[ i ];
 					}
 					else
 					{

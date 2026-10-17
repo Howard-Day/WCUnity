@@ -18,27 +18,30 @@ Shader "Hidden/TexturePropertyNode"
 			#pragma fragment frag
 			#pragma target 3.5
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
+
 			int _Default;
+
 			float4 frag( v2f_img i ) : SV_Target
 			{
-				if(_Default == 1)
-				{
-					return 1;
-				}
-				else if(_Default == 2)
-				{
-					return 0;
-				} 
-				else if(_Default == 3)
-				{
-					return 0.5f;
-				}
-				else if(_Default == 4)
-				{
-					return float4(0.5,0.5,1,1);
-				}
+				const float4 white = float4( 1, 1, 1, 1 );
+				const float4 black = float4( 0, 0, 0, 0 );
+				const float4 grey = float4( 0.214, 0.214, 0.214, 0.5 ); // sRGB gray
+				const float4 bump = float4( 0.5, 0.5, 1, 1 );
+				const float4 linearGrey = float4( 0.5, 0.5, 0.5, 0.5 );
+				const float4 red = float4( 1, 0, 0, 0 );
 
-				return 1;
+				float4 result = 1;
+				switch ( _Default )
+				{
+					case 1: result = white; break;
+					case 2: result = black; break;
+					case 3: result = grey; break;
+					case 4: result = bump; break;
+					case 5: result = linearGrey; break;
+					case 6: result = red; break;
+				}
+				return result;
 			}
 			ENDCG
 		}
@@ -50,6 +53,7 @@ Shader "Hidden/TexturePropertyNode"
 			#pragma fragment frag
 			#pragma target 3.5
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 
 			UNITY_DECLARE_TEX2DARRAY (_Array);
 			samplerCUBE _Cube;

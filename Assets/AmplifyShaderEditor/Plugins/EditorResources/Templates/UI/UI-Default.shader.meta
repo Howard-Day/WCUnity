@@ -1,9 +1,16 @@
 fileFormatVersion: 2
 guid: 5056123faa0c79b47ab6ad7e8bf059a4
-timeCreated: 1496313583
-licenseType: Store
 ShaderImporter:
+  externalObjects: {}
   defaultTextures: []
+  nonModifiableTextures: []
   userData: 
   assetBundleName: 
   assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 68570
+  packageName: Amplify Shader Editor
+  packageVersion: 1.9.9.14
+  assetPath: Assets/AmplifyShaderEditor/Plugins/EditorResources/Templates/UI/UI-Default.shader
+  uploadId: 1019702

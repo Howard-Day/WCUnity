@@ -22,13 +22,13 @@ namespace AmplifyShaderEditor
 		[SerializeField]
 		private InlineProperty m_inlineCullMode = new InlineProperty();
 		
-		public void CopyFrom( TemplateCullModeModule other , bool allData )
+		public void CopyFrom( TemplateCullModeModule other , bool allData, bool copyPropertyName = false )
 		{
 			if( allData )
 				m_independentModule = other.IndependentModule;
 
 			m_cullMode = other.CurrentCullMode;
-			m_inlineCullMode.CopyFrom( other.CullInlineProperty );
+			m_inlineCullMode.CopyFrom( other.CullInlineProperty, copyPropertyName );
 		}
 
 		public void ConfigureFromTemplateData( TemplateCullModeData data )

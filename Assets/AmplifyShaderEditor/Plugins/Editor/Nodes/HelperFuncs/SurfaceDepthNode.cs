@@ -1,7 +1,6 @@
-using UnityEngine;
-using UnityEditor;
-
 using System;
+using UnityEditor;
+using UnityEngine;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
@@ -10,11 +9,14 @@ namespace AmplifyShaderEditor
 	{
 		[SerializeField]
 		private int m_viewSpaceInt = 0;
-
-		private readonly string[] m_viewSpaceStr = { "Eye Space", "0-1 Space" };
-		private readonly string[] m_vertexNameStr = { "eyeDepth", "clampDepth" };
+		private DepthMode m_depthMode { get { return ( DepthMode )m_viewSpaceInt; } }
 
 		private UpperLeftWidgetHelper m_upperLeftWidget = new UpperLeftWidgetHelper();
+
+		private void UpdateAdditonalTitleText()
+		{
+			SetAdditonalTitleText( string.Format( Constants.SubTitleModeFormatStr, GeneratorUtils.DepthModeStr[ m_viewSpaceInt ] ) );
+		}
 
 		protected override void CommonInit( int uniqueId )
 		{
@@ -23,7 +25,7 @@ namespace AmplifyShaderEditor
 			AddOutputPort( WirePortDataType.FLOAT, "Depth" );
 			m_autoWrapProperties = true;
 			m_hasLeftDropdown = true;
-			SetAdditonalTitleText( string.Format( Constants.SubTitleSpaceFormatStr, m_viewSpaceStr[ m_viewSpaceInt ] ) );
+			UpdateAdditonalTitleText();
 		}
 
 		public override void Destroy()
@@ -47,10 +49,10 @@ namespace AmplifyShaderEditor
 		{
 			base.Draw( drawInfo );
 			EditorGUI.BeginChangeCheck();
-			m_viewSpaceInt = m_upperLeftWidget.DrawWidget( this, m_viewSpaceInt, m_viewSpaceStr );
+			m_viewSpaceInt = m_upperLeftWidget.DrawWidget( this, m_viewSpaceInt, GeneratorUtils.DepthModeStr );
 			if( EditorGUI.EndChangeCheck() )
 			{
-				SetAdditonalTitleText( string.Format( Constants.SubTitleSpaceFormatStr, m_viewSpaceStr[ m_viewSpaceInt ] ) );
+				UpdateAdditonalTitleText();
 			}
 		}
 
@@ -58,112 +60,133 @@ namespace AmplifyShaderEditor
 		{
 			base.DrawProperties();
 			EditorGUI.BeginChangeCheck();
-			m_viewSpaceInt = EditorGUILayoutPopup( "View Space", m_viewSpaceInt, m_viewSpaceStr );
+			m_viewSpaceInt = EditorGUILayoutPopup( "Depth Mode", m_viewSpaceInt, GeneratorUtils.DepthModeStr );
 			if( EditorGUI.EndChangeCheck() )
 			{
-				SetAdditonalTitleText( string.Format( Constants.SubTitleSpaceFormatStr, m_viewSpaceStr[ m_viewSpaceInt ] ) );
+				UpdateAdditonalTitleText();
 			}
 		}
 
+		private string ApplyLinearDepthModifier( ref MasterNodeDataCollector dataCollector, string instruction )
+		{
+			switch ( m_depthMode )
+			{
+				case DepthMode.DepthLinearEye: instruction = GeneratorUtils.ApplyLinearDepthModifier( ref dataCollector, instruction, m_depthMode ); break;
+				case DepthMode.DepthLinear01: instruction = GeneratorUtils.ApplyLinearDepthModifier( ref dataCollector, instruction, m_depthMode ); break;
+				case DepthMode.DepthEye: instruction = string.Format( "( {0} ) * ( _ProjectionParams.z - _ProjectionParams.y )", instruction ); break;
+				case DepthMode.Depth01:
+				default: break;
+			}
+			return instruction;
+		}
+
+
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
 		{
-			if( dataCollector.IsTemplate )
+			if ( dataCollector.PortCategory == MasterNodePortCategory.Tessellation )
 			{
-				if( m_inputPorts[ 0 ].IsConnected )
-				{
-					string space = string.Empty;
-					if( m_viewSpaceInt == 1 )
-						space = " * _ProjectionParams.w";
-
-					string varName = "customSurfaceDepth" + OutputId;
-					GenerateInputInVertex( ref dataCollector, 0, varName, false );
-					string instruction = "-UnityObjectToViewPos( " + varName + " ).z" + space;
-					if( dataCollector.IsSRP )
-						instruction = "-TransformWorldToView(TransformObjectToWorld( " + varName + " )).z" + space;
-					string eyeVarName = "customEye" + OutputId;
-					dataCollector.TemplateDataCollectorInstance.RegisterCustomInterpolatedData( eyeVarName, WirePortDataType.FLOAT, CurrentPrecisionType, instruction );
-					return eyeVarName;
-				}
-				else
-				{
-					return dataCollector.TemplateDataCollectorInstance.GetEyeDepth( CurrentPrecisionType, true, MasterNodePortCategory.Fragment, m_viewSpaceInt );
-				}
+				UIUtils.ShowNoVertexModeNodeMessage( this );
+				return "0";
 			}
 
-			if( dataCollector.PortCategory == MasterNodePortCategory.Vertex || dataCollector.PortCategory == MasterNodePortCategory.Tessellation )
+			if ( dataCollector.IsTemplate )
 			{
-				string vertexVarName = string.Empty;
 				if( m_inputPorts[ 0 ].IsConnected )
 				{
-					vertexVarName = m_inputPorts[ 0 ].GeneratePortInstructions( ref dataCollector );
+					string vertexPos = "vertexPos" + OutputId;
+					GenerateInputInVertex( ref dataCollector, 0, vertexPos, false );
+					
+					string clipPos = dataCollector.TemplateDataCollectorInstance.GetClipPosForValue( vertexPos, OutputId );
+					string varName = GeneratorUtils.DepthModeVarNameStr[ m_viewSpaceInt ] + OutputId;
+
+					string instruction = string.Format( "{0}.z / {0}.w", clipPos );
+					instruction = ApplyLinearDepthModifier( ref dataCollector, instruction );
+
+					dataCollector.AddLocalVariable( UniqueId, CurrentPrecisionType, WirePortDataType.FLOAT, varName, instruction );
+					return varName;
 				}
 				else
 				{
-					vertexVarName = Constants.VertexShaderInputStr + ".vertex.xyz";
+					return dataCollector.TemplateDataCollectorInstance.GetSurfaceDepth( m_depthMode, CurrentPrecisionType );
 				}
-
-				string vertexSpace = m_viewSpaceInt == 1 ? " * _ProjectionParams.w" : "";
-				string vertexInstruction = "-UnityObjectToViewPos( " + vertexVarName + " ).z" + vertexSpace;
-				dataCollector.AddVertexInstruction( "float " + m_vertexNameStr[ m_viewSpaceInt ] + " = " + vertexInstruction, UniqueId );
-
-				return m_vertexNameStr[ m_viewSpaceInt ];
 			}
 
 			dataCollector.AddToIncludes( UniqueId, Constants.UnityShaderVariables );
 
-
-			if( dataCollector.TesselationActive )
+			if ( dataCollector.PortCategory == MasterNodePortCategory.Vertex )
 			{
-				if( m_inputPorts[ 0 ].IsConnected )
+				string vertexPos;
+				string varName;
+				if ( m_inputPorts[ 0 ].IsConnected )
 				{
-					string space = string.Empty;
-					if( m_viewSpaceInt == 1 )
-						space = " * _ProjectionParams.w";
+					vertexPos = m_inputPorts[ 0 ].GeneratePortInstructions( ref dataCollector );
+					varName = GeneratorUtils.DepthModeVarNameStr[ m_viewSpaceInt ] + OutputId;
+				}
+				else
+				{
+					vertexPos = Constants.VertexShaderInputStr + ".vertex.xyz";
+					varName = GeneratorUtils.DepthModeVarNameStr[ m_viewSpaceInt ];
+				}
 
-					if( m_outputPorts[ 0 ].IsLocalValue( dataCollector.PortCategory ) )
+				string instruction = string.Format( "UnityObjectToClipPos( {0} ).zw", vertexPos );
+				string clipDepth = "clipDepth" + OutputId;
+				dataCollector.AddLocalVariable( UniqueId, CurrentPrecisionType, WirePortDataType.FLOAT2, clipDepth, instruction );
+
+				instruction = string.Format( "{0}.x / {0}.y", clipDepth );
+				instruction = ApplyLinearDepthModifier( ref dataCollector, instruction );
+
+				dataCollector.AddLocalVariable( UniqueId, CurrentPrecisionType, WirePortDataType.FLOAT3, varName, instruction );
+				return varName;
+			}
+
+			if ( m_inputPorts[ 0 ].IsConnected )
+			{
+				if ( dataCollector.TesselationActive )
+				{
+					if ( m_outputPorts[ 0 ].IsLocalValue( dataCollector.PortCategory ) )
 						return m_outputPorts[ 0 ].LocalValue( dataCollector.PortCategory );
 
-					string value = m_inputPorts[ 0 ].GeneratePortInstructions( ref dataCollector );
-					RegisterLocalVariable( 0, string.Format( "-UnityObjectToViewPos( {0} ).z", value ) + space, ref dataCollector, "customSurfaceDepth" + OutputId );
+					string vertexPos = m_inputPorts[ 0 ].GeneratePortInstructions( ref dataCollector );
+					string instruction = string.Format( "UnityObjectToClipPos( {0} ).zw", vertexPos );
+					string clipDepth = "clipDepth" + OutputId;
+					string varName = GeneratorUtils.DepthModeVarNameStr[ m_viewSpaceInt ] + OutputId;
+
+					dataCollector.AddLocalVariable( UniqueId, CurrentPrecisionType, WirePortDataType.FLOAT2, clipDepth, instruction );
+
+					instruction = string.Format( "{0}.x / {0}.y", clipDepth );
+					instruction = ApplyLinearDepthModifier( ref dataCollector, instruction );
+
+					RegisterLocalVariable( 0, instruction, ref dataCollector, varName );
 					return m_outputPorts[ 0 ].LocalValue( dataCollector.PortCategory );
 				}
 				else
 				{
-					string eyeDepth = GeneratorUtils.GenerateScreenDepthOnFrag( ref dataCollector, UniqueId, CurrentPrecisionType );
-					if( m_viewSpaceInt == 1 )
-					{
-						dataCollector.AddLocalVariable( UniqueId, CurrentPrecisionType, WirePortDataType.FLOAT, m_vertexNameStr[ 1 ], eyeDepth + " * _ProjectionParams.w" );
-						return m_vertexNameStr[ 1 ];
-					}
-					else
-					{
-						return eyeDepth;
-					}
+					var savedPortCategory = dataCollector.PortCategory;
+					dataCollector.PortCategory = MasterNodePortCategory.Vertex;
+					string vertexPos = m_inputPorts[ 0 ].GeneratePortInstructions( ref dataCollector );
+					string varName = GeneratorUtils.DepthModeVarNameStr[ m_viewSpaceInt ] + OutputId;
+					dataCollector.PortCategory = savedPortCategory;
+
+					string clipDepth = "clipDepth" + OutputId;
+					dataCollector.AddToInput( UniqueId, clipDepth, WirePortDataType.FLOAT2 );
+
+					string clipDepthOutput = string.Format( "{0}.{1}", Constants.VertexShaderOutputStr, clipDepth );
+					string clipDepthInput = string.Format( "{0}.{1}", Constants.InputVarStr, clipDepth );
+
+					string vertexInstruction = string.Format( "UnityObjectToClipPos( {0} ).zw", vertexPos );
+					dataCollector.AddToVertexLocalVariables( UniqueId, CurrentPrecisionType, WirePortDataType.FLOAT2, clipDepth, vertexInstruction );
+					dataCollector.AddToVertexLocalVariables( UniqueId, clipDepthOutput, clipDepth );
+
+					string fragmentInstruction = string.Format( "{0}.x / {0}.y", clipDepthInput );
+					fragmentInstruction = ApplyLinearDepthModifier( ref dataCollector, fragmentInstruction );
+					
+					dataCollector.AddLocalVariable( UniqueId, CurrentPrecisionType, WirePortDataType.FLOAT, varName, fragmentInstruction );
+					return varName;
 				}
 			}
 			else
 			{
-
-				string space = string.Empty;
-				if( m_viewSpaceInt == 1 )
-					space = " * _ProjectionParams.w";
-
-				if( m_inputPorts[ 0 ].IsConnected )
-				{
-					string varName = "customSurfaceDepth" + OutputId;
-					GenerateInputInVertex( ref dataCollector, 0, varName, false );
-					dataCollector.AddToInput( UniqueId, varName, WirePortDataType.FLOAT );
-					string instruction = "-UnityObjectToViewPos( " + varName + " ).z" + space;
-					dataCollector.AddToVertexLocalVariables( UniqueId , Constants.VertexShaderOutputStr + "." + varName + " = " + instruction+";" );
-					return Constants.InputVarStr + "." + varName;
-				}
-				else
-				{
-					dataCollector.AddToInput( UniqueId, m_vertexNameStr[ m_viewSpaceInt ], WirePortDataType.FLOAT );
-					string instruction = "-UnityObjectToViewPos( " + Constants.VertexShaderInputStr + ".vertex.xyz ).z" + space;
-					dataCollector.AddToVertexLocalVariables( UniqueId , Constants.VertexShaderOutputStr + "." + m_vertexNameStr[ m_viewSpaceInt ] + " = " + instruction+";" );
-					return Constants.InputVarStr + "." + m_vertexNameStr[ m_viewSpaceInt ];
-				}
+				return GeneratorUtils.GenerateSurfaceDepth( ref dataCollector, UniqueId, CurrentPrecisionType, m_depthMode );
 			}
 		}
 
@@ -171,7 +194,7 @@ namespace AmplifyShaderEditor
 		{
 			base.ReadFromString( ref nodeParams );
 			m_viewSpaceInt = Convert.ToInt32( GetCurrentParam( ref nodeParams ) );
-			SetAdditonalTitleText( string.Format( Constants.SubTitleSpaceFormatStr, m_viewSpaceStr[ m_viewSpaceInt ] ) );
+			UpdateAdditonalTitleText();
 		}
 
 		public override void WriteToString( ref string nodeInfo, ref string connectionsInfo )

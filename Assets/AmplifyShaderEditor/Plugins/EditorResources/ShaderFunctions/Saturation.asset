@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78b2425a2284af743826c689403a4924, type: 3}
+  m_Name: Saturation
+  m_EditorClassIdentifier: 
+  m_functionInfo: "// Made with Amplify Shader Editor v1.9.7\n// Available at the
+    Unity Asset Store - http://u3d.as/y3X \n/*ASEBEGIN\nVersion=19700\nNode;AmplifyShaderEditor.StickyNoteNode;32;-736,-1440;Inherit;False;253.6;100;RGB
+    Perceptual Weights;;0,0,0,1;Rec. ITU-R BT.709-6 Color Space;0;0\nNode;AmplifyShaderEditor.LerpOp;31;-16,-1248;Inherit;False;3;0;FLOAT3;0,0,0;False;1;FLOAT3;0,0,0;False;2;FLOAT;0;False;1;FLOAT3;0\nNode;AmplifyShaderEditor.SimpleMultiplyOpNode;36;-16,-1056;Inherit;False;2;2;0;FLOAT;0;False;1;FLOAT;0;False;1;FLOAT;0\nNode;AmplifyShaderEditor.RGBToHSVNode;45;-256,-1008;Inherit;False;1;0;FLOAT3;0,0,0;False;4;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3\nNode;AmplifyShaderEditor.FunctionInput;21;-224,-1120;Inherit;False;Saturation;1;1;False;1;0;FLOAT;0.5;False;1;FLOAT;0\nNode;AmplifyShaderEditor.DotProductOpNode;28;-208,-1328;Inherit;False;2;0;FLOAT3;0,0,0;False;1;FLOAT3;0,0,0;False;1;FLOAT;0\nNode;AmplifyShaderEditor.Vector3Node;26;-464,-1440;Inherit;False;Constant;_PerceptualWeights;Perceptual
+    Weights;0;0;Create;True;0;0;0;False;0;False;0.2126729,0.7151522,0.072175;0,0,0;0;4;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3\nNode;AmplifyShaderEditor.FunctionSwitch;51;688,-1248;Inherit;False;Mode;False;0;2;-1;RGB;HSV;Object;-1;10;0;FLOAT3;0,0,0;False;1;FLOAT3;0,0,0;False;2;FLOAT;0;False;3;FLOAT;0;False;4;FLOAT;0;False;5;FLOAT;0;False;6;FLOAT;0;False;7;FLOAT;0;False;8;FLOAT;0;False;9;FLOAT;0;False;1;FLOAT3;0\nNode;AmplifyShaderEditor.FunctionInput;12;-480,-1232;Inherit;False;RGB;3;0;False;1;0;FLOAT3;0,0,0;False;1;FLOAT3;0\nNode;AmplifyShaderEditor.HSVToRGBNode;39;160,-992;Inherit;False;3;0;FLOAT;0;False;1;FLOAT;0;False;2;FLOAT;0;False;4;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3\nNode;AmplifyShaderEditor.FunctionSubtitle;58;432,-1152;Inherit;False;Mode(
+    HSV );1;0;FLOAT3;0,0,0;False;1;FLOAT3;0\nNode;AmplifyShaderEditor.FunctionSubtitle;59;432,-1248;Inherit;False;Mode(
+    RGB );1;0;FLOAT3;0,0,0;False;1;FLOAT3;0\nNode;AmplifyShaderEditor.FunctionOutput;0;944,-1248;Inherit;False;True;-1;;0;True;1;0;FLOAT3;0,0,0;False;1;FLOAT3;0\nWireConnection;31;0;28;0\nWireConnection;31;1;12;0\nWireConnection;31;2;21;0\nWireConnection;36;0;45;2\nWireConnection;36;1;21;0\nWireConnection;45;0;12;0\nWireConnection;28;0;26;0\nWireConnection;28;1;12;0\nWireConnection;51;0;59;0\nWireConnection;51;1;58;0\nWireConnection;39;0;45;1\nWireConnection;39;1;36;0\nWireConnection;39;2;45;3\nWireConnection;58;0;39;0\nWireConnection;59;0;31;0\nWireConnection;0;0;51;0\nASEEND*/\n//CHKSM=0FFF65B62DDE3A380576CA8FCB20CE8EA3358C0B"
+  m_functionName: 
+  m_description: 'Adjusts the saturation of RGB by the amount of Saturation. A Saturation
+    of 1 returns the input value unmodified. A Saturation value of 0 will return
+    a fully desaturated input value.
+
+
+    The Mode option changes between default
+    using RGB perceptual weights or intermediate HSV transform.
+
+
+    Please note
+    that, regardless of mode, both input and output are always in RGB color space.'
+  m_additionalIncludes:
+    m_additionalIncludes: []
+    m_outsideIncludes: []
+  m_additionalPragmas:
+    m_additionalPragmas: []
+    m_outsidePragmas: []
+  m_additionalDirectives:
+    m_validData: 0
+    m_isDirty: 0
+    m_moduleName: ' Additional Directives'
+    m_independentModule: 1
+    m_customEdited: 0
+    m_additionalDirectives: []
+    m_shaderFunctionDirectives: []
+    m_nativeDirectives: []
+    m_nativeDirectivesIndex: -1
+    m_nativeDirectivesFoldout: 0
+    m_directivesSaveItems: []
+  m_nodeCategory: 4
+  m_headerStyle: 1
+  m_headerColor: {r: 0.30588236, g: 0.5176471, b: 0.16078432, a: 1}
+  m_customNodeCategory: Amplify Shader Pack
+  m_previewPosition: 0
+  m_hidden: 0
+  m_url: 

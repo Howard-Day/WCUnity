@@ -46,6 +46,7 @@ namespace AmplifyShaderEditor
 					result = string.Format( opMode, m_inputA, m_inputB );
 				}
 				break;
+				case WirePortDataType.FLOAT2x2:
 				case WirePortDataType.FLOAT3x3:
 				case WirePortDataType.FLOAT4x4:
 				{

@@ -6,6 +6,7 @@
 
 using UnityEngine;
 using System;
+using System.Globalization;
 
 namespace AmplifyShaderEditor
 {
@@ -13,7 +14,7 @@ namespace AmplifyShaderEditor
 	[NodeAttributes( "Tau", "Constants And Properties", "Tau constant (2*PI): 6.28318530718", null, KeyCode.None, true, false, null,null, "The Four Headed Cat - @fourheadedcat" )]
 	public sealed class TauNode : ParentNode
 	{
-		private readonly string Tau = ( 2.0 * Mathf.PI ).ToString();
+		private readonly string Tau = ( 2.0 * Mathf.PI ).ToString( CultureInfo.InvariantCulture );
 		public TauNode() : base() { }
 		public TauNode( int uniqueId, float x, float y, float width, float height ) : base( uniqueId, x, y, width, height ) { }
 

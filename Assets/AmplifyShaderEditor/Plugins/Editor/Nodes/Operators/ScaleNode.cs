@@ -60,9 +60,9 @@ namespace AmplifyShaderEditor
 			m_outputPorts[ 0 ].ChangeType( InputPorts[ 0 ].DataType, false );
 		}
 
-		public override void OnNodeLayout( DrawInfo drawInfo )
+		public override void OnNodeLayout( DrawInfo drawInfo, NodeUpdateCache cache )
 		{
-			base.OnNodeLayout( drawInfo );
+			base.OnNodeLayout( drawInfo, cache );
 
 			m_propertyDrawPos.x = m_remainingBox.x + Constants.FLOAT_WIDTH_SPACING * drawInfo.InvertedZoom * 0.5f;
 			m_propertyDrawPos.y = m_remainingBox.y + Constants.INPUT_PORT_DELTA_Y * drawInfo.InvertedZoom * 0.5f;

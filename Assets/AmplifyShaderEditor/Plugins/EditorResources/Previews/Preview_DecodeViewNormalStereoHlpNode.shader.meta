@@ -1,9 +1,16 @@
 fileFormatVersion: 2
 guid: e996db1cc4510c84185cb9f933f916bb
-timeCreated: 1488289785
-licenseType: Store
 ShaderImporter:
+  externalObjects: {}
   defaultTextures: []
+  nonModifiableTextures: []
   userData: 
   assetBundleName: 
   assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 68570
+  packageName: Amplify Shader Editor
+  packageVersion: 1.9.9.14
+  assetPath: Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_DecodeViewNormalStereoHlpNode.shader
+  uploadId: 1019702

@@ -410,6 +410,24 @@ namespace AmplifyShaderEditor
 					}
 				}
 
+				//ZCLIP
+				{
+					int zClipOpIdx = subBody.IndexOf( "ZClip" );
+					if( zClipOpIdx > -1 )
+					{
+						int zClipEndIdx = subBody.IndexOf( TemplatesManager.TemplateNewLine, zClipOpIdx );
+						if( zClipEndIdx > 0 )
+						{
+							m_depthData.ZClipModeId = subBody.Substring( zClipOpIdx, zClipEndIdx + 1 - zClipOpIdx );
+							TemplateHelperFunctions.CreateZClipMode( m_depthData.ZClipModeId, ref m_depthData );
+							if( m_depthData.DataCheck == TemplateDataCheck.Valid )
+							{
+								AddId( m_depthData.ZClipModeId, true );
+							}
+						}
+					}
+				}
+
 				//ZTEST
 				{
 					int zTestOpIdx = subBody.IndexOf( "ZTest" );
@@ -445,9 +463,9 @@ namespace AmplifyShaderEditor
 						}
 					}
 
-					m_depthData.SetDataCheck(); 
+					m_depthData.SetDataCheck();
 				}
-				
+
 				//TAGS
 				{
 					int tagsIdx = subBody.IndexOf( "Tags" );
@@ -700,6 +718,7 @@ namespace AmplifyShaderEditor
 					int beginIndex = inputBeginIndexes[ i ] + beginTag.Length;
 					int length = inputEndIdx - beginIndex;
 					string inputData = m_templateBody.Substring( beginIndex, length );
+					string tooltip = TemplateHelperFunctions.ExtractPortTooltip( ref inputData );
 					string[] inputDataArray = inputData.Split( IOUtils.FIELD_SEPARATOR );
 					if( inputDataArray != null && inputDataArray.Length > 0 )
 					{
@@ -718,7 +737,7 @@ namespace AmplifyShaderEditor
 							if( portOrderId < 0 )
 								portOrderId = m_inputDataList.Count;
 
-							AddInput( inputBeginIndexes[ i ], tagId, portName, defaultValue, dataType, portCategory, portUniqueId, portOrderId );
+							AddInput( inputBeginIndexes[ i ], tagId, portName, defaultValue, dataType, portCategory, portUniqueId, portOrderId, tooltip );
 						}
 						catch( Exception e )
 						{
@@ -913,9 +932,9 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		public void AddInput( int tagStartIdx, string tagId, string portName, string defaultValue, WirePortDataType dataType, MasterNodePortCategory portCategory, int portUniqueId, int portOrderId )
+		public void AddInput( int tagStartIdx, string tagId, string portName, string defaultValue, WirePortDataType dataType, MasterNodePortCategory portCategory, int portUniqueId, int portOrderId, string tooltip )
 		{
-			TemplateInputData inputData = new TemplateInputData( tagStartIdx, tagStartIdx, tagId, portName, defaultValue, dataType, portCategory, portUniqueId, portOrderId, string.Empty );
+			TemplateInputData inputData = new TemplateInputData( tagStartIdx, tagStartIdx, tagId, portName, defaultValue, dataType, portCategory, portUniqueId, portOrderId, string.Empty, tooltip );
 			m_inputDataList.Add( inputData );
 			m_inputDataDict.Add( inputData.PortUniqueId, inputData );
 			AddId( tagId, false );

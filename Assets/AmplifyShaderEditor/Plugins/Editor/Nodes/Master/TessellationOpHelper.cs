@@ -64,11 +64,11 @@ namespace AmplifyShaderEditor
 
 		// Edge Length
 		private GUIContent EdgeLengthContent = new GUIContent( "Edge Length", "Tessellation levels ccomputed based on triangle edge length on the screen\nDefault: 4" );
-		private const string EdgeLengthTessProperty = "_EdgeLength ( \"Edge length\", Range( 2, 50 ) ) = {0}";
+		private const string EdgeLengthTessProperty = "_EdgeLength( \"Edge length\", Range( 2, 50 ) ) = {0}";
 		private const string EdgeLengthTessUniformName = "_EdgeLength";
 
-		private const string EdgeLengthTessFunctionBody = "\t\t\treturn UnityEdgeLengthBasedTess (v0.vertex, v1.vertex, v2.vertex, _EdgeLength);\n";
-		private const string EdgeLengthTessCullFunctionBody = "\t\t\treturn UnityEdgeLengthBasedTessCull (v0.vertex, v1.vertex, v2.vertex, _EdgeLength , _TessMaxDisp );\n";
+		private const string EdgeLengthTessFunctionBody = "\t\t\treturn UnityEdgeLengthBasedTess( v0.vertex, v1.vertex, v2.vertex, _EdgeLength );\n";
+		private const string EdgeLengthTessCullFunctionBody = "\t\t\treturn UnityEdgeLengthBasedTessCull( v0.vertex, v1.vertex, v2.vertex, _EdgeLength, _TessMaxDisp );\n";
 
 
 		private const string EdgeLengthTessMaxDispProperty = "_TessMaxDisp( \"Max Displacement\", Float ) = {0}";
@@ -133,12 +133,7 @@ namespace AmplifyShaderEditor
 			GUI.color = new Color( cachedColor.r, cachedColor.g, cachedColor.b, 0.5f );
 			EditorGUILayout.BeginHorizontal( toolbarstyle );
 			GUI.color = cachedColor;
-			EditorGUI.BeginChangeCheck();
-			m_parentSurface.ContainerGraph.ParentWindow.InnerWindowVariables.ExpandedTesselation = GUILayout.Toggle( m_parentSurface.ContainerGraph.ParentWindow.InnerWindowVariables.ExpandedTesselation, " Tessellation", UIUtils.MenuItemToggleStyle, GUILayout.ExpandWidth( true ) );
-			if ( EditorGUI.EndChangeCheck() )
-			{
-				EditorPrefs.SetBool( "ExpandedTesselation", m_parentSurface.ContainerGraph.ParentWindow.InnerWindowVariables.ExpandedTesselation );
-			}
+			m_parentSurface.ContainerGraph.ParentWindow.InnerWindowVariables.ExpandedTesselation = NodeUtils.FoldoutToggle( m_parentSurface.ContainerGraph.ParentWindow.InnerWindowVariables.ExpandedTesselation, " Tessellation", GUILayout.ExpandWidth( true ) );
 
 			EditorGUI.BeginChangeCheck();
 			m_enabled = owner.EditorGUILayoutToggle( string.Empty, m_enabled, UIUtils.MenuItemEnableStyle, GUILayout.Width( 16 ) );

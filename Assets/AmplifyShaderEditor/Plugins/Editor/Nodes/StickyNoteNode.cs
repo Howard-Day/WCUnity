@@ -64,9 +64,6 @@ namespace AmplifyShaderEditor
 		private string m_focusNoteName = "StickyNoteInnerText";
 		private bool m_focusOnTitle = false;
 		
-		private bool m_checkCommentText = true;
-		private bool m_checkTitleText = true;
-
 		public Color m_frameColor = Color.white;
 
 		
@@ -109,18 +106,8 @@ namespace AmplifyShaderEditor
 			base.DrawProperties();
 			NodeUtils.DrawPropertyGroup( ref m_propertiesFoldout, Constants.ParameterLabelStr,()=>
 			{
-				EditorGUI.BeginChangeCheck();
 				m_titleText = EditorGUILayoutTextField( "Frame Title", m_titleText );
-				if ( EditorGUI.EndChangeCheck() )
-				{
-					m_checkTitleText = true;
-				}
-				EditorGUI.BeginChangeCheck();
 				m_innerTitleText = EditorGUILayoutTextField( NoteTitle, m_innerTitleText );
-				if ( EditorGUI.EndChangeCheck() )
-				{
-					m_checkCommentText = true;
-				}
 
 				m_noteText = EditorGUILayoutTextArea(  m_noteText , UIUtils.MainSkin.textArea );
 
@@ -129,7 +116,7 @@ namespace AmplifyShaderEditor
 			EditorGUILayout.HelpBox( WarningText, MessageType.Warning );
 		}
 
-		public override void OnNodeLayout( DrawInfo drawInfo )
+		public override void OnNodeLayout( DrawInfo drawInfo, NodeUpdateCache cache )
 		{
 			//base.OnLayout( drawInfo );
 			CalculatePositionAndVisibility( drawInfo );
@@ -257,13 +244,8 @@ namespace AmplifyShaderEditor
 
 					if( m_isEditingInnerTitle || m_startEditingInnerTitle )
 					{
-						EditorGUI.BeginChangeCheck();
 						GUI.SetNextControlName( m_focusTitleName );
 						m_innerTitleText = EditorGUITextField( m_innerTitleArea, string.Empty, m_innerTitleText, UIUtils.CommentaryTitle );
-						if( EditorGUI.EndChangeCheck() )
-						{
-							m_checkCommentText = true;
-						}
 
 						if( m_startEditingInnerTitle )
 							EditorGUI.FocusTextInControl( m_focusTitleName );
@@ -427,18 +409,6 @@ namespace AmplifyShaderEditor
 				}
 			}
 
-			if ( m_checkCommentText )
-			{
-				m_checkCommentText = false;
-				m_innerTitleText = m_innerTitleText.Replace( IOUtils.FIELD_SEPARATOR, ' ' );
-			}
-
-			if ( m_checkTitleText )
-			{
-				m_checkTitleText = false;
-				m_titleText = m_titleText.Replace( IOUtils.FIELD_SEPARATOR, ' ' );
-			}
-
 			if ( m_focusOnTitle && drawInfo.CurrentEventType == EventType.KeyUp )
 			{
 				m_focusOnTitle = false;
@@ -471,8 +441,12 @@ namespace AmplifyShaderEditor
 				UIUtils.ShowMessage( UniqueId, "Incorrect number of color values", MessageSeverity.Error );
 			}
 			m_noteText = GetCurrentParam( ref nodeParams );
-			m_noteText = m_noteText.Replace( Constants.LineFeedSeparator, '\n' );
-			m_noteText = m_noteText.Replace( Constants.SemiColonSeparator, ';' );
+			if ( !JsonGraphFormat.LastInstructionFromJson )
+			{
+				// legacy lines escaped newlines/semicolons as '$'/'@'; JSON lines carry the text verbatim
+				m_noteText = m_noteText.Replace( Constants.LineFeedSeparator, '\n' );
+				m_noteText = m_noteText.Replace( Constants.SemiColonSeparator, ';' );
+			}
 		}
 
 		public override void WriteToString( ref string nodeInfo, ref string connectionsInfo )
@@ -484,16 +458,12 @@ namespace AmplifyShaderEditor
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_titleText );
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_frameColor.r.ToString() + IOUtils.VECTOR_SEPARATOR + m_frameColor.g.ToString() + IOUtils.VECTOR_SEPARATOR + m_frameColor.b.ToString() + IOUtils.VECTOR_SEPARATOR + m_frameColor.a.ToString() );
 
-			m_noteText = m_noteText.Replace( Constants.LineFeedSeparator.ToString(), string.Empty);
-			m_noteText = m_noteText.Replace( Constants.SemiColonSeparator.ToString(), string.Empty );
 			m_noteText = UIUtils.ForceLFLineEnding( m_noteText );
-
-			string parsedText = m_noteText.Replace( '\n', Constants.LineFeedSeparator );
-			parsedText = parsedText.Replace( ';', Constants.SemiColonSeparator );
-			IOUtils.AddFieldValueToString( ref nodeInfo, parsedText );
+			IOUtils.AddFieldValueToString( ref nodeInfo, m_noteText );
 		}
 
-		public override Rect Position { get { return Event.current.alt ? m_position : m_auxHeaderPos; } }
+		// Event.current is null outside GUI calls ( e.g. batch mode loads )
+		public override Rect Position { get { return ( Event.current != null && Event.current.alt ) ? m_position : m_auxHeaderPos; } }
 		public override bool Contains( Vector3 pos )
 		{
 			return Event.current.alt ? m_globalPosition.Contains( pos ) : ( m_headerPosition.Contains( pos ) || m_resizeRightIconCoords.Contains( pos ) || m_resizeLeftIconCoords.Contains( pos ) );

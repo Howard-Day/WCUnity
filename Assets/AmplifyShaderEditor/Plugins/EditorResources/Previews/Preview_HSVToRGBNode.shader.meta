@@ -1,9 +1,16 @@
 fileFormatVersion: 2
 guid: fab445eb945d63047822a7a6b81b959d
-timeCreated: 1515421907
-licenseType: Store
 ShaderImporter:
+  externalObjects: {}
   defaultTextures: []
+  nonModifiableTextures: []
   userData: 
   assetBundleName: 
   assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 68570
+  packageName: Amplify Shader Editor
+  packageVersion: 1.9.9.14
+  assetPath: Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_HSVToRGBNode.shader
+  uploadId: 1019702

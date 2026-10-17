@@ -2,11 +2,11 @@ Shader "Hidden/FresnelNode"
 {
 	Properties
 	{
-		_A ("_Normal", 2D) = "white" {}
-		_B ("_Bias", 2D) = "white" {}
-		_C ("_Scale", 2D) = "white" {}
-		_D ("_Power", 2D) = "white" {}
-		_E ("_View", 2D) = "white" {}
+		_A ("_Normal", 2DArray) = "white" {}
+		_B ("_Bias", 2DArray) = "white" {}
+		_C ("_Scale", 2DArray) = "white" {}
+		_D ("_Power", 2DArray) = "white" {}
+		_E ("_View", 2DArray) = "white" {}
 	}
 	SubShader
 	{
@@ -14,26 +14,27 @@ Shader "Hidden/FresnelNode"
 		{
 			CGPROGRAM
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#pragma vertex vert_img
 			#pragma fragment frag
+			#pragma target 3.5
 
-			//sampler2D _A;
-			sampler2D _B;
-			sampler2D _C;
-			sampler2D _D;
+			//ASE_PORT( _A );
+			ASE_PORT( _B );
+			ASE_PORT( _C );
+			ASE_PORT( _D );
 			int _FresnelType;
 
 			float4 frag(v2f_img i) : SV_Target
 			{
-				float b = tex2D( _B, i.uv ).r;
-				float s = tex2D( _C, i.uv ).r;
-				float pw = tex2D( _D, i.uv ).r;
+				float b = ASE_SAMPLE_PORT( _B, i.uv ).r;
+				float s = ASE_SAMPLE_PORT( _C, i.uv ).r;
+				float pw = ASE_SAMPLE_PORT( _D, i.uv ).r;
 
-				float2 xy = 2 * i.uv - 1;
-				float z = -sqrt(1-saturate(dot(xy,xy)));
-				float3 vertexPos = float3(xy, z);
-				float3 worldNormal = normalize(float3(xy, z));
-				float3 worldViewDir = normalize(float3(0,0,-5) - vertexPos);
+				float3 vertexPos = PreviewFragmentPositionOS( i.uv );
+				float3 vertexNormal = PreviewFragmentNormalOS( i.uv );
+				float3 worldNormal = UnityObjectToWorldNormal( vertexNormal );
+				float3 worldViewDir = normalize(preview_WorldSpaceCameraPos - vertexPos);
 
 				float fresnel = 0;
 				if(_FresnelType == 0)
@@ -54,26 +55,26 @@ Shader "Hidden/FresnelNode"
 		{
 			CGPROGRAM
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#pragma vertex vert_img
 			#pragma fragment frag
+			#pragma target 3.5
 
-			sampler2D _A;
-			sampler2D _B;
-			sampler2D _C;
-			sampler2D _D;
+			ASE_PORT( _A );
+			ASE_PORT( _B );
+			ASE_PORT( _C );
+			ASE_PORT( _D );
 			int _FresnelType;
 
 			float4 frag(v2f_img i) : SV_Target
 			{
-				float b = tex2D( _B, i.uv ).r;
-				float s = tex2D( _C, i.uv ).r;
-				float pw = tex2D( _D, i.uv ).r;
+				float b = ASE_SAMPLE_PORT( _B, i.uv ).r;
+				float s = ASE_SAMPLE_PORT( _C, i.uv ).r;
+				float pw = ASE_SAMPLE_PORT( _D, i.uv ).r;
 
-				float2 xy = 2 * i.uv - 1;
-				float z = -sqrt(1-saturate(dot(xy,xy)));
-				float3 vertexPos = float3(xy, z);
-				float3 worldNormal = tex2D( _A, i.uv );
-				float3 worldViewDir = normalize(float3(0,0,-5) - vertexPos);
+				float3 vertexPos = PreviewFragmentPositionOS( i.uv );
+				float3 worldNormal = ASE_SAMPLE_PORT( _A, i.uv );
+				float3 worldViewDir = normalize(preview_WorldSpaceCameraPos - vertexPos);
 
 				float fresnel = 0;
 				if(_FresnelType == 0)
@@ -94,27 +95,28 @@ Shader "Hidden/FresnelNode"
 		{
 			CGPROGRAM
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#pragma vertex vert_img
 			#pragma fragment frag
+			#pragma target 3.5
 
-			sampler2D _A;
-			sampler2D _B;
-			sampler2D _C;
-			sampler2D _D;
+			ASE_PORT( _A );
+			ASE_PORT( _B );
+			ASE_PORT( _C );
+			ASE_PORT( _D );
 			int _FresnelType;
 
 			float4 frag(v2f_img i) : SV_Target
 			{
-				float b = tex2D( _B, i.uv ).r;
-				float s = tex2D( _C, i.uv ).r;
-				float pw = tex2D( _D, i.uv ).r;
+				float b = ASE_SAMPLE_PORT( _B, i.uv ).r;
+				float s = ASE_SAMPLE_PORT( _C, i.uv ).r;
+				float pw = ASE_SAMPLE_PORT( _D, i.uv ).r;
 
-				float2 xy = 2 * i.uv - 1;
-				float z = -sqrt(1-saturate(dot(xy,xy)));
-				float3 vertexPos = float3(xy, z);
-				float3 worldNormal = normalize(float3(xy, z));
+				float3 vertexPos = PreviewFragmentPositionOS( i.uv );
+				float3 vertexNormal = PreviewFragmentNormalOS( i.uv );
+				float3 worldNormal = UnityObjectToWorldNormal( vertexNormal );
 
-				float3 tangent = normalize(float3( -z, xy.y*0.01, xy.x ));
+				float3 tangent = PreviewFragmentTangentOS( i.uv );
 				float3 worldPos = mul(unity_ObjectToWorld, float4(vertexPos,1)).xyz;
 				float3 worldTangent = UnityObjectToWorldDir(tangent);
 				float tangentSign = -1;
@@ -126,11 +128,11 @@ Shader "Hidden/FresnelNode"
 				float2 sphereUVs = i.uv;
 
 				sphereUVs.x = (atan2(vertexPos.x, -vertexPos.z) / (UNITY_PI) + 0.5);
-				float3 tangentNormal = tex2D(_A, sphereUVs).xyz;
+				float3 tangentNormal = ASE_SAMPLE_PORT( _A, sphereUVs).xyz;
 
 				worldNormal = fixed3( dot( tSpace0.xyz, tangentNormal ), dot( tSpace1.xyz, tangentNormal ), dot( tSpace2.xyz, tangentNormal ) );
 
-				float3 worldViewDir = normalize(float3(0,0,-5) - vertexPos);
+				float3 worldViewDir = normalize(preview_WorldSpaceCameraPos - vertexPos);
 
 				float fresnel = 0;
 				if(_FresnelType == 0)
@@ -151,25 +153,27 @@ Shader "Hidden/FresnelNode"
 		{
 			CGPROGRAM
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#pragma vertex vert_img
 			#pragma fragment frag
+			#pragma target 3.5
 
-			//sampler2D _A;
-			sampler2D _B;
-			sampler2D _C;
-			sampler2D _D;
+			//ASE_PORT( _A );
+			ASE_PORT( _B );
+			ASE_PORT( _C );
+			ASE_PORT( _D );
 			int _FresnelType;
 			float4 _EditorWorldLightPos;
 			float4 frag(v2f_img i) : SV_Target
 			{
-				float b = tex2D( _B, i.uv ).r;
-				float s = tex2D( _C, i.uv ).r;
-				float pw = tex2D( _D, i.uv ).r;
+				float b = ASE_SAMPLE_PORT( _B, i.uv ).r;
+				float s = ASE_SAMPLE_PORT( _C, i.uv ).r;
+				float pw = ASE_SAMPLE_PORT( _D, i.uv ).r;
 
 				float2 xy = 2 * i.uv - 1;
 				float z = -sqrt(1-(dot(xy,xy)));
 				float3 vertexPos = normalize(float3(xy, z));
-				float3 worldViewDir = normalize(float3(0,0,-5) - vertexPos);
+				float3 worldViewDir = normalize(preview_WorldSpaceCameraPos - vertexPos);
 				float3 lightDir = normalize( _EditorWorldLightPos.xyz );
 				float3 halfVector = normalize(worldViewDir+lightDir);
 
@@ -192,27 +196,27 @@ Shader "Hidden/FresnelNode"
 		{
 			CGPROGRAM
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#pragma vertex vert_img
 			#pragma fragment frag
+			#pragma target 3.5
 
-			sampler2D _A;
-			sampler2D _B;
-			sampler2D _C;
-			sampler2D _D;
-			sampler2D _E;
+			ASE_PORT( _A );
+			ASE_PORT( _B );
+			ASE_PORT( _C );
+			ASE_PORT( _D );
+			ASE_PORT( _E );
 			int _FresnelType;
 
 			float4 frag(v2f_img i) : SV_Target
 			{
-				float b = tex2D( _B, i.uv ).r;
-				float s = tex2D( _C, i.uv ).r;
-				float pw = tex2D( _D, i.uv ).r;
+				float b = ASE_SAMPLE_PORT( _B, i.uv ).r;
+				float s = ASE_SAMPLE_PORT( _C, i.uv ).r;
+				float pw = ASE_SAMPLE_PORT( _D, i.uv ).r;
 
-				float2 xy = 2 * i.uv - 1;
-				float z = -sqrt(1-saturate(dot(xy,xy)));
-				float3 vertexPos = float3(xy, z);
-				float3 worldNormal = tex2D( _A, i.uv );
-				float3 worldViewDir = tex2D( _E, i.uv );;
+				float3 vertexPos = PreviewFragmentPositionOS( i.uv );
+				float3 worldNormal = ASE_SAMPLE_PORT( _A, i.uv );
+				float3 worldViewDir = ASE_SAMPLE_PORT( _E, i.uv );;
 				
 				float fresnel = 0;
 				if(_FresnelType == 0)
@@ -233,21 +237,23 @@ Shader "Hidden/FresnelNode"
 		{
 			CGPROGRAM
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#pragma vertex vert_img
 			#pragma fragment frag
+			#pragma target 3.5
 
-			//sampler2D _A;
-			sampler2D _B;
-			sampler2D _C;
-			sampler2D _D;
+			//ASE_PORT( _A );
+			ASE_PORT( _B );
+			ASE_PORT( _C );
+			ASE_PORT( _D );
 			int _FresnelType;
 			float4 _EditorWorldLightPos;
 
 			float4 frag(v2f_img i) : SV_Target
 			{
-				float b = tex2D( _B, i.uv ).r;
-				float s = tex2D( _C, i.uv ).r;
-				float pw = tex2D( _D, i.uv ).r;
+				float b = ASE_SAMPLE_PORT( _B, i.uv ).r;
+				float s = ASE_SAMPLE_PORT( _C, i.uv ).r;
+				float pw = ASE_SAMPLE_PORT( _D, i.uv ).r;
 
 				float2 xy = 2 * i.uv - 1;
 				float z = -sqrt(1-(dot(xy,xy)));
@@ -275,28 +281,28 @@ Shader "Hidden/FresnelNode"
 		{
 			CGPROGRAM
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#pragma vertex vert_img
 			#pragma fragment frag
+			#pragma target 3.5
 
-			sampler2D _A;
-			sampler2D _B;
-			sampler2D _C;
-			sampler2D _D;
-			sampler2D _E;
+			ASE_PORT( _A );
+			ASE_PORT( _B );
+			ASE_PORT( _C );
+			ASE_PORT( _D );
+			ASE_PORT( _E );
 			int _FresnelType;
 
 			float4 frag(v2f_img i) : SV_Target
 			{
-				float b = tex2D( _B, i.uv ).r;
-				float s = tex2D( _C, i.uv ).r;
-				float pw = tex2D( _D, i.uv ).r;
+				float b = ASE_SAMPLE_PORT( _B, i.uv ).r;
+				float s = ASE_SAMPLE_PORT( _C, i.uv ).r;
+				float pw = ASE_SAMPLE_PORT( _D, i.uv ).r;
 
-				float2 xy = 2 * i.uv - 1;
-				float z = -sqrt(1-saturate(dot(xy,xy)));
-				float3 vertexPos = float3(xy, z);
+				float3 vertexPos = PreviewFragmentPositionOS( i.uv );
 				float3 normal = normalize(vertexPos);
 				float3 worldNormal = UnityObjectToWorldNormal(normal);
-				float3 worldViewDir = tex2D( _E, i.uv );
+				float3 worldViewDir = ASE_SAMPLE_PORT( _E, i.uv );
 				
 				float fresnel = 0;
 				if(_FresnelType == 0)
@@ -317,26 +323,28 @@ Shader "Hidden/FresnelNode"
 		{
 			CGPROGRAM
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#pragma vertex vert_img
 			#pragma fragment frag
+			#pragma target 3.5
 
-			//sampler2D _A;
-			sampler2D _B;
-			sampler2D _C;
-			sampler2D _D;
-			sampler2D _E;
+			//ASE_PORT( _A );
+			ASE_PORT( _B );
+			ASE_PORT( _C );
+			ASE_PORT( _D );
+			ASE_PORT( _E );
 			int _FresnelType;
 			float4 _EditorWorldLightPos;
 			float4 frag(v2f_img i) : SV_Target
 			{
-				float b = tex2D( _B, i.uv ).r;
-				float s = tex2D( _C, i.uv ).r;
-				float pw = tex2D( _D, i.uv ).r;
+				float b = ASE_SAMPLE_PORT( _B, i.uv ).r;
+				float s = ASE_SAMPLE_PORT( _C, i.uv ).r;
+				float pw = ASE_SAMPLE_PORT( _D, i.uv ).r;
 
 				float2 xy = 2 * i.uv - 1;
 				float z = -sqrt(1-(dot(xy,xy)));
 				float3 vertexPos = normalize(float3(xy, z));
-				float3 worldViewDir = tex2D( _E, i.uv );
+				float3 worldViewDir = ASE_SAMPLE_PORT( _E, i.uv );
 				float3 lightDir = normalize( _EditorWorldLightPos.xyz );
 				float3 halfVector = normalize(worldViewDir+lightDir);
 

@@ -2,11 +2,11 @@ Shader "Hidden/WeightedBlendNode"
 {
 	Properties
 	{
-		_A ( "_Weights", 2D) = "white" {}
-		_B ( "_Layer1", 2D) = "white" {}
-		_C ( "_Layer2", 2D ) = "white" {}
-		_D ( "_Layer3", 2D ) = "white" {}
-		_E ( "_Layer4", 2D ) = "white" {}
+		_A ( "_Weights", 2DArray) = "white" {}
+		_B ( "_Layer1", 2DArray) = "white" {}
+		_C ( "_Layer2", 2DArray ) = "white" {}
+		_D ( "_Layer3", 2DArray ) = "white" {}
+		_E ( "_Layer4", 2DArray ) = "white" {}
 	}
 
 	SubShader
@@ -15,10 +15,12 @@ Shader "Hidden/WeightedBlendNode"
 		CGINCLUDE
 		
 		#include "UnityCG.cginc"
+			#include "Preview.cginc"
 		#pragma vertex vert_img
 		#pragma fragment frag
-		sampler2D _A;
-		sampler2D _B;
+			#pragma target 3.5
+		ASE_PORT( _A );
+		ASE_PORT( _B );
 		
 		ENDCG
 
@@ -27,7 +29,7 @@ Shader "Hidden/WeightedBlendNode"
 			CGPROGRAM
 			float4 frag(v2f_img i) : SV_Target
 			{
-				float4 Layer1 = tex2D( _B, i.uv );
+				float4 Layer1 = ASE_SAMPLE_PORT( _B, i.uv );
 				return Layer1;
 			}
 			ENDCG
@@ -36,12 +38,12 @@ Shader "Hidden/WeightedBlendNode"
 		Pass
 		{
 			CGPROGRAM
-			sampler2D _C;
+			ASE_PORT( _C );
 			float4 frag ( v2f_img i ) : SV_Target
 			{
-				float4 Weights = tex2D ( _A, i.uv );
-				float4 Layer1 = tex2D ( _B, i.uv );
-				float4 Layer2 = tex2D ( _C, i.uv );
+				float4 Weights = ASE_SAMPLE_PORT( _A, i.uv );
+				float4 Layer1 = ASE_SAMPLE_PORT( _B, i.uv );
+				float4 Layer2 = ASE_SAMPLE_PORT( _C, i.uv );
 				return ( Weights.x*Layer1 + Weights.y*Layer2 ) / ( Weights.x + Weights.y );
 			}
 			ENDCG
@@ -50,14 +52,14 @@ Shader "Hidden/WeightedBlendNode"
 		Pass
 		{
 			CGPROGRAM
-			sampler2D _C;
-			sampler2D _D;
+			ASE_PORT( _C );
+			ASE_PORT( _D );
 			float4 frag ( v2f_img i ) : SV_Target
 			{
-				float4 Weights = tex2D( _A, i.uv );
-				float4 Layer1 = tex2D( _B, i.uv );
-				float4 Layer2 = tex2D( _C, i.uv );
-				float4 Layer3 = tex2D( _D, i.uv );
+				float4 Weights = ASE_SAMPLE_PORT( _A, i.uv );
+				float4 Layer1 = ASE_SAMPLE_PORT( _B, i.uv );
+				float4 Layer2 = ASE_SAMPLE_PORT( _C, i.uv );
+				float4 Layer3 = ASE_SAMPLE_PORT( _D, i.uv );
 				return ( Weights.x*Layer1 + Weights.y*Layer2 + Weights.z*Layer3 ) / ( Weights.x + Weights.y + Weights.z );
 			}
 			ENDCG
@@ -66,16 +68,16 @@ Shader "Hidden/WeightedBlendNode"
 		Pass
 		{
 			CGPROGRAM
-			sampler2D _C;
-			sampler2D _D;
-			sampler2D _E;
+			ASE_PORT( _C );
+			ASE_PORT( _D );
+			ASE_PORT( _E );
 			float4 frag ( v2f_img i ) : SV_Target
 			{
-				float4 Weights = tex2D ( _A, i.uv );
-				float4 Layer1 = tex2D ( _B, i.uv );
-				float4 Layer2 = tex2D ( _C, i.uv );
-				float4 Layer3 = tex2D ( _D, i.uv );
-				float4 Layer4 = tex2D ( _E, i.uv );
+				float4 Weights = ASE_SAMPLE_PORT( _A, i.uv );
+				float4 Layer1 = ASE_SAMPLE_PORT( _B, i.uv );
+				float4 Layer2 = ASE_SAMPLE_PORT( _C, i.uv );
+				float4 Layer3 = ASE_SAMPLE_PORT( _D, i.uv );
+				float4 Layer4 = ASE_SAMPLE_PORT( _E, i.uv );
 				return ( Weights.x*Layer1 + Weights.y*Layer2 + Weights.z*Layer3 + Weights.w*Layer4 ) / ( Weights.x + Weights.y + Weights.z + Weights.w );
 			}
 			ENDCG

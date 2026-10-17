@@ -11,17 +11,11 @@ namespace AmplifyShaderEditor
 	[NodeAttributes( "Screen Depth", "Camera And Screen", "Given a screen position returns the depth of the scene to the object as seen by the camera" )]
 	public sealed class ScreenDepthNode : ParentNode
 	{
-		[SerializeField]
-		private bool m_convertToLinear = true;
+		
 
 		[SerializeField]
-		private int m_viewSpaceInt = 0;
-
-		private const string ConvertToLinearStr = "Convert To Linear";
-
-		private readonly string[] m_viewSpaceStr = { "Eye Space", "0-1 Space" };
-
-		private readonly string[] m_vertexNameStr = { "eyeDepth", "clampDepth" };
+		private int m_viewSpaceInt = ( int )DepthMode.DepthEye;
+		private DepthMode m_depthMode { get { return ( DepthMode )m_viewSpaceInt; } }
 
 		private UpperLeftWidgetHelper m_upperLeftWidget = new UpperLeftWidgetHelper();
 
@@ -32,7 +26,7 @@ namespace AmplifyShaderEditor
 			AddOutputPort( WirePortDataType.FLOAT, "Depth" );
 			m_autoWrapProperties = true;
 			m_hasLeftDropdown = true;
-			SetAdditonalTitleText( string.Format( Constants.SubTitleSpaceFormatStr, m_viewSpaceStr[ m_viewSpaceInt ] ) );
+			UpdateAdditonalTitleText();
 		}
 
 		public override void AfterCommonInit()
@@ -52,14 +46,19 @@ namespace AmplifyShaderEditor
 			m_upperLeftWidget = null;
 		}
 
+		private void UpdateAdditonalTitleText()
+		{
+			SetAdditonalTitleText( string.Format( Constants.SubTitleModeFormatStr, GeneratorUtils.DepthModeStr[ m_viewSpaceInt ] ) );
+		}
+
 		public override void Draw( DrawInfo drawInfo )
 		{
 			base.Draw( drawInfo );
 			EditorGUI.BeginChangeCheck();
-			m_viewSpaceInt = m_upperLeftWidget.DrawWidget( this, m_viewSpaceInt, m_viewSpaceStr );
+			m_viewSpaceInt = m_upperLeftWidget.DrawWidget( this, m_viewSpaceInt, GeneratorUtils.DepthModeStr );
 			if( EditorGUI.EndChangeCheck() )
 			{
-				SetAdditonalTitleText( string.Format( Constants.SubTitleSpaceFormatStr, m_viewSpaceStr[ m_viewSpaceInt ] ) );
+				UpdateAdditonalTitleText();
 			}
 		}
 
@@ -67,34 +66,32 @@ namespace AmplifyShaderEditor
 		{
 			base.DrawProperties();
 			EditorGUI.BeginChangeCheck();
-			m_viewSpaceInt = EditorGUILayoutPopup( "View Space", m_viewSpaceInt, m_viewSpaceStr );
-			if( EditorGUI.EndChangeCheck() )
+			m_viewSpaceInt = EditorGUILayoutPopup( "Depth Mode", m_viewSpaceInt, GeneratorUtils.DepthModeStr );
+			if ( EditorGUI.EndChangeCheck() )
 			{
-				SetAdditonalTitleText( string.Format( Constants.SubTitleSpaceFormatStr, m_viewSpaceStr[ m_viewSpaceInt ] ) );
+				UpdateAdditonalTitleText();
 			}
-
-			m_convertToLinear = EditorGUILayoutToggle( ConvertToLinearStr, m_convertToLinear );
 		}
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
 		{
-			if( dataCollector.PortCategory == MasterNodePortCategory.Tessellation )
+			if ( dataCollector.PortCategory == MasterNodePortCategory.Tessellation )
 			{
 				UIUtils.ShowNoVertexModeNodeMessage( this );
 				return "0";
 			}
 
-			if( m_outputPorts[ 0 ].IsLocalValue( dataCollector.PortCategory ) )
+			if ( m_outputPorts[ 0 ].IsLocalValue( dataCollector.PortCategory ) )
 				return GetOutputColorItem( 0, outputId, m_outputPorts[ 0 ].LocalValue( dataCollector.PortCategory ) );
 
-			if( !( dataCollector.IsTemplate && dataCollector.IsSRP ) )
+			if ( !( dataCollector.IsTemplate && dataCollector.IsSRP ) )
 				dataCollector.AddToIncludes( UniqueId, Constants.UnityCgLibFuncs );
 
-			if( !dataCollector.IsTemplate || dataCollector.TemplateDataCollectorInstance.CurrentSRPType != TemplateSRPType.HDRP )
+			if ( !dataCollector.IsTemplate || dataCollector.TemplateDataCollectorInstance.CurrentSRPType != TemplateSRPType.HDRP )
 			{
-				if( dataCollector.IsTemplate && dataCollector.CurrentSRPType == TemplateSRPType.URP )
+				if ( dataCollector.IsTemplate && dataCollector.CurrentSRPType == TemplateSRPType.URP )
 				{
-					dataCollector.AddToDirectives( Constants.CameraDepthTextureLWEnabler, -1, AdditionalLineType.Define );
+					dataCollector.AddToDirectives( Constants.CameraDepthTextureURPEnabler, -1, AdditionalLineType.Define );
 				}
 				else
 				{
@@ -105,13 +102,15 @@ namespace AmplifyShaderEditor
 
 
 			string screenPosNorm = string.Empty;
-			if( m_inputPorts[ 0 ].IsConnected )
+			if ( m_inputPorts[ 0 ].IsConnected )
+			{
 				screenPosNorm = m_inputPorts[ 0 ].GeneratePortInstructions( ref dataCollector );
+			}
 			else
 			{
-				if( dataCollector.IsTemplate )
+				if ( dataCollector.IsTemplate )
 				{
-					if( !dataCollector.TemplateDataCollectorInstance.GetCustomInterpolatedData( TemplateInfoOnSematics.SCREEN_POSITION_NORMALIZED, WirePortDataType.FLOAT4, PrecisionType.Float, ref screenPosNorm, true,MasterNodePortCategory.Fragment ) )
+					if ( !dataCollector.TemplateDataCollectorInstance.GetCustomInterpolatedData( TemplateInfoOnSematics.SCREEN_POSITION_NORMALIZED, WirePortDataType.FLOAT4, PrecisionType.Float, ref screenPosNorm, true, MasterNodePortCategory.Fragment ) )
 					{
 						screenPosNorm = GeneratorUtils.GenerateScreenPositionNormalized( ref dataCollector, UniqueId, CurrentPrecisionType, !dataCollector.UsingCustomScreenPos );
 					}
@@ -123,48 +122,57 @@ namespace AmplifyShaderEditor
 			}
 
 			string screenDepthInstruction = TemplateHelperFunctions.CreateDepthFetch( dataCollector, screenPosNorm );
-			
-			if( m_convertToLinear )
+
+			if ( m_depthMode == DepthMode.DepthLinearEye || m_depthMode == DepthMode.DepthLinear01 )
 			{
-				string viewSpace = m_viewSpaceInt == 0 ? "LinearEyeDepth" : "Linear01Depth";
-				string formatStr = string.Empty;
-				if( ( dataCollector.IsTemplate && dataCollector.IsSRP ) )
-					formatStr = "(" + screenDepthInstruction + ",_ZBufferParams)";
-				else
-					formatStr = "(" + screenDepthInstruction + ")";
-				screenDepthInstruction = viewSpace + formatStr;
-			}
-			else
-			{
-				if( m_viewSpaceInt == 0 )
+				string viewSpace = ( m_depthMode == DepthMode.DepthLinearEye ) ? "LinearEyeDepth" : "Linear01Depth";
+				if ( dataCollector.IsTemplate && dataCollector.IsSRP )
 				{
-					screenDepthInstruction = string.Format( "({0}*( _ProjectionParams.z - _ProjectionParams.y ))", screenDepthInstruction );
+					screenDepthInstruction = string.Format( "{0}( {1}, _ZBufferParams )", viewSpace, screenDepthInstruction );
+				}
+				else
+				{
+					screenDepthInstruction = string.Format( "{0}( {1} )", viewSpace, screenDepthInstruction );
 				}
 			}
+			else if ( m_depthMode == DepthMode.DepthEye )
+			{
+				screenDepthInstruction = string.Format( "{0} * ( _ProjectionParams.z - _ProjectionParams.y )", screenDepthInstruction );
+			}
 
-			dataCollector.AddLocalVariable( UniqueId, CurrentPrecisionType, WirePortDataType.FLOAT, m_vertexNameStr[ m_viewSpaceInt ] + OutputId, screenDepthInstruction );
+			dataCollector.AddLocalVariable( UniqueId, CurrentPrecisionType, WirePortDataType.FLOAT, GeneratorUtils.DepthModeVarNameStr[ m_viewSpaceInt ] + OutputId, screenDepthInstruction );
 
-			m_outputPorts[ 0 ].SetLocalValue( m_vertexNameStr[ m_viewSpaceInt ] + OutputId, dataCollector.PortCategory );
-			return GetOutputColorItem( 0, outputId, m_vertexNameStr[ m_viewSpaceInt ] + OutputId );
+			m_outputPorts[ 0 ].SetLocalValue( GeneratorUtils.DepthModeVarNameStr[ m_viewSpaceInt ] + OutputId, dataCollector.PortCategory );
+			return GetOutputColorItem( 0, outputId, GeneratorUtils.DepthModeVarNameStr[ m_viewSpaceInt ] + OutputId );
 		}
 
 		public override void ReadFromString( ref string[] nodeParams )
 		{
 			base.ReadFromString( ref nodeParams );
 			m_viewSpaceInt = Convert.ToInt32( GetCurrentParam( ref nodeParams ) );
-			if( UIUtils.CurrentShaderVersion() >= 13901 )
+			if( UIUtils.CurrentShaderVersion() >= 13901 && UIUtils.CurrentShaderVersion() < 19702 )
 			{
-				m_convertToLinear = Convert.ToBoolean( GetCurrentParam( ref nodeParams ) );
+				bool convertToLinear = Convert.ToBoolean( GetCurrentParam( ref nodeParams ) );
+				if ( !convertToLinear )
+				{
+					if ( m_viewSpaceInt == ( int )DepthMode.DepthLinearEye )
+					{
+						m_viewSpaceInt = ( int )DepthMode.DepthEye;
+					}
+					else if ( m_viewSpaceInt == ( int )DepthMode.DepthLinear01 )
+					{
+						m_viewSpaceInt = ( int )DepthMode.Depth01;
+					}
+				}
 			}
 
-			SetAdditonalTitleText( string.Format( Constants.SubTitleSpaceFormatStr, m_viewSpaceStr[ m_viewSpaceInt ] ) );
+			UpdateAdditonalTitleText();
 		}
 
 		public override void WriteToString( ref string nodeInfo, ref string connectionsInfo )
 		{
 			base.WriteToString( ref nodeInfo, ref connectionsInfo );
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_viewSpaceInt );
-			IOUtils.AddFieldValueToString( ref nodeInfo, m_convertToLinear );
 		}
 	}
 

@@ -16,6 +16,12 @@ namespace AmplifyShaderEditor
 			base.CommonInit( uniqueId );
 			m_inputPorts[ 1 ].Name = "Layer Base";
 			AddInputPort( WirePortDataType.FLOAT, false, string.Empty );
+
+			// @diogo: the base only forbade samplers on the ports that existed by then, so this later one
+			// has to name them itself
+			m_inputPorts[ m_inputPorts.Count - 1 ].AddPortForbiddenTypes( WirePortDataType.SAMPLER1D, WirePortDataType.SAMPLER2D, WirePortDataType.SAMPLER3D,
+				WirePortDataType.SAMPLERCUBE, WirePortDataType.SAMPLER2DARRAY, WirePortDataType.SAMPLERSTATE );
+
 			for ( int i = 2; i < m_inputPorts.Count; i++ )
 			{
 				m_inputPorts[ i ].Name = AmountsStr[ i - 2 ];

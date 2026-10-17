@@ -1,0 +1,2359 @@
+[Licensing::Module] Trying to connect to existing licensing client channel...
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-hday" at "2026-10-17T19:44:50.1195428Z"
+Built from '6000.3/staging' branch; Version is '6000.3.7f1 (696ec25a53d1) revision 6909634'; Using compiler version '194234433'; Build Type 'Release'
+OS: 'Windows 11  (10.0.26200) Enterprise' Language: 'en' Physical Memory: 65222 MB
+BatchMode: 1, IsHumanControllingUs: 0, StartBugReporterOnCrash: 0, Is64bit: 1
+System  architecture: x64
+Process architecture: x64
+Date: 2026-10-17T19:44:50Z
+[Licensing::Client] Handshaking with LicensingClient:
+  Version:                 1.17.4+4293ba1
+  Session Id:              740ec03aad7d45468090ae0634aacb13
+  Correlation Id:          8330834bde43ee7f585d5d559ab32653
+  External correlation Id: 4728743123899667175
+  Machine Id:              ZF6tTSmWzmiycfsJudW+nNq/gDo=
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-hday" (connect: 0.00s, validation: 0.00s, handshake: 1.96s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-hday-notifications" at "2026-10-17T19:44:52.0861422Z"
+[Licensing::Module] Licensing Background thread has ended after 1.97s
+
+COMMAND LINE ARGUMENTS:
+C:\Program Files\Unity\Hub\Editor\6000.3.7f1\Editor\Unity.exe
+-adb2
+-batchMode
+-noUpm
+-name
+AssetImportWorker2
+-projectPath
+D:/Projects/WCUnity
+-logFile
+Logs/AssetImportWorker2.log
+-srvPort
+60591
+-licensingIpc
+LicenseClient-hday
+-job-worker-count
+15
+-background-job-worker-count
+8
+-gc-helper-count
+1
+-name
+AssetImport
+Successfully changed project path to: D:/Projects/WCUnity
+D:/Projects/WCUnity
+[UnityMemory] Configuration Parameters - Can be set up in boot.config
+    "memorysetup-temp-allocator-size-nav-mesh-worker=65536"
+    "memorysetup-temp-allocator-size-audio-worker=65536"
+    "memorysetup-temp-allocator-size-gfx=262144"
+    "memorysetup-allocator-temp-initial-block-size-main=262144"
+    "memorysetup-allocator-temp-initial-block-size-worker=262144"
+    "memorysetup-temp-allocator-size-background-worker=32768"
+    "memorysetup-temp-allocator-size-job-worker=262144"
+    "memorysetup-temp-allocator-size-preload-manager=33554432"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-bucket-allocator-granularity=16"
+    "memorysetup-bucket-allocator-bucket-count=8"
+    "memorysetup-bucket-allocator-block-size=33554432"
+    "memorysetup-bucket-allocator-block-count=8"
+    "memorysetup-main-allocator-block-size=16777216"
+    "memorysetup-thread-allocator-block-size=16777216"
+    "memorysetup-gfx-main-allocator-block-size=16777216"
+    "memorysetup-gfx-thread-allocator-block-size=16777216"
+    "memorysetup-cache-allocator-block-size=4194304"
+    "memorysetup-typetree-allocator-block-size=2097152"
+    "memorysetup-profiler-bucket-allocator-granularity=16"
+    "memorysetup-profiler-bucket-allocator-bucket-count=8"
+    "memorysetup-profiler-bucket-allocator-block-size=33554432"
+    "memorysetup-profiler-bucket-allocator-block-count=8"
+    "memorysetup-profiler-allocator-block-size=16777216"
+    "memorysetup-profiler-editor-allocator-block-size=1048576"
+    "memorysetup-temp-allocator-size-main=16777216"
+    "memorysetup-job-temp-allocator-block-size=2097152"
+    "memorysetup-job-temp-allocator-block-size-background=1048576"
+    "memorysetup-job-temp-allocator-reduction-small-platforms=262144"
+    "memorysetup-temp-allocator-size-cloud-worker=32768"
+Player connection [57240]  Target information:
+
+Player connection [57240]  * "[IP] 192.168.4.67 [Port] 0 [Flags] 2 [Guid] 3149096890 [EditorId] 3149096890 [Version] 1048832 [Id] WindowsEditor(7,19377A-hday) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+
+Player connection [57240]  * "[IP] 10.99.32.246 [Port] 0 [Flags] 2 [Guid] 3149096890 [EditorId] 3149096890 [Version] 1048832 [Id] WindowsEditor(7,19377A-hday) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+
+Player connection [57240]  * "[IP] 192.168.127.11 [Port] 0 [Flags] 2 [Guid] 3149096890 [EditorId] 3149096890 [Version] 1048832 [Id] WindowsEditor(7,19377A-hday) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+
+Player connection [57240] Host joined multi-casting on [225.0.0.222:54997]...
+Player connection [57240] Host joined alternative multi-casting on [225.0.0.222:34997]...
+JobSystem: Creating JobQueue using job-worker-count value 15
+Input System module state changed to: Initialized.
+[Physics::Module] Initialized fallback backend.
+[Physics::Module] Id: 0xdecafbad
+Library Redirect Path: Library/
+[Physics::Module] Selected backend.
+[Physics::Module] Name: PhysX
+[Physics::Module] Id: 0xf2b8ea05
+[Physics::Module] SDK Version: 4.1.2
+[Physics::Module] Integration Version: 1.0.0
+[Physics::Module] Threading Mode: Multi-Threaded
+Refreshing native plugins compatible for Editor in 0.34 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Initialize engine version: 6000.3.7f1 (696ec25a53d1)
+[Subsystems] Discovering subsystems at path C:/Program Files/Unity/Hub/Editor/6000.3.7f1/Editor/Data/Resources/UnitySubsystems
+[Subsystems] Discovering subsystems at path D:/Projects/WCUnity/Assets
+GfxDevice: creating device client; kGfxThreadingModeNonThreaded
+Direct3D:
+    Version:  Direct3D 11.0 [level 11.1]
+    Renderer: NVIDIA GeForce RTX 4090 (ID=0x2684)
+    Vendor:   NVIDIA
+    VRAM:     24142 MB
+    Driver:   32.0.16.1742
+Property (_MainTex) already exists. Use SetTexture instead.
+Initialize mono
+Mono path[0] = 'C:/Program Files/Unity/Hub/Editor/6000.3.7f1/Editor/Data/Managed'
+Mono path[1] = 'C:/Program Files/Unity/Hub/Editor/6000.3.7f1/Editor/Data/MonoBleedingEdge/lib/mono/unityjit-win32'
+Mono config path = 'C:/Program Files/Unity/Hub/Editor/6000.3.7f1/Editor/Data/MonoBleedingEdge/etc'
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56164
+Begin MonoManager ReloadAssembly
+Registering precompiled unity dll's ...
+Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.3.7f1/Editor/Data/PlaybackEngines/WebGLSupport/UnityEditor.WebGL.Extensions.dll
+Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.3.7f1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] License group:
+  Id: 212111-UnityPersXXXX
+  Product: Unity Personal
+  Type: Assigned
+  Expiration: Unlimited
+Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.3.7f1/Editor/Data/PlaybackEngines/AndroidPlayer/UnityEditor.Android.Extensions.dll
+Registered in 0.007942 seconds.
+- Loaded All Assemblies, in  0.372 seconds
+Native extension for Android target not found
+Android Extension - Scanning For ADB Devices 1000 ms
+Native extension for WindowsStandalone target not found
+Native extension for WebGL target not found
+ScheduleIndexationOnStartup MainProcess:False IndexOnStartup:True
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  1.401 seconds
+Domain Reload Profiling: 1770ms
+	BeginReloadAssembly (128ms)
+		ExecutionOrderSort (0ms)
+		DisableScriptedObjects (0ms)
+		BackupInstance (0ms)
+		ReleaseScriptingObjects (0ms)
+		CreateAndSetChildDomain (1ms)
+	RebuildCommonClasses (30ms)
+	RebuildNativeTypeToScriptingClass (11ms)
+	initialDomainReloadingComplete (45ms)
+	LoadAllAssembliesAndSetupDomain (154ms)
+		LoadAssemblies (125ms)
+		RebuildTransferFunctionScriptingTraits (0ms)
+		AnalyzeDomain (150ms)
+			TypeCache.Refresh (149ms)
+				TypeCache.ScanAssembly (139ms)
+			BuildScriptInfoCaches (0ms)
+			ResolveRequiredComponents (0ms)
+	FinalizeReload (1401ms)
+		ReleaseScriptCaches (0ms)
+		RebuildScriptCaches (0ms)
+		SetupLoadedEditorAssemblies (1371ms)
+			LogAssemblyErrors (0ms)
+			InitializePlatformSupportModulesInManaged (1092ms)
+			SetLoadedEditorAssemblies (3ms)
+			BeforeProcessingInitializeOnLoad (76ms)
+			ProcessInitializeOnLoadAttributes (136ms)
+			ProcessInitializeOnLoadMethodAttributes (63ms)
+			AfterProcessingInitializeOnLoad (0ms)
+			EditorAssembliesLoaded (0ms)
+		ExecutionOrderSort2 (0ms)
+		AwakeInstancesAfterBackupRestoration (0ms)
+========================================================================
+Worker process is ready to serve import requests
+Import Worker Mode flag is 0x00
+Begin MonoManager ReloadAssembly
+[Licensing::Client] Successfully resolved entitlement details
+- Loaded All Assemblies, in  0.484 seconds
+Refreshing native plugins compatible for Editor in 0.44 ms, found 0 plugins.
+Native extension for Android target not found
+Native extension for WindowsStandalone target not found
+Native extension for WebGL target not found
+Package Manager log level set to [2]
+[Package Manager] Failed to launch server process. Reason: Unity was launched with the -noUpm command-line argument
+[Package Manager] Unable to send message (not connected to server process).
+[Package Manager] Cannot connect to Unity Package Manager local server
+[Package Manager] Failed to launch server process. Reason: Unity was launched with the -noUpm command-line argument
+[Package Manager] Unable to send message (not connected to server process).
+[Package Manager] Cannot connect to Unity Package Manager local server
+ScheduleIndexationOnStartup MainProcess:False IndexOnStartup:True
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  0.520 seconds
+Domain Reload Profiling: 997ms
+	BeginReloadAssembly (164ms)
+		ExecutionOrderSort (0ms)
+		DisableScriptedObjects (4ms)
+		BackupInstance (0ms)
+		ReleaseScriptingObjects (0ms)
+		CreateAndSetChildDomain (30ms)
+	RebuildCommonClasses (34ms)
+	RebuildNativeTypeToScriptingClass (9ms)
+	initialDomainReloadingComplete (31ms)
+	LoadAllAssembliesAndSetupDomain (239ms)
+		LoadAssemblies (255ms)
+		RebuildTransferFunctionScriptingTraits (0ms)
+		AnalyzeDomain (75ms)
+			TypeCache.Refresh (52ms)
+				TypeCache.ScanAssembly (41ms)
+			BuildScriptInfoCaches (19ms)
+			ResolveRequiredComponents (2ms)
+	FinalizeReload (521ms)
+		ReleaseScriptCaches (0ms)
+		RebuildScriptCaches (0ms)
+		SetupLoadedEditorAssemblies (392ms)
+			LogAssemblyErrors (0ms)
+			InitializePlatformSupportModulesInManaged (8ms)
+			SetLoadedEditorAssemblies (3ms)
+			BeforeProcessingInitializeOnLoad (132ms)
+			ProcessInitializeOnLoadAttributes (162ms)
+			ProcessInitializeOnLoadMethodAttributes (75ms)
+			AfterProcessingInitializeOnLoad (11ms)
+			EditorAssembliesLoaded (0ms)
+		ExecutionOrderSort2 (0ms)
+		AwakeInstancesAfterBackupRestoration (15ms)
+Property (_MainTex) already exists. Use SetTexture instead.
+Launched and connected shader compiler UnityShaderCompiler.exe after 0.09 seconds
+Refreshing native plugins compatible for Editor in 0.78 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 12 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 2521 unused Assets / (2.1 MB). Loaded Objects now: 3392.
+Memory consumption went from 115.1 MB to 113.0 MB.
+Total: 4.380300 ms (FindLiveObjects: 0.269200 ms CreateObjectMapping: 0.082600 ms MarkObjects: 3.411300 ms  DeleteObjects: 0.615700 ms)
+
+========================================================================
+Received Import Request.
+  Time since last request: 43013.407161 seconds.
+  path: Assets/Art/Space/SpaceBackground01.png
+  artifactKey: Guid(45f5168d3eec0214383bf442d2a8f2b8) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Space/SpaceBackground01.png using Guid(45f5168d3eec0214383bf442d2a8f2b8) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '5c13effe248cb25089bb3abd66563f8c') in 0.3163674 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 3
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000015 seconds.
+  path: Assets/Art/Shaders/ShieldImpact.shader
+  artifactKey: Guid(b7fe7ae351e43004e92b1f88231c2d28) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Shaders/ShieldImpact.shader using Guid(b7fe7ae351e43004e92b1f88231c2d28) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '6e727e39f1cf10d93304b49c31539a25') in 0.0119189 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000103 seconds.
+  path: Assets/Art/Animations/CineObjs.controller
+  artifactKey: Guid(a656c20872a3a79409584886cd7be294) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Animations/CineObjs.controller using Guid(a656c20872a3a79409584886cd7be294) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '0441c42e8b44d7fc7ad38680344526d2') in 0.0279062 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 4
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000053 seconds.
+  path: Assets/Art/Materials/RetroPixel.mat
+  artifactKey: Guid(6632fdf47ac372343a520e4dc2fb0f24) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Materials/RetroPixel.mat using Guid(6632fdf47ac372343a520e4dc2fb0f24) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'aece535a3b0cdb32a24c1a0ef5b09155') in 0.1301703 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000017 seconds.
+  path: Assets/Art/Fonts/WL Kilrathi 11.ttf
+  artifactKey: Guid(65fd7cddcb4fc5c4f89e8ca530f97285) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Fonts/WL Kilrathi 11.ttf using Guid(65fd7cddcb4fc5c4f89e8ca530f97285) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '8d3c70355de84da18697e89fce536a44') in 0.0137239 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 3
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.906415 seconds.
+  path: Assets/Art/VFX/A_Explode_0002.png
+  artifactKey: Guid(d4bb24795621410489c8f03e202f013a) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/VFX/A_Explode_0002.png using Guid(d4bb24795621410489c8f03e202f013a) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '325ab0ff7b894aaa6121a75a94c8c1ab') in 0.0197089 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000018 seconds.
+  path: Assets/Art/VFX/Explode_0013.png
+  artifactKey: Guid(021b906a971519843be63092d77b61c6) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/VFX/Explode_0013.png using Guid(021b906a971519843be63092d77b61c6) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '03c7f620da452507c958639836db3175') in 0.1532457 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000087 seconds.
+  path: Assets/Art/VFX/Explode_0011.png
+  artifactKey: Guid(f48413d5316378c4592b675a578c6db9) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/VFX/Explode_0011.png using Guid(f48413d5316378c4592b675a578c6db9) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '6bf02ad368e8b4b72b06e69a48763653') in 0.5189464 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000251 seconds.
+  path: Assets/Art/Weapons/LaserTest_01.png
+  artifactKey: Guid(dbf4aced09ef31a4086a92476a028e04) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Weapons/LaserTest_01.png using Guid(dbf4aced09ef31a4086a92476a028e04) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '4a1702b9a97124d8b8f12fde64f68689') in 1.1142032 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 3
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000016 seconds.
+  path: Assets/Art/VFX/Explode_0018.png
+  artifactKey: Guid(b630807a1507f924babc207020e1ecf6) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/VFX/Explode_0018.png using Guid(b630807a1507f924babc207020e1ecf6) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '4c0f3bc321d7168e0f9a2908d13222da') in 0.1671196 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000278 seconds.
+  path: Assets/Art/VFX/A_Explode_0010.png
+  artifactKey: Guid(61460aeb8058f404497850b0d4e0b803) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/VFX/A_Explode_0010.png using Guid(61460aeb8058f404497850b0d4e0b803) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'a4d10c6b6b95f1006ead106fc1008273') in 0.1421041 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000152 seconds.
+  path: Assets/Scripts/Cockpit/CloakLevelDisplay.cs
+  artifactKey: Guid(bd1935ac2d8770c4785271517e41c0da) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Scripts/Cockpit/CloakLevelDisplay.cs using Guid(bd1935ac2d8770c4785271517e41c0da) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '3c20b78edb716529b03c09060f76f725') in 0.1372325 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000131 seconds.
+  path: Assets/Scripts/Cockpit/JoystickThrottle.cs
+  artifactKey: Guid(f3ee1fa34106d7d4fa4f053f76990af9) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Scripts/Cockpit/JoystickThrottle.cs using Guid(f3ee1fa34106d7d4fa4f053f76990af9) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'bd123275eddfb430702440413f38002e') in 0.009028 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000080 seconds.
+  path: Assets/Prefabs/Shared/EventSystem.prefab
+  artifactKey: Guid(438757b43b37acf4285f73ede60950ed) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Prefabs/Shared/EventSystem.prefab using Guid(438757b43b37acf4285f73ede60950ed) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '30ff5ed53e1c8e68df6a6293da888fc9') in 0.3876512 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 6
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000185 seconds.
+  path: Assets/Scripts/Cockpit/CustomSlider.cs
+  artifactKey: Guid(b0a33fe55a0a3a948a8b430b3b4ae952) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Scripts/Cockpit/CustomSlider.cs using Guid(b0a33fe55a0a3a948a8b430b3b4ae952) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'fea2388638a56f30206706832b14c911') in 0.0059976 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000114 seconds.
+  path: Assets/Psychose Interactive/NGSS/Documentation.pdf
+  artifactKey: Guid(a810078c2afdb9a4c981cc9462aba619) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Psychose Interactive/NGSS/Documentation.pdf using Guid(a810078c2afdb9a4c981cc9462aba619) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'dc3d5560d527faa482ca2815b8f6b5b5') in 0.0108575 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000078 seconds.
+  path: Assets/Scripts/Cockpit/Lock.cs
+  artifactKey: Guid(befabce879f5d9f49b2e9bb0161637f9) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Scripts/Cockpit/Lock.cs using Guid(befabce879f5d9f49b2e9bb0161637f9) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'b178cfabf5e3f9249821fad546e8e71c') in 0.2872059 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000150 seconds.
+  path: Assets/Psychose Interactive/NGSS/ShowcaseSceneFrustumShadows.unity
+  artifactKey: Guid(ae9928be16b1b6647a9354da8ca51a4f) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Psychose Interactive/NGSS/ShowcaseSceneFrustumShadows.unity using Guid(ae9928be16b1b6647a9354da8ca51a4f) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '117d8c67dce4623a5de33e88eb5f4056') in 0.1208939 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000106 seconds.
+  path: Assets/Psychose Interactive/NGSS/ShowcaseSceneDirectionalLight.unity
+  artifactKey: Guid(db2dceb429f8f53478e493e80bda13ae) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Psychose Interactive/NGSS/ShowcaseSceneDirectionalLight.unity using Guid(db2dceb429f8f53478e493e80bda13ae) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '12bbd2964788f6bd941964329867b6f8') in 0.4078255 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000055 seconds.
+  path: Assets/Art/VFX/ClockClouds_01.png
+  artifactKey: Guid(6438e184eed3e894791349a01c370728) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/VFX/ClockClouds_01.png using Guid(6438e184eed3e894791349a01c370728) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '9ea40d20264483889657c10fbf24067e') in 0.4304799 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000138 seconds.
+  path: Assets/Plugins/Utils/SpritePicker.cs
+  artifactKey: Guid(e65f1b2be88844e4087e989d8c1176ea) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Plugins/Utils/SpritePicker.cs using Guid(e65f1b2be88844e4087e989d8c1176ea) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'cfb1aa02e5f2de9fca643b86bc735828') in 0.1433783 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000682 seconds.
+  path: Assets/Art/VFX/dither01.png
+  artifactKey: Guid(0d9de7070e80f2743a5227e4c279be69) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/VFX/dither01.png using Guid(0d9de7070e80f2743a5227e4c279be69) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'c34c9949eb4b3e6d89b2d83fdc71cfbf') in 0.0828913 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000185 seconds.
+  path: Assets/Art/Weapons/LaserTest_05.png
+  artifactKey: Guid(c5004a4319398334da98652406549201) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Weapons/LaserTest_05.png using Guid(c5004a4319398334da98652406549201) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '530228c066970207747fed25bf492d21') in 0.0263458 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 3
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000012 seconds.
+  path: Assets/Audio/Impacts/HullImpacts04.wav
+  artifactKey: Guid(ce375488be3b45a4b9fae66630f5af4c) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Audio/Impacts/HullImpacts04.wav using Guid(ce375488be3b45a4b9fae66630f5af4c) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'e6ed35455affb9cee743a383f5d751de') in 0.0937309 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000073 seconds.
+  path: Assets/Art/Cockpits/Dralthi/Dralthi_Cockpit_Front_Exterior_Damaged.png
+  artifactKey: Guid(3b46e5c1c8958964fbcd5a4b6a0cd61e) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Cockpits/Dralthi/Dralthi_Cockpit_Front_Exterior_Damaged.png using Guid(3b46e5c1c8958964fbcd5a4b6a0cd61e) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '3758a9b6f57a484fbbbed6a0f7c23be4') in 0.0795168 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 3
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000051 seconds.
+  path: Assets/Scripts/SFX/RandomAudioSelector.cs
+  artifactKey: Guid(148da6c44163b43449ef2628d7ad5b0f) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Scripts/SFX/RandomAudioSelector.cs using Guid(148da6c44163b43449ef2628d7ad5b0f) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '6e5f0428afcff336bc57680f2a37b8b6') in 0.0527427 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000106 seconds.
+  path: Assets/Art/Cockpits/Dralthi/Dralthi_Cockpit_Front_Exterior_Normals.png
+  artifactKey: Guid(ef5e1dbdb2a762c48a6588e7fdb2de85) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Cockpits/Dralthi/Dralthi_Cockpit_Front_Exterior_Normals.png using Guid(ef5e1dbdb2a762c48a6588e7fdb2de85) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '5adcbfdc3042f42fbfdfc543210a8514') in 0.0854234 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000041 seconds.
+  path: Assets/Scripts/GameObjs/ShipSettings.cs
+  artifactKey: Guid(9381e042c574de1478756c7cc7a7c1e2) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Scripts/GameObjs/ShipSettings.cs using Guid(9381e042c574de1478756c7cc7a7c1e2) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'afc5e2c06f3865bdb54d06c919b9276c') in 0.1339824 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000100 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/EditorOptions.cs
+  artifactKey: Guid(44cb06bc7bfe6e84aa8b5e8b702eb2dd) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/EditorOptions.cs using Guid(44cb06bc7bfe6e84aa8b5e8b702eb2dd) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '803f85357b8b28266f1812a64eb35ccb') in 0.2427738 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000062 seconds.
+  path: Assets/Art/Cockpits/Hornet/Hornet_Cockpit_Rear.png
+  artifactKey: Guid(5792e19a42000b14189b3fba9f21809f) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Cockpits/Hornet/Hornet_Cockpit_Rear.png using Guid(5792e19a42000b14189b3fba9f21809f) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '600dc44265c367886fc83a7f4db4e832') in 0.0164503 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 3
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000011 seconds.
+  path: Assets/Audio/Music/29_Wing_Commander_-_Landing.mp3
+  artifactKey: Guid(84f38e8fb39c9d849adb1b811aa67b1d) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Audio/Music/29_Wing_Commander_-_Landing.mp3 using Guid(84f38e8fb39c9d849adb1b811aa67b1d) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '3ecd557298d615b3eed800d47020e885') in 0.4672432 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000074 seconds.
+  path: Assets/UltimateCRT/Demo/MultiCameraDemoSettings.lighting
+  artifactKey: Guid(b0fab3a8bca3fb8489896a2041e2c59f) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/UltimateCRT/Demo/MultiCameraDemoSettings.lighting using Guid(b0fab3a8bca3fb8489896a2041e2c59f) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '3e53bb774b6bd876458bcfe7cec5e3ed') in 0.0629705 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000212 seconds.
+  path: Assets/Scripts/GameObjs/Unit.cs
+  artifactKey: Guid(bde21c17b85eba04085823eb60dfb6dd) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Scripts/GameObjs/Unit.cs using Guid(bde21c17b85eba04085823eb60dfb6dd) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '2226da1a86a0972514b87935d98291f1') in 0.0101004 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000097 seconds.
+  path: Assets/Art/Cockpits/Dralthi/Dralthi_Cockpit_Front_Exterior_Damaged_Dark.png
+  artifactKey: Guid(a8276bc29ab3161449bebd30298ea372) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Cockpits/Dralthi/Dralthi_Cockpit_Front_Exterior_Damaged_Dark.png using Guid(a8276bc29ab3161449bebd30298ea372) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '97375f2296eb2b1fcd123524b70d9bae') in 0.1399519 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000129 seconds.
+  path: Assets/Art/VFX/Explode_0008.png
+  artifactKey: Guid(429c46a3133b4904fb308fe08c598611) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/VFX/Explode_0008.png using Guid(429c46a3133b4904fb308fe08c598611) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'fbf1c2c80a9690d70c5adf6142f61125') in 0.1386174 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000198 seconds.
+  path: Assets/Art/Cockpits/Hornet/Hornet_Cockpit_Front.png
+  artifactKey: Guid(f86d35ef7d7099744bf58a8b0a6e54b5) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Cockpits/Hornet/Hornet_Cockpit_Front.png using Guid(f86d35ef7d7099744bf58a8b0a6e54b5) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'ff914b610cfeb1b1b6dfdb5e5473b8c4') in 0.0161593 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 3
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000016 seconds.
+  path: Assets/Art/Cockpits/Dralthi/Dralthi_Cockpit_Front_Exterior_Dark.png
+  artifactKey: Guid(c572dc664b1b608448aec6c0b45c48f1) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Cockpits/Dralthi/Dralthi_Cockpit_Front_Exterior_Dark.png using Guid(c572dc664b1b608448aec6c0b45c48f1) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '606f5775e20c528f2f82d3484b9e6563') in 0.0920184 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000111 seconds.
+  path: Assets/Scripts/Editor/HierarchyWindowGroupHeader.cs
+  artifactKey: Guid(6a7dd3789b472cc4da477aedcfcec09d) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Scripts/Editor/HierarchyWindowGroupHeader.cs using Guid(6a7dd3789b472cc4da477aedcfcec09d) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '3888f79f35dca0e717b5b16fd52fc417') in 0.1041642 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000102 seconds.
+  path: Assets/Art/VFX/Explode_0010.png
+  artifactKey: Guid(6de1b9fe31c54c0468dd8a3e0e2e5914) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/VFX/Explode_0010.png using Guid(6de1b9fe31c54c0468dd8a3e0e2e5914) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'd669feefa0e052c398625027d4539c6a') in 0.3645126 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000134 seconds.
+  path: Assets/Art/Cockpits/Salthi/Salthi_UI.fbx
+  artifactKey: Guid(104df62b7c534ee4694c980f1426e370) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Cockpits/Salthi/Salthi_UI.fbx using Guid(104df62b7c534ee4694c980f1426e370) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '05f6684e30e6328bc5323ab79ad86c3e') in 0.1718136 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 16
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000012 seconds.
+  path: Assets/Art/Cockpits/UI/RadarHitQuad_01.png
+  artifactKey: Guid(b25e053a1213c3f44b0148bace83cc9b) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Cockpits/UI/RadarHitQuad_01.png using Guid(b25e053a1213c3f44b0148bace83cc9b) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'ddc9f516cf54651bfb4e0d3506de30a7') in 0.0637051 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 3
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000022 seconds.
+  path: Assets/Art/Cockpits/UI/Kilrathi_Bracket_Sel.png
+  artifactKey: Guid(4256eeafe99bd5a4d82559f653149237) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Cockpits/UI/Kilrathi_Bracket_Sel.png using Guid(4256eeafe99bd5a4d82559f653149237) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '897d912c4dd203749dbfcdb41a1c664c') in 0.1538372 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 3
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000028 seconds.
+  path: Assets/Art/Cockpits/UI/SphereNormals.png
+  artifactKey: Guid(297ff98da3df7094fbd2020f5e34caf4) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Cockpits/UI/SphereNormals.png using Guid(297ff98da3df7094fbd2020f5e34caf4) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '7304204331cd250d7368befcbf3a636f') in 0.0190907 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000100 seconds.
+  path: Assets/Art/Cockpits/Valtar/Valtar_UI.fbx
+  artifactKey: Guid(e17590f0073fcc84bb4ba209076e207c) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Cockpits/Valtar/Valtar_UI.fbx using Guid(e17590f0073fcc84bb4ba209076e207c) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'ecd329efa1db9f91e3116368b1fb31e1') in 0.1185744 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 16
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/Art/Cockpits/UI/Reticle_HornetRoll.png
+  artifactKey: Guid(251ef782a7942864db0f178508d97bd8) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Cockpits/UI/Reticle_HornetRoll.png using Guid(251ef782a7942864db0f178508d97bd8) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'ef5e426441b23150705a38261f54d476') in 0.0571873 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 3
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000012 seconds.
+  path: Assets/Art/Cockpits/UI/Kilrathi_Bracket_Default.png
+  artifactKey: Guid(0f1b3540f1cb55f4585ceb98cdfbf197) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Cockpits/UI/Kilrathi_Bracket_Default.png using Guid(0f1b3540f1cb55f4585ceb98cdfbf197) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'a2a855b93c27882286182bca262bee50') in 0.1120956 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 3
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000061 seconds.
+  path: Assets/Art/Fonts/Old/SLICKER.TTF
+  artifactKey: Guid(a407f085523c4ac48966bca389f72f90) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Fonts/Old/SLICKER.TTF using Guid(a407f085523c4ac48966bca389f72f90) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'e5dabd4c41c416ba8493bf1122432384') in 0.5983501 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 3
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000047 seconds.
+  path: Assets/Art/Cockpits/Strakha/Strakha_Bubbles.fbx
+  artifactKey: Guid(fac6f0639e027c74196104480fdfe3f6) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Cockpits/Strakha/Strakha_Bubbles.fbx using Guid(fac6f0639e027c74196104480fdfe3f6) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '8c0a08593e0e3b747e20e117f2c2dc27') in 0.0839514 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 9
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000011 seconds.
+  path: Assets/Art/Fonts/Old/Wing Commander Terminal.otf
+  artifactKey: Guid(231469c0f500e3d4b9c58e9e5425b7a5) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Fonts/Old/Wing Commander Terminal.otf using Guid(231469c0f500e3d4b9c58e9e5425b7a5) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '5345f85a3217d799addb3721572f7c0a') in 0.1481591 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 3
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000107 seconds.
+  path: Assets/Art/Cockpits/UI/MFD_Subtext_02.png
+  artifactKey: Guid(7dd421a6c7d97224ba4e30348395cbe2) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Cockpits/UI/MFD_Subtext_02.png using Guid(7dd421a6c7d97224ba4e30348395cbe2) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '1fab9cce0bc49c41788ba1df7808d4eb') in 0.2934132 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000327 seconds.
+  path: Assets/Art/Ships/Grikath/GrikathTurret13.png
+  artifactKey: Guid(a7d640ea818b7304dbf87afddc96034c) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Ships/Grikath/GrikathTurret13.png using Guid(a7d640ea818b7304dbf87afddc96034c) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'cfc92dbfd6b640142afc02e123c11999') in 0.0178136 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000061 seconds.
+  path: Assets/Art/Ships/Dralthi/HowieDralthi8.png
+  artifactKey: Guid(7573a36fb77bb264c8e2f05b9e50297c) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Ships/Dralthi/HowieDralthi8.png using Guid(7573a36fb77bb264c8e2f05b9e50297c) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'bb9f50ffcb7b36a08e72b7b3d15015be') in 0.0188606 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000033 seconds.
+  path: Assets/Art/Ships/Dralthi/HowieDralthiACE2.png
+  artifactKey: Guid(d93f4bdc08214ef44af15fcf48f67873) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Ships/Dralthi/HowieDralthiACE2.png using Guid(d93f4bdc08214ef44af15fcf48f67873) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '6d8cee92c4a12b319b94bbd55a8e5a02') in 0.0144097 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000113 seconds.
+  path: Assets/Art/Materials/Debug/Debug_Orange.mat
+  artifactKey: Guid(d1b7c6290cf6eea439d2af7f972e484f) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Materials/Debug/Debug_Orange.mat using Guid(d1b7c6290cf6eea439d2af7f972e484f) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '6545abb2dff956a7d021c88b0ff13d6e') in 0.0288363 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000168 seconds.
+  path: Assets/Art/Ships/Dralthi/HowieDralthiACE15.png
+  artifactKey: Guid(e32211f1039797547919571ce88e518f) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Ships/Dralthi/HowieDralthiACE15.png using Guid(e32211f1039797547919571ce88e518f) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '76508557a72ee9c0398545b0dc65a074') in 0.0131683 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000088 seconds.
+  path: Assets/Art/Ships/Grikath/GrikathTurret12.png
+  artifactKey: Guid(b1a6c5179a1a7db40ae3690aa6d4fe70) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Ships/Grikath/GrikathTurret12.png using Guid(b1a6c5179a1a7db40ae3690aa6d4fe70) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'd6319b09017d3a0ce31e32ebf94847cf') in 0.0207343 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000096 seconds.
+  path: Assets/Art/Ships/Grikath/GrikathTurret1.png
+  artifactKey: Guid(c210dc2a8955a1847b0454489883d629) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Ships/Grikath/GrikathTurret1.png using Guid(c210dc2a8955a1847b0454489883d629) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '994febe6be32020347fa371b3aa16ba4') in 0.0126023 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000073 seconds.
+  path: Assets/Art/Ships/Dralthi/HowieDralthiACE5.png
+  artifactKey: Guid(f024a7088c4dcd54fa4c9694b76082d1) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Ships/Dralthi/HowieDralthiACE5.png using Guid(f024a7088c4dcd54fa4c9694b76082d1) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'a0ff61eda5efa9c42ed19460bb2b0c4d') in 0.0145044 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000070 seconds.
+  path: Assets/Art/Cockpits/Strakha/Strakha_Cockpit_Front.png
+  artifactKey: Guid(d24113909f5d1f54a93c785f443691ab) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Cockpits/Strakha/Strakha_Cockpit_Front.png using Guid(d24113909f5d1f54a93c785f443691ab) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'd06015fdaad31575948caa179ab0868e') in 0.0135127 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 3
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000016 seconds.
+  path: Assets/Art/Materials/Cockpit/CustomSlider.shader
+  artifactKey: Guid(9cba5c919a317fc488bd5177957850db) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Materials/Cockpit/CustomSlider.shader using Guid(9cba5c919a317fc488bd5177957850db) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'ff354113a0d81b1456cbb97151027b13') in 0.7645935 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000019 seconds.
+  path: Assets/Art/Cockpits/Krant/Krant_Cockpit_Front_Exterior_Normals.png
+  artifactKey: Guid(8fa704c5eb107124c825ff30d62973af) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Cockpits/Krant/Krant_Cockpit_Front_Exterior_Normals.png using Guid(8fa704c5eb107124c825ff30d62973af) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'c2fb5bb4fd661cb5bc230e4cdf703042') in 0.0170165 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000106 seconds.
+  path: Assets/Art/Cockpits/Pilots/Terran_JoystickFire.png
+  artifactKey: Guid(8446de37ffb341d4b996e4f5c1bfbbcf) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Cockpits/Pilots/Terran_JoystickFire.png using Guid(8446de37ffb341d4b996e4f5c1bfbbcf) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '507050fe4f57a6b5b5e4d299cecf1e98') in 0.2317786 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 66
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/Art/Cockpits/Salthi/Salthi_Cockpit_Front_RightGun.png
+  artifactKey: Guid(aca25bc07d90a2c478e27d659b197d24) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Cockpits/Salthi/Salthi_Cockpit_Front_RightGun.png using Guid(aca25bc07d90a2c478e27d659b197d24) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '28a12cec80a614ed87aad91f555b8d62') in 1.6864509 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 3
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000032 seconds.
+  path: Assets/Art/Ships/Hornet/ArneHornetAce0.png
+  artifactKey: Guid(4517175d9b795a949a0d71ff0adc927d) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Ships/Hornet/ArneHornetAce0.png using Guid(4517175d9b795a949a0d71ff0adc927d) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '1f4fa1683931a9c69caee7323f5c90e5') in 0.0166047 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000044 seconds.
+  path: Assets/Art/Ships/Hornet/ArneHornetAce10.png
+  artifactKey: Guid(80f6a46225593de45a851f26eef176b3) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Ships/Hornet/ArneHornetAce10.png using Guid(80f6a46225593de45a851f26eef176b3) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '230bddd2e51f853f92b7b9a50d441efe') in 0.0172586 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000079 seconds.
+  path: Assets/Art/Ships/Salthi/HowieSalthi6.png
+  artifactKey: Guid(af6c764855448b2448858bfcb9017ffb) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Ships/Salthi/HowieSalthi6.png using Guid(af6c764855448b2448858bfcb9017ffb) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'ddb2e024bdf8622d9138ff7f6e15ca5f') in 0.0182671 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000089 seconds.
+  path: Assets/Art/Ships/Scimitar/HowieScimitar5.png
+  artifactKey: Guid(b59403909bddbb54ca8c8ee0ec8c9cae) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Ships/Scimitar/HowieScimitar5.png using Guid(b59403909bddbb54ca8c8ee0ec8c9cae) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'daf262933a6e4810aeb1d906347a2473') in 0.0199138 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000025 seconds.
+  path: Assets/Art/Ships/Salthi/HowieSalthi12.png
+  artifactKey: Guid(1ff808b570bdae04ebf330de195d1aff) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Ships/Salthi/HowieSalthi12.png using Guid(1ff808b570bdae04ebf330de195d1aff) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '2d61ac5cf560f42f6b918c552008016c') in 0.0155598 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000052 seconds.
+  path: Assets/Art/Ships/Hornet/ArneHornet0.png
+  artifactKey: Guid(f0aedf1f37e7a9e438dae1dd0d7ba946) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Ships/Hornet/ArneHornet0.png using Guid(f0aedf1f37e7a9e438dae1dd0d7ba946) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'ea53fbcba77e78a300d555ea2d7752e1') in 0.0196294 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000099 seconds.
+  path: Assets/Art/Ships/Strakha/HowieStrakha11.png
+  artifactKey: Guid(e7632a3e639c5114aa18e141100404e1) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Ships/Strakha/HowieStrakha11.png using Guid(e7632a3e639c5114aa18e141100404e1) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'ea259db74aae68795b3e46c13a96f46b') in 0.0930508 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000121 seconds.
+  path: Assets/Art/Ships/Krant/HowieKrant13.png
+  artifactKey: Guid(22cfe959332a7b84caf5279f2a257f12) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Ships/Krant/HowieKrant13.png using Guid(22cfe959332a7b84caf5279f2a257f12) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '0368459085caa2218fe82929881b9394') in 0.0244829 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000071 seconds.
+  path: Assets/Art/Ships/Salthi/HowieSalthi10.png
+  artifactKey: Guid(a97ed4f1a0513944ea67bf239903304b) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Ships/Salthi/HowieSalthi10.png using Guid(a97ed4f1a0513944ea67bf239903304b) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '75bb8e76fe9fbe1b0dafbd4fa0f28f13') in 0.0196024 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000090 seconds.
+  path: Assets/Art/Ships/Hornet/ArneHornetAce6.png
+  artifactKey: Guid(992a25f555c681d4db529f492e623c8d) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Ships/Hornet/ArneHornetAce6.png using Guid(992a25f555c681d4db529f492e623c8d) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'b93a3b73405ad1df414a6e20f4831f33') in 0.0174364 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000109 seconds.
+  path: Assets/Art/Ships/Hornet/ArneHornetAce5.png
+  artifactKey: Guid(f2d4cd7a122297349819d4b474eb1a6f) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Ships/Hornet/ArneHornetAce5.png using Guid(f2d4cd7a122297349819d4b474eb1a6f) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'fbb690a58c2c879184732ff7c6134a7e') in 0.0209181 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000129 seconds.
+  path: Assets/Art/Ships/Grikath/HowieGrikath14.png
+  artifactKey: Guid(380559a60c591dd40905f8284d365d82) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Ships/Grikath/HowieGrikath14.png using Guid(380559a60c591dd40905f8284d365d82) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'e59d53f5e9cf188eaeafbe11759bb48e') in 0.2502824 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000284 seconds.
+  path: Assets/Art/Ships/Scimitar/HowieScimitar10.png
+  artifactKey: Guid(2d296c59b9a74c64fa3c1fb5fbca0a0c) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Ships/Scimitar/HowieScimitar10.png using Guid(2d296c59b9a74c64fa3c1fb5fbca0a0c) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '01dc23c02a1caf089c01454cf0f479f4') in 0.0148184 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000109 seconds.
+  path: Assets/Art/Fonts/Old/wc2-kinnear.fon
+  artifactKey: Guid(3f27603736a0d15428e1ce9d2af28fc7) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Fonts/Old/wc2-kinnear.fon using Guid(3f27603736a0d15428e1ce9d2af28fc7) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'f397014fe968e41fe5c0b899f8d6d5a0') in 0.0068593 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000123 seconds.
+  path: Assets/Art/Ships/Dralthi/HowieDralthiACE13.png
+  artifactKey: Guid(12f53c9f5efbd0145bfe768a626b7cc3) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Ships/Dralthi/HowieDralthiACE13.png using Guid(12f53c9f5efbd0145bfe768a626b7cc3) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'c751578eac358f15da9b4f7e74ffcbe7') in 0.0139731 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000088 seconds.
+  path: Assets/UltimateCRT/Demo/SingleCameraDemoSettings.lighting
+  artifactKey: Guid(b1ab3ed5e7837ef41805b34a5ed59cf9) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/UltimateCRT/Demo/SingleCameraDemoSettings.lighting using Guid(b1ab3ed5e7837ef41805b34a5ed59cf9) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'cf2fb7ac2ab22cd494679df73d5d5814') in 0.0836739 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.930562 seconds.
+  path: Assets/Art/Ships/Strakha/HowieStrakha2.png
+  artifactKey: Guid(e964ef03cadcee9499d692fa297c539c) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Ships/Strakha/HowieStrakha2.png using Guid(e964ef03cadcee9499d692fa297c539c) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'aeb071ce54ba51d1d2f0d475614d3819') in 0.0165449 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000101 seconds.
+  path: Assets/Art/Ships/Talon/HowieTalonC2.png
+  artifactKey: Guid(255cb7bf39ad27f4e9893a4e85caf819) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Ships/Talon/HowieTalonC2.png using Guid(255cb7bf39ad27f4e9893a4e85caf819) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '9dd6bedc5ccfad3df612d2591f111a97') in 0.0175134 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000060 seconds.
+  path: Assets/Art/Ships/Talon/HowieTalonC14.png
+  artifactKey: Guid(c77a7a60939ce6d4d96f5081c5527acb) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Ships/Talon/HowieTalonC14.png using Guid(c77a7a60939ce6d4d96f5081c5527acb) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '57cc7c0cb81f18c476292967db59b58a') in 0.0773006 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000272 seconds.
+  path: Assets/Art/Ships/Strakha/HowieStrakhaAce9.png
+  artifactKey: Guid(761e592ce30012d4581a7edf737ddcd9) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Ships/Strakha/HowieStrakhaAce9.png using Guid(761e592ce30012d4581a7edf737ddcd9) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'a654a678091112aff953c4a4db44298a') in 0.0846875 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000209 seconds.
+  path: Assets/Art/Ships/Talon/HowieTalonE0.png
+  artifactKey: Guid(2340e3a92525c7949a9de7d0f4926a30) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Ships/Talon/HowieTalonE0.png using Guid(2340e3a92525c7949a9de7d0f4926a30) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '8246233516390126759777450f4bf0a8') in 0.0955103 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000077 seconds.
+  path: Assets/Art/Ships/Talon/HowieTalonD12.png
+  artifactKey: Guid(0beadf1cf07488d438ce91ce465e5a4b) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Ships/Talon/HowieTalonD12.png using Guid(0beadf1cf07488d438ce91ce465e5a4b) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '94dfe635f5f652d2d6369a13308761dc') in 0.1533037 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000187 seconds.
+  path: Assets/Art/Ships/Talon/HowieTalonF4.png
+  artifactKey: Guid(229558feafb1ec247b12173d352eeafa) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Ships/Talon/HowieTalonF4.png using Guid(229558feafb1ec247b12173d352eeafa) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '34f9e5079ae81354e5c677e2efc3aff9') in 0.1143293 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000176 seconds.
+  path: Assets/Art/Ships/Talon/HowieTalonE1.png
+  artifactKey: Guid(4f1feb48302999946808b6746b0d0fe7) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Ships/Talon/HowieTalonE1.png using Guid(4f1feb48302999946808b6746b0d0fe7) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '713781721aebb2eee6511dc448de5f44') in 0.0177201 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000115 seconds.
+  path: Assets/Art/Ships/Talon/HowieTalonF3.png
+  artifactKey: Guid(d6546a41a33409e41b7411617ee166e5) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Ships/Talon/HowieTalonF3.png using Guid(d6546a41a33409e41b7411617ee166e5) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'fcccb7c72b87fbfcfb843cb7801d8e9c') in 0.0701449 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000638 seconds.
+  path: Assets/Art/Ships/Talon/HowieTalonF16.png
+  artifactKey: Guid(a29ec3f542aba1c409741a6ce166cabf) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Ships/Talon/HowieTalonF16.png using Guid(a29ec3f542aba1c409741a6ce166cabf) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '08f25c3822a028803c4c0bf242c11cdb') in 0.1512585 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000546 seconds.
+  path: Assets/Art/Ships/Talon/HowieTalonD3.png
+  artifactKey: Guid(5a8c55bd0daf82a40bd092ea6918f152) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Ships/Talon/HowieTalonD3.png using Guid(5a8c55bd0daf82a40bd092ea6918f152) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '28deecab5408d85ec61dcecd38152251') in 0.1055157 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000107 seconds.
+  path: Assets/Art/Ships/Talon/HowieTalonE6.png
+  artifactKey: Guid(f1a32d330e736bd4fad93b20750ceb91) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Ships/Talon/HowieTalonE6.png using Guid(f1a32d330e736bd4fad93b20750ceb91) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '27fd94cb8a261379e55c3abc4ace0c1f') in 0.1162866 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000315 seconds.
+  path: Assets/Art/Ships/Talon/HowieTalonA12.png
+  artifactKey: Guid(196321254014eac4b88241d3ded7b089) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Ships/Talon/HowieTalonA12.png using Guid(196321254014eac4b88241d3ded7b089) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'cd8d1ee7561e25ca6d2d003d50dca314') in 0.0201563 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000109 seconds.
+  path: Assets/Art/Ships/Talon/HowieTalonB2.png
+  artifactKey: Guid(cc2c37373504ad04dbfd17a3dd6a335f) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Ships/Talon/HowieTalonB2.png using Guid(cc2c37373504ad04dbfd17a3dd6a335f) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '0dc1ee08dbc6fb661c889fdba8e362a3') in 0.1615724 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000101 seconds.
+  path: Assets/Art/VFX/Source/Explode_01A.png
+  artifactKey: Guid(b09dcc7f8e71cb543b733104331ebc74) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/VFX/Source/Explode_01A.png using Guid(b09dcc7f8e71cb543b733104331ebc74) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '77a0c4926570b71f5be521f50c785e68') in 0.1511217 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000330 seconds.
+  path: Assets/Art/Ships/Talon/HowieTalonF0.png
+  artifactKey: Guid(2e0e3e58b084e0441a30ffb4ce2a73fc) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Ships/Talon/HowieTalonF0.png using Guid(2e0e3e58b084e0441a30ffb4ce2a73fc) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'cd64c312fe17284cb9e736f33c49745b') in 0.0174269 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000097 seconds.
+  path: Assets/Art/Ships/Talon/HowieTalonE3.png
+  artifactKey: Guid(75fb9c9b969e6ae498e4166e8e4a8bd7) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Ships/Talon/HowieTalonE3.png using Guid(75fb9c9b969e6ae498e4166e8e4a8bd7) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'b14eeccd7a6a66aba6061771924db535') in 0.1481886 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000185 seconds.
+  path: Assets/Plugins/VolumetricLines/Prefabs/VolumetricLineStripPrefab.prefab
+  artifactKey: Guid(158489636c6d50d4290c11b03aa00742) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Plugins/VolumetricLines/Prefabs/VolumetricLineStripPrefab.prefab using Guid(158489636c6d50d4290c11b03aa00742) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'ba516d6e79d69db43017ddc3b9d30a63') in 0.3014648 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 8
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/Prefabs/Gameplay/Cockpits/KrantCockpit.prefab
+  artifactKey: Guid(9888e0e17ba3f1145b98ab361a09a124) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Prefabs/Gameplay/Cockpits/KrantCockpit.prefab using Guid(9888e0e17ba3f1145b98ab361a09a124) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '72f8cce7a18b999ac1a613ed527feb96') in 0.6451636 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1119
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000033 seconds.
+  path: Assets/Psychose Interactive/NGSS/Media/forest1.psd
+  artifactKey: Guid(1d0672cc6c8b98b49b1cec6592447cf9) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Psychose Interactive/NGSS/Media/forest1.psd using Guid(1d0672cc6c8b98b49b1cec6592447cf9) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'b6cb6c4ef43b64692920b7e12a4b8bd1') in 0.0213823 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000222 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Native/FallbackMatrix4x4.cs
+  artifactKey: Guid(48af68670bdba9147b4ed55138e4edf6) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Native/FallbackMatrix4x4.cs using Guid(48af68670bdba9147b4ed55138e4edf6) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'b0182d770e96e1251c1f228f1e2c9383') in 0.0146663 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000062 seconds.
+  path: Assets/WingCommander/Settings/Audio/WingCommanderAudioMixer.mixer
+  artifactKey: Guid(649f4f2c8121de74698938e8f7e74baf) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/WingCommander/Settings/Audio/WingCommanderAudioMixer.mixer using Guid(649f4f2c8121de74698938e8f7e74baf) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter)Refreshing native plugins compatible for Editor in 0.99 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+ -> (artifact id: '735e2e43d70ce495fccb9e7a0ea14d07') in 0.018538 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 7
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/Plugins/VolumetricLines/Shaders/AlphaBlended.shader
+  artifactKey: Guid(9ff32fa4240203142b6d72c5c32fed16) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Plugins/VolumetricLines/Shaders/AlphaBlended.shader using Guid(9ff32fa4240203142b6d72c5c32fed16) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'e773b21d4c23af48dbc9e0488085c51e') in 0.0112704 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000112 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Menu/DragAndDropTool.cs
+  artifactKey: Guid(41c9bd09aea1377459c7e62910711c22) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Menu/DragAndDropTool.cs using Guid(41c9bd09aea1377459c7e62910711c22) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '150621b9ae057485cc9dec0a1b6ba754') in 0.1579009 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000080 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/CustomDrawers/NoKeywordToggle.cs
+  artifactKey: Guid(e1a000d43a26286499b39a7571e5c61b) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/CustomDrawers/NoKeywordToggle.cs using Guid(e1a000d43a26286499b39a7571e5c61b) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'f304335ad1570e01275938c4222f88f4') in 0.0182733 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000086 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_EncodeFloatRGBAHlpNode.shader
+  artifactKey: Guid(c21569bf5b9371b4ca13c0c00abd5562) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_EncodeFloatRGBAHlpNode.shader using Guid(c21569bf5b9371b4ca13c0c00abd5562) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '588c9556fa8edbc999ea8975cb70f791') in 0.0121735 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000074 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_GradientSample.shader
+  artifactKey: Guid(8a09124cd6e4aa54a996e7487ec16b90) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_GradientSample.shader using Guid(8a09124cd6e4aa54a996e7487ec16b90) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'cf25f2f5bc3f989360bc881b13b7daf7') in 0.0123508 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000058 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_FloorOpNode.shader
+  artifactKey: Guid(46ae4a72a9a38de40a2d8f20cfccc67d) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_FloorOpNode.shader using Guid(46ae4a72a9a38de40a2d8f20cfccc67d) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'fef651da7eb9d9d5062ba497a9321e1e') in 0.0118321 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000076 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_AppendNode.shader
+  artifactKey: Guid(d80ac81aabf643848a4eaa76f2f88d65) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_AppendNode.shader using Guid(d80ac81aabf643848a4eaa76f2f88d65) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'd6235ed92cd7e0c7edbd108b205bd1dd') in 0.0115679 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000068 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_OneMinusNode.shader
+  artifactKey: Guid(bed5300b92e7bb0419d0f4accb853312) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_OneMinusNode.shader using Guid(bed5300b92e7bb0419d0f4accb853312) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '9f3f08d672a0da4519c1eea735c4d4d2') in 0.0183626 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000054 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_AllNode.shader
+  artifactKey: Guid(c33c751fb9fd7ad4e9fdc18d1f3a28d3) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_AllNode.shader using Guid(c33c751fb9fd7ad4e9fdc18d1f3a28d3) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'a061fa39cf78610814311fd187c74c95') in 0.0136282 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000068 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_LightAttenuation.shader
+  artifactKey: Guid(4b12227498a5c8d46b6c44ea018e5b56) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_LightAttenuation.shader using Guid(4b12227498a5c8d46b6c44ea018e5b56) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '8f69d15bc4f2802554b415e1db80d8d6') in 0.0112046 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000048 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Utils/EditorVariablesManager.cs
+  artifactKey: Guid(d402e3c7d578ee046a5d0826b9a41c27) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Utils/EditorVariablesManager.cs using Guid(d402e3c7d578ee046a5d0826b9a41c27) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'bf43d3df9297e1b9bfad6f566ec56383') in 0.0100906 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000084 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Templates/TemplateNodeParent.cs
+  artifactKey: Guid(b21cb297a12ef0a4281213619e3e76bf) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Templates/TemplateNodeParent.cs using Guid(b21cb297a12ef0a4281213619e3e76bf) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '471f0b5f5d9938357dae4b45b0bbe2e8') in 0.0107926 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000095 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_ParallaxOffset.shader
+  artifactKey: Guid(6085f804c6fbf354eac039c11feaa7cc) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_ParallaxOffset.shader using Guid(6085f804c6fbf354eac039c11feaa7cc) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '6fcf098896666d6f8680c0beb4bb50f7') in 0.0105724 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000116 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_NegateNode.shader
+  artifactKey: Guid(b035bc40da1ac7c4eafad4116382ec79) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_NegateNode.shader using Guid(b035bc40da1ac7c4eafad4116382ec79) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'd195c313158c246c5080bc48dfe6313f') in 0.0121049 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000112 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_LightColorNode.shader
+  artifactKey: Guid(43f5d3c033eb5044e9aeb40241358349) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_LightColorNode.shader using Guid(43f5d3c033eb5044e9aeb40241358349) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '09ebce372eb61537b58e8ec44827a9c7') in 0.0111128 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000047 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_PannerNode.shader
+  artifactKey: Guid(6f89a5d96bdad114b9bbd0c236cac622) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_PannerNode.shader using Guid(6f89a5d96bdad114b9bbd0c236cac622) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'e8d5137996d0aac4f27a34c00c297a4d') in 0.0106381 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000051 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_PosterizeNode.shader
+  artifactKey: Guid(ecb3048ef0eec1645bad1d72a98d8279) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_PosterizeNode.shader using Guid(ecb3048ef0eec1645bad1d72a98d8279) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '74461dbc7c3d59d7084a8e4d6a5cc12c') in 0.0150219 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000081 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_IndirectDiffuseLight.shader
+  artifactKey: Guid(b45d57fa606c1ea438fe9a2c08426bc7) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_IndirectDiffuseLight.shader using Guid(b45d57fa606c1ea438fe9a2c08426bc7) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '442e2d524c7a69f7da11018a0a48e656') in 0.0114785 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000012 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_CoshOpNode.shader
+  artifactKey: Guid(154a4c85fe88657489a54a02416402c0) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_CoshOpNode.shader using Guid(154a4c85fe88657489a54a02416402c0) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '59412cbc7551ac893e3bfd5e8abf3784') in 0.0114919 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000129 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Wires/WireBezierReference.cs
+  artifactKey: Guid(499682ec40529f44480d58747ad7ab44) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Wires/WireBezierReference.cs using Guid(499682ec40529f44480d58747ad7ab44) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'f897d4a719226319f8e03c9c96df11b4') in 0.0136506 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000105 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Utils/CustomMaterialInspector.cs
+  artifactKey: Guid(a1c012872b428594f95e585bd19e5347) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Utils/CustomMaterialInspector.cs using Guid(a1c012872b428594f95e585bd19e5347) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '979f32ed60758800506645384cbb2c83') in 0.0105423 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000107 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_ACosOpNode.shader
+  artifactKey: Guid(710f3c0bbd7ba0c4aada6d7dfadd49c2) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_ACosOpNode.shader using Guid(710f3c0bbd7ba0c4aada6d7dfadd49c2) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '7064ef9ff5fbb678e64c09391e30d1b0') in 0.0145041 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000117 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Wires/WirePort.cs
+  artifactKey: Guid(4709687a4844c9545a254c2ddbf3ca63) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Wires/WirePort.cs using Guid(4709687a4844c9545a254c2ddbf3ca63) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'af0162aee295f8acaed72c4c62fe5d83') in 0.0194274 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000148 seconds.
+  path: Assets/WingCommander/Settings/Ships/Talon.asset
+  artifactKey: Guid(ff0f9e0206bbc2a49848275189ce07dd) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/WingCommander/Settings/Ships/Talon.asset using Guid(ff0f9e0206bbc2a49848275189ce07dd) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '6d1e20c369e685f9b4148d63b024469e') in 0.046487 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000307 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_FWidthOpNode.shader
+  artifactKey: Guid(81ea481faaef9c8459a555479ba64df7) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_FWidthOpNode.shader using Guid(81ea481faaef9c8459a555479ba64df7) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '7191bbca251ae180a2503199b58cb3ce') in 0.0153218 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000097 seconds.
+  path: Assets/Psychose Interactive/NGSS/Editor/NGSS_LibrariesSetup.cs
+  artifactKey: Guid(1c98e0ce0f0c2c4409e33f2e19939a41) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Psychose Interactive/NGSS/Editor/NGSS_LibrariesSetup.cs using Guid(1c98e0ce0f0c2c4409e33f2e19939a41) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'bc94b6bb4df64dd8970da1a9b958225d') in 0.0119596 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000120 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_FogAndAmbientColors.shader
+  artifactKey: Guid(937c7bde062f0f942b600d9950d2ebb2) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_FogAndAmbientColors.shader using Guid(937c7bde062f0f942b600d9950d2ebb2) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '658b7e3a594e8238fa98f583072cdd01') in 0.012951 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000051 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Menu/AutoPanData.cs
+  artifactKey: Guid(711db07e8265cb740940568c4bc7345f) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Menu/AutoPanData.cs using Guid(711db07e8265cb740940568c4bc7345f) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '3dd5011b696572eb7767eb882e510a35') in 0.0116954 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000060 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Utils/ASEStartScreen.cs
+  artifactKey: Guid(3e7433fb42db4d9428571bfcd0da64f3) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Utils/ASEStartScreen.cs using Guid(3e7433fb42db4d9428571bfcd0da64f3) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '1108f4cdc9e26895e79d5fde96a99906') in 0.0108484 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000105 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Menu/DuplicatePreventionBuffer.cs
+  artifactKey: Guid(a4cfbb4204c63ca4e8f7cec73f6b3ef8) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Menu/DuplicatePreventionBuffer.cs using Guid(a4cfbb4204c63ca4e8f7cec73f6b3ef8) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'd7813155f427164ed83a994d1089f5de') in 0.0104554 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.724016 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_ReflectOpNode.shader
+  artifactKey: Guid(fb520f2145c0fa0409320a9e6d720758) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_ReflectOpNode.shader using Guid(fb520f2145c0fa0409320a9e6d720758) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '1880294bbf3a2fc43e3052b70fce3426') in 0.0140168 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000060 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_TanhOpNode.shader
+  artifactKey: Guid(52f78d3a1c66d1c489cd63b0a9300b38) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_TanhOpNode.shader using Guid(52f78d3a1c66d1c489cd63b0a9300b38) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'a73e63a481154e99f271a277b8985112') in 0.05351 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000100 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_TFHCCompareGreaterEqual.shader
+  artifactKey: Guid(f4ff76282a117c2429a1bcd8ba3a9112) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_TFHCCompareGreaterEqual.shader using Guid(f4ff76282a117c2429a1bcd8ba3a9112) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'b478bc289b07d4ed713d4c333596a778') in 0.0122522 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/ShaderFunctions/Normal Reconstruct Z.asset
+  artifactKey: Guid(63ba85b764ae0c84ab3d698b86364ae9) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/ShaderFunctions/Normal Reconstruct Z.asset using Guid(63ba85b764ae0c84ab3d698b86364ae9) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'bb1635c07974580296325b40d1284a95') in 0.0173591 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000032 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_Texture2D.shader
+  artifactKey: Guid(13bd295c44d04e1419f20f792d331e33) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_Texture2D.shader using Guid(13bd295c44d04e1419f20f792d331e33) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '3454ae68964cae3d27e9d9953644fd9f') in 0.0096244 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000097 seconds.
+  path: Assets/Art/Cockpits/Hornet/UI/Hornet_Cockpit_Armor.png
+  artifactKey: Guid(1d1ab9cae0ac93949a955a58d2acbde5) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Cockpits/Hornet/UI/Hornet_Cockpit_Armor.png using Guid(1d1ab9cae0ac93949a955a58d2acbde5) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '88a5dacea7fec791dac16a8493ccd5a6') in 0.0161583 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 3
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000011 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_TFHCFlipBookUVAnimation.shader
+  artifactKey: Guid(04fe24be792bfd5428b92132d7cf0f7d) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_TFHCFlipBookUVAnimation.shader using Guid(04fe24be792bfd5428b92132d7cf0f7d) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '2ca69ef94c9b821bfd2c612f215ba435') in 0.0403268 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000082 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/ShaderFunctions/Rectangle.asset
+  artifactKey: Guid(6b23e0c975270fb4084c354b2c83366a) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/ShaderFunctions/Rectangle.asset using Guid(6b23e0c975270fb4084c354b2c83366a) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '16ad15aef5ecb11c5b8a554e3d6cb89c') in 0.0140815 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000048 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/ShaderFunctions/Compute Mip Level.asset
+  artifactKey: Guid(6a522eddcfa3e1c4dade9b2b3a33a8a3) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/ShaderFunctions/Compute Mip Level.asset using Guid(6a522eddcfa3e1c4dade9b2b3a33a8a3) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '6b28da466e327fcc123acd75c0cf6037') in 0.0892341 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000233 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/ShaderFunctions/Sample Lightmap.asset
+  artifactKey: Guid(6976f0f966a01684ca0a6dde441141c2) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/ShaderFunctions/Sample Lightmap.asset using Guid(6976f0f966a01684ca0a6dde441141c2) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'e0f3c0c1d117fc96e57dc30648f439aa') in 0.0211366 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000046 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/ShaderFunctions/Bacteria Smoothstep.asset
+  artifactKey: Guid(d36a59c7990768542a8760d627324096) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/ShaderFunctions/Bacteria Smoothstep.asset using Guid(d36a59c7990768542a8760d627324096) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '7bf749479698598c1237f541391b30f4') in 0.0147889 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000098 seconds.
+  path: Assets/Art/Cockpits/Dralthi/UI/Dralthi_Cockpit_CoreFlash.png
+  artifactKey: Guid(7f11ff5badfb88345b7a6c35113f3045) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Cockpits/Dralthi/UI/Dralthi_Cockpit_CoreFlash.png using Guid(7f11ff5badfb88345b7a6c35113f3045) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '16d38129649290c28aac013ccd87f73f') in 0.0175837 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 3
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/ShaderFunctions/Spherize.asset
+  artifactKey: Guid(1488bb72d8899174ba0601b595d32b07) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/ShaderFunctions/Spherize.asset using Guid(1488bb72d8899174ba0601b595d32b07) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '85276d91dbff96b024366aa2bd70e61c') in 0.0171443 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000097 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/ShaderFunctions/Rejection.asset
+  artifactKey: Guid(ea6ca936e02c9e74fae837451ff893c3) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/ShaderFunctions/Rejection.asset using Guid(ea6ca936e02c9e74fae837451ff893c3) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'c5ea8eba8681d9430c2c5d477e0d6943') in 0.0234594 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000102 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/ShaderFunctions/Rounded Rectangle.asset
+  artifactKey: Guid(8679f72f5be758f47babb3ba1d5f51d3) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/ShaderFunctions/Rounded Rectangle.asset using Guid(8679f72f5be758f47babb3ba1d5f51d3) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '09899c5e9975d402ebd039a4d9d38f68') in 0.0115283 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000036 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/ShaderFunctions/Bicubic Sample.asset
+  artifactKey: Guid(ce0e14d5ad5eac645b2e5892ab3506ff) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/ShaderFunctions/Bicubic Sample.asset using Guid(ce0e14d5ad5eac645b2e5892ab3506ff) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'bb282d6ba872bb701b31b783a69835ca') in 0.0135962 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000068 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/ShaderFunctions/Polygon.asset
+  artifactKey: Guid(6906ef7087298c94c853d6753e182169) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/ShaderFunctions/Polygon.asset using Guid(6906ef7087298c94c853d6753e182169) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '9a97bb0723beee1619895bd7d5ec02e9') in 0.0150502 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000097 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/ShaderFunctions/Ellipse.asset
+  artifactKey: Guid(3ba94b7b3cfd5f447befde8107c04d52) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/ShaderFunctions/Ellipse.asset using Guid(3ba94b7b3cfd5f447befde8107c04d52) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '8c44266def3ad24d38292fb40ffe2108') in 0.0162113 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000103 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_SamplerNode.shader
+  artifactKey: Guid(7b4e86a89b70ae64993bf422eb406422) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_SamplerNode.shader using Guid(7b4e86a89b70ae64993bf422eb406422) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '510632c6a720f8d0d071b81f4b229c92') in 0.0114332 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000136 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_ScreenPosInputsNode.shader
+  artifactKey: Guid(a5e7295278a404175b732f1516fb68a6) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_ScreenPosInputsNode.shader using Guid(a5e7295278a404175b732f1516fb68a6) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '79334dbcda43794d2bde4183a1aa29b7') in 0.0115729 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000123 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/ShaderFunctions/Inverse Lerp.asset
+  artifactKey: Guid(09cbe79402f023141a4dc1fddd4c9511) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/ShaderFunctions/Inverse Lerp.asset using Guid(09cbe79402f023141a4dc1fddd4c9511) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'b476ed49ce7a43d96eaec9b4b529084d') in 0.0188863 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000084 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_VertexColorNode.shader
+  artifactKey: Guid(ca1d22db6470c5f4d9f93a9873b4f5bc) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_VertexColorNode.shader using Guid(ca1d22db6470c5f4d9f93a9873b4f5bc) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'aa0e26e391d85765e979d9ba825edcb8') in 0.0114771 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000053 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_SinTimeNode.shader
+  artifactKey: Guid(e4ba809e0badeb94994170b2cbbbba10) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_SinTimeNode.shader using Guid(e4ba809e0badeb94994170b2cbbbba10) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'e11e6b39616d4ade65b560edb347ffaf') in 0.010839 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000086 seconds.
+  path: Assets/Art/Cockpits/Dralthi/UI/Dralthi_Cockpit_Shield.png
+  artifactKey: Guid(592285228508e874d8ecbaf5399f66cd) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Cockpits/Dralthi/UI/Dralthi_Cockpit_Shield.png using Guid(592285228508e874d8ecbaf5399f66cd) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '52ed6f582d39df639e3701f1edba7d62') in 0.0173766 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 3
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000026 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_WorldToObjectTransfNode.shader
+  artifactKey: Guid(79a5efd1e3309f54d8ba3e7fdf5e459b) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_WorldToObjectTransfNode.shader using Guid(79a5efd1e3309f54d8ba3e7fdf5e459b) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '65adba0478e1ffaf5260b8bff21df688') in 0.0116838 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.379744 seconds.
+  path: Assets/Art/Cockpits/Salthi/UI/Salthi_Cockpit_UI.png
+  artifactKey: Guid(230dcddfce0d33248aa949a1224a70f8) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Cockpits/Salthi/UI/Salthi_Cockpit_UI.png using Guid(230dcddfce0d33248aa949a1224a70f8) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '0d9417825889df36107eec9787839469') in 0.02343 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 10
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000015 seconds.
+  path: Assets/WingCommander/Settings/AI/TurretSkillLevels/Turret AI Skill Novice.asset
+  artifactKey: Guid(0e1aebaf172a63c40b5d71a588168188) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/WingCommander/Settings/AI/TurretSkillLevels/Turret AI Skill Novice.asset using Guid(0e1aebaf172a63c40b5d71a588168188) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'c3d9a63a95a54303e47575254864a088') in 0.0292031 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000031 seconds.
+  path: Assets/Plugins/VolumetricLines/ExampleScenes/ExamplePrefabs/Smoke.prefab
+  artifactKey: Guid(abb24ded0744f70438da228264437774) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Plugins/VolumetricLines/ExampleScenes/ExamplePrefabs/Smoke.prefab using Guid(abb24ded0744f70438da228264437774) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '228829195ac0a72024dc2428b96f9134') in 0.0754949 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 6
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000011 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/HelperFuncs/ComputeGrabScreenPosHlpNode.cs
+  artifactKey: Guid(5fe7f4be962b9e8459eb156503b99d41) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/HelperFuncs/ComputeGrabScreenPosHlpNode.cs using Guid(5fe7f4be962b9e8459eb156503b99d41) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '9c5c6bc3d0708d35c2dc57988efe53ff') in 0.0110119 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000111 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Constants/Vector2Node.cs
+  artifactKey: Guid(6ca8f5d67cf4c5f428a6dd646099897c) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Constants/Vector2Node.cs using Guid(6ca8f5d67cf4c5f428a6dd646099897c) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '5353c49a2c43d1c2e7dded711ce04248') in 0.012209 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000173 seconds.
+  path: Assets/OneManEscapePlan/Common/Scripts/UI/SelectionController.cs
+  artifactKey: Guid(587ead29bb6c33645b879d577566bb81) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/OneManEscapePlan/Common/Scripts/UI/SelectionController.cs using Guid(587ead29bb6c33645b879d577566bb81) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'a6a28a293186f3635f1417a634205667') in 0.011532 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000164 seconds.
+  path: Assets/Art/Materials/Cockpit/Confed/Valtar_Cockpit.mat
+  artifactKey: Guid(b4cb44aaec2c9c041859d4883f86028e) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Materials/Cockpit/Confed/Valtar_Cockpit.mat using Guid(b4cb44aaec2c9c041859d4883f86028e) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'e10e1012b4973806069699f7306f957d') in 0.0260115 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 5
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000019 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/HelperFuncs/EncodeViewNormalStereoHlpNode.cs
+  artifactKey: Guid(17511ec398441ac479a2dd77d2531837) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/HelperFuncs/EncodeViewNormalStereoHlpNode.cs using Guid(17511ec398441ac479a2dd77d2531837) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '7c68b6b28a5fec45e556d50f57fbad4e') in 0.0119859 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000099 seconds.
+  path: Assets/Art/Materials/Cockpit/Confed/HumanMFD_Shield.mat
+  artifactKey: Guid(6a7ab69518190f34e91cffef3c8177cb) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Materials/Cockpit/Confed/HumanMFD_Shield.mat using Guid(6a7ab69518190f34e91cffef3c8177cb) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '97252603db33432edf671a2d5507128f') in 0.0142937 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 2
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000014 seconds.
+  path: Assets/OneManEscapePlan/Common/Scripts/Utility/NestedEditor.cs
+  artifactKey: Guid(bb610fe842ad64841aeaa58246baa079) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/OneManEscapePlan/Common/Scripts/Utility/NestedEditor.cs using Guid(bb610fe842ad64841aeaa58246baa079) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '7dd22ab4ed9c31b0283c786562783a92') in 0.0073246 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000162 seconds.
+  path: Assets/WingCommander/Settings/AI/TurretSkillLevels/Turret AI Skill Skilled.asset
+  artifactKey: Guid(cf4f603d74abad64f8e549fd01276657) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/WingCommander/Settings/AI/TurretSkillLevels/Turret AI Skill Skilled.asset using Guid(cf4f603d74abad64f8e549fd01276657) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '74646ffa318b52f1134111d749996b59') in 0.0119076 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000023 seconds.
+  path: Assets/Prefabs/Gameplay/Ships/Audio/Afterburn Audio Source.prefab
+  artifactKey: Guid(3e87115b0e91da14680454e5618e7a62) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Prefabs/Gameplay/Ships/Audio/Afterburn Audio Source.prefab using Guid(3e87115b0e91da14680454e5618e7a62) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '3ea723666a7a812bf2fc2c1413a4239e') in 0.0268947 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 7
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000022 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Master/ZBufferOpHelper.cs
+  artifactKey: Guid(f35a3e26a28596b4f9b54a1f2689db06) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Master/ZBufferOpHelper.cs using Guid(f35a3e26a28596b4f9b54a1f2689db06) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'c97c574d0c1e855001882d60d4d082c8') in 0.0062935 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000152 seconds.
+  path: Assets/UltimateCRT/Demo/Resources/Photos/Coffee.png
+  artifactKey: Guid(da192428f007e4b0695422b659597cc9) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/UltimateCRT/Demo/Resources/Photos/Coffee.png using Guid(da192428f007e4b0695422b659597cc9) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'c82f6c6cc9e6e2f52c89668e181686f2') in 0.0443956 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 3
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000023 seconds.
+  path: Assets/Plugins/VolumetricLines/ExampleScenes/ExampleTextures/Steam_A_from_Unity_sample_project_AngryBots.psd
+  artifactKey: Guid(d0f02542b58827040a53f41483d556fa) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Plugins/VolumetricLines/ExampleScenes/ExampleTextures/Steam_A_from_Unity_sample_project_AngryBots.psd using Guid(d0f02542b58827040a53f41483d556fa) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '2063c4a26ddb6324531fdd3f55fb1aed') in 0.0307702 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000081 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Misc/FresnelNode.cs
+  artifactKey: Guid(91955bc593b0dc14d90b10cb3eb25355) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Misc/FresnelNode.cs using Guid(91955bc593b0dc14d90b10cb3eb25355) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'c910b8235e29cdba3af06d901703ffb3') in 0.0068808 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000094 seconds.
+  path: Assets/UltimateCRT/Demo/Resources/Diagnostic/Calibration-Color.png
+  artifactKey: Guid(8e80657d40d9b42e9902d6bb657c476a) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/UltimateCRT/Demo/Resources/Diagnostic/Calibration-Color.png using Guid(8e80657d40d9b42e9902d6bb657c476a) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '38c3597ae9aeb1eb2b655a54effe16ce') in 0.0499914 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 3
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000025 seconds.
+  path: Assets/Plugins/Moments Recorder/Scripts/Gif/GifFrame.cs
+  artifactKey: Guid(73c6f009af1d68a49803bc21d2820a81) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Plugins/Moments Recorder/Scripts/Gif/GifFrame.cs using Guid(73c6f009af1d68a49803bc21d2820a81) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '0862026c0f6330b6f9d571f941d5212f') in 0.0102713 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000127 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Misc/VectorFromMatrixNode.cs
+  artifactKey: Guid(31c07015a5f2aa44297aa7cfb80ffdd5) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Misc/VectorFromMatrixNode.cs using Guid(31c07015a5f2aa44297aa7cfb80ffdd5) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'e2109b4929dd3ca62a30f4144172d304') in 0.0081402 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000162 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Master/AdditionalSurfaceOptionsHelper.cs
+  artifactKey: Guid(d830b2cc8bc5e174485077319135fc1e) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Master/AdditionalSurfaceOptionsHelper.cs using Guid(d830b2cc8bc5e174485077319135fc1e) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '68f0fca5b6a3d659fededce882626268') in 0.0098598 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000140 seconds.
+  path: Assets/Prefabs/Gameplay/VFX/Impacts/DebrisImpactKilrathi.prefab
+  artifactKey: Guid(efb0988cabbfbee41983eeecbdabf406) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Prefabs/Gameplay/VFX/Impacts/DebrisImpactKilrathi.prefab using Guid(efb0988cabbfbee41983eeecbdabf406) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '8c70405010041abb60029a9617f62736') in 0.0198676 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 7
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000019 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/HelperFuncs/DepthFade.cs
+  artifactKey: Guid(279c74ce44e24204d803be6ec743c290) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/HelperFuncs/DepthFade.cs using Guid(279c74ce44e24204d803be6ec743c290) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '91957b200d7c615d136855c54ff2a785') in 0.0070083 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000120 seconds.
+  path: Assets/Prefabs/Gameplay/Cockpits/MFD/MFDPhoton.prefab
+  artifactKey: Guid(67864a3d4264b8947955602fa1fa9360) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Prefabs/Gameplay/Cockpits/MFD/MFDPhoton.prefab using Guid(67864a3d4264b8947955602fa1fa9360) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '58b80e10c6a2e438679aeb1d4c75ec5d') in 0.0173205 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 8
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/HelperFuncs/ObjSpaceLightDirHlpNode.cs
+  artifactKey: Guid(0da9baf35c74c7e468cbe50c3d23ccf0) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/HelperFuncs/ObjSpaceLightDirHlpNode.cs using Guid(0da9baf35c74c7e468cbe50c3d23ccf0) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'ab9871f9a8c67fedf25b52cf8846065b') in 0.0081672 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000122 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/LogicalOperators/TFHCCompareGreater.cs
+  artifactKey: Guid(ff04934859005cd41ac644f2a9349e8b) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/LogicalOperators/TFHCCompareGreater.cs using Guid(ff04934859005cd41ac644f2a9349e8b) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '8f14a270010b55b5dfe53860a6a181aa') in 0.0082233 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000168 seconds.
+  path: Assets/Prefabs/Gameplay/Ships/Confed/Valtar.prefab
+  artifactKey: Guid(0debbcf0700e7fa42a6f93f36896fdfe) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Prefabs/Gameplay/Ships/Confed/Valtar.prefab using Guid(0debbcf0700e7fa42a6f93f36896fdfe) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'ff2114af69a143206a0cf691badc798b') in 0.2672248 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 177
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000029 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/UI/Buttons/ItemCleanupON.png
+  artifactKey: Guid(f4d31aa109c919d4595094f627510932) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/UI/Buttons/ItemCleanupON.png using Guid(f4d31aa109c919d4595094f627510932) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '6cd3b1af06384224a7ee435973260e3e') in 0.0225256 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000085 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Operators/NormalizeNode.cs
+  artifactKey: Guid(fa6682c371754094f88b3c2a7e96ae26) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Operators/NormalizeNode.cs using Guid(fa6682c371754094f88b3c2a7e96ae26) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '7bbc75cf72e7de43d5e817d385cf5ad9') in 0.0143211 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000168 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/SurfaceShaderInputs/UVCoordsParentNode.cs
+  artifactKey: Guid(73fb18e7d547d514695cb0b83a29f80e) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/SurfaceShaderInputs/UVCoordsParentNode.cs using Guid(73fb18e7d547d514695cb0b83a29f80e) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '860859f1faf73386aa9ffe3cd499778c') in 0.0479284 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000058 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/SurfaceShaderInputs/ScreenDepthNode.cs
+  artifactKey: Guid(52266d8a6f7f4fe428dcee2ddb0514ac) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/SurfaceShaderInputs/ScreenDepthNode.cs using Guid(52266d8a6f7f4fe428dcee2ddb0514ac) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'cce93a6d3ea64e4f2b336436c11041ec') in 0.0164111 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000142 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/SurfaceShaderInputs/ColorInputsNode.cs
+  artifactKey: Guid(ee44f086d7aa7804ea035860c5735cfb) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/SurfaceShaderInputs/ColorInputsNode.cs using Guid(ee44f086d7aa7804ea035860c5735cfb) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '3da667c77f08276a965d9036e18056cb') in 0.0125257 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000071 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Operators/TransformVectorOpNode.cs
+  artifactKey: Guid(928c21155a9c1a74b953da2d24269035) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Operators/TransformVectorOpNode.cs using Guid(928c21155a9c1a74b953da2d24269035) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '29c838e418303c96a41e7d52662c4618') in 0.0207146 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000111 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/UI/Buttons/Open.png
+  artifactKey: Guid(d8b538796c7980843b59d62dbcdebef5) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/UI/Buttons/Open.png using Guid(d8b538796c7980843b59d62dbcdebef5) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'c9b335cf486cf743ac9d024d19bebf37') in 0.1547998 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000375 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Textures/TextureTransformNode.cs
+  artifactKey: Guid(4f9ca941b3f5014448e530c761a418d9) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Textures/TextureTransformNode.cs using Guid(4f9ca941b3f5014448e530c761a418d9) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'a018a22fb7cc118ac469a134b99fa373') in 0.0141096 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000086 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Misc/WeightedBlendNode.cs
+  artifactKey: Guid(b91b2aefbfad5b444b25320e9ed53cac) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Misc/WeightedBlendNode.cs using Guid(b91b2aefbfad5b444b25320e9ed53cac) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '5a25250cd43aaf15edc917b6fac74d63') in 0.0183696 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000090 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Operators/FWidthOpNode.cs
+  artifactKey: Guid(2e17448829221b04bb3185bef727b19f) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Operators/FWidthOpNode.cs using Guid(2e17448829221b04bb3185bef727b19f) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'fff2b43ae3879b0f8a2189c978f72287') in 0.0095612 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000052 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Operators/GradientSampleNode.cs
+  artifactKey: Guid(b90e416e2fa93a249952fabc78f659c8) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Operators/GradientSampleNode.cs using Guid(b90e416e2fa93a249952fabc78f659c8) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'd0c7ac256a147fb892019a7721ca254a') in 0.0107319 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000091 seconds.
+  path: Assets/Prefabs/Gameplay/Weapons/Turrets/Grikath_Turret.prefab
+  artifactKey: Guid(5baf7c889aa21b44ba3565310f4f1482) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Prefabs/Gameplay/Weapons/Turrets/Grikath_Turret.prefab using Guid(5baf7c889aa21b44ba3565310f4f1482) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '03994f75c5c57a0d1d6b8c5981c41940') in 0.0799358 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 76
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000012 seconds.
+  path: Assets/Art/Animations/Frames/Logos/WorldRoot/WorldRoot_0032.png
+  artifactKey: Guid(4cc01a599faef6544b26ad01789a4dc5) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Animations/Frames/Logos/WorldRoot/WorldRoot_0032.png using Guid(4cc01a599faef6544b26ad01789a4dc5) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '805a960442661202061e08043d75ac95') in 0.2346262 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 3
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000015 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/UI/Canvas/Shader.png
+  artifactKey: Guid(555b6a287b4121b479d412e6ea92bb2e) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/UI/Canvas/Shader.png using Guid(555b6a287b4121b479d412e6ea92bb2e) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'a2e1f431ef92eb05cc03c4b7a889611a') in 0.1468698 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000077 seconds.
+  path: Assets/Art/Animations/Frames/Logos/WorldRoot/WorldRoot_0026.png
+  artifactKey: Guid(584452d73f33f9e45bd2d4ef899636f8) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Animations/Frames/Logos/WorldRoot/WorldRoot_0026.png using Guid(584452d73f33f9e45bd2d4ef899636f8) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'fda5e6c7a2782d01cdf3f0a1b9191513') in 0.2578946 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 3
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000176 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Constants/ShaderVariables/ConstantShaderVariable.cs
+  artifactKey: Guid(266391c3c4308014e9ce246e5484b917) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Constants/ShaderVariables/ConstantShaderVariable.cs using Guid(266391c3c4308014e9ce246e5484b917) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '21baf5ae68acccdd2456e738d71bc47c') in 0.3923465 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000118 seconds.
+  path: Assets/Art/Animations/Frames/Logos/WorldRoot/WorldRoot_0005.png
+  artifactKey: Guid(545b864461d8bbe4f9a8d2eb08a53d21) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Animations/Frames/Logos/WorldRoot/WorldRoot_0005.png using Guid(545b864461d8bbe4f9a8d2eb08a53d21) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '5f2d8afaa2581c367e4158f9dbe71334') in 0.5719237 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 3
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000014 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/UI/Nodes/ObjectPickerBackgroundOutline.png
+  artifactKey: Guid(c1912a55d2f211d468ddeb7b1386dd41) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/UI/Nodes/ObjectPickerBackgroundOutline.png using Guid(c1912a55d2f211d468ddeb7b1386dd41) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'd4918ce31b06f991407125d15f1aaf27') in 0.1528988 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000137 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/UI/Canvas/ShaderModeIcon.PNG
+  artifactKey: Guid(f4ca92d9e50d06049b7ccec2c438754d) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/UI/Canvas/ShaderModeIcon.PNG using Guid(f4ca92d9e50d06049b7ccec2c438754d) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'e76143d070b743d8d965178977c9b084') in 0.2681612 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000072 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/UI/Canvas/ShaderModeIconOFF.png
+  artifactKey: Guid(df81b9531d8ef704f96072ce6910db68) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/UI/Canvas/ShaderModeIconOFF.png using Guid(df81b9531d8ef704f96072ce6910db68) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'e6afc0c70e95b30a194598e0bef01728') in 0.1511718 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000101 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Constants/ShaderVariables/Transform/TransformPositionNode.cs
+  artifactKey: Guid(274dde08d42e4b041b9be7a22a8c09d6) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Constants/ShaderVariables/Transform/TransformPositionNode.cs using Guid(274dde08d42e4b041b9be7a22a8c09d6) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'a3b9130c159a23e13369c7d29d8a8e6f') in 0.1355301 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000015 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Constants/ShaderVariables/Lighting/CustomStandardSurface.cs
+  artifactKey: Guid(78916999fd7bc3c4e9767bc9cf0698c0) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Constants/ShaderVariables/Lighting/CustomStandardSurface.cs using Guid(78916999fd7bc3c4e9767bc9cf0698c0) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '47b16a607bf6433170b9c2289c167802') in 0.0254379 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000129 seconds.
+  path: Assets/OneManEscapePlan/Common/Editor/Scripts/PropertyDrawers/AnglePropertyDrawer.cs
+  artifactKey: Guid(91ca45caa6f328d44baf402d0b3a4ec8) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/OneManEscapePlan/Common/Editor/Scripts/PropertyDrawers/AnglePropertyDrawer.cs using Guid(91ca45caa6f328d44baf402d0b3a4ec8) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '57e9c7691791daf393ecac335c38a5cc') in 0.1610739 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000194 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Constants/ShaderVariables/Transform/MVPMatrixNode.cs
+  artifactKey: Guid(74e00fb3d8e161f498c078795184bae4) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Constants/ShaderVariables/Transform/MVPMatrixNode.cs using Guid(74e00fb3d8e161f498c078795184bae4) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'a5d337081bb2c03757b976fd5885af7c') in 0.015784 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000226 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Constants/ShaderVariables/Transform/UnityProjectorMatrixNode.cs
+  artifactKey: Guid(c3efd02b48473d94b92302654b671ddc) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Constants/ShaderVariables/Transform/UnityProjectorMatrixNode.cs using Guid(c3efd02b48473d94b92302654b671ddc) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '0ecd7e61e6c8c45870bd69722d471500') in 0.1984898 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000017 seconds.
+  path: Assets/OneManEscapePlan/Common/Editor/Tests/DataStructures/ListDictionaryTests.cs
+  artifactKey: Guid(b4dfc89fb0d7cc346a37157f5a034ff1) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/OneManEscapePlan/Common/Editor/Tests/DataStructures/ListDictionaryTests.cs using Guid(b4dfc89fb0d7cc346a37157f5a034ff1) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'f2681b28a51e0bcccef3f8a9c267f7b5') in 0.0157579 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000162 seconds.
+  path: Assets/Art/Animations/Frames/Logos/WorldRoot/WorldRoot_0011.png
+  artifactKey: Guid(12cf4261daa0bc745a730a5e3aa1d3a5) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Animations/Frames/Logos/WorldRoot/WorldRoot_0011.png using Guid(12cf4261daa0bc745a730a5e3aa1d3a5) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '75b5bcd19022c8a589ccf6ad9c9fa261') in 0.3080136 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 3
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000015 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/UI/Canvas/MaterialModeIcon.PNG
+  artifactKey: Guid(5725fa8ee04e1be449af059f5735cd81) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/UI/Canvas/MaterialModeIcon.PNG using Guid(5725fa8ee04e1be449af059f5735cd81) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '0964b7e194f1a5eed317b513f6c1b9a1') in 0.1408307 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000126 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Constants/ShaderVariables/CameraAndScreen/ScreenParams.cs
+  artifactKey: Guid(2e593f23857d59643b5b5f6dd6264e1b) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Constants/ShaderVariables/CameraAndScreen/ScreenParams.cs using Guid(2e593f23857d59643b5b5f6dd6264e1b) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'bc8643a36c940985000fd5ca59afd9c0') in 0.0771561 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000207 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/UI/Nodes/CommentNodeBase.png
+  artifactKey: Guid(b2be9c55e7e7ba447967677c82b2cb23) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/UI/Nodes/CommentNodeBase.png using Guid(b2be9c55e7e7ba447967677c82b2cb23) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '1406f8d09444ff08b825ea6beef4d176') in 0.1625464 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000068 seconds.
+  path: Assets/Art/Animations/Frames/Logos/WorldRoot/WorldRoot_0052.png
+  artifactKey: Guid(369e617b66715ce4c82a6143bc0c9d8c) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Animations/Frames/Logos/WorldRoot/WorldRoot_0052.png using Guid(369e617b66715ce4c82a6143bc0c9d8c) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '9485d12d8c4658de94cafbf52242f8ab') in 0.1493609 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 3
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000048 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Misc/WeightedAvgNode.cs
+  artifactKey: Guid(35c70c67524c86049a25b7ebd0de6ae3) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Misc/WeightedAvgNode.cs using Guid(35c70c67524c86049a25b7ebd0de6ae3) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '8390480ebaeb2688aad0d9360bcb43d3') in 0.0112104 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000080 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Constants/ShaderVariables/Various/VertexIdVariableNode.cs
+  artifactKey: Guid(ce37a30cae7677942ad44f0945ab7b77) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Constants/ShaderVariables/Various/VertexIdVariableNode.cs using Guid(ce37a30cae7677942ad44f0945ab7b77) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'af6e966b96ab7fed11c723012ff88412') in 0.1184231 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000202 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Master/TessellationOpHelper.cs
+  artifactKey: Guid(c6fbad94b0fc6b948be3a3dc61232c05) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Master/TessellationOpHelper.cs using Guid(c6fbad94b0fc6b948be3a3dc61232c05) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '5a6aafa961f3eb03b175f2a7aa9b1c9e') in 0.0131017 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000095 seconds.
+  path: Assets/Prefabs/Gameplay/Weapons/Projectiles/LaserBlast.prefab
+  artifactKey: Guid(dce01cd50eba8504181e2ad0eaf0dae4) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Prefabs/Gameplay/Weapons/Projectiles/LaserBlast.prefab using Guid(dce01cd50eba8504181e2ad0eaf0dae4) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '577544974d403de61282d7189e01e69c') in 0.0313599 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 6
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Constants/PropertyNode.cs
+  artifactKey: Guid(5bbfd66571b12f84983b398231271694) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Constants/PropertyNode.cs using Guid(5bbfd66571b12f84983b398231271694) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'f4a6bb144aa80b3e4698c89363d31e40') in 1.2798201 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000071 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/HelperFuncs/LinearToGammaNode.cs
+  artifactKey: Guid(a5b8a474628aeca4e86b1599f0b26ebc) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/HelperFuncs/LinearToGammaNode.cs using Guid(a5b8a474628aeca4e86b1599f0b26ebc) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '0d166771c48bd9f3e8d66dc6d4efc878') in 0.01247 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000106 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Constants/ShaderVariables/Transform/UnityScaleMatrix.cs
+  artifactKey: Guid(28a04286716e19f4aa58954888374428) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Constants/ShaderVariables/Transform/UnityScaleMatrix.cs using Guid(28a04286716e19f4aa58954888374428) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '85a52be0abdedc8b1186084b439c7863') in 0.0102482 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000102 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Operators/PowerNode.cs
+  artifactKey: Guid(520a55839e863ce47b3558be612f4691) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Operators/PowerNode.cs using Guid(520a55839e863ce47b3558be612f4691) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '39b4896f708e0ce9909fd78ab267db9c') in 0.0133459 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000126 seconds.
+  path: Assets/Prefabs/Gameplay/Cockpits/Frames/SpaceflightFrame.prefab
+  artifactKey: Guid(3d4017937a330fd48b323c373705ada1) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Prefabs/Gameplay/Cockpits/Frames/SpaceflightFrame.prefab using Guid(3d4017937a330fd48b323c373705ada1) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'f97b271b981793fddbb836302b79f5fd') in 0.0881182 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 25
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/EditorResources/UI/Buttons/OpenSourceCodeON.PNG
+  artifactKey: Guid(8b114792ff84f6546880c031eda42bc0) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/EditorResources/UI/Buttons/OpenSourceCodeON.PNG using Guid(8b114792ff84f6546880c031eda42bc0) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'e1d8d446253a01c5979d745a32b3dda1') in 0.0150661 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000017 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Constants/ShaderVariables/Transform/Texture0MatrixNode.cs
+  artifactKey: Guid(f57a1d05f7a9c5847912566ff1605c6d) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Constants/ShaderVariables/Transform/Texture0MatrixNode.cs using Guid(f57a1d05f7a9c5847912566ff1605c6d) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'e5e316559c7b223b46c8dfd6d8b20aa6') in 0.1276229 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000275 seconds.
+  path: Assets/Prefabs/Gameplay/VFX/Impacts/ShieldImpact_Driver.prefab
+  artifactKey: Guid(9549ed6531e9ee94f8743be5220d01af) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Prefabs/Gameplay/VFX/Impacts/ShieldImpact_Driver.prefab using Guid(9549ed6531e9ee94f8743be5220d01af) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '139aa1f99c8810b6c2f3778ec8b53e0e') in 0.0388488 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 16
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000014 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Operators/CrossProductOpNode.cs
+  artifactKey: Guid(283bc0645ce925346b33c024ff5a7dad) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Operators/CrossProductOpNode.cs using Guid(283bc0645ce925346b33c024ff5a7dad) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '5b788b180d4c4be45056116766b5e77e') in 0.0094721 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000080 seconds.
+  path: Assets/Art/Materials/Ships/Lumbari/Lumbari_Tech.mat
+  artifactKey: Guid(2fbeafc4cf53c4845bfb067323b6c784) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Materials/Ships/Lumbari/Lumbari_Tech.mat using Guid(2fbeafc4cf53c4845bfb067323b6c784) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'a804e6edac0e5e595741920887135ea4') in 0.0377561 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 6
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000017 seconds.
+  path: Assets/Prefabs/Gameplay/Weapons/Projectiles/LaserBolt.prefab
+  artifactKey: Guid(9b157e26264de564a99c8983fe59f486) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Prefabs/Gameplay/Weapons/Projectiles/LaserBolt.prefab using Guid(9b157e26264de564a99c8983fe59f486) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '6874dcaa8bc803806744373c5dba4f22') in 0.1061455 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 37
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000021 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/SRP/URP/ReflectionProbeNode.cs
+  artifactKey: Guid(391a18455087a034bb4c09be42caa46a) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/SRP/URP/ReflectionProbeNode.cs using Guid(391a18455087a034bb4c09be42caa46a) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'c90ea9e3f9e176e26367f368f6ebc3cf') in 0.21898 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000381 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Operators/LengthOpNode.cs
+  artifactKey: Guid(bb3fd570e41cfa24d93b53e80eac02d5) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Operators/LengthOpNode.cs using Guid(bb3fd570e41cfa24d93b53e80eac02d5) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '1d05816dbf7a755b2cb47eea54075698') in 0.1989758 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000172 seconds.
+  path: Assets/Art/Animations/Frames/Logos/WorldRoot/WorldRoot_0018.png
+  artifactKey: Guid(68b065b8f71c039479cbbed33d3e4f8f) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Art/Animations/Frames/Logos/WorldRoot/WorldRoot_0018.png using Guid(68b065b8f71c039479cbbed33d3e4f8f) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '40212fed1c75a0fcea9dcb4d93fd60f6') in 0.1390541 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 3
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000030 seconds.
+  path: Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Constants/ShaderVariables/ConstVecShaderVariable.cs
+  artifactKey: Guid(9102c0b554fd5ad4785acf870dcc17eb) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/AmplifyShaderEditor/Plugins/Editor/Nodes/Constants/ShaderVariables/ConstVecShaderVariable.cs using Guid(9102c0b554fd5ad4785acf870dcc17eb) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: 'e75d2b4e1f5b7b32a71173308276e060') in 0.0558594 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000239 seconds.
+  path: Assets/Prefabs/Gameplay/Ships/Kilrathi/Dralthi Ace.prefab
+  artifactKey: Guid(0592aed47460dc64a84933d321b5c7d1) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d)
+Start importing Assets/Prefabs/Gameplay/Ships/Kilrathi/Dralthi Ace.prefab using Guid(0592aed47460dc64a84933d321b5c7d1) Importer(2089858483,b0f066a214c2f5e87bad3c948f4d605d) (ScriptedImporter) -> (artifact id: '55d7f85222433ecc97d085cd598f972a') in 1.3073348 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 239
+
+========================================================================
+Received Prepare
+Begin MonoManager ReloadAssembly
+[Licensing::Client] Successfully resolved entitlement details
+ADTM: Control thread waiting for realtime thread timed out, have to lock...
+- Loaded All Assemblies, in  1.449 seconds
+Refreshing native plugins compatible for Editor in 0.18 ms, found 0 plugins.
+Native extension for Android target not found
+Native extension for WindowsStandalone target not found
+Native extension for WebGL target not found
+[Package Manager] Failed to launch server process. Reason: Unity was launched with the -noUpm command-line argument
+[Package Manager] Unable to send message (not connected to server process).
+[Package Manager] Cannot connect to Unity Package Manager local server
+[Package Manager] Failed to launch server process. Reason: Unity was launched with the -noUpm command-line argument
+[Package Manager] Unable to send message (not connected to server process).
+[Package Manager] Cannot connect to Unity Package Manager local server
+ScheduleIndexationOnStartup MainProcess:False IndexOnStartup:True
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  0.479 seconds
+Domain Reload Profiling: 1924ms
+	BeginReloadAssembly (1190ms)
+		ExecutionOrderSort (0ms)
+		DisableScriptedObjects (5ms)
+		BackupInstance (0ms)
+		ReleaseScriptingObjects (0ms)
+		CreateAndSetChildDomain (1048ms)
+	RebuildCommonClasses (27ms)
+	RebuildNativeTypeToScriptingClass (9ms)
+	initialDomainReloadingComplete (21ms)
+	LoadAllAssembliesAndSetupDomain (196ms)
+		LoadAssemblies (243ms)
+		RebuildTransferFunctionScriptingTraits (0ms)
+		AnalyzeDomain (48ms)
+			TypeCache.Refresh (4ms)
+				TypeCache.ScanAssembly (0ms)
+			BuildScriptInfoCaches (38ms)
+			ResolveRequiredComponents (3ms)
+	FinalizeReload (480ms)
+		ReleaseScriptCaches (0ms)
+		RebuildScriptCaches (0ms)
+		SetupLoadedEditorAssemblies (369ms)
+			LogAssemblyErrors (0ms)
+			InitializePlatformSupportModulesInManaged (12ms)
+			SetLoadedEditorAssemblies (3ms)
+			BeforeProcessingInitializeOnLoad (156ms)
+			ProcessInitializeOnLoadAttributes (147ms)
+			ProcessInitializeOnLoadMethodAttributes (46ms)
+			AfterProcessingInitializeOnLoad (6ms)
+			EditorAssembliesLoaded (0ms)
+		ExecutionOrderSort2 (0ms)
+		AwakeInstancesAfterBackupRestoration (7ms)
+Property (_MainTex) already exists. Use SetTexture instead.
+Refreshing native plugins compatible for Editor in 0.27 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 12 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 2520 unused Assets / (2.6 MB). Loaded Objects now: 3416.
+Memory consumption went from 115.5 MB to 112.9 MB.
+Total: 5.214600 ms (FindLiveObjects: 0.225400 ms CreateObjectMapping: 0.090500 ms MarkObjects: 3.622100 ms  DeleteObjects: 1.272900 ms)
+
+Prepare: number of updated asset objects reloaded= 0
+========================================================================
+Received Import Request.
+  Time since last request: 106.717073 seconds.
+  path: Assets/Art/Cockpits/Krant/Krant_Cockpit_Front_Exterior_LeftGun01.png
+  artifactKey: Guid(c501fb4cdfd534242a761f85556f6c3c) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Art/Cockpits/Krant/Krant_Cockpit_Front_Exterior_LeftGun01.png using Guid(c501fb4cdfd534242a761f85556f6c3c) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '527856bdc9ab343886c92b115a700c3f') in 0.0556094 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 3
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.852796 seconds.
+  path: Assets/Art/Cockpits/Krant/Krant_Cockpit_Front.png
+  artifactKey: Guid(f31df2634da2f2741893bf02537ed218) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Art/Cockpits/Krant/Krant_Cockpit_Front.png using Guid(f31df2634da2f2741893bf02537ed218) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'e4dd473ad9af8013d73d3b475ad89ba5') in 0.0204609 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 3
+
+========================================================================
+Received Import Request.
+  Time since last request: 19.875771 seconds.
+  path: Assets/WingCommander/Settings/RenderSettings.asset
+  artifactKey: Guid(3682c2591ff8b8c4aa26e3dfafb17404) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/WingCommander/Settings/RenderSettings.asset using Guid(3682c2591ff8b8c4aa26e3dfafb17404) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '9d013a8920dbe2baf8fbb5507a57faa2') in 0.0014424 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 2
+
+========================================================================
+Received Import Request.
+  Time since last request: 18.851661 seconds.
+  path: Assets/Art/Cockpits/Krant/Krant_Bubbles.fbx
+  artifactKey: Guid(23e2727107486d342b4414c16d24e52c) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Art/Cockpits/Krant/Krant_Bubbles.fbx using Guid(23e2727107486d342b4414c16d24e52c) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '8144e11eb06ac79670fa07a01eb6a664') in 0.1557515 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 7
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.406446 seconds.
+  path: Assets/Art/Cockpits/Krant/UI
+  artifactKey: Guid(b3231154be891ef4987b3e83bb7473a0) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Art/Cockpits/Krant/UI using Guid(b3231154be891ef4987b3e83bb7473a0) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '2f63071850eb430eb8bee31bb2f465ff') in 0.0005188 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 2.846626 seconds.
+  path: Assets/Art/Cockpits/UI
+  artifactKey: Guid(e9e454a2f5912704f91eb19338355488) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Art/Cockpits/UI using Guid(e9e454a2f5912704f91eb19338355488) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'ac6783e5001f163601b5fb12e759d574') in 0.0005134 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 1.071687 seconds.
+  path: Assets/OneManEscapePlan
+  artifactKey: Guid(dab45ce7677ecbc46ae040339a91339c) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/OneManEscapePlan using Guid(dab45ce7677ecbc46ae040339a91339c) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '0f99a16095ac5dd2b680833138530a44') in 0.0005076 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.868247 seconds.
+  path: Assets/Scenes/ShipViewer.unity
+  artifactKey: Guid(9fdaa12967713b544a2f5689eafe9245) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Scenes/ShipViewer.unity using Guid(9fdaa12967713b544a2f5689eafe9245) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'a988699cb11a5579d35e057d4d2799b1') in 0.0004804 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Prepare
+Begin MonoManager ReloadAssembly
+[Licensing::Client] Successfully resolved entitlement details
+ADTM: Control thread waiting for realtime thread timed out, have to lock...
+- Loaded All Assemblies, in  1.379 seconds
+Refreshing native plugins compatible for Editor in 0.35 ms, found 0 plugins.
+Native extension for Android target not found
+Native extension for WindowsStandalone target not found
+Native extension for WebGL target not found
+[Package Manager] Failed to launch server process. Reason: Unity was launched with the -noUpm command-line argument
+[Package Manager] Unable to send message (not connected to server process).
+[Package Manager] Cannot connect to Unity Package Manager local server
+[Package Manager] Failed to launch server process. Reason: Unity was launched with the -noUpm command-line argument
+[Package Manager] Unable to send message (not connected to server process).
+[Package Manager] Cannot connect to Unity Package Manager local server
+ScheduleIndexationOnStartup MainProcess:False IndexOnStartup:False
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  0.351 seconds
+Domain Reload Profiling: 1727ms
+	BeginReloadAssembly (1164ms)
+		ExecutionOrderSort (0ms)
+		DisableScriptedObjects (4ms)
+		BackupInstance (0ms)
+		ReleaseScriptingObjects (0ms)
+		CreateAndSetChildDomain (1031ms)
+	RebuildCommonClasses (25ms)
+	RebuildNativeTypeToScriptingClass (9ms)
+	initialDomainReloadingComplete (17ms)
+	LoadAllAssembliesAndSetupDomain (162ms)
+		LoadAssemblies (203ms)
+		RebuildTransferFunctionScriptingTraits (0ms)
+		AnalyzeDomain (49ms)
+			TypeCache.Refresh (25ms)
+				TypeCache.ScanAssembly (20ms)
+			BuildScriptInfoCaches (20ms)
+			ResolveRequiredComponents (2ms)
+	FinalizeReload (351ms)
+		ReleaseScriptCaches (0ms)
+		RebuildScriptCaches (0ms)
+		SetupLoadedEditorAssemblies (261ms)
+			LogAssemblyErrors (0ms)
+			InitializePlatformSupportModulesInManaged (8ms)
+			SetLoadedEditorAssemblies (3ms)
+			BeforeProcessingInitializeOnLoad (85ms)
+			ProcessInitializeOnLoadAttributes (122ms)
+			ProcessInitializeOnLoadMethodAttributes (38ms)
+			AfterProcessingInitializeOnLoad (5ms)
+			EditorAssembliesLoaded (0ms)
+		ExecutionOrderSort2 (0ms)
+		AwakeInstancesAfterBackupRestoration (6ms)
+Property (_MainTex) already exists. Use SetTexture instead.
+Refreshing native plugins compatible for Editor in 0.39 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 12 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 2521 unused Assets / (2.3 MB). Loaded Objects now: 3432.
+Memory consumption went from 116.1 MB to 113.8 MB.
+Total: 4.562300 ms (FindLiveObjects: 0.230700 ms CreateObjectMapping: 0.099200 ms MarkObjects: 3.532000 ms  DeleteObjects: 0.699300 ms)
+
+Prepare: number of updated asset objects reloaded= 0
+========================================================================
+Received Prepare
+Begin MonoManager ReloadAssembly
+[Licensing::Client] Successfully resolved entitlement details
+ADTM: Control thread waiting for realtime thread timed out, have to lock...
+- Loaded All Assemblies, in  1.387 seconds
+Refreshing native plugins compatible for Editor in 0.42 ms, found 0 plugins.
+Native extension for Android target not found
+Native extension for WindowsStandalone target not found
+Native extension for WebGL target not found
+[Package Manager] Failed to launch server process. Reason: Unity was launched with the -noUpm command-line argument
+[Package Manager] Unable to send message (not connected to server process).
+[Package Manager] Cannot connect to Unity Package Manager local server
+[Package Manager] Failed to launch server process. Reason: Unity was launched with the -noUpm command-line argument
+[Package Manager] Unable to send message (not connected to server process).
+[Package Manager] Cannot connect to Unity Package Manager local server
+ScheduleIndexationOnStartup MainProcess:False IndexOnStartup:False
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  0.380 seconds
+Domain Reload Profiling: 1764ms
+	BeginReloadAssembly (1167ms)
+		ExecutionOrderSort (0ms)
+		DisableScriptedObjects (3ms)
+		BackupInstance (0ms)
+		ReleaseScriptingObjects (0ms)
+		CreateAndSetChildDomain (1037ms)
+	RebuildCommonClasses (27ms)
+	RebuildNativeTypeToScriptingClass (9ms)
+	initialDomainReloadingComplete (18ms)
+	LoadAllAssembliesAndSetupDomain (162ms)
+		LoadAssemblies (205ms)
+		RebuildTransferFunctionScriptingTraits (0ms)
+		AnalyzeDomain (41ms)
+			TypeCache.Refresh (4ms)
+				TypeCache.ScanAssembly (0ms)
+			BuildScriptInfoCaches (32ms)
+			ResolveRequiredComponents (2ms)
+	FinalizeReload (381ms)
+		ReleaseScriptCaches (0ms)
+		RebuildScriptCaches (0ms)
+		SetupLoadedEditorAssemblies (285ms)
+			LogAssemblyErrors (0ms)
+			InitializePlatformSupportModulesInManaged (9ms)
+			SetLoadedEditorAssemblies (3ms)
+			BeforeProcessingInitializeOnLoad (93ms)
+			ProcessInitializeOnLoadAttributes (135ms)
+			ProcessInitializeOnLoadMethodAttributes (40ms)
+			AfterProcessingInitializeOnLoad (5ms)
+			EditorAssembliesLoaded (0ms)
+		ExecutionOrderSort2 (0ms)
+		AwakeInstancesAfterBackupRestoration (7ms)
+Property (_MainTex) already exists. Use SetTexture instead.
+Refreshing native plugins compatible for Editor in 0.49 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 12 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 2521 unused Assets / (2.4 MB). Loaded Objects now: 3432.
+Memory consumption went from 116.1 MB to 113.7 MB.
+Total: 4.039900 ms (FindLiveObjects: 0.210000 ms CreateObjectMapping: 0.096400 ms MarkObjects: 3.126600 ms  DeleteObjects: 0.606100 ms)
+
+Prepare: number of updated asset objects reloaded= 0
+========================================================================
+Received Import Request.
+  Time since last request: 393.120114 seconds.
+  path: Assets/Art/WCIndex2.png
+  artifactKey: Guid(c15b3129780d1ae448288e5d0b9c7017) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Art/WCIndex2.png using Guid(c15b3129780d1ae448288e5d0b9c7017) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '0096ddf599636955a0b4260fdd620da8') in 0.0569756 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 2
+
+========================================================================
+Received Prepare
+Property (_MainTex) already exists. Use SetTexture instead.
+Refreshing native plugins compatible for Editor in 10.26 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 23 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 1932 unused Assets / (2.8 MB). Loaded Objects now: 2835.
+Memory consumption went from 115.8 MB to 113.0 MB.
+Total: 5.279000 ms (FindLiveObjects: 0.171000 ms CreateObjectMapping: 0.066200 ms MarkObjects: 4.181300 ms  DeleteObjects: 0.859700 ms)
+
+Prepare: number of updated asset objects reloaded= 22

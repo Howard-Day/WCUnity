@@ -2,19 +2,22 @@
 // Copyright (c) Amplify Creations, Lda <info@amplify.pt>
 
 using System;
+using System.Linq;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
+using Unity.Scripting.LifecycleManagement;
 
 namespace AmplifyShaderEditor
 {
 	public partial class Preferences
 	{
+		[NoAutoStaticsCleanup]
 		public class Project
 		{
-			public static bool AutoSRP              => Values.AutoSRP;
-			public static bool DefineSymbol         => Values.DefineSymbol;
-			public static string TemplateExtensions => Values.TemplateExtensions;
+			public static bool AutoSRP                => Values.AutoSRP;
+			public static bool DefineSymbol           => Values.DefineSymbol;
+			public static string[] TemplateExtensions => Values.TemplateExtensions;
 
 			private class Styles
 			{
@@ -25,25 +28,29 @@ namespace AmplifyShaderEditor
 
 			private class Defaults
 			{
-				public const bool AutoSRP              = true;
-				public const bool DefineSymbol         = true;
-				public const string TemplateExtensions = ".shader;.shader.template";
+				public static readonly int Version                 = 1;
+				public static readonly bool AutoSRP                = true;
+				public static readonly bool DefineSymbol           = true;
+				public static readonly string[] TemplateExtensions = { ".shader", ".template.shader" };
 			}
-		
+
 			[Serializable]
 			private struct Layout
 			{
+				public int Version;
 				public bool AutoSRP;
 				public bool DefineSymbol;
-				public string TemplateExtensions;
+				public string[] TemplateExtensions;
 			}
 
 			private const string RelativePath = "ProjectSettings/AmplifyShaderEditor.asset";
 			private static string FullPath = Path.GetFullPath( RelativePath );
 			private static Layout Values = new Layout();
+			private static long Timestamp = 0;
 
 			public static void ResetSettings()
 			{
+				Values.Version            = Defaults.Version;
 				Values.AutoSRP            = Defaults.AutoSRP;
 				Values.DefineSymbol       = Defaults.DefineSymbol;
 				Values.TemplateExtensions = Defaults.TemplateExtensions;
@@ -54,17 +61,19 @@ namespace AmplifyShaderEditor
 				try
 				{
 					Values = JsonUtility.FromJson<Layout>( File.ReadAllText( FullPath ) );
+					Timestamp = File.GetLastWriteTime( FullPath ).Ticks;
+
+					if ( Values.TemplateExtensions == null || Values.TemplateExtensions.Length == 0 )
+					{
+						// Layout for Template Extensions changed and won't get deserialized from older versions; recreate, if applicable
+						Values.TemplateExtensions = Defaults.TemplateExtensions;
+					}
 				}
 				catch ( System.Exception e )
 				{
 					if ( e.GetType() == typeof( FileNotFoundException ) )
 					{
 						ResetSettings();
-
-						// @diogo: try to retrieve the old preferences if file does not exist yet
-						Values.AutoSRP      = EditorPrefs.GetBool( "ASEAutoSRP", Defaults.AutoSRP );
-						Values.DefineSymbol = EditorPrefs.GetBool( "ASEDefineSymbol", Defaults.DefineSymbol );
-
 						SaveSettings();
 					}
 					else
@@ -87,7 +96,7 @@ namespace AmplifyShaderEditor
 
 				try
 				{
-					File.WriteAllText( FullPath, JsonUtility.ToJson( Values ) );
+					File.WriteAllText( FullPath, JsonUtility.ToJson( Values, true ) );
 				}
 				catch ( System.Exception )
 				{
@@ -95,11 +104,42 @@ namespace AmplifyShaderEditor
 				}
 			}
 
+			private static char[] Separators = { ';', ',', ' ' }; // All separators are converted to the first one [0]
+			private static string ExtensionsArrayToString( string[] extensions )
+			{
+				return string.Join( Separators[ 0 ].ToString(), extensions );
+			}
+			private static string[] ExtensionsStringToArray( string extensions )
+			{
+				return extensions.Split( Separators, StringSplitOptions.RemoveEmptyEntries )
+								 .Select( s => ( "." + s.TrimStart( '.' ) ).ToLowerInvariant() )
+								 .ToArray();;
+			}
+
 			public static void InspectorLayout()
 			{
+				bool fileExists = File.Exists( FullPath );
+				if ( fileExists )
+				{
+					long fileTimestamp = File.GetLastWriteTime( FullPath ).Ticks;
+					if ( fileTimestamp != Timestamp )
+					{
+						LoadSettings();
+						Timestamp = fileTimestamp;
+					}
+				}
+
+				EditorGUI.BeginChangeCheck();
+
 				Values.AutoSRP            = EditorGUILayout.Toggle( Styles.AutoSRP, Values.AutoSRP );
 				Values.DefineSymbol       = EditorGUILayout.Toggle( Styles.DefineSymbol, Values.DefineSymbol );
-				Values.TemplateExtensions = EditorGUILayout.TextField( Styles.TemplateExtensions, Values.TemplateExtensions );
+				string templateExtensions = EditorGUILayout.TextField( Styles.TemplateExtensions, ExtensionsArrayToString( Values.TemplateExtensions ) );
+
+				if ( !fileExists || EditorGUI.EndChangeCheck() )
+				{
+					Values.TemplateExtensions = ExtensionsStringToArray( templateExtensions );
+					SaveSettings();
+				}
 			}
 		}
 	}

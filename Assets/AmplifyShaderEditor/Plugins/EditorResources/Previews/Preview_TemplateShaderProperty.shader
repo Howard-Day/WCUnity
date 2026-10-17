@@ -12,6 +12,7 @@ Shader "Hidden/TemplateShaderProperty"
 
 		CGINCLUDE
 		#include "UnityCG.cginc"
+			#include "Preview.cginc"
 		uniform int _IntData;
 		uniform float _FloatData;
 		uniform float4 _VectorData;

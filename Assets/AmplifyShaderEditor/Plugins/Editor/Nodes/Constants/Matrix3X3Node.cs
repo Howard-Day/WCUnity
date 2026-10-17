@@ -8,7 +8,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Matrix3X3", "Constants And Properties", "Matrix3X3 property" )]
+	[NodeAttributes( "Matrix 3x3", "Constants And Properties", "Matrix property with 9 elements in a 3x3 grid." )]
 	public sealed class Matrix3X3Node : MatrixParentNode
 	{
 		private string[,] m_fieldText = new string[ 3, 3 ] { { "0", "0", "0" }, { "0", "0", "0" }, { "0", "0", "0" } };
@@ -64,9 +64,9 @@ namespace AmplifyShaderEditor
 				m_requireMaterialUpdate = true;
 		}
 
-		public override void OnNodeLayout( DrawInfo drawInfo )
+		public override void OnNodeLayout( DrawInfo drawInfo, NodeUpdateCache cache )
 		{
-			base.OnNodeLayout( drawInfo );
+			base.OnNodeLayout( drawInfo, cache );
 
 			m_propertyDrawPos.position = m_remainingBox.position;
 			m_propertyDrawPos.width = drawInfo.InvertedZoom * Constants.FLOAT_DRAW_WIDTH_FIELD_SIZE;
@@ -173,16 +173,16 @@ namespace AmplifyShaderEditor
 				if( m_outputPorts[ 0 ].IsLocalValue( dataCollector.PortCategory ) )
 					return m_outputPorts[ 0 ].LocalValue( dataCollector.PortCategory );
 				string localVarName = PropertyData( dataCollector.PortCategory ) + "Local3x3";
-				string localVarValue = string.Format( "float3x3({0}._m00,{0}._m01,{0}._m02,{0}._m10,{0}._m11,{0}._m12,{0}._m20,{0}._m21,{0}._m22 )", PropertyData( dataCollector.PortCategory ) );
+				string localVarValue = string.Format( "float3x3( {0}._m00, {0}._m01, {0}._m02, {0}._m10, {0}._m11, {0}._m12, {0}._m20, {0}._m21, {0}._m22 )", PropertyData( dataCollector.PortCategory ) );
 				RegisterLocalVariable( 0, localVarValue, ref dataCollector, localVarName );
 				return localVarName;
 			}
 
 			Matrix4x4 value = m_defaultValue;
 
-			return m_precisionString + "(" + value[ 0, 0 ] + "," + value[ 0, 1 ] + "," + value[ 0, 2 ] + "," +
-								+value[ 1, 0 ] + "," + value[ 1, 1 ] + "," + value[ 1, 2 ] + "," +
-								+value[ 2, 0 ] + "," + value[ 2, 1 ] + "," + value[ 2, 2 ] + ")";
+			return m_precisionString + "( " + value[ 0, 0 ] + ", " + value[ 0, 1 ] + ", " + value[ 0, 2 ] + ", " +
+								+value[ 1, 0 ] + ", " + value[ 1, 1 ] + ", " + value[ 1, 2 ] + ", " +
+								+value[ 2, 0 ] + ", " + value[ 2, 1 ] + ", " + value[ 2, 2 ] + " )";
 
 		}
 

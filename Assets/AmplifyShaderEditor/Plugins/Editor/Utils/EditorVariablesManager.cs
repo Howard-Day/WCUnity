@@ -4,6 +4,7 @@
 using UnityEditor;
 using System;
 using UnityEngine;
+using Unity.Scripting.LifecycleManagement;
 
 namespace AmplifyShaderEditor
 {
@@ -112,12 +113,17 @@ namespace AmplifyShaderEditor
 		}
 	}
 
+	[NoAutoStaticsCleanup]
 	public class EditorVariablesManager
 	{
 		public static EditorVariableBool LiveMode = new EditorVariableBool( "ASELiveMode", "LiveMode", false );
 		public static EditorVariableBool OutlineActiveMode = new EditorVariableBool( "ASEOutlineActiveMode", " Outline", false );
 		public static EditorVariableBool NodeParametersMaximized = new EditorVariableBool( "ASENodeParametersVisible", " NodeParameters", true );
 		public static EditorVariableBool NodePaletteMaximized = new EditorVariableBool( "ASENodePaletteVisible", " NodePalette", true );
+		public static EditorVariableInt NodePaletteSelectedTab = new EditorVariableInt( "ASENodePaletteSelectedTab", " NodePaletteSelectedTab", 0 );
+		public static EditorVariableFloat MsgBoxWidth = new EditorVariableFloat( "ASEMsgBoxWidth", " MsgBoxWidth", 100 );
+		public static EditorVariableFloat MsgBoxHeight = new EditorVariableFloat( "ASEMsgBoxHeight", " MsgBoxHeight", 88 );
+		public static EditorVariableBool MsgBoxResized = new EditorVariableBool( "ASEMsgBoxResized", " MsgBoxResized", false );
 		public static EditorVariableBool ExpandedRenderingPlatforms = new EditorVariableBool( "ASEExpandedRenderingPlatforms", " ExpandedRenderingPlatforms", false );
 		public static EditorVariableBool ExpandedRenderingOptions = new EditorVariableBool( "ASEExpandedRenderingOptions", " ExpandedRenderingPlatforms", false );
 		public static EditorVariableBool ExpandedGeneralShaderOptions = new EditorVariableBool( "ASEExpandedGeneralShaderOptions", " ExpandedGeneralShaderOptions", false );

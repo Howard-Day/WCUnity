@@ -1,13 +1,20 @@
 fileFormatVersion: 2
 guid: d6e441d0a8608954c97fa347d3735e92
-timeCreated: 1512052132
-licenseType: Store
 ShaderImporter:
+  externalObjects: {}
   defaultTextures:
   - _Skybox: {fileID: 8900000, guid: ef7513b54a0670140b9b967af7620563, type: 3}
   - _A: {instanceID: 0}
   - _B: {instanceID: 0}
   - _C: {instanceID: 0}
+  nonModifiableTextures: []
   userData: 
   assetBundleName: 
   assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 68570
+  packageName: Amplify Shader Editor
+  packageVersion: 1.9.9.14
+  assetPath: Assets/AmplifyShaderEditor/Plugins/EditorResources/Previews/Preview_IndirectSpecularLight.shader
+  uploadId: 1019702

@@ -2,10 +2,13 @@
 // Copyright (c) Amplify Creations, Lda <info@amplify.pt>
 
 using System;
+using UnityEngine;
+using UnityEditor;
+
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Object Space View Dir", "Object Transform", "Object space direction (not normalized) from given object space vertex position towards the camera" )]
+	[NodeAttributes( "Object Space View Dir", "Object Transform", "Object space direction (not normalized) from given object space vertex position towards the camera",castType:null, shortcutKey:KeyCode.None, available:false, deprecated:true )]
 	public sealed class ObjSpaceViewDirHlpNode : HelperParentNode
 	{
 		protected override void CommonInit( int uniqueId )
@@ -23,12 +26,25 @@ namespace AmplifyShaderEditor
 			AddOutputPort( WirePortDataType.FLOAT, "Y" );
 			AddOutputPort( WirePortDataType.FLOAT, "Z" );
 			m_previewShaderGUID = "c7852de24cec4a744b5358921e23feee";
+			
+			m_errorMessageTooltip = "This node still works but is now deprecated. Please use \"View Dir\" instead.";
+			m_errorMessageTypeIsError = NodeMessageType.Warning;
+			m_showErrorMessage = true;
 		}
 
 		protected override void OnUniqueIDAssigned()
 		{
 			base.OnUniqueIDAssigned();
 			m_localVarName = "objectSpaceViewDir" + OutputId;
+		}
+
+		public override void DrawProperties()
+		{
+			base.DrawProperties();
+			if ( m_showErrorMessage )
+			{
+				EditorGUILayout.HelpBox( m_errorMessageTooltip, MessageType.Warning );
+			}
 		}
 	}
 }

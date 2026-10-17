@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using Unity.Scripting.LifecycleManagement;
 
 namespace AmplifyShaderEditor
 {
@@ -9,6 +10,12 @@ namespace AmplifyShaderEditor
 	{
 		On,
 		Off
+	}
+
+	public enum ZClipMode
+	{
+		True,
+		False
 	}
 
 	public enum ZTestMode
@@ -23,16 +30,19 @@ namespace AmplifyShaderEditor
 	}
 
 	[Serializable]
+	[NoAutoStaticsCleanup]
 	class ZBufferOpHelper
 	{
 		public static readonly string DepthParametersStr = " Depth";
 		public static readonly string ZWriteModeStr = "ZWrite Mode";
+		public static readonly string ZClipModeStr = "ZClip Mode";
 		public static readonly string ZTestModeStr = "ZTest Mode";
 		public static readonly string OffsetStr = "Offset";
 		public static readonly string OffsetFactorStr = "Factor";
 		public static readonly string OffsetUnitsStr = "Units";
 		private const string ExtraDepthPassStr = "Extra Depth Pass";
 		private const string DepthZTestStr = "Depth ZTest";
+		private const string DepthZClipStr = "Depth ZClip";
 
 		public static readonly string[] ZTestModeLabels =
 		{
@@ -65,6 +75,13 @@ namespace AmplifyShaderEditor
 			"Off"
 		};
 
+		public static readonly string[] ZClipModeValues =
+		{
+			"<Default>",
+			"True",
+			"False"
+		};
+
 		public static readonly Dictionary<ZTestMode, int> ZTestModeDict = new Dictionary<ZTestMode, int>
 		{
 			{ZTestMode.Less,1 },
@@ -82,12 +99,22 @@ namespace AmplifyShaderEditor
 			{ ZWriteMode.Off,2}
 		};
 
+		public static readonly Dictionary<ZClipMode, int> ZClipModeDict = new Dictionary<ZClipMode, int>
+		{
+			{ ZClipMode.True,1},
+			{ ZClipMode.False,2}
+		};
+
 
 		[SerializeField]
 		private InlineProperty m_zTestMode = new InlineProperty();
 
 		[SerializeField]
 		private InlineProperty m_zWriteMode = new InlineProperty();
+
+		[SerializeField]
+		private InlineProperty m_zClipMode = new InlineProperty();
+
 		[SerializeField]
 		private InlineProperty m_offsetFactor = new InlineProperty();
 
@@ -104,11 +131,15 @@ namespace AmplifyShaderEditor
 		private int m_extrazTestMode = 0;
 
 		[SerializeField]
+		private int m_extrazClipMode = 0;
+
+		[SerializeField]
 		private StandardSurfaceOutputNode m_parentSurface;
 
-		public string CreateDepthInfo( bool outlineZWrite, bool outlineZTest )
+		public string CreateDepthInfo( bool outlineZWrite, bool outlineZClip, bool outlineZTest )
 		{
 			string result = string.Empty;
+
 			if( m_zWriteMode.IntValue != 0 || m_zWriteMode.Active )
 			{
 				MasterNode.AddRenderState( ref result, "ZWrite", m_zWriteMode.GetValueOrProperty( ZWriteModeValues[ m_zWriteMode.IntValue ] ) );
@@ -116,6 +147,15 @@ namespace AmplifyShaderEditor
 			else if( outlineZWrite )
 			{
 				MasterNode.AddRenderState( ref result, "ZWrite", ZWriteModeValues[ 1 ] );
+			}
+
+			if( m_zClipMode.IntValue != 0 || m_zClipMode.Active )
+			{
+				MasterNode.AddRenderState( ref result, "ZClip", m_zClipMode.GetValueOrProperty( ZClipModeValues[ m_zClipMode.IntValue ] ) );
+			}
+			else if( outlineZClip )
+			{
+				MasterNode.AddRenderState( ref result, "ZClip", ZClipModeValues[ 1 ] );
 			}
 
 			if( m_zTestMode.IntValue != 0 || m_zTestMode.Active )
@@ -141,12 +181,7 @@ namespace AmplifyShaderEditor
 			GUI.color = new Color( cachedColor.r, cachedColor.g, cachedColor.b, 0.5f );
 			EditorGUILayout.BeginHorizontal( toolbarstyle );
 			GUI.color = cachedColor;
-			EditorGUI.BeginChangeCheck();
-			m_parentSurface.ContainerGraph.ParentWindow.InnerWindowVariables.ExpandedDepth = owner.GUILayoutToggle( m_parentSurface.ContainerGraph.ParentWindow.InnerWindowVariables.ExpandedDepth, DepthParametersStr, UIUtils.MenuItemToggleStyle );
-			if( EditorGUI.EndChangeCheck() )
-			{
-				EditorPrefs.SetBool( "ExpandedDepth", m_parentSurface.ContainerGraph.ParentWindow.InnerWindowVariables.ExpandedDepth );
-			}
+			m_parentSurface.ContainerGraph.ParentWindow.InnerWindowVariables.ExpandedDepth = NodeUtils.FoldoutToggle( m_parentSurface.ContainerGraph.ParentWindow.InnerWindowVariables.ExpandedDepth, DepthParametersStr );
 			EditorGUILayout.EndHorizontal();
 
 			if( m_parentSurface.ContainerGraph.ParentWindow.InnerWindowVariables.ExpandedDepth )
@@ -165,8 +200,8 @@ namespace AmplifyShaderEditor
 
 				m_zWriteMode.EnumTypePopup( ref owner, ZWriteModeStr, ZWriteModeValues );
 				m_zTestMode.EnumTypePopup( ref owner, ZTestModeStr, ZTestModeLabels );
-				//m_zWriteMode = owner.EditorGUILayoutPopup( ZWriteModeStr, m_zWriteMode, ZWriteModeValues );
-				//m_zTestMode = owner.EditorGUILayoutPopup( ZTestModeStr, m_zTestMode, ZTestModeLabels );
+				m_zClipMode.EnumTypePopup( ref owner, ZClipModeStr, ZClipModeValues );
+
 				m_offsetEnabled = owner.EditorGUILayoutToggle( OffsetStr, m_offsetEnabled );
 				if( m_offsetEnabled )
 				{
@@ -181,6 +216,7 @@ namespace AmplifyShaderEditor
 				{
 					EditorGUI.indentLevel++;
 					m_extrazTestMode = owner.EditorGUILayoutPopup( DepthZTestStr, m_extrazTestMode, ZTestModeLabels );
+					m_extrazClipMode = owner.EditorGUILayoutPopup( DepthZClipStr, m_extrazClipMode, ZClipModeValues );
 					EditorGUI.indentLevel--;
 				}
 				EditorGUILayout.Separator();
@@ -202,6 +238,8 @@ namespace AmplifyShaderEditor
 				if( m_extrazTestMode != 0 )
 					shaderBody += "\t\t\tZTest " + ZTestModeValues[ m_extrazTestMode ] + "\n";
 				shaderBody += "\t\t\tZWrite On\n";
+				if( m_extrazClipMode != 0 )
+					shaderBody += "\t\t\tZClip " + ZClipModeValues[ m_extrazClipMode ] + "\n";
 				shaderBody += "\t\t}\n\n";
 			}
 		}
@@ -225,7 +263,7 @@ namespace AmplifyShaderEditor
 			}
 			else
 			{
-				if( UIUtils.CurrentShaderVersion() > 14501 )
+				if ( UIUtils.CurrentShaderVersion() > 14501 )
 				{
 					m_zWriteMode.ReadFromString( ref index, ref nodeParams );
 					m_zTestMode.ReadFromString( ref index, ref nodeParams );
@@ -235,6 +273,7 @@ namespace AmplifyShaderEditor
 					m_zWriteMode.IntValue = Convert.ToInt32( nodeParams[ index++ ] );
 					m_zTestMode.IntValue = Convert.ToInt32( nodeParams[ index++ ] );
 				}
+
 				m_offsetEnabled = Convert.ToBoolean( nodeParams[ index++ ] );
 
 				if( UIUtils.CurrentShaderVersion() > 15303 )
@@ -253,6 +292,12 @@ namespace AmplifyShaderEditor
 					m_extraDepthPass = Convert.ToBoolean( nodeParams[ index++ ] );
 					m_extrazTestMode = Convert.ToInt32( nodeParams[ index++ ] );
 				}
+
+				if ( UIUtils.CurrentShaderVersion() >= 19906 )
+				{
+					m_zClipMode.ReadFromString( ref index, ref nodeParams );
+					m_extrazClipMode = Convert.ToInt32( nodeParams[ index++ ] );
+				}
 			}
 		}
 
@@ -265,8 +310,11 @@ namespace AmplifyShaderEditor
 			m_offsetUnits.WriteToString( ref nodeInfo );
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_extraDepthPass );
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_extrazTestMode );
+			m_zClipMode.WriteToString( ref nodeInfo );
+			IOUtils.AddFieldValueToString( ref nodeInfo, m_extrazClipMode );
+
 		}
-		public bool IsActive { get { return m_zTestMode.IntValue != 0 || m_zWriteMode.IntValue != 0 || m_offsetEnabled || m_zTestMode.Active || m_zWriteMode.Active; } }
+		public bool IsActive { get { return m_zTestMode.IntValue != 0 || m_zWriteMode.IntValue != 0 || m_zClipMode.IntValue != 0 || m_offsetEnabled || m_zTestMode.Active || m_zWriteMode.Active || m_zClipMode.Active; } }
 		public StandardSurfaceOutputNode ParentSurface { get { return m_parentSurface; } set { m_parentSurface = value; } }
 	}
 }

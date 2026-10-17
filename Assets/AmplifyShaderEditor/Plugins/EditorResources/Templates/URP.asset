@@ -1,0 +1,156 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 944495770235517469dde353ea417f49, type: 3}
+  m_Name: URP
+  m_EditorClassIdentifier: 
+  PackageName: com.unity.render-pipelines.universal
+  Templates:
+  - Template: {fileID: 4800000, guid: ece0159bad6633944bf6b818f4dd296c, type: 3}
+    Versions:
+    - VersionRange:
+        Min: 14
+        Max: 15
+      Override: {fileID: 102900000, guid: ee67e8dd96dd401409f5c38130114e7a, type: 3}
+    - VersionRange:
+        Min: 15
+        Max: 16
+      Override: {fileID: 102900000, guid: 2ac80ba1a8e67bc41b2886785e645bfe, type: 3}
+    - VersionRange:
+        Min: 16
+        Max: 17
+      Override: {fileID: 102900000, guid: 152edf7068ba17940971d9d60286e982, type: 3}
+    - VersionRange:
+        Min: 17
+        Max: 18
+      Override: {fileID: 102900000, guid: 4105cf58c2a862c4c97683bae0cc6dab, type: 3}
+    TemplateName: Hidden/Universal/Sprite Custom Lit
+    TemplateTimestamp: 639096029597978087
+  - Template: {fileID: 4800000, guid: 25ed3094b38eca84ba6e6529789a1455, type: 3}
+    Versions:
+    - VersionRange:
+        Min: 14
+        Max: 15
+      Override: {fileID: 102900000, guid: a2239e523c837764cb91c5a2344c2088, type: 3}
+    - VersionRange:
+        Min: 15
+        Max: 16
+      Override: {fileID: 102900000, guid: 15bea3e3d2c52154cb8a8fe922edbcb5, type: 3}
+    - VersionRange:
+        Min: 16
+        Max: 17
+      Override: {fileID: 102900000, guid: ad0bc77c880f17447add73c3bdc88c55, type: 3}
+    - VersionRange:
+        Min: 17
+        Max: 18
+      Override: {fileID: 102900000, guid: e00dd9ccb14cd9e4a89c80a69d670eff, type: 3}
+    TemplateName: Hidden/Universal/ASEBridgeTemplates/Sprite Custom Lit (Bridge1)
+    TemplateTimestamp: 639096029597987933
+  - Template: {fileID: 4800000, guid: 199187dac283dbe4a8cb1ea611d70c58, type: 3}
+    Versions:
+    - VersionRange:
+        Min: 14
+        Max: 15
+      Override: {fileID: 102900000, guid: cbd1e680c8165bf4fbb40a877ed97a07, type: 3}
+    - VersionRange:
+        Min: 15
+        Max: 16
+      Override: {fileID: 102900000, guid: 5773967f8a1eb1c4aa19e72f31bc1b82, type: 3}
+    - VersionRange:
+        Min: 16
+        Max: 17
+      Override: {fileID: 102900000, guid: 3381ab58c7de7fb488cb822c60668acc, type: 3}
+    - VersionRange:
+        Min: 17
+        Max: 18
+      Override: {fileID: 102900000, guid: 046e061a7bbbcca45a45c04c0e98d85d, type: 3}
+    TemplateName: Hidden/Universal/Sprite Lit
+    TemplateTimestamp: 639096029597992981
+  - Template: {fileID: 4800000, guid: cf964e524c8e69742b1d21fbe2ebcc4a, type: 3}
+    Versions:
+    - VersionRange:
+        Min: 14
+        Max: 15
+      Override: {fileID: 102900000, guid: b786f15f186a78340b9edaf0a7fe81b4, type: 3}
+    - VersionRange:
+        Min: 15
+        Max: 16
+      Override: {fileID: 102900000, guid: 960d60d57afb2a24f9c92de4cc2e734f, type: 3}
+    - VersionRange:
+        Min: 16
+        Max: 17
+      Override: {fileID: 102900000, guid: b82a044ad921ede418befb7973bf9a21, type: 3}
+    - VersionRange:
+        Min: 17
+        Max: 18
+      Override: {fileID: 102900000, guid: 454ea23f75d4f2e4ca599370e8512c12, type: 3}
+    TemplateName: Hidden/Universal/Sprite Unlit
+    TemplateTimestamp: 639096029597992981
+  - Template: {fileID: 4800000, guid: c2a467ab6d5391a4ea692226d82ffefd, type: 3}
+    Versions:
+    - VersionRange:
+        Min: 14
+        Max: 15
+      Override: {fileID: 102900000, guid: 10f8c9938baed0c42974863adb9bed14, type: 3}
+    - VersionRange:
+        Min: 15
+        Max: 16
+      Override: {fileID: 102900000, guid: 6c6200121f0b411439feeefe14c8c1e8, type: 3}
+    - VersionRange:
+        Min: 16
+        Max: 17
+      Override: {fileID: 102900000, guid: 6f1db66a27eba44469241008789e258b, type: 3}
+    - VersionRange:
+        Min: 17
+        Max: 18
+      Override: {fileID: 102900000, guid: 035759511edd7bc458a56327f74974a4, type: 3}
+    TemplateName: Hidden/Universal/Decal
+    TemplateTimestamp: 639105671730260556
+  - Template: {fileID: 4800000, guid: 94348b07e5e8bab40bd6c8a1e3df54cd, type: 3}
+    Versions:
+    - VersionRange:
+        Min: 14
+        Max: 15
+      Override: {fileID: 102900000, guid: 6c6fedbd4f66dd543932091852160d48, type: 3}
+    - VersionRange:
+        Min: 15
+        Max: 16
+      Override: {fileID: 102900000, guid: 8e614927cb7272146930fd84047fbd79, type: 3}
+    - VersionRange:
+        Min: 16
+        Max: 17
+      Override: {fileID: 102900000, guid: ab1da290514616c41a13e826e653769d, type: 3}
+    - VersionRange:
+        Min: 17
+        Max: 18
+      Override: {fileID: 102900000, guid: 5243f022c0a1b8548bf9275724481c05, type: 3}
+    TemplateName: Hidden/Universal/Lit
+    TemplateTimestamp: 639105671780586854
+  - Template: {fileID: 4800000, guid: 2992e84f91cbeb14eab234972e07ea9d, type: 3}
+    Versions:
+    - VersionRange:
+        Min: 14
+        Max: 15
+      Override: {fileID: 102900000, guid: afc12fdb319a25c46951d842763e5cd6, type: 3}
+    - VersionRange:
+        Min: 15
+        Max: 16
+      Override: {fileID: 102900000, guid: dbbf10b175a12c94da420f3465dd1ef6, type: 3}
+    - VersionRange:
+        Min: 16
+        Max: 17
+      Override: {fileID: 102900000, guid: 2aab6f8fc90281f4ea62066a9322e1c4, type: 3}
+    - VersionRange:
+        Min: 17
+        Max: 18
+      Override: {fileID: 102900000, guid: 9bfe372d2d7afc346b090e4415a51300, type: 3}
+    TemplateName: Hidden/Universal/Unlit
+    TemplateTimestamp: 639105671814473342

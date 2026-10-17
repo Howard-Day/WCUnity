@@ -7,10 +7,12 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using Unity.Scripting.LifecycleManagement;
 
 namespace AmplifyShaderEditor
 {
 	[Serializable]
+	[NoAutoStaticsCleanup]
 	public class TipsWindow : MenuParent
 	{
 		private static bool m_showWindow = false;
@@ -25,6 +27,7 @@ namespace AmplifyShaderEditor
 			"You can press SPACE to open a context menu to add a new node and press TAB or SHIFT+TAB tocycle between the found nodes",
 			"You can remove a node without breaking the graph connections by pressing ALT and then dragging the node out",
 			"You can switch two input connections holding CTRL while dragging one input connection into the other",
+			"Hold a shortcut key and left click anywhere on the canvas to create a new node. Shortcut keys are shown inside [ ] in front of each node name on the Palette Tab. Example: '1' for Float, '5' for Color.",
 		};
 
 		int m_currentTip = 0;

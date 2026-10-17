@@ -31,6 +31,7 @@ Shader "Hidden/GradientSample"
 			#pragma vertex vert_img
 			#pragma fragment frag
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 		
 			sampler2D _GTime;
 			int _GType;

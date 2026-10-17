@@ -26,7 +26,8 @@ namespace AmplifyShaderEditor
 		ModuleColorMask2,
 		ModuleColorMask3,
 		ModuleStencil,
-		ModuleZwrite,
+		ModuleZWrite,
+		ModuleZClip,
 		ModuleZTest,
 		ModuleZOffset,
 		ModuleTag,
@@ -200,7 +201,7 @@ namespace AmplifyShaderEditor
 				return;
 
 			m_uniquePrefix = uniquePrefix;
-			
+
 			//RENDERING PLATFORMS
 			m_renderPlatformHelper = new TemplateRenderPlatformHelper();
 			TemplateHelperFunctions.FillRenderingPlatform( m_renderPlatformHelper , subBody );
@@ -309,7 +310,7 @@ namespace AmplifyShaderEditor
 					{
 						propertyContainer.AddId( subBody, blendParams, false );
 					}
-					
+
 				}
 			}
 			//BLEND OP
@@ -396,7 +397,7 @@ namespace AmplifyShaderEditor
 
 				m_blendData.DataCheck = ( m_blendData.ValidBlendMode || m_blendData.ValidBlendOp ) ? TemplateDataCheck.Valid : TemplateDataCheck.Invalid;
 			}
-			
+
 			//ALPHA TO MASK
 			{
 				Match alphaToMaskMatch = Regex.Match( subBody, TemplateHelperFunctions.AlphaToMaskPattern );
@@ -428,7 +429,7 @@ namespace AmplifyShaderEditor
 					TemplateHelperFunctions.CreateCullMode( cullParams, ref m_cullModeData );
 					if( m_cullModeData.DataCheck == TemplateDataCheck.Valid )
 						propertyContainer.AddId( subBody, cullParams, false, string.Empty );
-					
+
 				}
 			}
 			//COLOR MASK
@@ -536,6 +537,7 @@ namespace AmplifyShaderEditor
 					}
 				}
 			}
+
 			//ZWRITE
 			{
 				Match zWriteMatch = Regex.Match( subBody, TemplateHelperFunctions.ZWriteWholeWordPattern );
@@ -552,6 +554,27 @@ namespace AmplifyShaderEditor
 						if( m_depthData.DataCheck == TemplateDataCheck.Valid )
 						{
 							propertyContainer.AddId( subBody, m_depthData.ZWriteModeId, true );
+						}
+					}
+				}
+			}
+
+			//ZCLIP
+			{
+				Match zClipMatch = Regex.Match( subBody, TemplateHelperFunctions.ZClipWholeWordPattern );
+				if( zClipMatch.Success )
+				{
+					int zClipOpIdx = zClipMatch.Index;
+					int zClipEndIdx = subBody.IndexOf( TemplatesManager.TemplateNewLine, zClipOpIdx );
+					if( zClipEndIdx > 0 )
+					{
+						m_depthData.ZClipModeId = subBody.Substring( zClipOpIdx, zClipEndIdx + 1 - zClipOpIdx );
+						m_depthData.ZClipStartIndex = offsetIdx + zClipOpIdx;
+						idManager.RegisterId( m_depthData.ZClipStartIndex, uniquePrefix + m_depthData.ZClipModeId, m_depthData.ZClipModeId );
+						TemplateHelperFunctions.CreateZClipMode( m_depthData.ZClipModeId, ref m_depthData );
+						if( m_depthData.DataCheck == TemplateDataCheck.Valid )
+						{
+							propertyContainer.AddId( subBody, m_depthData.ZClipModeId, true );
 						}
 					}
 				}
@@ -656,7 +679,7 @@ namespace AmplifyShaderEditor
 				//ONLY REGISTER MISSING TAGS
 				ConfigureCommonTag( m_allModulesTag, propertyContainer, idManager, uniquePrefix, offsetIdx, subBody );
 				m_allModulesMode = true;
-				
+
 				m_blendData.SetAllModulesDefault();
 
 				if( !m_alphaToMaskData.IsValid )
@@ -692,9 +715,10 @@ namespace AmplifyShaderEditor
 		public void RegisterInternalUnityInlines( ref List<TemplateShaderPropertyData> availableShaderProperties, ref Dictionary<string, TemplateShaderPropertyData> duplicatesHelper )
 		{
 			TestPropertyInternalName( m_depthData.ZWriteInlineValue, ref availableShaderProperties , ref duplicatesHelper);
+			TestPropertyInternalName( m_depthData.ZClipInlineValue, ref availableShaderProperties , ref duplicatesHelper);
 			TestPropertyInternalName( m_depthData.ZTestInlineValue, ref availableShaderProperties, ref duplicatesHelper );
 			TestPropertyInternalName( m_depthData.OffsetFactorInlineValue, ref availableShaderProperties, ref duplicatesHelper );
-			TestPropertyInternalName( m_depthData.OffsetUnitsInlineValue, ref availableShaderProperties, ref duplicatesHelper );		
+			TestPropertyInternalName( m_depthData.OffsetUnitsInlineValue, ref availableShaderProperties, ref duplicatesHelper );
 
 			TestPropertyInternalName( m_blendData.SourceFactorRGBInline, ref availableShaderProperties, ref duplicatesHelper );
 			TestPropertyInternalName( m_blendData.DestFactorRGBInline, ref availableShaderProperties, ref duplicatesHelper );

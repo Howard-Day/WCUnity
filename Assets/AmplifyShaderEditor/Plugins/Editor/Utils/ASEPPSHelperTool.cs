@@ -4,6 +4,7 @@ using System;
 using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
+using Unity.Scripting.LifecycleManagement;
 //using UnityEngine.Rendering.PostProcessing;
 
 
@@ -24,6 +25,7 @@ namespace AmplifyShaderEditor
 	}
 
 	[Serializable]
+	[NoAutoStaticsCleanup]
 	public class ASEPPSHelperTool : EditorWindow
 	{
 		private const string PPSFullTemplate =
@@ -94,23 +96,23 @@ namespace AmplifyShaderEditor
 			{ WirePortDataType.SAMPLER2DARRAY,"SetTexture"}
 		};
 
-		public static readonly Dictionary<UnityEditor.ShaderUtil.ShaderPropertyType, string> ShaderPropertyToPPSType = new Dictionary<UnityEditor.ShaderUtil.ShaderPropertyType, string>()
+		public static readonly Dictionary<UnityEngine.Rendering.ShaderPropertyType, string> ShaderPropertyToPPSType = new Dictionary<UnityEngine.Rendering.ShaderPropertyType, string>()
 		{
-			{ UnityEditor.ShaderUtil.ShaderPropertyType.Float,"FloatParameter"},
-			{ UnityEditor.ShaderUtil.ShaderPropertyType.Range,"FloatParameter"},
-			{ UnityEditor.ShaderUtil.ShaderPropertyType.Vector,"Vector4Parameter"},
-			{ UnityEditor.ShaderUtil.ShaderPropertyType.Color,"ColorParameter"},
-			{ UnityEditor.ShaderUtil.ShaderPropertyType.TexEnv,"TextureParameter"}
+			{ UnityEngine.Rendering.ShaderPropertyType.Float,"FloatParameter"},
+			{ UnityEngine.Rendering.ShaderPropertyType.Range,"FloatParameter"},
+			{ UnityEngine.Rendering.ShaderPropertyType.Vector,"Vector4Parameter"},
+			{ UnityEngine.Rendering.ShaderPropertyType.Color,"ColorParameter"},
+			{ UnityEngine.Rendering.ShaderPropertyType.Texture,"TextureParameter"}
 		};
 
 
-		public static readonly Dictionary<UnityEditor.ShaderUtil.ShaderPropertyType, string> ShaderPropertyToPPSSet = new Dictionary<UnityEditor.ShaderUtil.ShaderPropertyType, string>()
+		public static readonly Dictionary<UnityEngine.Rendering.ShaderPropertyType, string> ShaderPropertyToPPSSet = new Dictionary<UnityEngine.Rendering.ShaderPropertyType, string>()
 		{
-			{ UnityEditor.ShaderUtil.ShaderPropertyType.Float,"SetFloat"},
-			{ UnityEditor.ShaderUtil.ShaderPropertyType.Range,"SetFloat"},
-			{ UnityEditor.ShaderUtil.ShaderPropertyType.Vector,"SetVector"},
-			{ UnityEditor.ShaderUtil.ShaderPropertyType.Color,"SetColor"},
-			{ UnityEditor.ShaderUtil.ShaderPropertyType.TexEnv,"SetTexture"}
+			{ UnityEngine.Rendering.ShaderPropertyType.Float,"SetFloat"},
+			{ UnityEngine.Rendering.ShaderPropertyType.Range,"SetFloat"},
+			{ UnityEngine.Rendering.ShaderPropertyType.Vector,"SetVector"},
+			{ UnityEngine.Rendering.ShaderPropertyType.Color,"SetColor"},
+			{ UnityEngine.Rendering.ShaderPropertyType.Texture,"SetTexture"}
 		};
 
 		private Dictionary<string, bool> m_excludedProperties = new Dictionary<string, bool>
@@ -168,12 +170,12 @@ namespace AmplifyShaderEditor
 		void FetchTooltips()
 		{
 			m_tooltips.Clear();
-			int propertyCount = UnityEditor.ShaderUtil.GetPropertyCount( m_currentShader );
+			int propertyCount = m_currentShader.GetPropertyCount();
 			for( int i = 0; i < propertyCount; i++ )
 			{
-				//UnityEditor.ShaderUtil.ShaderPropertyType type = UnityEditor.ShaderUtil.GetPropertyType( m_currentShader, i );
-				string name = UnityEditor.ShaderUtil.GetPropertyName( m_currentShader, i );
-				string description = UnityEditor.ShaderUtil.GetPropertyDescription( m_currentShader, i );
+				//UnityEngine.Rendering.ShaderPropertyType type = m_currentShader.GetPropertyType( i );
+				string name = m_currentShader.GetPropertyName( i );
+				string description = m_currentShader.GetPropertyDescription( i );
 
 				if( m_excludedProperties.ContainsKey( name ))
 					continue;
@@ -313,14 +315,13 @@ namespace AmplifyShaderEditor
 					m_dummyMaterial.shader = m_currentShader;
 				}
 
-				int propertyCount = UnityEditor.ShaderUtil.GetPropertyCount( m_currentShader );
+				int propertyCount = m_currentShader.GetPropertyCount();
 				//string allProperties = string.Empty;
 				int validIds = 0;
 				for( int i = 0; i < propertyCount; i++ )
 				{
-					UnityEditor.ShaderUtil.ShaderPropertyType type = UnityEditor.ShaderUtil.GetPropertyType( m_currentShader, i );
-					string name = UnityEditor.ShaderUtil.GetPropertyName( m_currentShader, i );
-					//string description = UnityEditor.ShaderUtil.GetPropertyDescription( m_currentShader, i );
+					UnityEngine.Rendering.ShaderPropertyType type = m_currentShader.GetPropertyType( i );
+					string name = m_currentShader.GetPropertyName( i );
 					if( m_excludedProperties.ContainsKey( name ))
 						continue;
 
@@ -328,31 +329,31 @@ namespace AmplifyShaderEditor
 					bool nullPointerCheck = false;
 					switch( type )
 					{
-						case UnityEditor.ShaderUtil.ShaderPropertyType.Color:
+						case UnityEngine.Rendering.ShaderPropertyType.Color:
 						{
 							Color value = m_dummyMaterial.GetColor( name );
 							defaultValue = string.Format( "value = new Color({0}f,{1}f,{2}f,{3}f)", value.r, value.g, value.b, value.a );
 						}
 						break;
-						case UnityEditor.ShaderUtil.ShaderPropertyType.Vector:
+						case UnityEngine.Rendering.ShaderPropertyType.Vector:
 						{
 							Vector4 value = m_dummyMaterial.GetVector( name );
 							defaultValue = string.Format( "value = new Vector4({0}f,{1}f,{2}f,{3}f)", value.x, value.y, value.z, value.w );
 						}
 						break;
-						case UnityEditor.ShaderUtil.ShaderPropertyType.Float:
+						case UnityEngine.Rendering.ShaderPropertyType.Float:
 						{
 							float value = m_dummyMaterial.GetFloat( name );
 							defaultValue = "value = " + value + "f";
 						}
 						break;
-						case UnityEditor.ShaderUtil.ShaderPropertyType.Range:
+						case UnityEngine.Rendering.ShaderPropertyType.Range:
 						{
 							float value = m_dummyMaterial.GetFloat( name );
 							defaultValue = "value = " + value + "f";
 						}
 						break;
-						case UnityEditor.ShaderUtil.ShaderPropertyType.TexEnv:
+						case UnityEngine.Rendering.ShaderPropertyType.Texture:
 						{
 							nullPointerCheck = true;
 						}

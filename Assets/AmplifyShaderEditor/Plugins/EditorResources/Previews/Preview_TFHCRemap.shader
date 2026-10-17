@@ -2,11 +2,11 @@ Shader "Hidden/TFHCRemap"
 {
 	Properties
 	{
-		_A ("_Value", 2D) = "white" {}
-		_B ("_MinOld", 2D) = "white" {}
-		_C ("_MaxOld", 2D) = "white" {}
-		_D ("_MinNew", 2D) = "white" {}
-		_E ("_MaxNew", 2D) = "white" {}
+		_A ("_Value", 2DArray) = "white" {}
+		_B ("_MinOld", 2DArray) = "white" {}
+		_C ("_MaxOld", 2DArray) = "white" {}
+		_D ("_MinNew", 2DArray) = "white" {}
+		_E ("_MaxNew", 2DArray) = "white" {}
 	}
 	SubShader
 	{
@@ -14,22 +14,24 @@ Shader "Hidden/TFHCRemap"
 		{
 			CGPROGRAM
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#pragma vertex vert_img
 			#pragma fragment frag
+			#pragma target 3.5
 
-			sampler2D _A;
-			sampler2D _B;
-			sampler2D _C;
-			sampler2D _D;
-			sampler2D _E;
+			ASE_PORT( _A );
+			ASE_PORT( _B );
+			ASE_PORT( _C );
+			ASE_PORT( _D );
+			ASE_PORT( _E );
 
 			float4 frag(v2f_img i) : SV_Target
 			{
-				float4 value = tex2D( _A, i.uv );
-				float4 minold = tex2D( _B, i.uv );
-				float4 maxold = tex2D( _C, i.uv );
-				float4 minnew = tex2D( _D, i.uv );
-				float4 maxnew = tex2D( _E, i.uv );
+				float4 value = ASE_SAMPLE_PORT( _A, i.uv );
+				float4 minold = ASE_SAMPLE_PORT( _B, i.uv );
+				float4 maxold = ASE_SAMPLE_PORT( _C, i.uv );
+				float4 minnew = ASE_SAMPLE_PORT( _D, i.uv );
+				float4 maxnew = ASE_SAMPLE_PORT( _E, i.uv );
 
 				float4 denom = maxold - minold;
 				if(denom.x == 0)

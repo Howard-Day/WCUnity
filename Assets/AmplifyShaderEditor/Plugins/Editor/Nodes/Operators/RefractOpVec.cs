@@ -18,6 +18,14 @@ namespace AmplifyShaderEditor
 			AddInputPort( WirePortDataType.FLOAT4, false , "Incident" );
 			AddInputPort( WirePortDataType.FLOAT4, false , "Normal" );
 			AddInputPort( WirePortDataType.FLOAT, false, "Eta" );
+
+			// @diogo: a texture object is bound, not assigned, so it cannot be an argument to refract
+			for ( int i = 0; i < m_inputPorts.Count; i++ )
+			{
+				m_inputPorts[ i ].AddPortForbiddenTypes( WirePortDataType.SAMPLER1D, WirePortDataType.SAMPLER2D, WirePortDataType.SAMPLER3D,
+					WirePortDataType.SAMPLERCUBE, WirePortDataType.SAMPLER2DARRAY, WirePortDataType.SAMPLERSTATE );
+			}
+
 			AddOutputPort( WirePortDataType.FLOAT4, Constants.EmptyPortValue );
 			m_textLabelWidth = 67;
 			m_previewShaderGUID = "5ab44ca484bed8b4884b03b1c00fdc3d";

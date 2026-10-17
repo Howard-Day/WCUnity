@@ -5,19 +5,22 @@ using UnityEngine;
 using UnityEditor;
 using System;
 
-public class SingleLineTexture : MaterialPropertyDrawer
+namespace AmplifyShaderEditor
 {
-	public override void OnGUI( Rect position, MaterialProperty prop, String label, MaterialEditor editor )
+	public class SingleLineTexture : MaterialPropertyDrawer
 	{
-		EditorGUI.BeginChangeCheck();
-		EditorGUI.showMixedValue = prop.hasMixedValue;
-
-		Texture value = editor.TexturePropertyMiniThumbnail( position, prop, label, string.Empty );
-
-		EditorGUI.showMixedValue = false;
-		if( EditorGUI.EndChangeCheck() )
+		public override void OnGUI( Rect position, MaterialProperty prop, String label, MaterialEditor editor )
 		{
-			prop.textureValue = value;
+			EditorGUI.BeginChangeCheck();
+			EditorGUI.showMixedValue = prop.hasMixedValue;
+
+			Texture value = editor.TexturePropertyMiniThumbnail( position, prop, label, string.Empty );
+
+			EditorGUI.showMixedValue = false;
+			if( EditorGUI.EndChangeCheck() )
+			{
+				prop.textureValue = value;
+			}
 		}
 	}
 }

@@ -8,6 +8,7 @@ Shader "Hidden/LightColorNode"
 			#pragma vertex vert_img
 			#pragma fragment frag
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#include "Lighting.cginc"
 
 			float4 _EditorLightColor;
@@ -25,6 +26,7 @@ Shader "Hidden/LightColorNode"
 			#pragma vertex vert_img
 			#pragma fragment frag
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#include "Lighting.cginc"
 
 			float4 _EditorLightColor;
@@ -42,6 +44,7 @@ Shader "Hidden/LightColorNode"
 			#pragma vertex vert_img
 			#pragma fragment frag
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#include "Lighting.cginc"
 
 			float4 _EditorLightColor;

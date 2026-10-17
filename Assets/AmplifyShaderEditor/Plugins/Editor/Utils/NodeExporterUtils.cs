@@ -316,6 +316,8 @@ namespace AmplifyShaderEditor
 
 		public void Destroy()
 		{
+			// @diogo: subscribed in the constructor; without this the instance leaks on the static undo event
+			UndoUtils.UnregisterUndoRedoCallback( OnUndoRedoPerformed );
 			m_window = null;
 			if( m_screenshotRT != null )
 			{

@@ -203,7 +203,7 @@ namespace AmplifyShaderEditor
 				if( m_viewVecPort.IsConnected )
 					viewdir = m_viewVecPort.GeneratePortInstructions( ref dataCollector );
 				else
-					viewdir = GeneratorUtils.GenerateViewDirection( ref dataCollector, UniqueId, ViewSpace.World );
+					viewdir = GeneratorUtils.GenerateViewDirection( ref dataCollector, UniqueId, space: ViewSpace.World );
 			}
 			else
 			{
@@ -233,7 +233,7 @@ namespace AmplifyShaderEditor
 							else
 							{
 								normal = GeneratorUtils.GenerateWorldNormal( ref dataCollector, UniqueId, CurrentPrecisionType, normal, OutputId );
-								dataCollector.AddToInput( UniqueId, SurfaceInputs.WORLD_NORMAL, CurrentPrecisionType );
+								dataCollector.AddToInput( UniqueId, SurfaceInputs.WORLD_NORMAL, UIUtils.CurrentWindow.CurrentGraph.CurrentPrecision );
 								dataCollector.ForceNormal = true;
 							}
 						}
@@ -256,7 +256,7 @@ namespace AmplifyShaderEditor
 				{
 					if( dataCollector.IsFragmentCategory )
 					{
-						dataCollector.AddToInput( UniqueId, SurfaceInputs.WORLD_NORMAL, CurrentPrecisionType );
+						dataCollector.AddToInput( UniqueId, SurfaceInputs.WORLD_NORMAL, UIUtils.CurrentWindow.CurrentGraph.CurrentPrecision );
 						if( dataCollector.DirtyNormal )
 							dataCollector.AddToInput( UniqueId, SurfaceInputs.INTERNALDATA, addSemiColon: false );
 					}
@@ -277,7 +277,7 @@ namespace AmplifyShaderEditor
 				// generate HV
 				if( !m_normalVecPort.IsConnected )
 				{
-					string halfView = GeneratorUtils.GenerateViewDirection( ref dataCollector, UniqueId, ViewSpace.World );
+					string halfView = GeneratorUtils.GenerateViewDirection( ref dataCollector, UniqueId, space: ViewSpace.World );
 					string halfLight = GeneratorUtils.GenerateWorldLightDirection( ref dataCollector, UniqueId, CurrentPrecisionType );
 					normal = "halfVector" + OutputId;
 					dataCollector.AddLocalVariable( UniqueId, CurrentPrecisionType, WirePortDataType.FLOAT3, normal, "normalize( " + halfView + " + " + halfLight + " )" );

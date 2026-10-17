@@ -4,6 +4,7 @@
 using UnityEngine;
 using UnityEditor;
 using System;
+using System.Collections.Generic;
 
 namespace AmplifyShaderEditor
 {
@@ -43,6 +44,12 @@ namespace AmplifyShaderEditor
 	public class TexturePropertyNode : PropertyNode
 	{
 		private const string ObjectSelectorCmdStr = "ObjectSelectorClosed";
+		private const string DefaultInlineSamplerStateStr = "_Linear_Repeat";
+		private const string CameraDepthNoSamplerMacro = "UNITY_DECLARE_TEX2D_NOSAMPLER_FLOAT({0})";
+		private const string StereoDepthWarning = "'_CameraDepthTexture' becomes a texture array under single-pass instanced stereo, which this sample can't match and reads as black there; use the Screen Depth node instead.";
+		private const string PipelineDepthWarning = "'_CameraDepthTexture' is owned by the render pipeline, which reads it through its own helpers, so a Texture Sample of it can't be made correct here; use the Screen Depth node instead.";
+
+		private bool m_pipelineDepthNotified = false;
 
 		protected readonly string[] AvailablePropertyTypeLabels = { PropertyType.Property.ToString(), PropertyType.Global.ToString() };
 		protected readonly int[] AvailablePropertyTypeValues = { (int)PropertyType.Property, (int)PropertyType.Global };
@@ -54,6 +61,9 @@ namespace AmplifyShaderEditor
 		protected const string AutoCastModeStr = "Auto-Cast Mode";
 
 		protected const string AutoUnpackNormalsStr = "Normal";
+
+		protected const string AssignKeywordInfoStr = "The material inspector will assign a {0} keyword, to the material, once the texture slot" +
+			" is assigned. To use it, you'll need a Switch node to create the keyword variants.";
 
 		[SerializeField]
 		protected Texture m_defaultValue;
@@ -70,8 +80,10 @@ namespace AmplifyShaderEditor
 		[SerializeField]
 		protected System.Type m_textureType = typeof( Texture2D );
 
+		// @diogo: unique id of the node whose sampler state is borrowed; the register index is derived at
+		// point of use so re-sorts of the texture property register can't retarget it
 		[SerializeField]
-		protected int m_useSamplerArrayIdx = -1;
+		protected int m_useSamplerNodeId = -1;
 
 		//[SerializeField]
 		//protected bool m_isTextureFetched;
@@ -81,6 +93,9 @@ namespace AmplifyShaderEditor
 
 		[SerializeField]
 		protected TextureType m_currentType = TextureType.Texture2D;
+
+		[SerializeField]
+		protected bool m_assignKeyword;
 
 		[SerializeField]
 		protected AutoCastType m_autocastMode = AutoCastType.Auto;
@@ -117,6 +132,7 @@ namespace AmplifyShaderEditor
 			base.CommonInit( uniqueId );
 			GlobalTypeWarningText = string.Format( GlobalTypeWarningText, "Texture" );
 			m_defaultTextureValue = TexturePropertyValues.white;
+			m_assignKeyword = false;
 			m_insideSize.Set( PreviewSizeX, PreviewSizeY + 5 );
 			AddOutputPort( WirePortDataType.SAMPLER2D, "Tex" );
 			AddOutputPort( WirePortDataType.SAMPLERSTATE, "SS" );
@@ -133,6 +149,7 @@ namespace AmplifyShaderEditor
 			m_availableAttribs.Add( new PropertyAttributes( "No Scale Offset", "[NoScaleOffset]" ) );
 			m_availableAttribs.Add( new PropertyAttributes( "Normal", "[Normal]" ) );
 			m_availableAttribs.Add( new PropertyAttributes( "Single Line Texture", "[SingleLineTexture]" ) );
+			m_availableAttribs.Add( new PropertyAttributes( "Main Texture", "[MainTexture]" ) );
 			m_showPreview = true;
 			m_drawPreviewExpander = false;
 			m_drawPreview = false;
@@ -208,7 +225,7 @@ namespace AmplifyShaderEditor
 				if( m_typeId == -1 )
 					m_typeId = Shader.PropertyToID( "_Type" );
 
-				m_previewMaterialPassId = 1; 
+				m_previewMaterialPassId = 1;
 				SetPreviewTexture( Value );
 				//if( Value is Cubemap )
 				//{
@@ -340,7 +357,7 @@ namespace AmplifyShaderEditor
 		// Texture1D
 		public string GetTexture1DPropertyValue()
 		{
-			return PropertyName + "(\"" + m_propertyInspectorName + "\", 2D) = \"" + m_defaultTextureValue + "\" {}";
+			return PropertyName + "( \"" + m_propertyInspectorName + "\", 2D ) = \"" + m_defaultTextureValue + "\" {}";
 		}
 
 		public string GetTexture1DUniformValue()
@@ -351,7 +368,7 @@ namespace AmplifyShaderEditor
 		// Texture2D
 		public string GetTexture2DPropertyValue()
 		{
-			return PropertyName + "(\"" + m_propertyInspectorName + "\", 2D) = \"" + m_defaultTextureValue + "\" {}";
+			return PropertyName + "( \"" + m_propertyInspectorName + "\", 2D ) = \"" + m_defaultTextureValue + "\" {}";
 		}
 
 		public string GetTexture2DUniformValue()
@@ -365,7 +382,7 @@ namespace AmplifyShaderEditor
 		//Texture3D
 		public string GetTexture3DPropertyValue()
 		{
-			return PropertyName + "(\"" + m_propertyInspectorName + "\", 3D) = \"" + m_defaultTextureValue + "\" {}";
+			return PropertyName + "( \"" + m_propertyInspectorName + "\", 3D ) = \"" + m_defaultTextureValue + "\" {}";
 		}
 
 		public string GetTexture3DUniformValue()
@@ -376,7 +393,7 @@ namespace AmplifyShaderEditor
 		// Cube
 		public string GetCubePropertyValue()
 		{
-			return PropertyName + "(\"" + m_propertyInspectorName + "\", CUBE) = \"" + m_defaultTextureValue + "\" {}";
+			return PropertyName + "( \"" + m_propertyInspectorName + "\", CUBE ) = \"" + m_defaultTextureValue + "\" {}";
 		}
 
 		public string GetCubeUniformValue()
@@ -387,7 +404,7 @@ namespace AmplifyShaderEditor
 		// Texture2DArray
 		public string GetTexture2DArrayPropertyValue()
 		{
-			return PropertyName + "(\"" + m_propertyInspectorName + "\", 2DArray) = \"" + m_defaultTextureValue + "\" {}";
+			return PropertyName + "( \"" + m_propertyInspectorName + "\", 2DArray ) = \"" + m_defaultTextureValue + "\" {}";
 		}
 
 		public string GetTexture2DArrayUniformValue()
@@ -434,18 +451,28 @@ namespace AmplifyShaderEditor
 		{
 			m_defaultTextureValue = (TexturePropertyValues)EditorGUILayoutEnumPopup( DefaultTextureStr, m_defaultTextureValue );
 
-			if( !m_drawAutocast )
-				return;
-
-			AutoCastType newAutoCast = (AutoCastType)EditorGUILayoutEnumPopup( AutoCastModeStr, m_autocastMode );
-			if( newAutoCast != m_autocastMode )
+			if( m_drawAutocast )
 			{
-				m_autocastMode = newAutoCast;
-				if( m_autocastMode != AutoCastType.Auto )
+				AutoCastType newAutoCast = (AutoCastType)EditorGUILayoutEnumPopup( AutoCastModeStr, m_autocastMode );
+				if( newAutoCast != m_autocastMode )
 				{
-					ConfigTextureData( m_currentType );
-					ConfigureInputPorts();
-					ConfigureOutputPorts();
+					m_autocastMode = newAutoCast;
+					if( m_autocastMode != AutoCastType.Auto )
+					{
+						ConfigTextureData( m_currentType );
+						ConfigureInputPorts();
+						ConfigureOutputPorts();
+					}
+				}
+			}
+
+			if ( !ContainerGraph.IsSRP )
+			{
+				// @diogo: only BiRP for now
+				m_assignKeyword = EditorGUILayoutToggle( "Assign Keyword", m_assignKeyword );
+				if ( m_assignKeyword )
+				{
+					EditorGUILayout.HelpBox( string.Format( AssignKeywordInfoStr, PropertyName.ToUpper() ), MessageType.Info );
 				}
 			}
 		}
@@ -528,6 +555,12 @@ namespace AmplifyShaderEditor
 				ConfigTextureData( TextureType.Cube );
 			}
 
+			// @diogo: we now default to Tex2D as default, when cast mode is Auto and no texture is assigned
+			if ( texture == null && m_autocastMode == AutoCastType.Auto )
+			{
+				ConfigTextureData( TextureType.Texture2D );
+			}
+
 			ConfigureInputPorts();
 			ConfigureOutputPorts();
 		}
@@ -590,9 +623,9 @@ namespace AmplifyShaderEditor
 
 		}
 
-		public override void OnNodeLayout( DrawInfo drawInfo )
+		public override void OnNodeLayout( DrawInfo drawInfo, NodeUpdateCache cache )
 		{
-			base.OnNodeLayout( drawInfo );
+			base.OnNodeLayout( drawInfo, cache );
 			ConfigTextureType();
 		}
 
@@ -720,9 +753,15 @@ namespace AmplifyShaderEditor
 			GUI.Label( newRect, string.Empty, UIUtils.GetCustomStyle( CustomStyle.SamplerFrame ) );
 		}
 
+		// @diogo: the picker path above draws the preview RT with m_drawPreview off, so root the preview pass here too
+		public override bool IsPreviewVisible
+		{
+			get { return base.IsPreviewVisible || ( m_drawPicker && Value != null ); }
+		}
+
 		public override void CheckIfAutoRegister( ref MasterNodeDataCollector dataCollector )
 		{
-			// Also testing inside shader function because node can be used indirectly over a custom expression and directly over a Function Output node 
+			// Also testing inside shader function because node can be used indirectly over a custom expression and directly over a Function Output node
 			// That isn't being used externaly making it to not be registered ( since m_connStatus it set to Connected by being connected to an output node
 			if( CurrentParameterType != PropertyType.Constant && m_autoRegister && ( m_connStatus != NodeConnectionStatus.Connected || InsideShaderFunction ) )
 			{
@@ -748,6 +787,16 @@ namespace AmplifyShaderEditor
 				generatedSamplerState = GeneratorUtils.GenerateSamplerState( ref dataCollector, UniqueId, PropertyName , m_variableMode );
 			}
 
+			// @diogo: whoever takes this sampler uses it on their own texture, and it only binds on passes and
+			// programs that sample this one; fetch-mode textures are sampled outside ASE so the borrow is trusted,
+			// and the port type is matched because other nodes reach here passing their own output ids (#7, #549)
+			bool samplerStateOutput = outputId < m_outputPorts.Count && m_outputPorts[ outputId ].DataType == WirePortDataType.SAMPLERSTATE;
+			if ( samplerStateOutput && m_variableMode != VariableMode.Fetch )
+			{
+				string fallbackSampler = string.Format( Constants.SamplerFormat, DefaultInlineSamplerStateStr );
+				generatedSamplerState = dataCollector.RegisterBorrowedSampler( UniqueId, PropertyName, generatedSamplerState, fallbackSampler, true );
+			}
+
 			if( outputId > 0 )
 				return generatedSamplerState;
 			else
@@ -762,7 +811,12 @@ namespace AmplifyShaderEditor
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalVar )
 		{
-			return BaseGenerateShaderForOutput( outputId, ref dataCollector, ignoreLocalVar );
+			string code = BaseGenerateShaderForOutput( outputId, ref dataCollector, ignoreLocalVar );
+			if ( m_assignKeyword )
+			{
+				dataCollector.AddToProperties( -1, GetAssignKeywordPropertyValue(), 1000 );
+			}
+			return code;
 		}
 
 		public override void UpdateMaterial( Material mat )
@@ -822,8 +876,11 @@ namespace AmplifyShaderEditor
 			ReadAdditionalData( ref nodeParams );
 			if( UIUtils.CurrentShaderVersion() > 17101 )
 			{
-				m_useSamplerArrayIdx = Convert.ToInt32( GetCurrentParam( ref nodeParams ) );
+				m_useSamplerNodeId = Convert.ToInt32( GetCurrentParam( ref nodeParams ) );
 			}
+
+			// @diogo: register add runs before the property name is read; re-push so the sorted register sees it
+			ContainerGraph.TexturePropertyNodes.UpdateDataOnNode( UniqueId, PropertyName );
 		}
 
 		public virtual void ReadAdditionalData( ref string[] nodeParams )
@@ -851,6 +908,11 @@ namespace AmplifyShaderEditor
 			else
 			{
 				m_currentType = TextureType.Texture2D;
+			}
+
+			if( UIUtils.CurrentShaderVersion() >= 19902 )
+			{
+				m_assignKeyword = Convert.ToBoolean( GetCurrentParam( ref nodeParams ) );
 			}
 
 			ConfigTextureData( m_currentType );
@@ -886,9 +948,9 @@ namespace AmplifyShaderEditor
 		{
 			base.WriteToString( ref nodeInfo, ref connectionsInfo );
 			WriteAdditionalToString( ref nodeInfo, ref connectionsInfo );
-			if( m_useSamplerArrayIdx > 0 )
+			if( m_useSamplerNodeId > -1 )
 			{
-				TexturePropertyNode samplerNode = UIUtils.GetTexturePropertyNode( m_useSamplerArrayIdx - 1 );
+				TexturePropertyNode samplerNode = UIUtils.GetNode( m_useSamplerNodeId ) as TexturePropertyNode;
 				IOUtils.AddFieldValueToString( ref nodeInfo, ( samplerNode != null ? samplerNode.UniqueId : -1 ) );
 			}
 			else
@@ -906,6 +968,7 @@ namespace AmplifyShaderEditor
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_defaultTextureValue );
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_autocastMode );
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_currentType );
+			IOUtils.AddFieldValueToString( ref nodeInfo, m_assignKeyword.ToString() );
 		}
 
 		public override void WriteAdditionalClipboardData( ref string nodeInfo )
@@ -929,30 +992,35 @@ namespace AmplifyShaderEditor
 			return m_materialMode ? ( m_materialValue != null ? m_materialValue.name : IOUtils.NO_TEXTURES ) : ( m_defaultValue != null ? m_defaultValue.name : IOUtils.NO_TEXTURES );
 		}
 
+		private string GetAssignKeywordPropertyValue()
+		{
+			return "[HideInInspector] GenKey_" + PropertyName + "( \"Assign keyword " + PropertyName.ToUpper() + "\", Float ) = 1.0";
+		}
+
 		public override string GetPropertyValue()
 		{
 			switch( m_currentType )
 			{
 				case TextureType.Texture1D:
 				{
-					return PropertyAttributes + GetTexture1DPropertyValue();
+					return PropertyAttributes + PropertyAttributesSeparator + GetTexture1DPropertyValue();
 				}
 				case TextureType.ProceduralTexture:
 				case TextureType.Texture2D:
 				{
-					return PropertyAttributes + GetTexture2DPropertyValue();
+					return PropertyAttributes + PropertyAttributesSeparator + GetTexture2DPropertyValue();
 				}
 				case TextureType.Texture3D:
 				{
-					return PropertyAttributes + GetTexture3DPropertyValue();
+					return PropertyAttributes + PropertyAttributesSeparator + GetTexture3DPropertyValue();
 				}
 				case TextureType.Cube:
 				{
-					return PropertyAttributes + GetCubePropertyValue();
+					return PropertyAttributes + PropertyAttributesSeparator + GetCubePropertyValue();
 				}
 				case TextureType.Texture2DArray:
 				{
-					return PropertyAttributes + GetTexture2DArrayPropertyValue();
+					return PropertyAttributes + PropertyAttributesSeparator + GetTexture2DArrayPropertyValue();
 				}
 			}
 			return string.Empty;
@@ -992,6 +1060,16 @@ namespace AmplifyShaderEditor
 		{
 			m_excludeUniform = false;
 			ParentGraph outsideGraph = UIUtils.CurrentWindow.OutsideGraph;
+
+			// @diogo: URP declares depth behind REQUIRE_DEPTH_TEXTURE and HDRP always declares it,
+			// so adding our own would redefine it
+			if ( outsideGraph.IsSRP && PropertyName == Constants.CameraDepthTextureName )
+			{
+				dataType = string.Empty;
+				dataName = string.Empty;
+				return false;
+			}
+
 			if( outsideGraph.SamplingMacros || m_currentType == TextureType.Texture2DArray )
 			{
 				if( outsideGraph.IsSRP )
@@ -1004,6 +1082,15 @@ namespace AmplifyShaderEditor
 						return true;
 					}
 				}
+				// @diogo: depth needs full float precision, and the depth macro can't serve this path since
+				// it declares a combined sampler that the macro sampling call can't take
+				else if ( PropertyName == Constants.CameraDepthTextureName && m_currentType == TextureType.Texture2D )
+				{
+					dataName = string.Format( CameraDepthNoSamplerMacro, PropertyName ) + ";";
+					dataType = string.Empty;
+					fullValue = true;
+					return true;
+				}
 				else if( Constants.TexDeclarationStandardMacros.ContainsKey( m_currentType ) )
 				{
 					dataName = GeneratorUtils.GetPropertyDeclaraction( PropertyName, m_currentType, ";" );
@@ -1014,24 +1101,32 @@ namespace AmplifyShaderEditor
 			}
 
 			//TODO: this is a hack and needs to be properly fixed
-			if( PropertyName == "_CameraDepthTexture" )
+			if ( PropertyName == Constants.CameraDepthTextureName )
 			{
-				if( m_containerGraph.ParentWindow.OutsideGraph.IsSRP )
-				{
-					UIUtils.ShowMessage( "Use Sampling Macros flag on master node properties is required to be turned on in order to properly declare _CameraDepthTexture over an SRP shader!" , MessageSeverity.Warning );
-				}
-				else
-				{
-					m_excludeUniform = true;
-					dataType = "UNITY_DECLARE_DEPTH_TEXTURE(";
-					dataName = m_propertyName + " )";
-					return true;
-				}
+				m_excludeUniform = true;
+				dataType = "UNITY_DECLARE_DEPTH_TEXTURE(";
+				dataName = m_propertyName + " )";
+				return true;
 			}
 
 			dataType = UIUtils.TextureTypeToCgType( m_currentType );
 			dataName = m_propertyName;
 			return true;
+		}
+
+		protected override void RegisterProperty( ref MasterNodeDataCollector dataCollector )
+		{
+			base.RegisterProperty( ref dataCollector );
+
+			if ( PropertyName != Constants.CameraDepthTextureName || m_pipelineDepthNotified )
+			{
+				return;
+			}
+
+			// @diogo: SRP owns the declaration outright, Built-In only diverges under stereo
+			m_pipelineDepthNotified = true;
+			string warning = UIUtils.CurrentWindow.OutsideGraph.IsSRP ? PipelineDepthWarning : StereoDepthWarning;
+			UIUtils.ShowMessage( UniqueId, warning, MessageSeverity.Warning );
 		}
 
 		public virtual string CurrentPropertyReference
@@ -1092,6 +1187,17 @@ namespace AmplifyShaderEditor
 		public override void SetGlobalValue() { Shader.SetGlobalTexture( m_propertyName, m_defaultValue ); }
 		public override void FetchGlobalValue() { m_materialValue = Shader.GetGlobalTexture( m_propertyName ); }
 		public override string DataToArray { get { return PropertyName; } }
+		public override bool ReferencesNode( int nodeId ) { return base.ReferencesNode( nodeId ) || m_useSamplerNodeId == nodeId; }
+
+		public override void GetReferenceWires( List<ReferenceWire> wires )
+		{
+			base.GetReferenceWires( wires );
+			if ( m_useSamplerNodeId > -1 )
+			{
+				wires.Add( new ReferenceWire( m_useSamplerNodeId ) );
+			}
+		}
+
 		public TextureType CurrentType { get { return m_currentType; } }
 
 		public bool DrawAutocast

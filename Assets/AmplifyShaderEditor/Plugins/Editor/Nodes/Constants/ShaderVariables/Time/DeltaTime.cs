@@ -17,7 +17,7 @@ namespace AmplifyShaderEditor
 			ChangeOutputName( 4, "1/smoothDt" );
 			m_value = "unity_DeltaTime";
 			m_previewShaderGUID = "9d69a693042c443498f96d6da60535eb";
-			m_continuousPreviewRefresh = true;
+			ContinuousPreviewRefresh = true;
 		}
 
 		public override void RefreshExternalReferences()

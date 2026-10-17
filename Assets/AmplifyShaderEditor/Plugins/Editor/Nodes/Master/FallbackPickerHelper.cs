@@ -12,56 +12,49 @@ namespace AmplifyShaderEditor
 		private const string FallbackShaderStr = "Fallback";
 		private const string ShaderPoputContext = "CONTEXT/ShaderPopup";
 
-		private Material m_dummyMaterial;
-		private MenuCommand m_dummyCommand;
-
 		[SerializeField]
 		private string m_fallbackShader = string.Empty;
 
 		public void Init()
 		{
 			hideFlags = HideFlags.HideAndDontSave;
-			m_dummyMaterial = null;
-			m_dummyCommand = null;
 		}
+
+		private Rect m_pickerButtonRect;
 
 		public void Draw( ParentNode owner )
 		{
 			EditorGUILayout.BeginHorizontal();
 			m_fallbackShader = owner.EditorGUILayoutTextField( FallbackShaderStr, m_fallbackShader );
-			if ( GUILayout.Button( string.Empty, UIUtils.InspectorPopdropdownFallback, GUILayout.Width( 17 ), GUILayout.Height( 19 ) ) )
+
+			bool clicked = GUILayout.Button( string.Empty, UIUtils.InspectorPopdropdownFallback, GUILayout.Width( 17 ), GUILayout.Height( 19 ) );
+
+			m_pickerButtonRect = ( Event.current.type == EventType.Repaint ) ? GUILayoutUtility.GetLastRect() : m_pickerButtonRect;
+
+			if ( clicked )
 			{
 				EditorGUI.FocusTextInControl( null );
 				GUI.FocusControl( null );
-				DisplayShaderContext( owner, GUILayoutUtility.GetRect( GUIContent.none, EditorStyles.popup ) );
+
+				DisplayShaderContext( owner, m_pickerButtonRect );
 			}
 			EditorGUILayout.EndHorizontal();
 		}
 
-		private void DisplayShaderContext( ParentNode node, Rect r )
+		private void DisplayShaderContext( ParentNode node, Rect position )
 		{
-			if ( m_dummyCommand == null )
-				m_dummyCommand = new MenuCommand( this, 0 );
-
-			if ( m_dummyMaterial == null )
-				m_dummyMaterial = new Material( Shader.Find( "Hidden/ASESShaderSelectorUnlit" ) );
-
-#pragma warning disable 0618
-			UnityEditorInternal.InternalEditorUtility.SetupShaderMenu( m_dummyMaterial );
-#pragma warning restore 0618
-			EditorUtility.DisplayPopupMenu( r, ShaderPoputContext, m_dummyCommand );
+			UIUtils.BuildShaderSelectionMenu( OnShaderSelected ).DropDown( position );
 		}
 
-		private void OnSelectedShaderPopup( string command, Shader shader )
+		private void OnShaderSelected( object userData )
 		{
-			if ( shader != null )
+			string shaderName = userData as string;
+			if( !string.IsNullOrEmpty( shaderName ) )
 			{
-				UIUtils.MarkUndoAction();
-				UndoUtils.RecordObject( this, "Selected fallback shader" );
-				m_fallbackShader = shader.name;
+				m_fallbackShader = shaderName;
 			}
 		}
-		
+
 		public void ReadFromString( ref uint index, ref string[] nodeParams )
 		{
 			m_fallbackShader = nodeParams[ index++ ];
@@ -74,16 +67,15 @@ namespace AmplifyShaderEditor
 
 		public void Destroy()
 		{
-			GameObject.DestroyImmediate( m_dummyMaterial );
-			m_dummyMaterial = null;
-			m_dummyCommand = null;
 		}
+
+		public readonly string TabbedFallbackShaderOff = "\t" + FallbackOff + "\n";
 
 		public string TabbedFallbackShader
 		{
 			get
 			{
-				if( string.IsNullOrEmpty( m_fallbackShader ) )
+				if ( string.IsNullOrEmpty( m_fallbackShader ) )
 					return "\t" + FallbackOff + "\n";
 
 				return "\t" + string.Format( FallbackFormat, m_fallbackShader ) + "\n";

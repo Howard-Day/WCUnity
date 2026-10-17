@@ -31,6 +31,12 @@ namespace AmplifyShaderEditor
 			m_autoWrapProperties = true;
 			m_hasLeftDropdown = true;
 			m_previewShaderGUID = "6c1bee77276896041bbb73b1b9e7f8ac";
+			UpdateTitle();
+		}
+
+		void UpdateTitle()
+		{
+			SetAdditonalTitleText( string.Format( Constants.SubTitleUVChannelFormatStr, m_index, m_texcoordSize ) );
 		}
 
 		public override void DrawProperties()
@@ -49,6 +55,8 @@ namespace AmplifyShaderEditor
 			{
 				m_currentVertexData = ( m_index == 0 ) ? "texcoord" : "texcoord" + Constants.AvailableUVChannelsStr[ m_index ];
 			}
+
+			UpdateTitle();
 		}
 
 		public override void Draw( DrawInfo drawInfo )
@@ -65,6 +73,8 @@ namespace AmplifyShaderEditor
 					DropdownEditing = false;
 				}
 			}
+
+			UpdateTitle();
 		}
 
 		private void UpdateOutput()
@@ -91,6 +101,7 @@ namespace AmplifyShaderEditor
 				m_outputPorts[ 3 ].Visible = false;
 				m_outputPorts[ 4 ].Visible = false;
 			}
+			UpdateTitle();
 			m_sizeIsDirty = true;
 		}
 
@@ -214,6 +225,8 @@ namespace AmplifyShaderEditor
 				m_texcoordSize = Convert.ToInt32( GetCurrentParam( ref nodeParams ) );
 				UpdateOutput();
 			}
+
+			UpdateTitle();
 		}
 
 		public override void WriteToString( ref string nodeInfo, ref string connectionsInfo )
@@ -228,7 +241,7 @@ namespace AmplifyShaderEditor
 			base.PropagateNodeData( nodeData, ref dataCollector );
 			if( dataCollector.IsTemplate )
 			{
-				dataCollector.TemplateDataCollectorInstance.SetUVUsage( m_index , m_texcoordSize );
+				dataCollector.TemplateDataCollectorInstance.SetUVUsage( m_index, m_texcoordSize, nodeData.Category );
 			}
 			else
 			{

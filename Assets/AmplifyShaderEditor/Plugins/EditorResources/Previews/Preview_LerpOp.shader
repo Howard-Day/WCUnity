@@ -2,9 +2,9 @@ Shader "Hidden/LerpOp"
 {
 	Properties
 	{
-		_A ("_A", 2D) = "white" {}
-		_B ("_B", 2D) = "white" {}
-		_C ("_Alpha", 2D) = "white" {}
+		_A ("_A", 2DArray) = "white" {}
+		_B ("_B", 2DArray) = "white" {}
+		_C ("_Alpha", 2DArray) = "white" {}
 	}
 	SubShader
 	{
@@ -12,18 +12,20 @@ Shader "Hidden/LerpOp"
 		{
 			CGPROGRAM
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#pragma vertex vert_img
 			#pragma fragment frag
+			#pragma target 3.5
 
-			sampler2D _A;
-			sampler2D _B;
-			sampler2D _C;
+			ASE_PORT( _A );
+			ASE_PORT( _B );
+			ASE_PORT( _C );
 
 			float4 frag( v2f_img i ) : SV_Target
 			{
-				float4 a = tex2D( _A, i.uv );
-				float4 b = tex2D( _B, i.uv );
-				float4 alpha = tex2D( _C, i.uv );
+				float4 a = ASE_SAMPLE_PORT( _A, i.uv );
+				float4 b = ASE_SAMPLE_PORT( _B, i.uv );
+				float4 alpha = ASE_SAMPLE_PORT( _C, i.uv );
 				return lerp(a,b,alpha);
 			}
 			ENDCG

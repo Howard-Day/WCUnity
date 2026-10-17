@@ -25,16 +25,25 @@ namespace AmplifyShaderEditor
 
 	public class ConsoleLogWindow
 	{
-		public const int MAXWIDTH = 500;
+		public const int MAXWIDTH = 800;
 		public const float FADETIME = 7;
+
+		private const float ResizeBandSize = 5;
+		private const float MinBoxWidth = 200;
+		private const float MinBoxHeight = 66;
+		private const float TopMargin = 44;
 
 		private readonly GUIContent m_boxToggleContent = new GUIContent( "\u2261", "Toggle Message Box" );
 		private readonly GUIContent m_clearContent = new GUIContent( "\u00D7", "Clear Messages" );
 
 		protected AmplifyShaderEditorWindow m_parentWindow = null;
-		
+
 		// needs to be serialized
 		private Vector2 m_currentScrollPos;
+
+		private Rect m_boxArea = new Rect();
+		private bool m_isResizing = false;
+		private Vector2 m_resizeAxis = Vector2.zero;
 
 		int lastCall = -1;
 		
@@ -45,26 +54,100 @@ namespace AmplifyShaderEditor
 
 		public void AddMessage( MessageSeverity itemType, string itemMessage , int itemOwnerId )
 		{
+			var messages = m_parentWindow.Messages;
+
+			// @diogo: a compile emits the same message once per node per pass and repeats interleave with
+			// other nodes' messages, so the whole log is searched and the match reinserted as the newest
+			for ( int i = 0; i < messages.Count; i++ )
+			{
+				Toast previous = messages[ i ];
+				if ( previous.ItemType == itemType && previous.ItemOwnerId == itemOwnerId && previous.ItemMessage == itemMessage )
+				{
+					messages.RemoveAt( i );
+					break;
+				}
+			}
+
 			var toast = new Toast( itemType, itemMessage, Time.realtimeSinceStartup, itemOwnerId );
-			m_parentWindow.Messages.Insert( 0, toast );
+			messages.Insert( 0, toast );
 			m_currentScrollPos.y = Mathf.Infinity;
-			
+
 			if( !m_parentWindow.MaximizeMessages )
 				lastCall = Mathf.Max( (int)itemType, lastCall );
-
-			GUIContent gc = new GUIContent( m_parentWindow.Messages.Count + ": " + itemMessage );
-			float maxWidth = m_parentWindow.MaxMsgWidth;
-			maxWidth = Mathf.Max( UIUtils.ConsoleLogLabel.CalcSize( gc ).x + 16, maxWidth );
-			maxWidth = Mathf.Min( maxWidth, MAXWIDTH );
-			m_parentWindow.MaxMsgWidth = maxWidth;
 		}
 
-		public void Draw( Rect parentPosition, Vector2 mousePosition, int mouseButtonId, bool hasKeyboadFocus, float rightSide )
+		public bool IsInside( Vector2 position )
+		{
+			return m_parentWindow != null && m_parentWindow.MaximizeMessages && m_boxArea.Contains( position );
+		}
+
+		// @diogo: the box is anchored to the toggle button and grows left and up, so it resizes from its
+		// left and top edges; grips sit astride the border, where the box has no content of its own.
+		// Hit tested by hand instead of through GUI controls, which would eat the mouse up that ends
+		// the drag and would add controls that come and go with the box
+		private void HandleResize( Rect area, float leftBound, float topBound, Vector2 mousePosition )
+		{
+			Rect cornerGrip = new Rect( area.x - ResizeBandSize, area.y - ResizeBandSize, 2 * ResizeBandSize, 2 * ResizeBandSize );
+			Rect leftGrip = new Rect( area.x - ResizeBandSize, cornerGrip.yMax, 2 * ResizeBandSize, area.yMax - cornerGrip.yMax );
+			Rect topGrip = new Rect( cornerGrip.xMax, area.y - ResizeBandSize, area.xMax - cornerGrip.xMax, 2 * ResizeBandSize );
+
+			EditorGUIUtility.AddCursorRect( cornerGrip, MouseCursor.ResizeUpLeft );
+			EditorGUIUtility.AddCursorRect( leftGrip, MouseCursor.ResizeHorizontal );
+			EditorGUIUtility.AddCursorRect( topGrip, MouseCursor.ResizeVertical );
+
+			if ( !m_isResizing )
+			{
+				if ( Event.current.type == EventType.MouseDown && Event.current.button == ButtonClickId.LeftMouseButton )
+				{
+					bool onCorner = cornerGrip.Contains( mousePosition );
+					bool onLeft = leftGrip.Contains( mousePosition );
+					bool onTop = topGrip.Contains( mousePosition );
+					if ( onCorner || onLeft || onTop )
+					{
+						m_isResizing = true;
+						m_resizeAxis = new Vector2( ( onCorner || onLeft ) ? 1 : 0, ( onCorner || onTop ) ? 1 : 0 );
+						Event.current.Use();
+					}
+				}
+			}
+			else if ( Event.current.type == EventType.MouseDrag )
+			{
+				if ( m_resizeAxis.x > 0 )
+				{
+					m_parentWindow.MaxMsgWidth = Mathf.Clamp( area.xMax - mousePosition.x, MinBoxWidth, area.xMax - leftBound );
+				}
+
+				if ( m_resizeAxis.y > 0 )
+				{
+					m_parentWindow.MsgBoxHeight = Mathf.Clamp( area.yMax - mousePosition.y, MinBoxHeight, area.yMax - topBound );
+				}
+
+				m_parentWindow.MsgBoxResized = true;
+				m_parentWindow.MarkToRepaint();
+				Event.current.Use();
+			}
+			else if ( Event.current.isMouse )
+			{
+				m_isResizing = false;
+
+				// @diogo: stored once the drag ends instead of per delta, to keep EditorPrefs writes out of it
+				if ( m_parentWindow.MsgBoxResized )
+				{
+					EditorVariablesManager.MsgBoxWidth.Value = m_parentWindow.MaxMsgWidth;
+					EditorVariablesManager.MsgBoxHeight.Value = m_parentWindow.MsgBoxHeight;
+					EditorVariablesManager.MsgBoxResized.Value = true;
+				}
+
+				Event.current.Use();
+			}
+		}
+
+		public void Draw( Rect parentPosition, Vector2 mousePosition, int mouseButtonId, bool hasKeyboadFocus, float leftSide, float rightSide )
 		{
 			EventType currentEventType = Event.current.type;
 			var messages = m_parentWindow.Messages;
 			var maximize = m_parentWindow.MaximizeMessages;
-			
+
 			Rect button = parentPosition;
 			button.width = 22;
 			button.height = 22;
@@ -73,18 +156,34 @@ namespace AmplifyShaderEditor
 
 			Rect toolbarArea = button;
 			toolbarArea.y -= 5;
-			if( maximize )
-			{
-				toolbarArea.xMin -= m_parentWindow.MaxMsgWidth;
-				toolbarArea.yMin -= 66;
-			}
 			toolbarArea.x -= 6;
+
+			// @diogo: messages grow leftwards from the toggle button; the side panels draw before the
+			// console and can't cover them, so stop them at the canvas edge instead. Both panels
+			// together can take the whole window, hence the minimum width
+			float leftBound = Mathf.Min( parentPosition.x + leftSide + 8, toolbarArea.xMax - 64 );
+			float topBound = parentPosition.y + TopMargin;
+
+			if ( maximize )
+			{
+				// @diogo: an old layout comes back without a height, and a box with none has no grip to grab
+				float boxHeight = Mathf.Max( m_parentWindow.MsgBoxHeight, MinBoxHeight );
+				float boxWidth = m_parentWindow.MsgBoxResized ? m_parentWindow.MaxMsgWidth : MAXWIDTH;
+
+				toolbarArea.y -= 16 + 8;
+				toolbarArea.xMin = Mathf.Max( toolbarArea.xMax - boxWidth, leftBound );
+				toolbarArea.yMin = Mathf.Max( toolbarArea.yMax - boxHeight, topBound );
+
+				m_boxArea = toolbarArea;
+				m_boxArea.xMin -= ResizeBandSize;
+				m_boxArea.yMin -= ResizeBandSize;
+			}
 
 			bool needsRepaint = false;
 			if( maximize )
 			{
 				GUIStyle labelStyle = UIUtils.ConsoleLogLabel;
-				toolbarArea.y -= 16 + 8;
+				HandleResize( toolbarArea, leftBound, topBound, mousePosition );
 				GUILayout.BeginArea( toolbarArea, UIUtils.ConsoleLogMessage );
 				EditorGUILayout.BeginVertical();
 				m_currentScrollPos = EditorGUILayout.BeginScrollView( m_currentScrollPos );
@@ -146,8 +245,9 @@ namespace AmplifyShaderEditor
 				// draw toaster
 				int count = messages.Count;
 				Rect rect = toolbarArea;
-				rect.xMin -= 200;
-				
+
+				// @diogo: toasts follow the box the user sized, so both presentations stay the same width
+				float toastWidth = m_parentWindow.MsgBoxResized ? m_parentWindow.MaxMsgWidth : MAXWIDTH;
 				float startFade = FADETIME - 1;
 				for( int i = 0; i < count; i++ )
 				{
@@ -197,8 +297,17 @@ namespace AmplifyShaderEditor
 
 					GUIContent gc = new GUIContent( messages[ i ].ItemMessage );
 					var sizes = msgstyle.CalcSize( gc );
-					rect.xMin -= sizes.x - rect.width;
-					rect.height = sizes.y;
+
+					// @diogo: CalcSize never wraps, so a long message would be laid out on a single line
+					float boxWidth = Mathf.Min( Mathf.Min( sizes.x, toastWidth ), rect.xMax - leftBound );
+
+					// @diogo: a box sized to the text sits right on the wrap threshold, where the renderer
+					// still breaks its last word while the measured height stays a single line, so a message
+					// only wraps when it genuinely does not fit
+					msgstyle.wordWrap = boxWidth < sizes.x;
+
+					rect.xMin = rect.xMax - boxWidth;
+					rect.height = msgstyle.CalcHeight( gc, boxWidth );
 					rect.y -= rect.height + 2;
 					if( messages[ i ].ItemOwnerId < 0 )
 					{
@@ -293,7 +402,6 @@ namespace AmplifyShaderEditor
 		public void ClearMessages()
 		{
 			m_parentWindow.Messages.Clear();
-			m_parentWindow.MaxMsgWidth = MAXWIDTH;
 		}
 
 		public void Toggle()

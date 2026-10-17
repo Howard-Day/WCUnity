@@ -60,7 +60,7 @@ namespace AmplifyShaderEditor
 			if( m_cachedAlphaNumId == -1 )
 				m_cachedAlphaNumId = Shader.PropertyToID( "_GAlphaNum" );
 
-			PreviewMaterial.SetTexture( m_cachedTimeId, m_inputPorts[ 1 ].InputPreviewTexture( ContainerGraph ) );
+			PreviewMaterial.SetTexture( m_cachedTimeId, m_inputPorts[ 1 ].InputPreviewTexture2D( ContainerGraph, ASEPreviewSlices.ReferenceScratchIndex ) );
 
 			Gradient curGrad = m_blankGrandient;
 			if( m_gradientNode != null )

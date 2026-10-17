@@ -56,8 +56,6 @@ namespace AmplifyShaderEditor
 		private int m_actionIndex = 0;
 		private GUIStyle m_propertyAdjustment;
 
-		private Material m_dummyMaterial;
-		private MenuCommand m_dummyCommand;
 		private int m_currentUsePassIdx = 0;
 
 		public void Init( string moduleName )
@@ -154,7 +152,7 @@ namespace AmplifyShaderEditor
 								EditorGUI.FocusTextInControl( null );
 								GUI.FocusControl( null );
 								m_currentUsePassIdx = index;
-								DisplayShaderContext( owner, GUILayoutUtility.GetRect( GUIContent.none, EditorStyles.popup ) );
+								DisplayShaderContext( owner, shaderSelectorPos );
 							}
 
 							if( GUI.Button( buttonPlusPos, string.Empty, UIUtils.PlusStyle ) )
@@ -203,28 +201,18 @@ namespace AmplifyShaderEditor
 			}
 			owner.ContainerGraph.ParentWindow.InnerWindowVariables.ExpandedUsePass = foldoutValue;
 		}
-		
-		private void DisplayShaderContext( UndoParentNode node, Rect r )
+
+		private void DisplayShaderContext( UndoParentNode node, Rect position )
 		{
-			if( m_dummyCommand == null )
-				m_dummyCommand = new MenuCommand( this, 0 );
-
-			if( m_dummyMaterial == null )
-				m_dummyMaterial = new Material( Shader.Find( "Hidden/ASESShaderSelectorUnlit" ) );
-
-#pragma warning disable 0618
-			UnityEditorInternal.InternalEditorUtility.SetupShaderMenu( m_dummyMaterial );
-#pragma warning restore 0618
-			EditorUtility.DisplayPopupMenu( r, ShaderPoputContext, m_dummyCommand );
+			UIUtils.BuildShaderPassSelectionMenu( OnShaderSelected ).DropDown( position );
 		}
 
-		private void OnSelectedShaderPopup( string command, Shader shader )
+		private void OnShaderSelected( object userData )
 		{
-			if( shader != null )
+			string shaderName = userData as string;
+			if( !string.IsNullOrEmpty( shaderName ) )
 			{
-				UIUtils.MarkUndoAction();
-				UndoUtils.RecordObject( m_owner, "Selected Use Pass shader" );
-				m_items[ m_currentUsePassIdx ].Value = shader.name;
+				m_items[ m_currentUsePassIdx ].Value = shaderName;
 			}
 		}
 
@@ -301,7 +289,7 @@ namespace AmplifyShaderEditor
 			{
 				bellowItems += tabs + string.Format( UseGrabFormatNewLine,  dataCollector.BelowUsePassesList[ i ].PropertyName );
 			}
-			
+
 			count = m_items.Count;
 			for( int i = 0; i < count; i++ )
 			{
@@ -353,8 +341,6 @@ namespace AmplifyShaderEditor
 			m_items.Clear();
 			m_items = null;
 			m_reordableList = null;
-			m_dummyMaterial = null;
-			m_dummyCommand = null;
 		}
 	}
 }

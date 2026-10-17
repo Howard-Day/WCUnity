@@ -5,11 +5,12 @@ using System;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Scripting.LifecycleManagement;
 
 namespace AmplifyShaderEditor
 {
 	/*ase_pass_options OLDEST
-	DefineOnConnected:portId:definevalue	
+	DefineOnConnected:portId:definevalue
 	DefineOnUnconnected:portId:definevalue
 	Options:name:defaultOption:opt0:opt1:opt2
 	SetVisible:PortId:OptionName:OptionValue
@@ -26,6 +27,7 @@ namespace AmplifyShaderEditor
 		B,C:HidePort:My Port Name
 		B:SetDefine:MY_DEFINE
 		C:SetDefine:MY_COLOR_DEFINE
+		C:SetDefine:Forward,GBuffer,ShadowCaster:pragma multi_compile_instancing
 	Option:My Other Option:True,False
 		True:ShowOption:Color Offset
 		False:HideOption:Color Offset
@@ -59,6 +61,7 @@ namespace AmplifyShaderEditor
 
 	public enum AseOptionsActionType
 	{
+		RefreshOption,
 		ShowOption,
 		HideOption,
 		SetOption,
@@ -86,6 +89,7 @@ namespace AmplifyShaderEditor
 		ColorMask2,
 		ColorMask3,
 		ZWrite,
+		ZClip,
 		ZTest,
 		ZOffsetFactor,
 		ZOffsetUnits,
@@ -115,7 +119,9 @@ namespace AmplifyShaderEditor
 		RenderType,
 		RenderQueue,
 		DisableBatching,
-		ChangeTagValue
+		ChangeTagValue,
+		AddTag,
+		RemoveTag
 	}
 
 	public enum AseOptionsSetup
@@ -186,8 +192,35 @@ namespace AmplifyShaderEditor
 	}
 
 	[Serializable]
+	public class TemplateActionItemConditional
+	{
+		public enum Conditional
+		{
+			None,
+			Equal,
+			NotEqual
+		}
+
+		public Conditional Condition = Conditional.None;
+		public string Option = null;
+		public string Value = null;
+
+		public bool IsValid => ( Condition != Conditional.None );
+
+		public TemplateActionItemConditional( string condition, string option, string value )
+		{
+			Condition = condition.Equals( "=" ) ? Conditional.Equal : Conditional.NotEqual;
+			Option = option;
+			Value = value;
+		}
+	}
+
+	[Serializable]
 	public class TemplateActionItem
 	{
+		public TemplateActionItemConditional OptionConditional = null; // @diogo: runs first
+		public TemplateActionItemConditional ActionConditional = null; // @diogo: runs second
+
 		public AseOptionsActionType ActionType;
 		public string ActionData = string.Empty;
 		public string ActionData2 = string.Empty;
@@ -207,6 +240,7 @@ namespace AmplifyShaderEditor
 
 		//DEPTH
 		public ZWriteMode ActionZWrite;
+		public ZClipMode ActionZClip;
 		public ZTestMode ActionZTest;
 		public float ActionZOffsetFactor;
 		public float ActionZOffsetUnits;
@@ -240,7 +274,7 @@ namespace AmplifyShaderEditor
 		public AvailableBlendOps ActionBlendOpRGB3;
 		public AvailableBlendOps ActionBlendOpAlpha3;
 
-		//STENCIL 
+		//STENCIL
 		public int ActionStencilReference;
 		public int ActionStencilReadMask;
 		public int ActionStencilWriteMask;
@@ -266,6 +300,8 @@ namespace AmplifyShaderEditor
 		{
 			return float.TryParse( ActionBuffer, out result );
 		}
+
+		public TemplateActionItem Clone() => (TemplateActionItem)MemberwiseClone();
 	}
 
 	[Serializable]
@@ -439,13 +475,16 @@ namespace AmplifyShaderEditor
 		public int EndIndex { get { return Index + Body.Length; } }
 	}
 
+	[NoAutoStaticsCleanup]
 	public class TemplateOptionsToolsHelper
 	{
 		//public const string PassOptionsMainPattern = @"\/\*ase_pass_options:([\w:= ]*)[\n]([\w: \t;\n&|,_\+-]*)\*\/";
 		//public const string SubShaderOptionsMainPattern = @"\/\*ase_subshader_options:([\w:= ]*)[\n]([\w: \t;\n&|,_\+-]*)\*\/";
 		public const string PassOptionsMainPattern = "\\/\\*ase_pass_options:([\\w:= ]*)[\n]([\\w: \t;\n&|,_\\+\\-\\(\\)\\[\\]\\\"\\=\\/\\.]*)\\*\\/";
-		public const string SubShaderOptionsMainPattern = "\\/\\*ase_subshader_options:([\\w:= ]*)[\n]([\\w: \t;\n&|,_\\+\\-\\(\\)\\[\\]\\\"\\=\\/\\.]*)\\*\\/";
+		public const string SubShaderOptionsMainPattern = "\\/\\*ase_subshader_options:([\\w:= ]*)[\n]([\\w: \t?!;\n&|,_\\+\\-\\(\\)\\[\\]\\\"\\=\\/\\.]*)\\*\\/";
+		public const string IsConditionalPattern = @"^(\s*.+?\s*)\?(\s*.+?\s*)(=|!=)(\s*.+\s*)$";
 		public static readonly char OptionsDataSeparator = ',';
+
 		public static Dictionary<string, AseOptionsSetup> AseOptionsSetupDict = new Dictionary<string, AseOptionsSetup>()
 		{
 			{ "CopyOptionsFromMainPass",AseOptionsSetup.CopyOptionsFromMainPass},
@@ -461,6 +500,7 @@ namespace AmplifyShaderEditor
 
 		public static Dictionary<string, AseOptionsActionType> AseOptionsActionTypeDict = new Dictionary<string, AseOptionsActionType>()
 		{
+			{"RefreshOption",  AseOptionsActionType.RefreshOption },
 			{"ShowOption",  AseOptionsActionType.ShowOption },
 			{"HideOption",  AseOptionsActionType.HideOption },
 			{"SetOption",  AseOptionsActionType.SetOption },
@@ -491,6 +531,9 @@ namespace AmplifyShaderEditor
 			bool success = true;
 			switch( original )
 			{
+				case AseOptionsActionType.RefreshOption:
+				inverted = AseOptionsActionType.RefreshOption;
+				break;
 				case AseOptionsActionType.ShowOption:
 				inverted = AseOptionsActionType.HideOption;
 				break;
@@ -549,6 +592,7 @@ namespace AmplifyShaderEditor
 					List<List<TemplateActionItem>> actionItemsList = new List<List<TemplateActionItem>>();
 					Dictionary<string, int> optionItemToIndex = new Dictionary<string, int>();
 					TemplateOptionsItem currentOption = null;
+					TemplateActionItemConditional currentOptionCondition = null;
 
 					//OPTIONS OVERALL SETUP
 					string[] setupLines = match.Groups[ 1 ].Value.Split( ':' );
@@ -582,7 +626,8 @@ namespace AmplifyShaderEditor
 					string[] optionLines = body.Split( '\n' );
 					for( int oL = 0; oL < optionLines.Length; oL++ )
 					{
-						string[] optionItems = optionLines[ oL ].Split( ':' );
+						// @diogo: also strip space indentation (the tab-only strip above misses it), else leading spaces stay in the condition token and the action is silently dropped
+						string[] optionItems = optionLines[ oL ].Trim().Split( ':' );
 						if( optionItems.Length > 0 )
 						{
 							string[] itemIds = optionItems[ 0 ].Split( OptionsDataSeparator );
@@ -590,6 +635,22 @@ namespace AmplifyShaderEditor
 							{
 								case "Option":
 								{
+									// @diogo: handle conditional option first
+									Match isConditionalMatch = Regex.Match( optionItems[ 1 ], IsConditionalPattern );
+									if ( isConditionalMatch.Success )
+									{
+										optionItems[ 1 ] = isConditionalMatch.Groups[ 1 ].Value;
+										currentOptionCondition = new TemplateActionItemConditional(
+											isConditionalMatch.Groups[ 3 ].Value,
+											isConditionalMatch.Groups[ 2 ].Value,
+											isConditionalMatch.Groups[ 4 ].Value );
+									}
+									else
+									{
+										// @diogo: reset so a previous option's conditional (e.g. the Motion Vectors sub-options) doesn't leak into this one
+										currentOptionCondition = null;
+									}
+
 									//Fills previous option with its actions
 									//actionItemsList is cleared over here
 									FillOptionAction( currentOption, ref actionItemsList );
@@ -605,7 +666,7 @@ namespace AmplifyShaderEditor
 											currentOption.Setup = AseOptionItemSetupDict[ optionItemSetup[ 1 ] ];
 									}
 
-									currentOption.Id = itemIds.Length > 1 ? itemIds[ 1 ] : optionItems[ 1 ];
+									currentOption.Id = itemIds.Length > 1 ? itemIds[ 1 ] : currentOption.Name;
 									currentOption.DisplayOptions = optionItems[ 2 ].Split( OptionsDataSeparator );
 									currentOption.DisableIdx = currentOption.DisplayOptions.Length;
 									optionItems[ 2 ] += ",disable";
@@ -657,6 +718,8 @@ namespace AmplifyShaderEditor
 
 									optionItemToIndex.Clear();
 
+									// @diogo: reset so a previous option's conditional doesn't leak into this port
+									currentOptionCondition = null;
 									currentOption = new TemplateOptionsItem();
 									currentOption.Type = AseOptionsType.Port;
 									if( isSubShader && optionItems.Length > 2 )
@@ -686,9 +749,11 @@ namespace AmplifyShaderEditor
 									FillOptionAction( currentOption, ref actionItemsList );
 
 									optionItemToIndex.Clear();
+									// @diogo: reset so a previous option's conditional doesn't leak into this field
+									currentOptionCondition = null;
 									currentOption = new TemplateOptionsItem();
 									currentOption.Type = AseOptionsType.Field;
-									
+
 									currentOption.Id = optionItems[ 1 ];
 									currentOption.Name = optionItems[ 1 ];
 
@@ -734,7 +799,19 @@ namespace AmplifyShaderEditor
 								break;
 								default:
 								{
-									if( optionItemToIndex.ContainsKey( optionItems[ 0 ] ) )
+									// @diogo: handle conditional action first
+									TemplateActionItemConditional actionCondition = null;
+									Match isConditionalMatch = Regex.Match( optionItems[ 0 ], IsConditionalPattern );
+									if ( isConditionalMatch.Success )
+									{
+										optionItems[ 0 ] = isConditionalMatch.Groups[ 1 ].Value;
+										actionCondition = new TemplateActionItemConditional(
+											isConditionalMatch.Groups[ 3 ].Value,
+											isConditionalMatch.Groups[ 2 ].Value,
+											isConditionalMatch.Groups[ 4 ].Value );
+									}
+
+									if ( optionItemToIndex.ContainsKey( optionItems[ 0 ] ) )
 									{
 										int idx = 0;
 										if( currentOption != null && currentOption.UIWidget == AseOptionsUIWidget.Toggle )
@@ -747,7 +824,7 @@ namespace AmplifyShaderEditor
 										{
 											idx = optionItemToIndex[ optionItems[ 0 ] ];
 										}
-										actionItemsList[ idx ].Add( CreateActionItem( isSubShader, optionItems ) );
+										actionItemsList[ idx ].AddRange( CreateActionItem( isSubShader, optionItems, currentOptionCondition, actionCondition ) );
 									}
 									else
 									{
@@ -759,7 +836,7 @@ namespace AmplifyShaderEditor
 												if( optionItemToIndex.ContainsKey( itemIds[ i ] ) )
 												{
 													int idx = optionItemToIndex[ itemIds[ i ] ];
-													actionItemsList[ idx ].Add( CreateActionItem( isSubShader, optionItems ) );
+													actionItemsList[ idx ].AddRange( CreateActionItem( isSubShader, optionItems, currentOptionCondition, actionCondition ) );
 												}
 											}
 										}
@@ -807,11 +884,14 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		static TemplateActionItem CreateActionItem( bool isSubshader, string[] optionItems )
+		static List<TemplateActionItem> CreateActionItem( bool isSubshader, string[] optionItems, TemplateActionItemConditional optionCondition = null,
+			TemplateActionItemConditional actionCondition = null )
 		{
 			TemplateActionItem actionItem = new TemplateActionItem();
 			try
 			{
+				actionItem.OptionConditional = optionCondition;
+				actionItem.ActionConditional = actionCondition;
 				actionItem.ActionType = AseOptionsActionTypeDict[ optionItems[ 1 ] ];
 				int optionsIdx = 2;
 				if( optionItems.Length > 3 )
@@ -828,6 +908,16 @@ namespace AmplifyShaderEditor
 
 				switch( actionItem.ActionType )
 				{
+					case AseOptionsActionType.RefreshOption:
+					{
+						string[] arr = optionItems[ optionsIdx ].Split( OptionsDataSeparator );
+						if ( arr.Length > 1 )
+						{
+							Debug.LogWarning( "RefreshOption should not have additional parameters other than Option name." );
+						}
+						actionItem.ActionData = arr[ 0 ];
+					}
+					break;
 					case AseOptionsActionType.ShowOption:
 					case AseOptionsActionType.HideOption:
 					{
@@ -869,7 +959,7 @@ namespace AmplifyShaderEditor
 						{
 							if ( !int.TryParse( arr[ 0 ], out actionItem.ActionDataIdx ) )
 								actionItem.ActionDataIdx = -1;
-						
+
 							actionItem.ActionData = arr[ 0 ];
 							actionItem.ActionData2 = arr[ 1 ];
 						}
@@ -968,6 +1058,12 @@ namespace AmplifyShaderEditor
 								{
 									if( arr.Length > 1 )
 										actionItem.ActionZWrite = (ZWriteMode)Enum.Parse( typeof( ZWriteMode ), arr[ 1 ] );
+								}
+								break;
+								case PropertyActionsEnum.ZClip:
+								{
+									if( arr.Length > 1 )
+										actionItem.ActionZClip = (ZClipMode)Enum.Parse( typeof( ZClipMode ), arr[ 1 ] );
 								}
 								break;
 								case PropertyActionsEnum.ZTest:
@@ -1152,6 +1248,7 @@ namespace AmplifyShaderEditor
 								}
 								break;
 								case PropertyActionsEnum.ChangeTagValue:
+								case PropertyActionsEnum.AddTag:
 								{
 									if( arr.Length > 2 )
 									{
@@ -1159,6 +1256,15 @@ namespace AmplifyShaderEditor
 										actionItem.ActionData = arr[ 1 ];
 										//Tag Value
 										actionItem.ActionBuffer = arr[ 2 ];
+									}
+								}
+								break;
+								case PropertyActionsEnum.RemoveTag:
+								{
+									if( arr.Length > 1 )
+									{
+										//Tag Name
+										actionItem.ActionData = arr[ 1 ];
 									}
 								}
 								break;
@@ -1172,7 +1278,22 @@ namespace AmplifyShaderEditor
 			{
 				Debug.LogException( e );
 			}
-			return actionItem;
+
+			if( actionItem.PassName != null && actionItem.PassName.Contains( "," ) )
+			{
+				string[] passNames = actionItem.PassName.Split( ',' );
+				List<TemplateActionItem> items = new List<TemplateActionItem>( passNames.Length );
+				actionItem.PassName = passNames[ 0 ].Trim();
+				items.Add( actionItem );
+				for( int p = 1; p < passNames.Length; p++ )
+				{
+					TemplateActionItem copy = actionItem.Clone();
+					copy.PassName = passNames[ p ].Trim();
+					items.Add( copy );
+				}
+				return items;
+			}
+			return new List<TemplateActionItem>( 1 ) { actionItem };
 		}
 	}
 }

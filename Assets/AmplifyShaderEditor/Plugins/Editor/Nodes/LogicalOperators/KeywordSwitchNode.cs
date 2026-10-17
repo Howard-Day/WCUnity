@@ -8,7 +8,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Keyword Switch", "Logical Operators", "Attributes a value according to the existance of a selected keyword", Deprecated = true, DeprecatedAlternativeType = typeof(StaticSwitch), DeprecatedAlternative = "Static Switch" )]
+	[NodeAttributes( "Keyword Switch", "Logical Operators", "Attributes a value according to the existance of a selected keyword", Deprecated = true, DeprecatedAlternativeType = typeof(StaticSwitch), DeprecatedAlternative = "Switch" )]
 	public sealed class KeywordSwitchNode : ParentNode
 	{
 		private const string KeywordStr = "Keyword";
@@ -42,7 +42,7 @@ namespace AmplifyShaderEditor
 				if ( m_currentKeywordId != 0 )
 				{
 					m_currentKeyword = UIUtils.AvailableKeywords[ m_currentKeywordId ];
-				}	
+				}
 			}
 			if ( m_currentKeywordId == 0 )
 			{
@@ -116,7 +116,7 @@ namespace AmplifyShaderEditor
 			}
 			m_outputPorts[ 0 ].ChangeType( m_mainPortType, false );
 		}
-		
+
 		public override void ReadFromString( ref string[] nodeParams )
 		{
 			base.ReadFromString( ref nodeParams );

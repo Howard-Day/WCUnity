@@ -30,12 +30,12 @@ namespace AmplifyShaderEditor
 
 		private const string AseObjectToWorldPosVarName = "objToWorld";
 		private const string AseObjectToWorldPosFormat = "mul( unity_ObjectToWorld, float4( {0}, 1 ) ).xyz";
-		private const string AseHDObjectToWorldPosFormat = "mul( GetObjectToWorldMatrix(), float4( {0}, 1 ) ).xyz";
-		private const string ASEHDAbsoluteWordPos = "GetAbsolutePositionWS({0})";
-		private const string ASEHDRelaviveCameraPos = "GetCameraRelativePositionWS({0})";
+		private const string AseSRPObjectToWorldPosFormat = "mul( GetObjectToWorldMatrix(), float4( {0}, 1 ) ).xyz";
+		private const string ASEHDAbsoluteWordPos = "GetAbsolutePositionWS( {0} )";
+		private const string ASEHDRelaviveCameraPos = "GetCameraRelativePositionWS( {0} )";
 		private const string AseObjectToViewPosVarName = "objToView";
 		private const string AseObjectToViewPosFormat = "mul( UNITY_MATRIX_MV, float4( {0}, 1 ) ).xyz";
-		private const string AseHDObjectToViewPosFormat = "TransformWorldToView( TransformObjectToWorld({0}) )";
+		private const string AseSRPObjectToViewPosFormat = "TransformWorldToView( TransformObjectToWorld({0}) )";
 
 		private const string AseWorldToObjectPosVarName = "worldToObj";
 		private const string AseWorldToObjectPosFormat = "mul( unity_WorldToObject, float4( {0}, 1 ) ).xyz";
@@ -46,25 +46,25 @@ namespace AmplifyShaderEditor
 		private const string AseWorldToViewPosFormat = "mul( UNITY_MATRIX_V, float4( {0}, 1 ) ).xyz";
 
 		private const string AseViewToObjectPosVarName = "viewToObj";
-		private const string AseViewToObjectPosFormat = "mul( unity_WorldToObject, mul( UNITY_MATRIX_I_V , float4( {0}, 1 ) ) ).xyz";
-		private const string AseHDViewToObjectPosFormat = "mul( GetWorldToObjectMatrix(), mul( UNITY_MATRIX_I_V , float4( {0}, 1 ) ) ).xyz";
+		private const string AseViewToObjectPosFormat = "mul( unity_WorldToObject, mul( UNITY_MATRIX_I_V, float4( {0}, 1 ) ) ).xyz";
+		private const string AseSRPViewToObjectPosFormat = "mul( GetWorldToObjectMatrix(), mul( UNITY_MATRIX_I_V, float4( {0}, 1 ) ) ).xyz";
 
 		private const string AseViewToWorldPosVarName = "viewToWorld";
-		private const string AseViewToWorldPosFormat = "mul( UNITY_MATRIX_I_V, float4( {0}, 1 ) ).xyz";
+		private const string AseViewToWorldPosFormat = "mul( UNITY_MATRIX_I_V, float4( {0}, 1.0 ) ).xyz";
 
 		///////////////////////////////////////////////////////////
 		// ToClipPos
 		private const string AseObjectToClipPosVarName = "objectToClip";
-		private const string AseObjectToClipPosFormat = "UnityObjectToClipPos({0})";
-		private const string AseSRPObjectToClipPosFormat = "TransformObjectToHClip({0})";
+		private const string AseObjectToClipPosFormat = "UnityObjectToClipPos( {0} )";
+		private const string AseSRPObjectToClipPosFormat = "TransformObjectToHClip( {0} )";
 
 		private const string AseWorldToClipPosVarName = "worldToClip";
-		private const string AseWorldToClipPosFormat = "mul(UNITY_MATRIX_VP, float4({0}, 1.0))";
-		private const string AseSRPWorldToClipPosFormat = "TransformWorldToHClip({0})";
+		private const string AseWorldToClipPosFormat = "mul( UNITY_MATRIX_VP, float4({0}, 1.0 ) )";
+		private const string AseSRPWorldToClipPosFormat = "TransformWorldToHClip( {0} )";
 
 		private const string AseViewToClipPosVarName = "viewToClip";
-		private const string AseViewToClipPosFormat = "mul(UNITY_MATRIX_P, float4({0}, 1.0))";
-		private const string AseSRPViewToClipPosFormat = "TransformWViewToHClip({0})";
+		private const string AseViewToClipPosFormat = "mul( UNITY_MATRIX_P, float4( {0}, 1.0 ) )";
+		private const string AseSRPViewToClipPosFormat = "TransformWViewToHClip( {0} )";
 
 		///////////////////////////////////////////////////////////
 		// ToScreenPos
@@ -73,15 +73,15 @@ namespace AmplifyShaderEditor
 		private const string AseViewToScreenVarName = "viewToScreen";
 
 		private const string AseToScreenFormat = "ComputeScreenPos( {0} )";
-		private const string AseHDRPToScreenFormat = "ComputeScreenPos( {0} _ProjectionParams.x )";
+		private const string AseHDRPToScreenFormat = "ComputeScreenPos( {0}, _ProjectionParams.x )";
 
 		//
-		private const string AseClipToNDC = "{0}/{0}.w";
+		private const string AseClipToNDC = "{0}{1}/{0}.w";
 		/////////////////////////////////////////////////////
 		private const string AseObjectToTangentPosVarName = "objectToTangentPos";
 		private const string AseWorldToTangentPosVarName = "worldToTangentPos";
 		private const string AseViewToTangentPosVarName = "viewToTangentPos";
-		private const string ASEWorldToTangentFormat = "mul( ase_worldToTangent, {0})";
+		private const string ASEWorldToTangentFormat = "mul( ase_worldToTangent, {0} )";
 
 
 		private const string AseTangentToObjectVarName = "tangentToObject";
@@ -116,6 +116,10 @@ namespace AmplifyShaderEditor
 			"Screen"
 		};
 
+		private static readonly int m_fromId = Shader.PropertyToID( "_From" );
+		private static readonly int m_toId = Shader.PropertyToID( "_To" );
+		private static readonly int m_perspectiveDivideId = Shader.PropertyToID( "_PerspectiveDivide" );
+
 		protected override void CommonInit( int uniqueId )
 		{
 			base.CommonInit( uniqueId );
@@ -124,7 +128,7 @@ namespace AmplifyShaderEditor
 			m_outputPorts[ 4 ].Visible = false;
 			m_useInternalPortData = true;
 			m_autoWrapProperties = true;
-			m_previewShaderGUID = "74e4d859fbdb2c0468de3612145f4929";
+			m_previewShaderGUID = "9cacc45a1fc94ba598e03d008e24688e";
 			m_textLabelWidth = 120;
 			UpdateSubtitle();
 			UpdateOutputPort();
@@ -187,6 +191,14 @@ namespace AmplifyShaderEditor
 			}
 		}
 
+		public override void SetPreviewInputs()
+		{
+			base.SetPreviewInputs();
+			PreviewMaterial.SetInt( m_fromId, (int)m_from );
+			PreviewMaterial.SetInt( m_toId, (int)m_to );
+			PreviewMaterial.SetInt( m_perspectiveDivideId, m_perspectiveDivide ? 1 : 0 );
+		}
+
 		public override void PropagateNodeData( NodeData nodeData, ref MasterNodeDataCollector dataCollector )
 		{
 			base.PropagateNodeData( nodeData, ref dataCollector );
@@ -214,7 +226,7 @@ namespace AmplifyShaderEditor
 							{
 								if( dataCollector.TemplateDataCollectorInstance.CurrentSRPType == TemplateSRPType.HDRP )
 								{
-									result = string.Format( AseHDObjectToWorldPosFormat, result );
+									result = string.Format( AseSRPObjectToWorldPosFormat, result );
 									if( m_absoluteWorldPos )
 									{
 										result = string.Format( ASEHDAbsoluteWordPos, result );
@@ -222,7 +234,7 @@ namespace AmplifyShaderEditor
 								}
 								else if( dataCollector.TemplateDataCollectorInstance.CurrentSRPType == TemplateSRPType.URP )
 								{
-									result = string.Format( AseHDObjectToWorldPosFormat, result );
+									result = string.Format( AseSRPObjectToWorldPosFormat, result );
 								}
 							}
 							else
@@ -234,8 +246,8 @@ namespace AmplifyShaderEditor
 						}
 						case TransformSpaceTo.View:
 						{
-							if( dataCollector.IsTemplate && dataCollector.TemplateDataCollectorInstance.CurrentSRPType == TemplateSRPType.HDRP )
-								result = string.Format( AseHDObjectToViewPosFormat, result );
+							if( dataCollector.IsTemplate && dataCollector.TemplateDataCollectorInstance.IsSRP )
+								result = string.Format( AseSRPObjectToViewPosFormat, result );
 							else
 								result = string.Format( AseObjectToViewPosFormat, result );
 							varName = AseObjectToViewPosVarName + OutputId;
@@ -358,8 +370,8 @@ namespace AmplifyShaderEditor
 						}
 						case TransformSpaceTo.Object:
 						{
-							if( dataCollector.IsTemplate && dataCollector.TemplateDataCollectorInstance.CurrentSRPType == TemplateSRPType.HDRP )
-								result = string.Format( AseHDViewToObjectPosFormat, result );
+							if( dataCollector.IsTemplate && dataCollector.TemplateDataCollectorInstance.IsSRP )
+								result = string.Format( AseSRPViewToObjectPosFormat, result );
 							else
 								result = string.Format( AseViewToObjectPosFormat, result );
 							varName = AseViewToObjectPosVarName + OutputId;
@@ -367,8 +379,8 @@ namespace AmplifyShaderEditor
 						break;
 						case TransformSpaceTo.World:
 						{
-							result = string.Format( AseViewToWorldPosFormat, result ); 
-							if( dataCollector.IsTemplate && 
+							result = string.Format( AseViewToWorldPosFormat, result );
+							if( dataCollector.IsTemplate &&
 								dataCollector.TemplateDataCollectorInstance.CurrentSRPType == TemplateSRPType.HDRP &&
 								m_absoluteWorldPos )
 							{
@@ -583,7 +595,7 @@ namespace AmplifyShaderEditor
 				if ( m_perspectiveDivide || m_to == TransformSpaceTo.Screen )
 				{
 					dataCollector.AddLocalVariable( UniqueId, CurrentPrecisionType, WirePortDataType.FLOAT4, varName, result );
-					result = string.Format( AseClipToNDC, varName );
+					result = string.Format( AseClipToNDC, varName, ( m_to == TransformSpaceTo.Screen ) ? ".xyz" : string.Empty );
 					varName += "NDC";
 				}
 				else if ( m_to != TransformSpaceTo.Clip )

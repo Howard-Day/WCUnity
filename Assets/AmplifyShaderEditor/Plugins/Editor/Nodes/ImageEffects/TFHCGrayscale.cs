@@ -105,9 +105,9 @@ namespace AmplifyShaderEditor
 			string grayscale = string.Empty;
 			switch( m_grayscaleStyle )
 			{
-				case 1: { grayscale = "dot(" + i + ", float3(0.299,0.587,0.114))"; } break;
-				case 2: { grayscale = "(" + i + ".r + " + i + ".g + " + i + ".b) / 3"; } break;
-				default: { grayscale = "Luminance(" + i + ")"; } break;
+				case 1: { grayscale = "dot( " + i + ", float3( 0.299, 0.587, 0.114 ) )"; } break;
+				case 2: { grayscale = "( " + i + ".r + " + i + ".g + " + i + ".b ) / 3"; } break;
+				default: { grayscale = "Luminance( " + i + " )"; } break;
 			}
 			RegisterLocalVariable( 0, grayscale, ref dataCollector, "grayscale" + OutputId );
 			return m_outputPorts[ 0 ].LocalValue( dataCollector.PortCategory );

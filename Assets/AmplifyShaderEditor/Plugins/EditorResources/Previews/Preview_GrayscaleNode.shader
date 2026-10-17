@@ -2,7 +2,7 @@ Shader "Hidden/GrayscaleNode"
 {
 	Properties
 	{
-		_A ("_RGB", 2D) = "white" {}
+		_A ("_RGB", 2DArray) = "white" {}
 	}
 	SubShader
 	{
@@ -10,14 +10,16 @@ Shader "Hidden/GrayscaleNode"
 		{
 			CGPROGRAM
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#pragma vertex vert_img
 			#pragma fragment frag
+			#pragma target 3.5
 
-			sampler2D _A;
+			ASE_PORT( _A );
 			
 			float4 frag(v2f_img i) : SV_Target
 			{
-				float lum = Luminance( tex2D( _A, i.uv ) );
+				float lum = Luminance( ASE_SAMPLE_PORT( _A, i.uv ) );
 				return float4( lum.xxx, 1);
 			}
 			ENDCG
@@ -27,14 +29,16 @@ Shader "Hidden/GrayscaleNode"
 		{
 			CGPROGRAM
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#pragma vertex vert_img
 			#pragma fragment frag
+			#pragma target 3.5
 
-			sampler2D _A;
+			ASE_PORT( _A );
 
 			float4 frag ( v2f_img i ) : SV_Target
 			{
-				float lum = dot ( tex2D ( _A, i.uv ), float3( 0.299,0.587,0.114 ) ); 
+				float lum = dot ( ASE_SAMPLE_PORT( _A, i.uv ), float3( 0.299,0.587,0.114 ) ); 
 				return float4( lum.xxx, 1 );
 			}
 			ENDCG
@@ -44,14 +48,16 @@ Shader "Hidden/GrayscaleNode"
 		{
 			CGPROGRAM
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#pragma vertex vert_img
 			#pragma fragment frag
+			#pragma target 3.5
 
-			sampler2D _A;
+			ASE_PORT( _A );
 
 			float4 frag ( v2f_img i ) : SV_Target
 			{
-				float3 rgbValue = tex2D ( _A, i.uv ).rgb;
+				float3 rgbValue = ASE_SAMPLE_PORT( _A, i.uv ).rgb;
 				float lum = ( rgbValue.r + rgbValue.g + rgbValue.b ) / 3;
 				return float4( lum.xxx, 1 );
 			}

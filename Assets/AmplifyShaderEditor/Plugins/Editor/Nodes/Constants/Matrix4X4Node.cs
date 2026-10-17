@@ -8,7 +8,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Matrix4X4", "Constants And Properties", "Matrix4X4 property" )]
+	[NodeAttributes( "Matrix 4x4", "Constants And Properties", "Matrix property with 16 elements in a 4x4 grid." )]
 	public sealed class Matrix4X4Node : MatrixParentNode
 	{	
 		private string[,] m_fieldText = new string[ 4, 4 ] { { "0", "0", "0", "0" }, { "0", "0", "0", "0" }, { "0", "0", "0", "0" }, { "0", "0", "0", "0" } };
@@ -64,9 +64,9 @@ namespace AmplifyShaderEditor
 				m_requireMaterialUpdate = true;
 		}
 
-		public override void OnNodeLayout( DrawInfo drawInfo )
+		public override void OnNodeLayout( DrawInfo drawInfo, NodeUpdateCache cache )
 		{
-			base.OnNodeLayout( drawInfo );
+			base.OnNodeLayout( drawInfo, cache );
 
 			m_propertyDrawPos.position = m_remainingBox.position;
 			m_propertyDrawPos.width = drawInfo.InvertedZoom * Constants.FLOAT_DRAW_WIDTH_FIELD_SIZE;

@@ -17,6 +17,7 @@ Shader "Hidden/TriplanarNode"
 			#pragma fragment frag
 			#pragma target 3.0
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#include "UnityStandardUtils.cginc"
 
 			sampler2D _A;		
@@ -64,19 +65,17 @@ Shader "Hidden/TriplanarNode"
 
 			float4 frag( v2f_img i ) : SV_Target
 			{
-				float2 xy = 2 * i.uv - 1;
-				float z = -sqrt(1-saturate(dot(xy,xy)));
-				float3 vertexPos = float3(xy, z);
-				float3 normal = normalize(vertexPos);
+				float3 vertexPos = PreviewFragmentPositionOS( i.uv );
+				float3 normal = PreviewFragmentNormalOS( i.uv );
 				float3 worldNormal = UnityObjectToWorldNormal(normal);
 				float3 worldPos = mul(unity_ObjectToWorld, vertexPos).xyz;
 
-				float falloff = tex2D( _E, xy ).r;
-				float tilling = tex2D( _D, xy ).r * 0.625;
+				float falloff = tex2D( _E, vertexPos.xy ).r;
+				float tilling = tex2D( _D, vertexPos.xy ).r * 0.625;
 				float4 triplanar = 1;
 
 				if ( _IsNormal == 1 ) {
-					float3 tangent = normalize(float3( -z, xy.y*0.01, xy.x ));
+					float3 tangent = PreviewFragmentTangentOS( i.uv );
 					float3 worldTangent = UnityObjectToWorldDir(tangent);
 					float tangentSign = -1;
 					float3 worldBinormal = normalize( cross(worldNormal, worldTangent) * tangentSign);

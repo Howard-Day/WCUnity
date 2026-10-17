@@ -2,11 +2,13 @@ using System;
 using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
+using Unity.Scripting.LifecycleManagement;
 
 namespace AmplifyShaderEditor
 {
 
 	[Serializable]
+	[NoAutoStaticsCleanup]
 	public class StencilBufferOpHelper
 	{
 		public static readonly string[] StencilComparisonValues =

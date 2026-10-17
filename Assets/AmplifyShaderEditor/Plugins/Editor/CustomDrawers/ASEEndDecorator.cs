@@ -6,31 +6,34 @@ using UnityEditor;
 using System;
 using AmplifyShaderEditor;
 
-public class ASEEndDecorator : MaterialPropertyDrawer
+namespace AmplifyShaderEditor
 {
-	bool m_applyNext = false;
-
-	public override void OnGUI( Rect position, MaterialProperty prop, String label, MaterialEditor editor )
+	public class ASEEndDecorator : MaterialPropertyDrawer
 	{
-		if( prop.applyPropertyCallback == null )
-			prop.applyPropertyCallback = Testc;
+		bool m_applyNext = false;
 
-		if( GUI.changed || m_applyNext )
+		public override void OnGUI( Rect position, MaterialProperty prop, String label, MaterialEditor editor )
 		{
-			m_applyNext = false;
-			Material mat = editor.target as Material;
-			UIUtils.CopyValuesFromMaterial( mat );
+			if( prop.applyPropertyCallback == null )
+				prop.applyPropertyCallback = Testc;
+
+			if( GUI.changed || m_applyNext )
+			{
+				m_applyNext = false;
+				Material mat = editor.target as Material;
+				UIUtils.CopyValuesFromMaterial( mat );
+			}
 		}
-	}
 
-	bool Testc( MaterialProperty prop, int changeMask, object previousValue )
-	{
-		m_applyNext = true;
-		return false;
-	}
+		bool Testc( MaterialProperty prop, int changeMask, object previousValue )
+		{
+			m_applyNext = true;
+			return false;
+		}
 
-	public override float GetPropertyHeight( MaterialProperty prop, string label, MaterialEditor editor )
-	{
-		return 0;
+		public override float GetPropertyHeight( MaterialProperty prop, string label, MaterialEditor editor )
+		{
+			return 0;
+		}
 	}
 }

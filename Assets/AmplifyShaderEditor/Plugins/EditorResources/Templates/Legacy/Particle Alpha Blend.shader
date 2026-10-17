@@ -1,4 +1,4 @@
-Shader /*ase_name*/ "Hidden/Templates/Legacy/Particles Alpha Blended" /*end*/
+Shader /*ase_name*/ "Hidden/Built-In/Particles Alpha Blended" /*end*/
 {
 	Properties
 	{
@@ -9,28 +9,28 @@ Shader /*ase_name*/ "Hidden/Templates/Legacy/Particles Alpha Blended" /*end*/
 	}
 
 
-	Category 
+	Category
 	{
 		SubShader
 		{
 			Tags{ "Queue" = "Transparent" "IgnoreProjector" = "True" "RenderType" = "Transparent" "PreviewType" = "Plane" }
 			Blend SrcAlpha OneMinusSrcAlpha
 			ColorMask RGB
-			Cull Off 
-			Lighting Off 
+			Cull Off
+			Lighting Off
 			ZWrite Off
 			ZTest LEqual
 			/*ase_pass*/
 			Pass {
-			
+
 				CGPROGRAM
 				#ifndef UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX
 				#define UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input)
 				#endif
-				
+
 				#pragma vertex vert
 				#pragma fragment frag
-				#pragma target 2.0
+				#pragma target 3.5
 				#pragma multi_compile_instancing
 				#pragma multi_compile_particles
 				#pragma multi_compile_fog
@@ -38,7 +38,7 @@ Shader /*ase_name*/ "Hidden/Templates/Legacy/Particles Alpha Blended" /*end*/
 
 				#include "UnityCG.cginc"
 
-				struct appdata_t 
+				struct appdata_t
 				{
 					float4 vertex : POSITION;
 					fixed4 color : COLOR;
@@ -47,7 +47,7 @@ Shader /*ase_name*/ "Hidden/Templates/Legacy/Particles Alpha Blended" /*end*/
 					/*ase_vdata:p=p;uv0=tc0;c=c*/
 				};
 
-				struct v2f 
+				struct v2f
 				{
 					float4 vertex : SV_POSITION;
 					fixed4 color : COLOR;
@@ -60,8 +60,8 @@ Shader /*ase_name*/ "Hidden/Templates/Legacy/Particles Alpha Blended" /*end*/
 					UNITY_VERTEX_OUTPUT_STEREO
 					/*ase_interp(3,):sp=sp.xyzw;uv0=tc0;c=c*/
 				};
-				
-				
+
+
 				#if UNITY_VERSION >= 560
 				UNITY_DECLARE_DEPTH_TEXTURE( _CameraDepthTexture );
 				#else
@@ -115,9 +115,9 @@ Shader /*ase_name*/ "Hidden/Templates/Legacy/Particles Alpha Blended" /*end*/
 					UNITY_APPLY_FOG(i.fogCoord, col);
 					return col;
 				}
-				ENDCG 
+				ENDCG
 			}
-		}	
+		}
 	}
-	CustomEditor "ASEMaterialInspector"
+	CustomEditor "AmplifyShaderEditor.MaterialInspector"
 }

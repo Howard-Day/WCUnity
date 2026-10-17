@@ -26,7 +26,7 @@ namespace AmplifyShaderEditor
 		private const float MIN_SIZE_X = 100;
 		private const float MIN_SIZE_Y = 100;
 		private const float COMMENTARY_BOX_HEIGHT = 30;
-		
+
 		private readonly Vector2 ResizeButtonPos = new Vector2( 1, 1 );
 
 		[SerializeField]
@@ -65,9 +65,6 @@ namespace AmplifyShaderEditor
 		private string m_focusName = "CommentaryNode";
 		private bool m_focusOnTitle = false;
 		private bool m_graphDepthAnalized = false;
-
-		private bool m_checkCommentText = true;
-		private bool m_checkTitleText = true;
 
 		public Color m_frameColor = Color.white;
 
@@ -150,7 +147,6 @@ namespace AmplifyShaderEditor
 			{
 				if ( !m_nodesOnCommentary[ i ].Selected )
 				{
-					m_nodesOnCommentary[ i ].RecordObject( Constants.UndoMoveNodesId );
 					m_nodesOnCommentary[ i ].Move( delta, snap );
 				}
 			}
@@ -173,9 +169,6 @@ namespace AmplifyShaderEditor
 		{
 			if ( m_nodesOnCommentaryDict.ContainsKey( node.UniqueId ) )
 			{
-				UIUtils.MarkUndoAction();
-				RecordObject( Constants.UndoRemoveNodeFromCommentaryId );
-				node.RecordObject( Constants.UndoRemoveNodeFromCommentaryId );
 				m_nodesOnCommentary.Remove( node );
 				m_nodesOnCommentaryDict.Remove( node.UniqueId );
 				node.OnNodeStoppedMovingEvent -= NodeStoppedMoving;
@@ -186,11 +179,8 @@ namespace AmplifyShaderEditor
 
 		public void RemoveAllNodes()
 		{
-			UIUtils.MarkUndoAction();
 			for ( int i = 0; i < m_nodesOnCommentary.Count; i++ )
 			{
-				RecordObject( Constants.UndoRemoveNodeFromCommentaryId );
-				m_nodesOnCommentary[ i ].RecordObject( Constants.UndoRemoveNodeFromCommentaryId );
 				m_nodesOnCommentary[ i ].OnNodeStoppedMovingEvent -= NodeStoppedMoving;
 				m_nodesOnCommentary[ i ].OnNodeDestroyedEvent -= NodeDestroyed;
 				m_nodesOnCommentary[ i ].CommentaryParent = -1;
@@ -232,15 +222,12 @@ namespace AmplifyShaderEditor
 							other.RemoveNode( node );
 							addToNode = true;
 						}
-						
+
 					}
 				}
 
 				if ( addToNode )
 				{
-					UIUtils.MarkUndoAction();
-					RecordObject(  Constants.UndoAddNodeToCommentaryId );
-					node.RecordObject( Constants.UndoAddNodeToCommentaryId );
 
 					m_nodesOnCommentary.Add( node );
 					m_nodesOnCommentaryDict.Add( node.UniqueId, node );
@@ -250,31 +237,23 @@ namespace AmplifyShaderEditor
 				}
 			}
 		}
-		
+
 		public override void DrawProperties()
 		{
 			base.DrawProperties();
 			NodeUtils.DrawPropertyGroup( ref m_propertiesFoldout, Constants.ParameterLabelStr,()=>
 			{
-				EditorGUI.BeginChangeCheck();
 				m_titleText = EditorGUILayoutTextField( "Frame Title", m_titleText );
-				if ( EditorGUI.EndChangeCheck() )
-				{
-					m_checkTitleText = true;
-				}
-				EditorGUI.BeginChangeCheck();
 				m_commentText = EditorGUILayoutTextField( CommentaryTitle, m_commentText );
-				if ( EditorGUI.EndChangeCheck() )
-				{
-					m_checkCommentText = true;
-				}
 
 				m_frameColor = EditorGUILayoutColorField( "Frame Color", m_frameColor );
 			} );
 			EditorGUILayout.HelpBox( InfoText, MessageType.Info );
 		}
 
-		public override void OnNodeLayout( DrawInfo drawInfo )
+		// @diogo: resolves serialized member ids into live membership; normally deferred to OnNodeLayout,
+		// called eagerly by the incremental undo patcher so recreated frames serialize correct membership
+		public void ResolvePendingMemberIds()
 		{
 			if ( m_nodesIds.Count > 0 )
 			{
@@ -288,6 +267,11 @@ namespace AmplifyShaderEditor
 				}
 				m_nodesIds.Clear();
 			}
+		}
+
+		public override void OnNodeLayout( DrawInfo drawInfo, NodeUpdateCache cache )
+		{
+			ResolvePendingMemberIds();
 
 			if ( m_reRegisterNodes )
 			{
@@ -335,7 +319,7 @@ namespace AmplifyShaderEditor
 			m_resizeRightIconCoords.x = m_globalPosition.x + m_globalPosition.width - 1 - ( m_resizeIconTex.width + ResizeButtonPos.x ) * drawInfo.InvertedZoom;
 			m_resizeRightIconCoords.y = m_globalPosition.y + m_globalPosition.height - 2 - ( m_resizeIconTex.height + ResizeButtonPos.y ) * drawInfo.InvertedZoom;
 			m_resizeRightIconCoords.width = m_resizeIconTex.width * drawInfo.InvertedZoom;
-			m_resizeRightIconCoords.height = m_resizeIconTex.height * drawInfo.InvertedZoom;			
+			m_resizeRightIconCoords.height = m_resizeIconTex.height * drawInfo.InvertedZoom;
 		}
 
 		public override void OnNodeRepaint( DrawInfo drawInfo )
@@ -347,7 +331,7 @@ namespace AmplifyShaderEditor
 			// Background
 			GUI.color = Constants.NodeBodyColor * m_frameColor;
 			GUI.Label( m_globalPosition, string.Empty, UIUtils.GetCustomStyle( CustomStyle.CommentaryBackground ) );
-			
+
 			// Header
 			GUI.color = m_headerColor * m_headerColorModifier * m_frameColor;
 			GUI.Label( m_headerPosition, string.Empty, UIUtils.GetCustomStyle( CustomStyle.NodeHeader ) );
@@ -382,7 +366,7 @@ namespace AmplifyShaderEditor
 				GUI.Label( titleRect, m_titleText, UIUtils.GetCustomStyle( CustomStyle.CommentarySuperTitle ) );
 			}
 		}
-		
+
 		public override void Draw( DrawInfo drawInfo )
 		{
 			base.Draw( drawInfo );
@@ -405,13 +389,8 @@ namespace AmplifyShaderEditor
 
 				if ( m_isEditing || m_startEditing )
 				{
-					EditorGUI.BeginChangeCheck();
 					GUI.SetNextControlName( m_focusName );
 					m_commentText = EditorGUITextField( m_commentArea, string.Empty, m_commentText, UIUtils.CommentaryTitle );
-					if ( EditorGUI.EndChangeCheck() )
-					{
-						m_checkCommentText = true;
-					}
 
 					if ( m_startEditing )
 						EditorGUI.FocusTextInControl( m_focusName );
@@ -534,18 +513,6 @@ namespace AmplifyShaderEditor
 				}
 			}
 
-			if ( m_checkCommentText )
-			{
-				m_checkCommentText = false;
-				m_commentText = m_commentText.Replace( IOUtils.FIELD_SEPARATOR, ' ' );
-			}
-
-			if ( m_checkTitleText )
-			{
-				m_checkTitleText = false;
-				m_titleText = m_titleText.Replace( IOUtils.FIELD_SEPARATOR, ' ' );
-			}
-
 			if ( m_focusOnTitle && drawInfo.CurrentEventType == EventType.KeyUp )
 			{
 				m_focusOnTitle = false;
@@ -628,10 +595,23 @@ namespace AmplifyShaderEditor
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_position.width );
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_position.height );
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_commentText );
-			IOUtils.AddFieldValueToString( ref nodeInfo, m_nodesOnCommentary.Count );
-			for ( int i = 0; i < m_nodesOnCommentary.Count; i++ )
+			// @diogo: before the first layout resolves membership, m_nodesIds still holds the loaded member
+			// ids; serialize those so early captures ( undo/indicator baselines ) don't drop membership
+			if ( m_nodesIds.Count > 0 )
 			{
-				IOUtils.AddFieldValueToString( ref nodeInfo, m_nodesOnCommentary[ i ].UniqueId );
+				IOUtils.AddFieldValueToString( ref nodeInfo, m_nodesIds.Count );
+				for ( int i = 0; i < m_nodesIds.Count; i++ )
+				{
+					IOUtils.AddFieldValueToString( ref nodeInfo, m_nodesIds[ i ] );
+				}
+			}
+			else
+			{
+				IOUtils.AddFieldValueToString( ref nodeInfo, m_nodesOnCommentary.Count );
+				for ( int i = 0; i < m_nodesOnCommentary.Count; i++ )
+				{
+					IOUtils.AddFieldValueToString( ref nodeInfo, m_nodesOnCommentary[ i ].UniqueId );
+				}
 			}
 
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_titleText );
@@ -683,7 +663,8 @@ namespace AmplifyShaderEditor
 			m_graphDepthAnalized = true;
 		}
 
-		public override Rect Position { get { return Event.current.alt ? m_position : m_auxHeaderPos; } }
+		// Event.current is null outside GUI calls ( e.g. batch mode loads )
+		public override Rect Position { get { return ( Event.current != null && Event.current.alt ) ? m_position : m_auxHeaderPos; } }
 		public override bool Contains( Vector3 pos )
 		{
 			return Event.current.alt ? m_globalPosition.Contains( pos ) : ( m_headerPosition.Contains( pos ) || m_resizeRightIconCoords.Contains( pos ) || m_resizeLeftIconCoords.Contains( pos ) );

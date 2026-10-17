@@ -50,15 +50,20 @@ namespace AmplifyShaderEditor
 			var cache = EditorGUIUtility.labelWidth;
 			EditorGUIUtility.labelWidth = 250;
 
+			EditorGUILayout.Space( 5 );
+
 			EditorGUI.BeginChangeCheck();
 			{
 				EditorGUILayout.LabelField( "User", EditorStyles.boldLabel );
 				User.InspectorLayout();
+				User.AutoBackupLayout();
 			}
 			if ( EditorGUI.EndChangeCheck() )
 			{
 				User.SaveSettings();
 			}
+
+			EditorGUILayout.Space( 5 );
 
 			EditorGUI.BeginChangeCheck();
 			{
@@ -68,6 +73,23 @@ namespace AmplifyShaderEditor
 			if ( EditorGUI.EndChangeCheck() )
 			{
 				Project.SaveSettings();
+			}
+
+			// @diogo: dev-only diagnostics (undo toggles, profiling, statistics, fault injection); hidden
+			// from users - shown only on ASE development builds (see ASE_CONSOLE_WINDOW)
+			if ( DebugConsoleWindow.DeveloperMode )
+			{
+				EditorGUILayout.Space( 5 );
+
+				EditorGUI.BeginChangeCheck();
+				{
+					EditorGUILayout.LabelField( "Developer", EditorStyles.boldLabel );
+					User.DeveloperLayout();
+				}
+				if ( EditorGUI.EndChangeCheck() )
+				{
+					User.SaveSettings();
+				}
 			}
 
 			EditorGUILayout.BeginHorizontal();

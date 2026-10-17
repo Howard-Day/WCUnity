@@ -26,7 +26,7 @@ namespace AmplifyShaderEditor
 			m_useInternalPortData = true;
 			m_previewShaderGUID = "6f89a5d96bdad114b9bbd0c236cac622";
 			m_inputPorts[ 2 ].FloatInternalData = 1;
-			m_continuousPreviewRefresh = true;
+			ContinuousPreviewRefresh = true;
 		}
 
 		public override void SetPreviewInputs()
@@ -44,7 +44,7 @@ namespace AmplifyShaderEditor
 			base.OnInputPortConnected( portId, otherNodeId, otherPortId, activateNode );
 			if( portId == 1 )
 			{
-				m_continuousPreviewRefresh = false;
+				ContinuousPreviewRefresh = false;
 			}
 		}
 
@@ -53,7 +53,7 @@ namespace AmplifyShaderEditor
 			base.OnInputPortDisconnected( portId );
 			if( portId == 1 )
 			{
-				m_continuousPreviewRefresh = true;
+				ContinuousPreviewRefresh = true;
 			}
 		}
 

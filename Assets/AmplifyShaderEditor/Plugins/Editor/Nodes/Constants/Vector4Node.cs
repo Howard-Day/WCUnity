@@ -8,7 +8,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Vector4", "Constants And Properties", "Vector4 property", null, KeyCode.Alpha4 )]
+	[NodeAttributes( "Vector4", "Constants And Properties", "Vector4 property", null, KeyCode.Alpha4, tags: "vec4 v4 4" )]
 	public sealed class Vector4Node : PropertyNode
 	{
 		[SerializeField]
@@ -24,9 +24,13 @@ namespace AmplifyShaderEditor
 		private bool m_isEditingFields;
 		private Vector4 m_previousValue = Vector4.zero;
 		private string[] m_fieldText = new string[] { "0", "0", "0", "0" };
-		
+
 		public Vector4Node() : base() { }
 		public Vector4Node( int uniqueId, float x, float y, float width, float height ) : base( uniqueId, x, y, width, height ) { }
+
+		// @diogo: preview frag returns a single constant value, independent of UV (QA #5).
+		public override bool ConstantPreview { get { return true; } }
+
 		protected override void CommonInit( int uniqueId )
 		{
 			base.CommonInit( uniqueId );
@@ -38,6 +42,7 @@ namespace AmplifyShaderEditor
 			m_availableAttribs.Add( new PropertyAttributes( "Remap Sliders", "[RemapSlidersFull]" ) );
 			m_srpBatcherCompatible = true;
 			m_showHybridInstancedUI = true;
+			m_canBeReferenced = true;
 		}
 
 		public override void CopyDefaultsToMaterial()
@@ -64,7 +69,7 @@ namespace AmplifyShaderEditor
 		public override void SetPreviewInputs()
 		{
 			base.SetPreviewInputs();
-			
+
 			if ( m_cachedPropertyId == -1 )
 				m_cachedPropertyId = Shader.PropertyToID( "_InputVector" );
 
@@ -74,9 +79,9 @@ namespace AmplifyShaderEditor
 				PreviewMaterial.SetVector( m_cachedPropertyId, new Vector4( m_defaultValue[ 0 ], m_defaultValue[ 1 ], m_defaultValue[ 2 ], m_defaultValue[ 3 ] ) );
 		}
 
-		public override void OnNodeLayout( DrawInfo drawInfo )
+		public override void OnNodeLayout( DrawInfo drawInfo, NodeUpdateCache cache )
 		{
-			base.OnNodeLayout( drawInfo );
+			base.OnNodeLayout( drawInfo, cache );
 
 			m_propertyDrawPos = m_remainingBox;
 			m_propertyDrawPos.x = m_remainingBox.x - LabelWidth * drawInfo.InvertedZoom;
@@ -87,6 +92,12 @@ namespace AmplifyShaderEditor
 		public override void DrawGUIControls( DrawInfo drawInfo )
 		{
 			base.DrawGUIControls( drawInfo );
+
+			if ( IsPropertyReference )
+			{
+				m_isEditingFields = false;
+				return;
+			}
 
 			if ( drawInfo.CurrentEventType != EventType.MouseDown )
 				return;
@@ -195,6 +206,13 @@ namespace AmplifyShaderEditor
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
 		{
+			PropertyNode reference = PropertyReference;
+			if ( reference != null )
+			{
+				OrderIndex = reference.RawOrderIndex;
+				return reference.GenerateShaderForOutput( outputId, ref dataCollector, ignoreLocalvar );
+			}
+
 			base.GenerateShaderForOutput( outputId, ref dataCollector, ignoreLocalvar );
 			m_precisionString = UIUtils.PrecisionWirePortToCgType( CurrentPrecisionType, m_outputPorts[ 0 ].DataType );
 
@@ -217,7 +235,7 @@ namespace AmplifyShaderEditor
 			{
 				case 0:
 				{
-					result = m_precisionString+"(" + value.x + "," + value.y + "," + value.z + "," + value.w + ")";
+					result = m_precisionString+"( " + value.x + ", " + value.y + ", " + value.z + ", " + value.w + " )";
 				}
 				break;
 
@@ -256,13 +274,14 @@ namespace AmplifyShaderEditor
 			string y = UIUtils.PropertyFloatToString( m_defaultValue.y );
 			string z = UIUtils.PropertyFloatToString( m_defaultValue.z );
 			string w = UIUtils.PropertyFloatToString( m_defaultValue.w );
-			return PropertyAttributes + m_propertyName + "(\"" + m_propertyInspectorName + "\", Vector) = (" + x + "," + y + "," + z + "," + w + ")";
+			return PropertyAttributes + PropertyAttributesSeparator + m_propertyName + "( \"" + m_propertyInspectorName +
+				"\", Vector ) = ( " + x + ", " + y + ", " + z + ", " + w + " )";
 		}
-		
+
 		public override void UpdateMaterial( Material mat )
 		{
 			base.UpdateMaterial( mat );
-			if ( UIUtils.IsProperty( m_currentParameterType ) && !InsideShaderFunction )
+			if ( UIUtils.IsProperty( m_currentParameterType ) && !InsideShaderFunction && !IsPropertyReference )
 			{
 				mat.SetVector( m_propertyName, m_materialValue );
 			}
@@ -299,6 +318,28 @@ namespace AmplifyShaderEditor
 			base.WriteToString( ref nodeInfo, ref connectionsInfo );
 			IOUtils.AddFieldValueToString( ref nodeInfo, IOUtils.Vector4ToString( m_defaultValue ) );
 			IOUtils.AddFieldValueToString( ref nodeInfo, IOUtils.Vector4ToString( m_materialValue ) );
+		}
+
+		protected override void CopyPropertyReferenceValues( PropertyNode reference )
+		{
+			Vector4Node node = reference as Vector4Node;
+			if ( node == null )
+				return;
+
+			if ( m_defaultValue != node.m_defaultValue || m_materialValue != node.m_materialValue )
+			{
+				m_defaultValue = node.m_defaultValue;
+				m_materialValue = node.m_materialValue;
+				PreviewIsDirty = true;
+			}
+		}
+
+		public override Vector4 TypeChangeDefaultValue { get { return m_defaultValue; } }
+		public override Vector4 TypeChangeMaterialValue { get { return m_materialValue; } }
+		public override void SetTypeChangeValues( Vector4 defaultValue, Vector4 materialValue )
+		{
+			m_defaultValue = defaultValue;
+			m_materialValue = materialValue;
 		}
 
 		public override void SetGlobalValue() { Shader.SetGlobalVector( m_propertyName, m_defaultValue ); }

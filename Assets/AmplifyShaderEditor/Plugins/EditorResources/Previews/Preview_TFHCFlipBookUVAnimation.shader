@@ -2,27 +2,29 @@ Shader "Hidden/TFHCFlipBookUVAnimation"
 {
 	Properties
 	{
-		_A ("_UV", 2D) = "white" {}
-		_B ("_Columns", 2D) = "white" {}
-		_C ("_Rows", 2D) = "white" {}
-		_D ("_Speed", 2D) = "white" {}
-		_E ("_StartFrame", 2D) = "white" {}
-		_F ("_Speed", 2D) = "white" {}
-		_G( "_MaxFrame", 2D ) = "white" {}
+		_A ("_UV", 2DArray) = "white" {}
+		_B ("_Columns", 2DArray) = "white" {}
+		_C ("_Rows", 2DArray) = "white" {}
+		_D ("_Speed", 2DArray) = "white" {}
+		_E ("_StartFrame", 2DArray) = "white" {}
+		_F ("_Speed", 2DArray) = "white" {}
+		_G( "_MaxFrame", 2DArray ) = "white" {}
 	}
 	SubShader
 	{
 		CGINCLUDE
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#pragma vertex vert_img
 			#pragma fragment frag
-			sampler2D _A;
-			sampler2D _B;
-			sampler2D _C;
-			sampler2D _D;
-			sampler2D _E;
-			sampler2D _F;
-			sampler2D _G;
+			#pragma target 3.5
+			ASE_PORT( _A );
+			ASE_PORT( _B );
+			ASE_PORT( _C );
+			ASE_PORT( _D );
+			ASE_PORT( _E );
+			ASE_PORT( _F );
+			ASE_PORT( _G );
 			float _EditorTime;
 		ENDCG
 
@@ -32,12 +34,12 @@ Shader "Hidden/TFHCFlipBookUVAnimation"
 			CGPROGRAM
 			float4 frag(v2f_img i) : SV_Target
 			{
-				float2 uv = tex2D( _A, i.uv ).rg;
-				float col = tex2D( _B, i.uv ).r;
-				float row = tex2D( _C, i.uv ).r;
-				float spd = tex2D( _D, i.uv ).r;
-				float str = tex2D( _E, i.uv ).r;
-				float maxframe = tex2D( _G, i.uv ).r;
+				float2 uv = ASE_SAMPLE_PORT( _A, i.uv ).rg;
+				float col = ASE_SAMPLE_PORT( _B, i.uv ).r;
+				float row = ASE_SAMPLE_PORT( _C, i.uv ).r;
+				float spd = ASE_SAMPLE_PORT( _D, i.uv ).r;
+				float str = ASE_SAMPLE_PORT( _E, i.uv ).r;
+				float maxframe = ASE_SAMPLE_PORT( _G, i.uv ).r;
 				float numframes = col * row;
 				float fbtotaltiles = ( maxframe < 0 ) ? numframes : min( numframes, maxframe + 1 );
 				float fbcolsoffset = 1.0f / col;
@@ -64,13 +66,13 @@ Shader "Hidden/TFHCFlipBookUVAnimation"
 			CGPROGRAM
 			float4 frag(v2f_img i) : SV_Target
 			{
-				float2 uv = tex2D( _A, i.uv ).rg;
-				float col = tex2D( _B, i.uv ).r;
-				float row = tex2D( _C, i.uv ).r;
-				float spd = tex2D( _D, i.uv ).r;
-				float str = tex2D( _E, i.uv ).r;
-				float time = tex2D( _F, i.uv ).r;
-				float maxframe = tex2D( _G, i.uv ).r;
+				float2 uv = ASE_SAMPLE_PORT( _A, i.uv ).rg;
+				float col = ASE_SAMPLE_PORT( _B, i.uv ).r;
+				float row = ASE_SAMPLE_PORT( _C, i.uv ).r;
+				float spd = ASE_SAMPLE_PORT( _D, i.uv ).r;
+				float str = ASE_SAMPLE_PORT( _E, i.uv ).r;
+				float time = ASE_SAMPLE_PORT( _F, i.uv ).r;
+				float maxframe = ASE_SAMPLE_PORT( _G, i.uv ).r;
 				float numframes = col * row;
 				float fbtotaltiles = ( maxframe < 0 ) ? numframes : min( numframes, maxframe + 1 );
 				float fbcolsoffset = 1.0f / col;

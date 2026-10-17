@@ -12,6 +12,7 @@ namespace AmplifyShaderEditor
 		{
 			base.CommonInit( uniqueId );
 			m_opName = "fwidth";
+			m_isDerivativeOp = true;
 			m_previewShaderGUID = "81ea481faaef9c8459a555479ba64df7";
 			m_inputPorts[ 0 ].CreatePortRestrictions(	WirePortDataType.OBJECT,
 														WirePortDataType.FLOAT ,

@@ -1,6 +1,7 @@
 // Amplify Shader Editor - Visual Shader Editing Tool
 // Copyright (c) Amplify Creations, Lda <info@amplify.pt>
 using System;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using UnityEngine;
@@ -70,9 +71,12 @@ namespace AmplifyShaderEditor
 		TemplateShaderModelData m_globalShaderModel = new TemplateShaderModelData();
 
 		private Dictionary<string, TemplateUniquePassData> m_passUniqueIdData = new Dictionary<string, TemplateUniquePassData>();
-		
+
 		[NonSerialized]
 		private List<TemplateShaderPropertyData> m_allShaderProperties;
+
+		[NonSerialized]
+		private Dictionary<string,TemplateShaderPropertyData> m_globalShaderProperties;
 
 		public TemplateMultiPass()
 		{
@@ -100,7 +104,7 @@ namespace AmplifyShaderEditor
 		void LoadTemplateBody( string guid, string path )
 		{
 			m_passUniqueIdData.Clear();
-			m_guid = guid;			
+			m_guid = guid;
 
 			string shaderBody = IOUtils.LoadTextFileFromDisk( path );
 			if ( string.IsNullOrEmpty( shaderBody ) )
@@ -348,6 +352,11 @@ namespace AmplifyShaderEditor
 				m_allShaderProperties.Clear();
 				m_allShaderProperties = null;
 			}
+			if( m_globalShaderProperties != null )
+			{
+				m_globalShaderProperties.Clear();
+				m_globalShaderProperties = null;
+			}
 
 			int subShaderCount = m_subShaders.Count;
 			for( int i = 0; i < subShaderCount; i++ )
@@ -471,9 +480,14 @@ namespace AmplifyShaderEditor
 					m_templateIdManager.SetReplacementText( prefix + m_subShaders[ subShaderId ].Modules.StencilData.StencilBufferId, text );
 				}
 				break;
-				case TemplateModuleDataType.ModuleZwrite:
+				case TemplateModuleDataType.ModuleZWrite:
 				{
 					m_templateIdManager.SetReplacementText( prefix + m_subShaders[ subShaderId ].Modules.DepthData.ZWriteModeId, text );
+				}
+				break;
+				case TemplateModuleDataType.ModuleZClip:
+				{
+					m_templateIdManager.SetReplacementText( prefix + m_subShaders[ subShaderId ].Modules.DepthData.ZClipModeId, text );
 				}
 				break;
 				case TemplateModuleDataType.ModuleZTest:
@@ -638,10 +652,15 @@ namespace AmplifyShaderEditor
 					prefix = addPrefix ? m_subShaders[ subShaderId ].Modules.UniquePrefix : string.Empty;
 					return prefix + m_subShaders[ subShaderId ].Modules.StencilData.StencilBufferId;
 				}
-				case TemplateModuleDataType.ModuleZwrite:
+				case TemplateModuleDataType.ModuleZWrite:
 				{
 					prefix = addPrefix ? m_subShaders[ subShaderId ].Modules.UniquePrefix : string.Empty;
 					return prefix + m_subShaders[ subShaderId ].Modules.DepthData.ZWriteModeId;
+				}
+				case TemplateModuleDataType.ModuleZClip:
+				{
+					prefix = addPrefix ? m_subShaders[ subShaderId ].Modules.UniquePrefix : string.Empty;
+					return prefix + m_subShaders[ subShaderId ].Modules.DepthData.ZClipModeId;
 				}
 				case TemplateModuleDataType.ModuleZTest:
 				{
@@ -790,10 +809,15 @@ namespace AmplifyShaderEditor
 					prefix = addPrefix ? m_subShaders[ subShaderId ].Passes[ passId ].Modules.UniquePrefix : string.Empty;
 					return prefix + m_subShaders[ subShaderId ].Passes[ passId ].Modules.StencilData.StencilBufferId;
 				}
-				case TemplateModuleDataType.ModuleZwrite:
+				case TemplateModuleDataType.ModuleZWrite:
 				{
 					prefix = addPrefix ? m_subShaders[ subShaderId ].Passes[ passId ].Modules.UniquePrefix : string.Empty;
 					return prefix + m_subShaders[ subShaderId ].Passes[ passId ].Modules.DepthData.ZWriteModeId;
+				}
+				case TemplateModuleDataType.ModuleZClip:
+				{
+					prefix = addPrefix ? m_subShaders[ subShaderId ].Passes[ passId ].Modules.UniquePrefix : string.Empty;
+					return prefix + m_subShaders[ subShaderId ].Passes[ passId ].Modules.DepthData.ZClipModeId;
 				}
 				case TemplateModuleDataType.ModuleZTest:
 				{
@@ -1033,10 +1057,16 @@ namespace AmplifyShaderEditor
 					m_templateIdManager.SetReplacementText( prefix + m_subShaders[ subShaderId ].Passes[ passId ].Modules.StencilData.StencilBufferId, text );
 				}
 				break;
-				case TemplateModuleDataType.ModuleZwrite:
+				case TemplateModuleDataType.ModuleZWrite:
 				{
 					prefix = m_subShaders[ subShaderId ].Passes[ passId ].Modules.UniquePrefix;
 					m_templateIdManager.SetReplacementText( prefix + m_subShaders[ subShaderId ].Passes[ passId ].Modules.DepthData.ZWriteModeId, text );
+				}
+				break;
+				case TemplateModuleDataType.ModuleZClip:
+				{
+					prefix = m_subShaders[ subShaderId ].Passes[ passId ].Modules.UniquePrefix;
+					m_templateIdManager.SetReplacementText( prefix + m_subShaders[ subShaderId ].Passes[ passId ].Modules.DepthData.ZClipModeId, text );
 				}
 				break;
 				case TemplateModuleDataType.ModuleZTest:
@@ -1266,7 +1296,8 @@ namespace AmplifyShaderEditor
 
 			if( propertyContainer.PropertyDict.ContainsKey( id ) )
 			{
-				string finalValue = propertyContainer.PropertyDict[ id ].UseIndentationAtStart ? propertyContainer.PropertyDict[ id ].Indentation : string.Empty;
+				// @diogo: appended once per generated line, so a string here goes quadratic on big pass bodies
+				StringBuilder finalValue = new StringBuilder( propertyContainer.PropertyDict[ id ].UseIndentationAtStart ? propertyContainer.PropertyDict[ id ].Indentation : string.Empty );
 				for( int i = 0; i < values.Length; i++ )
 				{
 
@@ -1276,18 +1307,18 @@ namespace AmplifyShaderEditor
 						for( int j = 0; j < valuesArr.Length; j++ )
 						{
 							//first value will be automatically indented by the string replace
-							finalValue += ( ( i == 0 && j == 0 ) ? string.Empty : propertyContainer.PropertyDict[ id ].Indentation ) + valuesArr[ j ];
-							finalValue += TemplatesManager.TemplateNewLine;
+							finalValue.Append( ( i == 0 && j == 0 ) ? string.Empty : propertyContainer.PropertyDict[ id ].Indentation ).Append( valuesArr[ j ] );
+							finalValue.Append( TemplatesManager.TemplateNewLine );
 						}
 					}
 					else
 					{
 						//first value will be automatically indented by the string replace
-						finalValue += ( i == 0 ? string.Empty : propertyContainer.PropertyDict[ id ].Indentation ) + values[ i ];
+						finalValue.Append( i == 0 ? string.Empty : propertyContainer.PropertyDict[ id ].Indentation ).Append( values[ i ] );
 					}
 				}
 
-				body = finalValue;
+				body = finalValue.ToString();
 				propertyContainer.PropertyDict[ id ].Used = true;
 				return true;
 			}
@@ -1425,6 +1456,25 @@ namespace AmplifyShaderEditor
 								return false;
 							}
 							m_passUniqueIdData.Add( m_subShaders[ subShaderIdx ].Passes[ passIdx ].Modules.PassUniqueName, new TemplateUniquePassData() { PassIdx = passIdx, SubShaderIdx = subShaderIdx } );
+
+							// @diogo: former names resolve to the same pass, so shaders saved before a rename
+							// still find it without depending on the pass index staying put
+							string[] aliases = m_subShaders[ subShaderIdx ].Passes[ passIdx ].PassNameAliases;
+							for ( int aliasIdx = 0; aliasIdx < aliases.Length; aliasIdx++ )
+							{
+								string alias = aliases[ aliasIdx ];
+								if ( string.IsNullOrEmpty( alias ) )
+								{
+									continue;
+								}
+
+								if ( m_passUniqueIdData.ContainsKey( alias ) )
+								{
+									Debug.LogErrorFormat( "Found duplicate pass name '{0}' over template. Please fix template as it will result in multiple errors.", alias );
+									return false;
+								}
+								m_passUniqueIdData.Add( alias, new TemplateUniquePassData() { PassIdx = passIdx, SubShaderIdx = subShaderIdx } );
+							}
 						}
 					}
 				}
@@ -1446,12 +1496,59 @@ namespace AmplifyShaderEditor
 			return m_availableShaderProperties.Find( ( x ) => ( x.PropertyName.Equals( propertyName ) ) );
 		}
 
+		public TemplateShaderPropertyData GetGlobalShaderPropertyData( string propertyName )
+		{
+			if ( m_globalShaderProperties == null )
+			{
+				m_globalShaderProperties = new Dictionary<string, TemplateShaderPropertyData>();
+				for ( int subShaderIdx = 0; subShaderIdx < SubShaders.Count; subShaderIdx++ )
+				{
+					foreach ( var data in SubShaders[ subShaderIdx ].AvailableShaderGlobals )
+					{
+						m_globalShaderProperties[ data.PropertyName ] = data;
+					}
+					for ( int passIdx = 0; passIdx < SubShaders[ subShaderIdx ].Passes.Count; passIdx++ )
+					{
+						foreach ( var data in SubShaders[ subShaderIdx ].Passes[ passIdx ].AvailableShaderGlobals )
+						{
+							m_globalShaderProperties[ data.PropertyName ] = data;
+						}
+					}
+				}
+			}
+
+			if ( !m_globalShaderProperties.TryGetValue( propertyName, out TemplateShaderPropertyData resultData ) )
+			{
+				return null;
+			}
+			return resultData;
+		}
+
 		public TemplateSRPType SRPtype { get { return m_subShaders[ 0 ].Modules.SRPType; } }
 		//public bool SRPIsPBRHD { get { return m_subShaders[0].Modules.SRPIsPBRHD ; } }
 		public List<TemplateSubShader> SubShaders { get { return m_subShaders; } }
+
+		// Whether a pass with the given name is defined anywhere in this template. Used to tell a genuine
+		// authoring typo apart from a pass whose master node simply isn't instantiated yet (e.g. while
+		// loading a shader saved before the pass was added to the template).
+		public bool ContainsPass( string passName )
+		{
+			for ( int i = 0; i < m_subShaders.Count; i++ )
+			{
+				List<TemplatePass> passes = m_subShaders[ i ].Passes;
+				for ( int j = 0; j < passes.Count; j++ )
+				{
+					if ( passes[ j ].PassNameContainer.Data.Equals( passName ) )
+					{
+						return true;
+					}
+				}
+			}
+			return false;
+		}
 		public List<TemplateShaderPropertyData> AvailableShaderProperties { get { return m_availableShaderProperties; } }
 		public List<TemplateShaderPropertyData> AllShaderProperties
-		{ 
+		{
 			get
 			{
 				if( m_allShaderProperties == null )
@@ -1478,9 +1575,9 @@ namespace AmplifyShaderEditor
 						}
 					}
 				}
-				
-				
-				return m_allShaderProperties; 
+
+
+				return m_allShaderProperties;
 			}
 		}
 

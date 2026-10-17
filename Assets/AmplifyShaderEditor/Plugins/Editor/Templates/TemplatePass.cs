@@ -68,6 +68,12 @@ namespace AmplifyShaderEditor
 
 		[SerializeField]
 		TemplateInfoContainer m_passNameContainer = new TemplateInfoContainer();
+
+		[SerializeField]
+		private bool m_passNameImmutable = false;
+
+		[SerializeField]
+		private string[] m_passNameAliases = new string[ 0 ];
 #if CUSTOM_OPTIONS_AVAILABLE
 		[SerializeField]
 		TemplateOptionsContainer m_customOptionsContainer = new TemplateOptionsContainer();
@@ -302,13 +308,64 @@ namespace AmplifyShaderEditor
 			return null;
 		}
 
+		private static readonly char[] PassNameAliasSeparators = new char[] { ',', ';' };
+
+		// Whether a pass name refers to this pass, counting names it was renamed from.
+		public bool NameMatches( string candidate )
+		{
+			if ( string.IsNullOrEmpty( candidate ) )
+			{
+				return false;
+			}
+
+			if ( candidate.Equals( m_passNameContainer.Data, StringComparison.OrdinalIgnoreCase ) )
+			{
+				return true;
+			}
+
+			for ( int i = 0; i < m_passNameAliases.Length; i++ )
+			{
+				if ( candidate.Equals( m_passNameAliases[ i ], StringComparison.OrdinalIgnoreCase ) )
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+
+		// Whether the pass name contains a value, counting names it was renamed from.
+		public bool NameContains( string value )
+		{
+			if ( m_passNameContainer.Data.Contains( value ) )
+			{
+				return true;
+			}
+
+			for ( int i = 0; i < m_passNameAliases.Length; i++ )
+			{
+				if ( m_passNameAliases[ i ].Contains( value ) )
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+
 		void FetchPassName( int offsetIdx, string body )
 		{
 			Match match = Regex.Match( body, TemplateHelperFunctions.PassNamePattern );
-			if( match != null && match.Groups.Count > 1 )
+			if( match != null && match.Groups.Count > 3 )
 			{
+				// @diogo: both markers sit inside the matched span, so the pass-name replacement
+				// consumes them and they never reach the generated shader
+				m_passNameImmutable = !string.IsNullOrEmpty( match.Groups[ 1 ].Value );
+				m_passNameAliases = match.Groups[ 2 ].Value.Split( PassNameAliasSeparators, StringSplitOptions.RemoveEmptyEntries );
+				for ( int i = 0; i < m_passNameAliases.Length; i++ )
+				{
+					m_passNameAliases[ i ] = m_passNameAliases[ i ].Trim();
+				}
 				m_passNameContainer.Id = match.Groups[ 0 ].Value;
-				m_passNameContainer.Data = match.Groups[ 1 ].Value;
+				m_passNameContainer.Data = match.Groups[ 3 ].Value;
 				m_passNameContainer.Index = offsetIdx + match.Index;
 			}
 		}
@@ -536,6 +593,7 @@ namespace AmplifyShaderEditor
 					int beginIndex = inputBeginIndexes[ i ] + beginTag.Length;
 					int length = inputEndIdx - beginIndex;
 					string inputData = body.Substring( beginIndex, length );
+					string tooltip = TemplateHelperFunctions.ExtractPortTooltip( ref inputData );
 					string[] inputDataArray = inputData.Split( IOUtils.FIELD_SEPARATOR );
 
 					if( inputDataArray != null && inputDataArray.Length > 0 )
@@ -554,13 +612,13 @@ namespace AmplifyShaderEditor
 									if( portUniqueId < 0 )
 										portUniqueId = m_inputDataList.Count;
 
-									m_inputDataList.Add( new TemplateInputData( inputBeginIndexes[ i ], offset + inputBeginIndexes[ i ], tagId, portName, defaultValue, dataType, portCategory, portUniqueId, portOrderId, string.Empty ) );
+									m_inputDataList.Add( new TemplateInputData( inputBeginIndexes[ i ], offset + inputBeginIndexes[ i ], tagId, portName, defaultValue, dataType, portCategory, portUniqueId, portOrderId, string.Empty, tooltip ) );
 									m_templateProperties.AddId( body, tagId, false );
 								}
 								else
 								{
 									portUniqueId = m_inputDataList.Count;
-									m_inputDataList.Add( new TemplateInputData( inputBeginIndexes[ i ], offset + inputBeginIndexes[ i ], tagId, portName, defaultValue, dataType, portCategory, portUniqueId, portOrderId, inputDataArray[ 2 ] ) );
+									m_inputDataList.Add( new TemplateInputData( inputBeginIndexes[ i ], offset + inputBeginIndexes[ i ], tagId, portName, defaultValue, dataType, portCategory, portUniqueId, portOrderId, inputDataArray[ 2 ], tooltip ) );
 									m_templateProperties.AddId( body, tagId, false );
 								}
 							}
@@ -578,7 +636,7 @@ namespace AmplifyShaderEditor
 
 								int portLinkIdx = (int)TemplatePortIds.Link;
 								string linkId = ( portLinkIdx < inputDataArray.Length ) ? inputDataArray[ portLinkIdx ] : string.Empty;
-								m_inputDataList.Add( new TemplateInputData( inputBeginIndexes[ i ], offset + inputBeginIndexes[ i ], tagId, portName, defaultValue, dataType, portCategory, portUniqueId, portOrderId, linkId ) );
+								m_inputDataList.Add( new TemplateInputData( inputBeginIndexes[ i ], offset + inputBeginIndexes[ i ], tagId, portName, defaultValue, dataType, portCategory, portUniqueId, portOrderId, linkId, tooltip ) );
 								m_templateProperties.AddId( body, tagId, false );
 							}
 						}
@@ -610,6 +668,8 @@ namespace AmplifyShaderEditor
 		public TemplateInfoContainer PassNameContainer { get { return m_passNameContainer; } }
 		public bool IsMainPass { get { return m_isMainPass; } set { m_isMainPass = value; } }
 		public bool IsInvisible { get { return m_isInvisible; } }
+		public bool PassNameImmutable { get { return m_passNameImmutable; } }
+		public string[] PassNameAliases { get { return m_passNameAliases; } }
 		public int InvisibleOptions { get { return m_invisibleOptions; } }
 		public int Idx { get { return m_idx; } }
 		public bool AddToList

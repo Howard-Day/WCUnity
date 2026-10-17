@@ -2,8 +2,8 @@ Shader "Hidden/SimpleContrastNode"
 {
 	Properties
 	{
-		_A ( "_RBG",  2D ) = "white" {}
-		_B ( "_Fraction",  2D ) = "white" {}
+		_A ( "_RBG",  2DArray ) = "white" {}
+		_B ( "_Fraction",  2DArray ) = "white" {}
 	}
 
 	SubShader
@@ -12,11 +12,13 @@ Shader "Hidden/SimpleContrastNode"
 		{
 			CGPROGRAM
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#pragma vertex vert_img
 			#pragma fragment frag
+			#pragma target 3.5
 
-			uniform sampler2D _A;
-			uniform sampler2D _B;
+			ASE_PORT( _A );
+			ASE_PORT( _B );
 			
 			float4 CalculateContrast ( float contrastValue, float4 colorTarget )
 			{
@@ -26,8 +28,8 @@ Shader "Hidden/SimpleContrastNode"
 
 			float4 frag ( v2f_img i ) : SV_Target
 			{
-				float4 rgba = tex2D ( _B, i.uv );
-				float value = tex2D ( _A, i.uv ).r;
+				float4 rgba = ASE_SAMPLE_PORT( _B, i.uv );
+				float value = ASE_SAMPLE_PORT( _A, i.uv ).r;
 
 				float4 finalColor = CalculateContrast( value , rgba );
 				

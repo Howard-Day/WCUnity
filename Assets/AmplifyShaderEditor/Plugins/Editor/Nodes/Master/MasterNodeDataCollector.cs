@@ -5,10 +5,13 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using System.Text;
 using System.Text.RegularExpressions;
+using Unity.Scripting.LifecycleManagement;
 
 namespace AmplifyShaderEditor
 {
+	[Serializable]
 	public class PropertyDataCollector
 	{
 		public int NodeId;
@@ -23,6 +26,29 @@ namespace AmplifyShaderEditor
 			PropertyName = propertyName;
 			OrderIndex = orderIndex;
 			IsDirective = isDirective;
+		}
+	}
+
+	// @diogo: a sampler state borrowed from another texture only binds on programs where that texture
+	// survives compilation, so its final name is decided per pass and program (#7, #549)
+	public class BorrowedSamplerData
+	{
+		public int NodeId;
+		public string DonorProperty;
+		public string DonorSampler;
+		public string FallbackSampler;
+		public string Token;
+		public bool DeclareFallback;
+		public bool OnVertexProgram;
+
+		public BorrowedSamplerData( int nodeId, string donorProperty, string donorSampler, string fallbackSampler, string token, bool declareFallback )
+		{
+			NodeId = nodeId;
+			DonorProperty = donorProperty;
+			DonorSampler = donorSampler;
+			FallbackSampler = fallbackSampler;
+			Token = token;
+			DeclareFallback = declareFallback;
 		}
 	}
 
@@ -86,6 +112,7 @@ namespace AmplifyShaderEditor
 		GRAD = 1 << 4,
 	}
 
+	[NoAutoStaticsCleanup]
 	public class MasterNodeDataCollector
 	{
 		private bool m_showDebugMessages = false;
@@ -100,19 +127,19 @@ namespace AmplifyShaderEditor
 		private string m_defines;
 		private string m_instructions;
 		private string m_localVariables;
-		private string m_vertexLocalVariables;
-		private string m_specialLocalVariables;
+		// @diogo: appended once per generated line, so strings here went quadratic on big graphs
+		private StringBuilder m_vertexLocalVariables = new StringBuilder();
+		private StringBuilder m_specialLocalVariables = new StringBuilder();
 		private string m_vertexData;
-		private string m_customOutput;
+		private StringBuilder m_customOutput = new StringBuilder();
 		private string m_functions;
+		private string m_structs;
 		private string m_grabPass;
 
 		private List<PropertyDataCollector> m_inputList;
 		private List<PropertyDataCollector> m_customInputList;
 		private List<PropertyDataCollector> m_propertiesList;
 		private List<PropertyDataCollector> m_instancedPropertiesList;
-		private List<PropertyDataCollector> m_dotsPropertiesList;
-		private List<PropertyDataCollector> m_dotsDefinesList;
 		private List<PropertyDataCollector> m_uniformsList;
 		private List<PropertyDataCollector> m_includesList;
 		private List<PropertyDataCollector> m_additionalDirectivesList;
@@ -139,7 +166,6 @@ namespace AmplifyShaderEditor
 		private Dictionary<string, PropertyDataCollector> m_customInputDict;
 		private Dictionary<string, PropertyDataCollector> m_propertiesDict;
 		private Dictionary<string, PropertyDataCollector> m_instancedPropertiesDict;
-		private Dictionary<string, PropertyDataCollector> m_dotsPropertiesDict;
 		private Dictionary<string, PropertyDataCollector> m_uniformsDict;
 		private Dictionary<string, PropertyDataCollector> m_softRegisteredUniformsDict;
 		private Dictionary<string, PropertyDataCollector> m_includesDict;
@@ -152,11 +178,16 @@ namespace AmplifyShaderEditor
 		private Dictionary<string, int> m_virtualCoordinatesDict;
 		private Dictionary<string, string> m_virtualVariablesDict;
 		private Dictionary<string, PropertyDataCollector> m_localVariablesDict;
+		private Dictionary<string, PropertyDataCollector> m_localVariablesByNameDict;
 		private Dictionary<string, PropertyDataCollector> m_vertexLocalVariablesDict;
+		private Dictionary<string, PropertyDataCollector> m_vertexLocalVariablesByNameDict;
 		private Dictionary<string, PropertyDataCollector> m_specialLocalVariablesDict;
+		private Dictionary<string, PropertyDataCollector> m_specialLocalVariablesByNameDict;
 		private Dictionary<string, PropertyDataCollector> m_vertexDataDict;
 		private Dictionary<string, PropertyDataCollector> m_customOutputDict;
+		private Dictionary<string, PropertyDataCollector> m_customOutputByNameDict;
 		private Dictionary<string, string> m_localFunctions;
+		private Dictionary<string, string> m_localStructs;
 		private Dictionary<string, string> m_grabPassDict;
 		private Dictionary<string, string> m_usePassesDict;
 		private Dictionary<string, string> m_customAppDataItemsDict;
@@ -241,6 +272,24 @@ namespace AmplifyShaderEditor
 		private RenderPath m_renderPath = RenderPath.All;
 		private NodeAvailability m_currentCanvasMode = NodeAvailability.SurfaceShader;
 
+		// @diogo: stage sides of the branch scope stacks, matching UIUtils.PortCategorytoAttayIdx (#365).
+		private const int VertexScopeSide = 0;
+		private const int FragmentScopeSide = 1;
+
+		// @diogo: everything below is created on the first pushed scope, so a compile that never branches pays nothing (#365).
+		private List<int>[] m_branchScopeStacks = null;
+		private Dictionary<int, int> m_branchScopeParents = null;
+		private Dictionary<string, List<int>> m_localVariablesScopes = null;
+		private Dictionary<string, List<int>> m_specialLocalVariablesScopes = null;
+		private Dictionary<string, List<int>> m_vertexLocalVariablesScopes = null;
+		private Dictionary<string, List<int>> m_customOutputScopes = null;
+		private HashSet<int> m_divergenceHazardNodes = null;
+		private HashSet<int> m_outOfScopeValueNodes = null;
+		private HashSet<int> m_uniformBranchScopes = null;
+		private Dictionary<int, string> m_branchScopeConditions = null;
+		private int m_branchScopeCounter = 0;
+		private int m_hazardDeclarationDepth = 0;
+
 		//Templates specific data
 		private AvailableShaderTypes m_masterNodeCategory;
 		private List<string> m_vertexInputList;
@@ -250,6 +299,63 @@ namespace AmplifyShaderEditor
 		private List<string> m_vertexInterpDeclList;
 		private Dictionary<string, string> m_vertexInterpDeclDict;
 		private TemplateDataCollector m_templateDataCollector;
+		private Dictionary<MasterNodePortCategory, Dictionary<ParentNode, StructFieldMask>> m_propagateNodeCache;
+
+		// @diogo: borrowed sampler states are emitted as tokens and only get their final name once the pass code
+		// is known, so we can tell whether the donor texture is still there to bind them; the trailing separator
+		// keeps a token from being a prefix of the next one, which string replacement would eat halfway (#7, #549)
+		private const string BorrowedSamplerTokenFormat = "ASEBSAMPLER_{0}_{1}_{2}_{3}_";
+		private Dictionary<string, BorrowedSamplerData> m_borrowedSamplers = new Dictionary<string, BorrowedSamplerData>();
+		private Dictionary<string, string> m_borrowedSamplerValues = new Dictionary<string, string>();
+		private List<BorrowedSamplerData> m_borrowedSamplerFallbacks = new List<BorrowedSamplerData>();
+		private List<string> m_vertexGeneratedCode = new List<string>();
+		private List<string> m_fragmentGeneratedCode = new List<string>();
+		private Dictionary<string, int> m_passWarnings = new Dictionary<string, int>();
+
+		public bool Touch( MasterNodePortCategory category, ParentNode node, StructFieldMask fields )
+		{
+			if ( !m_propagateNodeCache.TryGetValue( category, out Dictionary<ParentNode, StructFieldMask> propagateSet ) )
+			{
+				propagateSet = new Dictionary<ParentNode, StructFieldMask>();
+				m_propagateNodeCache.Add( category, propagateSet );
+			}
+
+			if ( !propagateSet.TryGetValue( node, out StructFieldMask stored ) )
+			{
+				// @diogo: not touched yet; cache miss
+				propagateSet.Add( node, fields );
+				return false;
+			}
+			else if ( stored.Covers( fields ) )
+			{
+				// @diogo: already touched; cache hit
+				return true;
+			}
+			else
+			{
+				// @diogo: a struct wire asked for fields this node has not forwarded yet
+				propagateSet[ node ] = stored.Union( fields );
+				return false;
+			}
+		}
+
+		// Whether the propagation pre-pass reached this node in any category of the current pass
+		public bool WasTouched( ParentNode node )
+		{
+			if ( m_propagateNodeCache == null )
+			{
+				return false;
+			}
+
+			foreach ( KeyValuePair<MasterNodePortCategory, Dictionary<ParentNode, StructFieldMask>> entry in m_propagateNodeCache )
+			{
+				if ( entry.Value.ContainsKey( node ) )
+				{
+					return true;
+				}
+			}
+			return false;
+		}
 
 		public MasterNodeDataCollector( MasterNode masterNode ) : this()
 		{
@@ -270,15 +376,11 @@ namespace AmplifyShaderEditor
 			m_pragmas = string.Empty;
 			m_defines = string.Empty;
 			m_localVariables = string.Empty;
-			m_specialLocalVariables = string.Empty;
-			m_customOutput = string.Empty;
 
 			m_inputList = new List<PropertyDataCollector>();
 			m_customInputList = new List<PropertyDataCollector>();
 			m_propertiesList = new List<PropertyDataCollector>();
 			m_instancedPropertiesList = new List<PropertyDataCollector>();
-			m_dotsPropertiesList = new List<PropertyDataCollector>();
-			m_dotsDefinesList = new List<PropertyDataCollector>();
 			m_uniformsList = new List<PropertyDataCollector>();
 			m_includesList = new List<PropertyDataCollector>();
 			m_additionalDirectivesList = new List<PropertyDataCollector>();
@@ -305,7 +407,6 @@ namespace AmplifyShaderEditor
 
 			m_propertiesDict = new Dictionary<string, PropertyDataCollector>();
 			m_instancedPropertiesDict = new Dictionary<string, PropertyDataCollector>();
-			m_dotsPropertiesDict = new Dictionary<string, PropertyDataCollector>();
 			m_uniformsDict = new Dictionary<string, PropertyDataCollector>();
 			m_softRegisteredUniformsDict = new Dictionary<string, PropertyDataCollector>();
 			m_includesDict = new Dictionary<string, PropertyDataCollector>();
@@ -317,12 +418,17 @@ namespace AmplifyShaderEditor
 			m_definesDict = new Dictionary<string, PropertyDataCollector>();
 			m_virtualCoordinatesDict = new Dictionary<string, int>();
 			m_localVariablesDict = new Dictionary<string, PropertyDataCollector>();
+			m_localVariablesByNameDict = new Dictionary<string, PropertyDataCollector>();
 			m_virtualVariablesDict = new Dictionary<string, string>();
 			m_specialLocalVariablesDict = new Dictionary<string, PropertyDataCollector>();
+			m_specialLocalVariablesByNameDict = new Dictionary<string, PropertyDataCollector>();
 			m_vertexLocalVariablesDict = new Dictionary<string, PropertyDataCollector>();
+			m_vertexLocalVariablesByNameDict = new Dictionary<string, PropertyDataCollector>();
 			m_localFunctions = new Dictionary<string, string>();
+			m_localStructs = new Dictionary<string, string>();
 			m_vertexDataDict = new Dictionary<string, PropertyDataCollector>();
 			m_customOutputDict = new Dictionary<string, PropertyDataCollector>();
+			m_customOutputByNameDict = new Dictionary<string, PropertyDataCollector>();
 			m_grabPassDict = new Dictionary<string, string>();
 			m_usePassesDict = new Dictionary<string, string>();
 
@@ -360,6 +466,8 @@ namespace AmplifyShaderEditor
 			m_vertexInterpDeclDict = new Dictionary<string, string>();
 
 			m_templateDataCollector = new TemplateDataCollector();
+
+			m_propagateNodeCache = new Dictionary<MasterNodePortCategory, Dictionary<ParentNode, StructFieldMask>>();
 		}
 
 		public void CopyTextureChannelSizeFrom( ref MasterNodeDataCollector dataCollector )
@@ -568,7 +676,7 @@ namespace AmplifyShaderEditor
 		{
 			if( string.IsNullOrEmpty( value ) )
 				return;
-					
+
 			if( !m_inputDict.ContainsKey( value ) )
 			{
 				m_inputDict.Add( value, new PropertyDataCollector( nodeId, value ,-1, !addSemiColon) );
@@ -628,6 +736,7 @@ namespace AmplifyShaderEditor
 				case WirePortDataType.FLOAT3: return -3;
 				case WirePortDataType.COLOR:
 				case WirePortDataType.FLOAT4: return -4;
+				case WirePortDataType.FLOAT2x2: return -8;
 				case WirePortDataType.FLOAT3x3: return -9;
 				case WirePortDataType.FLOAT4x4: return -16;
 				default:
@@ -683,16 +792,7 @@ namespace AmplifyShaderEditor
 			string prop = string.Format( IOUtils.DotsInstancedPropertiesData, UIUtils.PrecisionWirePortToCgType( precision, dataType ), value );
 			string define = string.Format( IOUtils.DotsInstancedDefinesData, UIUtils.PrecisionWirePortToCgType( precision, dataType ), value );
 
-			if( !m_dotsPropertiesDict.ContainsKey( value ) )
-			{
-				PropertyDataCollector dataColl = new PropertyDataCollector( nodeId, prop, orderIndex );
-				dataColl.DataType = dataType;
-				m_dotsPropertiesDict.Add( value, dataColl );
-				m_dotsPropertiesList.Add( dataColl );
-
-				dataColl = new PropertyDataCollector( nodeId, define, orderIndex );
-				m_dotsDefinesList.Add( dataColl );
-			}
+			m_templateDataCollector.AddDotsProperty( nodeId, prop, define, orderIndex );
 		}
 
 		public void AddToInstancedProperties( WirePortDataType dataType, int nodeId, string value, int orderIndex )
@@ -742,6 +842,7 @@ namespace AmplifyShaderEditor
 			}
 
 			m_templateDataCollector.CopySRPPropertiesFromDataCollector( -1, dataCollector.TemplateDataCollectorInstance );
+			m_templateDataCollector.CopyDotsPropertiesFromDataCollector( -1, dataCollector.TemplateDataCollectorInstance );
 		}
 
 		public void AddToProperties( int nodeId, string value, int orderIndex )
@@ -899,6 +1000,19 @@ namespace AmplifyShaderEditor
 				m_softRegisteredUniformsDict.Add( uniformName, newEntry );
 			}
 
+			// @diogo: the template owns this name whatever precision the graph is set to, so the half
+			// spelling must be reserved too or a Half graph redeclares a Float template uniform (#241)
+			if ( !data.IsMacro )
+			{
+				string halfUniformName = UIUtils.GenerateUniformName( excludeUniformKeyword, UIUtils.PrecisionWirePortToCgType( PrecisionType.Half, data.PropertyDataType ), data.PropertyName );
+				if ( !m_uniformsDict.ContainsKey( halfUniformName ) )
+				{
+					PropertyDataCollector halfEntry = new PropertyDataCollector( -1, halfUniformName );
+					m_uniformsDict.Add( halfUniformName, halfEntry );
+					m_softRegisteredUniformsDict.Add( halfUniformName, halfEntry );
+				}
+			}
+
 			string instancedUniform = GenerateInstanced( PrecisionType.Float, data.PropertyDataType, data.PropertyName );
 			if( !m_uniformsDict.ContainsKey( instancedUniform ) )
 			{
@@ -959,6 +1073,141 @@ namespace AmplifyShaderEditor
 			}
 		}
 
+		// @diogo: registers a sampler state taken from another texture, returning the token that stands in for it
+		// until the pass code reveals if the donor texture is used by the same program (#7, #549)
+		public string RegisterBorrowedSampler( int nodeId, string donorProperty, string donorSampler, string fallbackSampler, bool declareFallback )
+		{
+			if ( !( m_masterNode is TemplateMultiPassMasterNode passNode ) || donorSampler.Equals( fallbackSampler ) )
+			{
+				return donorSampler;
+			}
+
+			// @diogo: a node with no cached output regenerates once per consumer, so an indistinguishable borrow
+			// must hand back the same token or its lines read as unique text and slip past the emission dedup (#7, #549)
+			BorrowedSamplerData match = FindEquivalentBorrowedSampler( nodeId, donorProperty, donorSampler, fallbackSampler, declareFallback, null );
+			if ( match != null )
+			{
+				return match.Token;
+			}
+
+			string token = string.Format( BorrowedSamplerTokenFormat, passNode.SubShaderIdx, passNode.PassIdx, nodeId, m_borrowedSamplers.Count );
+			m_borrowedSamplers.Add( token, new BorrowedSamplerData( nodeId, donorProperty, donorSampler, fallbackSampler, token, declareFallback ) );
+			return token;
+		}
+
+		// @diogo: the node taking the sampler knows a better fallback than the donor could, so it gets to aim the
+		// pending decision at its own sampler instead of the donor's generic one, and to own the warning (#7, #549).
+		// Returns the token to write in the code, or null when there is no borrow behind it
+		public string RetargetBorrowedSampler( string token, int nodeId, string fallbackSampler, bool declareFallback )
+		{
+			if ( !m_borrowedSamplers.TryGetValue( token, out BorrowedSamplerData data ) )
+			{
+				return null;
+			}
+
+			data.NodeId = nodeId;
+			data.FallbackSampler = fallbackSampler;
+			data.DeclareFallback = declareFallback;
+
+			// @diogo: the donor mints a token per read, so the retarget is where a repeated borrow collapses
+			// back onto the one it already claimed (#7, #549)
+			BorrowedSamplerData match = FindEquivalentBorrowedSampler( nodeId, data.DonorProperty, data.DonorSampler, fallbackSampler, declareFallback, token );
+			if ( match != null )
+			{
+				m_borrowedSamplers.Remove( token );
+				return match.Token;
+			}
+
+			return token;
+		}
+
+		private BorrowedSamplerData FindEquivalentBorrowedSampler( int nodeId, string donorProperty, string donorSampler, string fallbackSampler, bool declareFallback, string ignoredToken )
+		{
+			foreach ( BorrowedSamplerData data in m_borrowedSamplers.Values )
+			{
+				if ( data.NodeId == nodeId && data.DeclareFallback == declareFallback && !data.Token.Equals( ignoredToken ) &&
+					data.DonorProperty.Equals( donorProperty ) && data.DonorSampler.Equals( donorSampler ) && data.FallbackSampler.Equals( fallbackSampler ) )
+				{
+					return data;
+				}
+			}
+			return null;
+		}
+
+		public void AddGeneratedCode( MasterNodePortCategory category, string code )
+		{
+			if ( category == MasterNodePortCategory.Vertex || category == MasterNodePortCategory.Tessellation )
+			{
+				m_vertexGeneratedCode.Add( code );
+			}
+			else
+			{
+				m_fragmentGeneratedCode.Add( code );
+			}
+		}
+
+		public void ResolveBorrowedSamplers( List<string> vertexInstructions, List<string> fragmentInstructions )
+		{
+			if ( m_borrowedSamplers.Count == 0 )
+			{
+				return;
+			}
+
+			string vertexCode = string.Join( "\n", m_vertexGeneratedCode ) + "\n" + string.Join( "\n", vertexInstructions );
+			string fragmentCode = string.Join( "\n", m_fragmentGeneratedCode ) + "\n" + string.Join( "\n", fragmentInstructions );
+
+			foreach ( BorrowedSamplerData data in m_borrowedSamplers.Values )
+			{
+				bool onVertex = vertexCode.Contains( data.Token );
+				bool onFragment = fragmentCode.Contains( data.Token );
+				if ( !onVertex && !onFragment )
+				{
+					continue;
+				}
+
+				bool donorSurvives = ( !onVertex || IsPropertyUsed( vertexCode, data.DonorProperty ) ) &&
+									( !onFragment || IsPropertyUsed( fragmentCode, data.DonorProperty ) );
+				if ( donorSurvives )
+				{
+					m_borrowedSamplerValues.Add( data.Token, data.DonorSampler );
+				}
+				else
+				{
+					data.OnVertexProgram = onVertex;
+					m_borrowedSamplerValues.Add( data.Token, data.FallbackSampler );
+					m_borrowedSamplerFallbacks.Add( data );
+
+					if ( data.DeclareFallback )
+					{
+						string format = UIUtils.CurrentWindow.OutsideGraph.IsSRP ? Constants.SamplerDeclSRPFormat : Constants.SamplerDeclFormat;
+						AddToUniforms( data.NodeId, string.Format( format, data.FallbackSampler ) + ";" );
+					}
+				}
+			}
+		}
+
+		// @diogo: a texture only survives compilation when its name is read as a texture, which rules out both
+		// its sampler and its companion uniforms since those keep the name glued to a longer identifier
+		private static bool IsPropertyUsed( string code, string property )
+		{
+			return Regex.IsMatch( code, @"\b" + Regex.Escape( property ) + @"\b" );
+		}
+
+		// @diogo: a warning raised while a pass generates is held until every pass is done, so one message can
+		// name all the passes it affects instead of the same text repeating once per pass. Keyed by text alone,
+		// since two messages that read the same are a duplicate no matter which node raised them
+		public void ShowPassWarning( int nodeId, string message )
+		{
+			if ( m_masterNode is TemplateMultiPassMasterNode )
+			{
+				m_passWarnings[ message ] = nodeId;
+			}
+			else
+			{
+				UIUtils.ShowMessage( nodeId, message, MessageSeverity.Warning );
+			}
+		}
+
 		public void AddASEMacros()
 		{
 			if( Using2DMacrosMask == MacrosMask.NONE && Using3DMacrosMask == MacrosMask.NONE && UsingCUBEMacrosMask == MacrosMask.NONE && Using2DArrayMacrosMask == MacrosMask.NONE )
@@ -968,7 +1217,7 @@ namespace AmplifyShaderEditor
 
 			//Debug.Log( UsingMacrosMask );
 			AddToDirectives( Constants.CustomASEStandarSamplingMacrosHelper[ 0 ], 1 );
-			
+
 			if( ( Using2DMacrosMask & MacrosMask.AUTO ) == MacrosMask.AUTO )
 				AddToDirectives( Constants.CustomASEStandarSamplingMacrosRecent[ 0 ], 1 );
 			if( ( Using2DMacrosMask & MacrosMask.LOD ) == MacrosMask.LOD )
@@ -1136,7 +1385,10 @@ namespace AmplifyShaderEditor
 			return m_pragmasDict.ContainsKey( value );
 		}
 
-		public void AddToPragmas( int nodeId, string value )
+		// @diogo: condition, when set, is emitted verbatim as a "#if <condition>" guard around the pragma
+		// (e.g. "UNITY_VERSION >= 60000100", "UNITY_VERSION >= 60000100 && UNITY_VERSION < 60010000", "defined( FOO )")
+		// so a single generated shader stays cross-compatible across SRP sub-versions (e.g. all of 17.x).
+		public void AddToPragmas( int nodeId, string value, string condition = null )
 		{
 			if( string.IsNullOrEmpty( value ) )
 				return;
@@ -1149,7 +1401,11 @@ namespace AmplifyShaderEditor
 
 			if( !m_pragmasDict.ContainsKey( value ) )
 			{
-				string finalValue = "#pragma " + value;
+				bool conditional = !string.IsNullOrEmpty( condition );
+				// continuation lines are left unindented on purpose: the template's tag indentation is applied per-line on output
+				string finalValue = conditional
+					? "#if " + condition + "\n#pragma " + value + "\n#endif"
+					: "#pragma " + value;
 				PropertyDataCollector dataCollector = new PropertyDataCollector( nodeId , finalValue );
 
 				//Adding both versions to dict so check can take both into account
@@ -1157,7 +1413,9 @@ namespace AmplifyShaderEditor
 				m_pragmasDict.Add( finalValue , dataCollector );
 
 				m_pragmasList.Add( m_pragmasDict[ value ] );
-				m_pragmas += "\t\t#pragma " + value + "\n";
+				m_pragmas += conditional
+					? "\t\t#if " + condition + "\n\t\t#pragma " + value + "\n\t\t#endif\n"
+					: "\t\t#pragma " + value + "\n";
 				m_dirtyPragmas = true;
 			}
 			else
@@ -1206,7 +1464,7 @@ namespace AmplifyShaderEditor
 			if( !m_virtualCoordinatesDict.ContainsKey( coord ) )
 			{
 				m_virtualCoordinatesDict.Add( coord, nodeId );
-				AddLocalVariable( nodeId, "VirtualCoord " + Constants.VirtualCoordNameStr + nodeId + " = VTComputeVirtualCoord" + lodBias + "(" + coord + ");" );
+				AddLocalVariable( nodeId, "VirtualCoord " + Constants.VirtualCoordNameStr + nodeId + " = VTComputeVirtualCoord" + lodBias + "( " + coord + " );" );
 				return nodeId;
 			}
 			else
@@ -1223,7 +1481,7 @@ namespace AmplifyShaderEditor
 				return false;
 
 			string value = UIUtils.PrecisionWirePortToCgType( precisionType, type ) + " " + varName + " = " + varValue + ";";
-			return AddToLocalVariables( category, nodeId, value );
+			return AddToLocalVariables( category, nodeId, value, varName: varName );
 		}
 
 		public bool AddToLocalVariables( int nodeId, PrecisionType precisionType, WirePortDataType type, string varName, string varValue )
@@ -1232,10 +1490,10 @@ namespace AmplifyShaderEditor
 				return false;
 
 			string value = UIUtils.PrecisionWirePortToCgType( precisionType, type ) + " " + varName + " = " + varValue + ";";
-			return AddToFragmentLocalVariables( nodeId, value );
+			return AddToFragmentLocalVariables( nodeId, value, varName: varName );
 		}
 
-		public bool AddToLocalVariables( MasterNodePortCategory category, int nodeId, string value, bool ignoreDuplicates = false )
+		public bool AddToLocalVariables( MasterNodePortCategory category, int nodeId, string value, bool ignoreDuplicates = false, string varName = "" )
 		{
 			if( string.IsNullOrEmpty( value ) )
 				return false;
@@ -1245,12 +1503,12 @@ namespace AmplifyShaderEditor
 				case MasterNodePortCategory.Vertex:
 				case MasterNodePortCategory.Tessellation:
 				{
-					return AddToVertexLocalVariables( nodeId, value, ignoreDuplicates );
+					return AddToVertexLocalVariables( nodeId, value, ignoreDuplicates, varName );
 				}
 				case MasterNodePortCategory.Fragment:
 				case MasterNodePortCategory.Debug:
 				{
-					return AddToFragmentLocalVariables( nodeId, value, ignoreDuplicates );
+					return AddToFragmentLocalVariables( nodeId, value, ignoreDuplicates, varName );
 				}
 			}
 
@@ -1263,43 +1521,7 @@ namespace AmplifyShaderEditor
 				return false;
 
 			string value = customType + " " + varName + " = " + varValue + ";";
-			return AddLocalVariable( nodeId, value );
-		}
-
-		private bool UsedLocalVariable( string value )
-		{
-			switch( m_portCategory )
-			{
-				case MasterNodePortCategory.Vertex:
-				case MasterNodePortCategory.Tessellation:
-				{
-					if( m_vertexLocalVariablesDict.ContainsKey( value ) )
-					{
-						return true;
-					}
-				}
-				break;
-				case MasterNodePortCategory.Fragment:
-				case MasterNodePortCategory.Debug:
-				{
-					if( m_usingCustomOutput )
-					{
-						if( m_customOutputDict.ContainsKey( value ) )
-						{
-							return true;
-						}
-					}
-					else
-					{
-						if( m_localVariablesDict.ContainsKey( value ) )
-						{
-							return true;
-						}
-					}
-				}
-				break;
-			}
-			return false;
+			return AddLocalVariable( nodeId, value, varName: varName );
 		}
 
 		private bool ValidadeLocalVariable( PrecisionType precisionType, WirePortDataType type, string varName, string varValue, ref string result )
@@ -1308,7 +1530,7 @@ namespace AmplifyShaderEditor
 			foreach( PrecisionType currPrecision in enumValues)
 			{
 				string value = UIUtils.PrecisionWirePortToTypeValue( currPrecision, type, varName ) + " = " + varValue + ";";
-				if( UsedLocalVariable( value ) )
+				if( HasLocalVariable( value ) )
 					return false;
 
 				if( precisionType == currPrecision )
@@ -1320,39 +1542,43 @@ namespace AmplifyShaderEditor
 
 		public bool AddLocalVariable( int nodeId, PrecisionType precisionType, WirePortDataType type, string varName, string varValue )
 		{
-			if( string.IsNullOrEmpty( varName ) || string.IsNullOrEmpty( varValue ) )
+			if ( string.IsNullOrEmpty( varName ) || string.IsNullOrEmpty( varValue ) )
+			{
 				return false;
+			}
 
-			//string value = UIUtils.PrecisionWirePortToTypeValue( precisionType, type, varName ) + " = " + varValue + ";";
 			string value = string.Empty;
-			if( ValidadeLocalVariable(  precisionType, type, varName, varValue, ref value))
-				return AddLocalVariable( nodeId, value );
-
+			if ( ValidadeLocalVariable( precisionType, type, varName, varValue, ref value ) )
+			{
+				return AddLocalVariable( nodeId, value, varName: varName );
+			}
 			return false;
 		}
 
-		public bool AddLocalVariable( int nodeId, string name, string value, bool ignoreDuplicates = false , bool addSemiColon = false )
+		public bool AddLocalVariable( int nodeId, string varName, string varValue, bool ignoreDuplicates = false, bool addSemiColon = false )
 		{
-			string finalValue = addSemiColon ? name + " = " + value + ";" : name + " = " + value;
-			return AddLocalVariable( nodeId, finalValue, ignoreDuplicates );
+			string finalValue = addSemiColon ? varName + " = " + varValue + ";" : varName + " = " + varValue;
+			return AddLocalVariable( nodeId, finalValue, ignoreDuplicates, varName: varName );
 		}
 
-		public bool AddLocalVariable( int nodeId, string value, bool ignoreDuplicates = false )
+		public bool AddLocalVariable( int nodeId, string value, bool ignoreDuplicates = false, string varName = "" )
 		{
-			if( string.IsNullOrEmpty( value ) )
+			if ( string.IsNullOrEmpty( value ) )
+			{
 				return false;
+			}
 
-			switch( m_portCategory )
+			switch ( m_portCategory )
 			{
 				case MasterNodePortCategory.Vertex:
 				case MasterNodePortCategory.Tessellation:
 				{
-					return AddToVertexLocalVariables( nodeId, value, ignoreDuplicates );
+					return AddToVertexLocalVariables( nodeId, value, ignoreDuplicates, varName );
 				}
 				case MasterNodePortCategory.Fragment:
 				case MasterNodePortCategory.Debug:
 				{
-					return AddToFragmentLocalVariables( nodeId, value, ignoreDuplicates );
+					return AddToFragmentLocalVariables( nodeId, value, ignoreDuplicates, varName );
 				}
 			}
 
@@ -1366,16 +1592,6 @@ namespace AmplifyShaderEditor
 
 			string result = string.Empty;
 
-			//switch ( m_portCategory )
-			//{
-			//case MasterNodePortCategory.Vertex:
-			//case MasterNodePortCategory.Tessellation:
-			//{
-			//}
-			//break;
-			//case MasterNodePortCategory.Fragment:
-			//case MasterNodePortCategory.Debug:
-			//{
 			if( !m_virtualVariablesDict.ContainsKey( value ) )
 			{
 				m_virtualVariablesDict.Add( value, variable );
@@ -1385,10 +1601,6 @@ namespace AmplifyShaderEditor
 			{
 				m_virtualVariablesDict.TryGetValue( value, out result );
 			}
-			//}
-			//break;
-			//}
-
 			return result;
 		}
 
@@ -1404,106 +1616,444 @@ namespace AmplifyShaderEditor
 			}
 		}
 
+		// @diogo: collector currently emitting scoped code, so OutputPort can reach it without holding a reference (#365).
+		public static MasterNodeDataCollector ActiveScopeCollector { get; private set; }
+
+		public int PushBranchScope( bool uniformCondition = false, string preprocessorCondition = null )
+		{
+			if ( m_branchScopeStacks == null )
+			{
+				m_branchScopeStacks = new List<int>[] { new List<int>(), new List<int>() };
+				m_branchScopeParents = new Dictionary<int, int>();
+			}
+
+			if ( ActiveScopeCollector != this )
+			{
+				if ( ActiveScopeCollector != null && ActiveScopeCollector.HasOpenBranchScope )
+				{
+					Debug.LogWarning( "[AmplifyShaderEditor] Opening a branch scope while another data collector is still active." );
+				}
+				ActiveScopeCollector = this;
+			}
+
+			List<int> stack = m_branchScopeStacks[ UIUtils.PortCategorytoAttayIdx( m_portCategory ) ];
+			int scope = ++m_branchScopeCounter;
+			m_branchScopeParents.Add( scope, stack.Count > 0 ? stack[ stack.Count - 1 ] : 0 );
+			stack.Add( scope );
+
+			if ( uniformCondition )
+			{
+				if ( m_uniformBranchScopes == null )
+				{
+					m_uniformBranchScopes = new HashSet<int>();
+				}
+				m_uniformBranchScopes.Add( scope );
+			}
+
+			if ( preprocessorCondition != null )
+			{
+				if ( m_branchScopeConditions == null )
+				{
+					m_branchScopeConditions = new Dictionary<int, string>();
+				}
+				m_branchScopeConditions.Add( scope, preprocessorCondition );
+			}
+
+			return scope;
+		}
+
+		// Conjunction of the open fragment scopes' preprocessor conditions, outermost first; empty when unconditional
+		public List<string> GetFragmentPreprocessorConditions()
+		{
+			List<string> conditions = new List<string>();
+			if ( m_branchScopeStacks != null && m_branchScopeConditions != null )
+			{
+				List<int> stack = m_branchScopeStacks[ FragmentScopeSide ];
+				for ( int i = 0; i < stack.Count; i++ )
+				{
+					if ( m_branchScopeConditions.TryGetValue( stack[ i ], out string condition ) )
+					{
+						conditions.Add( condition );
+					}
+				}
+			}
+			return conditions;
+		}
+
+		// @diogo: a uniform scope keeps the quad together, but a divergent one anywhere in the open stack
+		// still makes the flow divergent for everything nested inside it (#365)
+		private bool InsideDivergentFragmentScope
+		{
+			get
+			{
+				bool divergent = false;
+				if ( m_branchScopeStacks != null )
+				{
+					List<int> stack = m_branchScopeStacks[ FragmentScopeSide ];
+					for ( int i = 0; i < stack.Count && !divergent; i++ )
+					{
+						divergent = m_uniformBranchScopes == null || !m_uniformBranchScopes.Contains( stack[ i ] );
+					}
+				}
+				return divergent;
+			}
+		}
+
+		public void PopBranchScope()
+		{
+			if ( m_branchScopeStacks == null )
+			{
+				return;
+			}
+
+			List<int> stack = m_branchScopeStacks[ UIUtils.PortCategorytoAttayIdx( m_portCategory ) ];
+			if ( stack.Count > 0 )
+			{
+				stack.RemoveAt( stack.Count - 1 );
+			}
+
+			// @diogo: stays registered after the last pop so the port safety net covers post-branch reads; cleared on Destroy (#365).
+		}
+
+		public void PushHazardDeclarations()
+		{
+			m_hazardDeclarationDepth++;
+		}
+
+		public void PopHazardDeclarations()
+		{
+			m_hazardDeclarationDepth--;
+		}
+
+		// @diogo: while pre-generating above a conditional, a derivative-dependent value must declare even at
+		// fan-out 1, otherwise it inlines and its text lands inside the branch braces instead (#365)
+		public bool RequiresHazardDeclaration( ParentNode node )
+		{
+			return m_hazardDeclarationDepth > 0 && BranchScopeUtils.IsDerivativeDependent( node );
+		}
+
+		public int CurrentBranchScope { get { return CurrentBranchScopeOnSide( UIUtils.PortCategorytoAttayIdx( m_portCategory ) ); } }
+
+		public bool InsideBranchScope { get { return CurrentBranchScope != 0; } }
+
+		public int CurrentBranchScopeOnCategory( MasterNodePortCategory category )
+		{
+			return CurrentBranchScopeOnSide( UIUtils.PortCategorytoAttayIdx( category ) );
+		}
+
+		// @diogo: one extra tab per open branch scope; surface-path sinks keep it, template paths strip and recompute it (#365).
+		private string BranchScopeIndentOnSide( int sideIdx )
+		{
+			if ( m_branchScopeStacks == null || m_branchScopeStacks[ sideIdx ].Count == 0 )
+			{
+				return string.Empty;
+			}
+
+			return new string( '\t', m_branchScopeStacks[ sideIdx ].Count );
+		}
+
+		private bool HasOpenBranchScope { get { return m_branchScopeStacks != null && ( m_branchScopeStacks[ VertexScopeSide ].Count > 0 || m_branchScopeStacks[ FragmentScopeSide ].Count > 0 ); } }
+
+		private int CurrentBranchScopeOnSide( int sideIdx )
+		{
+			int scope = 0;
+			if ( m_branchScopeStacks != null )
+			{
+				List<int> stack = m_branchScopeStacks[ sideIdx ];
+				if ( stack.Count > 0 )
+				{
+					scope = stack[ stack.Count - 1 ];
+				}
+			}
+			return scope;
+		}
+
+		internal bool IsBranchScopeVisibleFrom( int candidateScope, int fromScope )
+		{
+			bool visible = candidateScope == 0 || candidateScope == fromScope;
+			if ( !visible && m_branchScopeParents != null )
+			{
+				int ancestor = fromScope;
+				while ( !visible && m_branchScopeParents.TryGetValue( ancestor, out int parent ) && parent != 0 )
+				{
+					visible = parent == candidateScope;
+					ancestor = parent;
+				}
+			}
+			return visible;
+		}
+
+		public void NotifyDivergenceHazard( int nodeId )
+		{
+			if ( !InsideDivergentFragmentScope )
+			{
+				return;
+			}
+
+			if ( m_divergenceHazardNodes == null )
+			{
+				m_divergenceHazardNodes = new HashSet<int>();
+			}
+
+			if ( m_divergenceHazardNodes.Add( nodeId ) )
+			{
+				UIUtils.ShowMessage( nodeId, "A derivative-dependent instruction was emitted inside a runtime branch scope and the hazard scan missed it. The generated shader may fail to compile.", MessageSeverity.Warning );
+			}
+		}
+
+		internal void NotifyOutOfScopeLocalValue( int nodeId )
+		{
+			if ( m_outOfScopeValueNodes == null )
+			{
+				m_outOfScopeValueNodes = new HashSet<int>();
+			}
+
+			if ( m_outOfScopeValueNodes.Add( nodeId ) )
+			{
+				UIUtils.ShowMessage( nodeId, "An output value was referenced outside the branch scope it was generated in and is being regenerated. The shader is still correct but code is duplicated.", MessageSeverity.Warning );
+			}
+		}
+
+		// @diogo: a line without a scope record only ever landed at root, so it is visible from everywhere (#365).
+		private bool IsLineVisibleFromScope( Dictionary<string, List<int>> lineScopes, string value, int sideIdx )
+		{
+			bool visible = true;
+			if ( lineScopes != null && lineScopes.TryGetValue( value, out List<int> scopes ) )
+			{
+				visible = false;
+				int fromScope = CurrentBranchScopeOnSide( sideIdx );
+				for ( int i = 0; i < scopes.Count && !visible; i++ )
+				{
+					visible = IsBranchScopeVisibleFrom( scopes[ i ], fromScope );
+				}
+			}
+			return visible;
+		}
+
+		// @diogo: seeds root for lines added before this sink had any record, otherwise they would read as scope-only (#365).
+		private void RecordLineScope( ref Dictionary<string, List<int>> lineScopes, string value, int scope, bool wasAlreadyPresent )
+		{
+			if ( lineScopes == null )
+			{
+				if ( scope == 0 )
+				{
+					return;
+				}
+				lineScopes = new Dictionary<string, List<int>>();
+			}
+
+			if ( !lineScopes.TryGetValue( value, out List<int> scopes ) )
+			{
+				scopes = new List<int>();
+				if ( wasAlreadyPresent )
+				{
+					scopes.Add( 0 );
+				}
+				lineScopes.Add( value, scopes );
+			}
+
+			if ( !scopes.Contains( scope ) )
+			{
+				scopes.Add( scope );
+			}
+		}
+
 		public bool HasLocalVariable( string value )
 		{
-			switch( m_portCategory )
+			return HasLocalVariable( value, m_portCategory );
+		}
+
+		public bool HasLocalVariable( string value, MasterNodePortCategory category )
+		{
+			switch( category )
 			{
 				case MasterNodePortCategory.Vertex:
 				case MasterNodePortCategory.Tessellation:
 				{
-					return m_vertexLocalVariablesDict.ContainsKey( value );
+					return m_vertexLocalVariablesDict.ContainsKey( value ) && IsLineVisibleFromScope( m_vertexLocalVariablesScopes, value, VertexScopeSide );
 				}
 				case MasterNodePortCategory.Fragment:
 				case MasterNodePortCategory.Debug:
 				{
 					if( m_usingCustomOutput )
 					{
-						return m_customOutputDict.ContainsKey( value );
+						return m_customOutputDict.ContainsKey( value ) && IsLineVisibleFromScope( m_customOutputScopes, value, FragmentScopeSide );
 					}
 					else
 					{
-						return m_localVariablesDict.ContainsKey( value );
+						return m_localVariablesDict.ContainsKey( value ) && IsLineVisibleFromScope( m_localVariablesScopes, value, FragmentScopeSide );
 					}
 				}
 			}
 			return false;
 		}
 
-		public bool AddToFragmentLocalVariables( int nodeId, string value, bool ignoreDuplicates = false )
+		// Whether a local of this name was declared on the side of the category, in any branch scope
+		public bool HasLocalVariableDeclared( string varName, MasterNodePortCategory category )
 		{
-			if( string.IsNullOrEmpty( value ) )
-				return false;
-
-			if( m_usingCustomOutput )
+			switch ( category )
 			{
-				if( !m_customOutputDict.ContainsKey( value ) || ignoreDuplicates )
+				case MasterNodePortCategory.Vertex:
+				case MasterNodePortCategory.Tessellation:
 				{
-					if( !m_customOutputDict.ContainsKey( value ) )
-						m_customOutputDict.Add( value, new PropertyDataCollector( nodeId, value ) );
+					return m_vertexLocalVariablesByNameDict.ContainsKey( varName );
+				}
+				case MasterNodePortCategory.Fragment:
+				case MasterNodePortCategory.Debug:
+				{
+					return m_usingCustomOutput ? m_customOutputByNameDict.ContainsKey( varName ) : m_localVariablesByNameDict.ContainsKey( varName );
+				}
+			}
+			return false;
+		}
+
+		public bool HasLocalVariableByName( string varName )
+		{
+			return HasLocalVariableByName( varName, m_portCategory );
+		}
+
+		public bool HasLocalVariableByName( string varName, MasterNodePortCategory category )
+		{
+			switch ( category )
+			{
+				case MasterNodePortCategory.Vertex:
+				case MasterNodePortCategory.Tessellation:
+				{
+					return m_vertexLocalVariablesByNameDict.TryGetValue( varName, out PropertyDataCollector vertexVar ) && IsLineVisibleFromScope( m_vertexLocalVariablesScopes, vertexVar.PropertyName, VertexScopeSide );
+				}
+				case MasterNodePortCategory.Fragment:
+				case MasterNodePortCategory.Debug:
+				{
+					if ( m_usingCustomOutput )
+					{
+						return m_customOutputByNameDict.TryGetValue( varName, out PropertyDataCollector customVar ) && IsLineVisibleFromScope( m_customOutputScopes, customVar.PropertyName, FragmentScopeSide );
+					}
+					else
+					{
+						return m_localVariablesByNameDict.TryGetValue( varName, out PropertyDataCollector fragmentVar ) && IsLineVisibleFromScope( m_localVariablesScopes, fragmentVar.PropertyName, FragmentScopeSide );
+					}
+				}
+			}
+			return false;
+		}
+
+		public bool AddToFragmentLocalVariables( int nodeId, string value, bool ignoreDuplicates = false, string varName = "" )
+		{
+			if ( string.IsNullOrEmpty( value ) )
+			{
+				return false;
+			}
+
+			if ( m_usingCustomOutput )
+			{
+				if ( !m_customOutputDict.ContainsKey( value ) || ignoreDuplicates || !IsLineVisibleFromScope( m_customOutputScopes, value, FragmentScopeSide ) )
+				{
+					bool alreadyPresent = m_customOutputDict.TryGetValue( value, out PropertyDataCollector property );
+					if ( !alreadyPresent )
+					{
+						property = new PropertyDataCollector( nodeId, value );
+						m_customOutputDict.Add( value, property );
+					}
+
+					if ( !string.IsNullOrEmpty( varName ) && !m_customOutputByNameDict.ContainsKey( varName ) )
+					{
+						m_customOutputByNameDict.Add( varName, property );
+					}
 
 					m_customOutputList.Add( m_customOutputDict[ value ] );
-					m_customOutput += "\t\t\t" + value + '\n';
+					m_customOutput.Append( "\t\t\t" ).Append( BranchScopeIndentOnSide( FragmentScopeSide ) ).Append( value ).Append( '\n' );
+					RecordLineScope( ref m_customOutputScopes, value, CurrentBranchScopeOnSide( FragmentScopeSide ), alreadyPresent );
 					return true;
 				}
 				else
 				{
-					if( m_showDebugMessages ) UIUtils.ShowMessage( "AddToLocalVariables:Attempting to add duplicate " + value, MessageSeverity.Warning );
+					if ( m_showDebugMessages ) UIUtils.ShowMessage( "AddToLocalVariables:Attempting to add duplicate " + value, MessageSeverity.Warning );
 				}
 			}
 			else
 			{
-				if( !m_localVariablesDict.ContainsKey( value ) || ignoreDuplicates )
+				if ( !m_localVariablesDict.ContainsKey( value ) || ignoreDuplicates || !IsLineVisibleFromScope( m_localVariablesScopes, value, FragmentScopeSide ) )
 				{
-					if( !m_localVariablesDict.ContainsKey( value ) )
-						m_localVariablesDict.Add( value, new PropertyDataCollector( nodeId, value ) );
+					bool alreadyPresent = m_localVariablesDict.TryGetValue( value, out PropertyDataCollector property );
+					if ( !alreadyPresent )
+					{
+						property = new PropertyDataCollector( nodeId, value );
+						m_localVariablesDict.Add( value, property );
+					}
+
+					if ( !string.IsNullOrEmpty( varName ) && !m_localVariablesByNameDict.ContainsKey( varName ) )
+					{
+						m_localVariablesByNameDict.Add( varName, property );
+					}
 
 					m_localVariablesList.Add( m_localVariablesDict[ value ] );
+					RecordLineScope( ref m_localVariablesScopes, value, CurrentBranchScopeOnSide( FragmentScopeSide ), alreadyPresent );
 					AddToSpecialLocalVariables( nodeId, value, ignoreDuplicates );
 					return true;
 				}
 				else
 				{
-					if( m_showDebugMessages ) UIUtils.ShowMessage( "AddToLocalVariables:Attempting to add duplicate " + value, MessageSeverity.Warning );
+					if ( m_showDebugMessages ) UIUtils.ShowMessage( "AddToLocalVariables:Attempting to add duplicate " + value, MessageSeverity.Warning );
 				}
 			}
 			return false;
 		}
 
-		public void AddToSpecialLocalVariables( int nodeId, string value, bool ignoreDuplicates = false )
+		public void AddToSpecialLocalVariables( int nodeId, string value, bool ignoreDuplicates = false, string varName = "" )
 		{
-			if( string.IsNullOrEmpty( value ) )
+			if ( string.IsNullOrEmpty( value ) )
 				return;
 
-			if( m_usingCustomOutput )
+			if ( m_usingCustomOutput )
 			{
-				if( !m_customOutputDict.ContainsKey( value ) || ignoreDuplicates )
+				if ( !m_customOutputDict.ContainsKey( value ) || ignoreDuplicates || !IsLineVisibleFromScope( m_customOutputScopes, value, FragmentScopeSide ) )
 				{
-					if( !m_customOutputDict.ContainsKey( value ) )
-						m_customOutputDict.Add( value, new PropertyDataCollector( nodeId, value ) );
+					bool alreadyPresent = m_customOutputDict.TryGetValue( value, out PropertyDataCollector property );
+					if ( !alreadyPresent )
+					{
+						property = new PropertyDataCollector( nodeId, value );
+						m_customOutputDict.Add( value, property );
+					}
+
+					if ( !string.IsNullOrEmpty( varName ) && !m_customOutputByNameDict.ContainsKey( varName ) )
+					{
+						m_customOutputByNameDict.Add( varName, property );
+					}
 
 					m_customOutputList.Add( m_customOutputDict[ value ] );
-					m_customOutput += "\t\t\t" + value + '\n';
+					m_customOutput.Append( "\t\t\t" ).Append( BranchScopeIndentOnSide( FragmentScopeSide ) ).Append( value ).Append( '\n' );
+					RecordLineScope( ref m_customOutputScopes, value, CurrentBranchScopeOnSide( FragmentScopeSide ), alreadyPresent );
 					m_dirtySpecialLocalVariables = true;
 				}
 				else
 				{
-					if( m_showDebugMessages ) UIUtils.ShowMessage( "AddToSpecialLocalVariables:Attempting to add duplicate " + value, MessageSeverity.Warning );
+					if ( m_showDebugMessages ) UIUtils.ShowMessage( "AddToSpecialLocalVariables:Attempting to add duplicate " + value, MessageSeverity.Warning );
 				}
 			}
 			else
 			{
-				if( !m_specialLocalVariablesDict.ContainsKey( value ) || ignoreDuplicates )
+				if ( !m_specialLocalVariablesDict.ContainsKey( value ) || ignoreDuplicates || !IsLineVisibleFromScope( m_specialLocalVariablesScopes, value, FragmentScopeSide ) )
 				{
-					if( !m_specialLocalVariablesDict.ContainsKey( value ) )
-						m_specialLocalVariablesDict.Add( value, new PropertyDataCollector( nodeId, value ) );
+					bool alreadyPresent = m_specialLocalVariablesDict.TryGetValue( value, out PropertyDataCollector property );
+					if ( !alreadyPresent )
+					{
+						property = new PropertyDataCollector( nodeId, value );
+						m_specialLocalVariablesDict.Add( value, property );
+					}
+
+					if ( !string.IsNullOrEmpty( varName ) && !m_specialLocalVariablesByNameDict.ContainsKey( varName ) )
+					{
+						m_specialLocalVariablesByNameDict.Add( varName, property );
+					}
 
 					m_specialLocalVariablesList.Add( m_specialLocalVariablesDict[ value ] );
-					m_specialLocalVariables += "\t\t\t" + value + '\n';
+					m_specialLocalVariables.Append( "\t\t\t" ).Append( BranchScopeIndentOnSide( FragmentScopeSide ) ).Append( value ).Append( '\n' );
+					RecordLineScope( ref m_specialLocalVariablesScopes, value, CurrentBranchScopeOnSide( FragmentScopeSide ), alreadyPresent );
 					m_dirtySpecialLocalVariables = true;
 				}
 				else
 				{
-					if( m_showDebugMessages ) UIUtils.ShowMessage( "AddToSpecialLocalVariables:Attempting to add duplicate " + value, MessageSeverity.Warning );
+					if ( m_showDebugMessages ) UIUtils.ShowMessage( "AddToSpecialLocalVariables:Attempting to add duplicate " + value, MessageSeverity.Warning );
 				}
 			}
 		}
@@ -1511,46 +2061,56 @@ namespace AmplifyShaderEditor
 		public void ClearSpecialLocalVariables()
 		{
 			//m_specialLocalVariablesDict.Clear();
-			m_specialLocalVariables = string.Empty;
+			m_specialLocalVariables.Length = 0;
 			m_dirtySpecialLocalVariables = false;
 		}
 
 		public bool AddToVertexLocalVariables( int nodeId, string varName, string varValue )
 		{
-			if( string.IsNullOrEmpty( varName ) || string.IsNullOrEmpty( varValue ) )
+			if ( string.IsNullOrEmpty( varName ) || string.IsNullOrEmpty( varValue ) )
 				return false;
 
 			string value = varName + " = " + varValue + ";";
-			return AddToVertexLocalVariables( nodeId, value );
+			return AddToVertexLocalVariables( nodeId, value, varName: varName );
 		}
 
 		public bool AddToVertexLocalVariables( int nodeId, PrecisionType precisionType, WirePortDataType type, string varName, string varValue )
 		{
-			if( string.IsNullOrEmpty( varName ) || string.IsNullOrEmpty( varValue ) )
+			if ( string.IsNullOrEmpty( varName ) || string.IsNullOrEmpty( varValue ) )
 				return false;
 
 			string value = UIUtils.PrecisionWirePortToCgType( precisionType, type ) + " " + varName + " = " + varValue + ";";
-			return AddToVertexLocalVariables( nodeId, value );
+			return AddToVertexLocalVariables( nodeId, value, varName: varName );
 		}
 
-		public bool AddToVertexLocalVariables( int nodeId, string value, bool ignoreDuplicates = false )
+		public bool AddToVertexLocalVariables( int nodeId, string value, bool ignoreDuplicates = false, string varName = "" )
 		{
-			if( string.IsNullOrEmpty( value ) )
+			if ( string.IsNullOrEmpty( value ) )
 				return false;
 
-			if( !m_vertexLocalVariablesDict.ContainsKey( value ) || ignoreDuplicates )
+			if ( !m_vertexLocalVariablesDict.ContainsKey( value ) || ignoreDuplicates || !IsLineVisibleFromScope( m_vertexLocalVariablesScopes, value, VertexScopeSide ) )
 			{
-				if( !m_vertexLocalVariablesDict.ContainsKey( value ) )
-					m_vertexLocalVariablesDict.Add( value, new PropertyDataCollector( nodeId, value ) );
+				bool alreadyPresent = m_vertexLocalVariablesDict.TryGetValue( value, out PropertyDataCollector property );
+				if ( !alreadyPresent )
+				{
+					property = new PropertyDataCollector( nodeId, value );
+					m_vertexLocalVariablesDict.Add( value, property  );
+				}
+
+				if ( !string.IsNullOrEmpty( varName ) && !m_vertexLocalVariablesByNameDict.ContainsKey( varName ) )
+				{
+					m_vertexLocalVariablesByNameDict.Add( varName, property );
+				}
 
 				m_vertexLocalVariablesList.Add( m_vertexLocalVariablesDict[ value ] );
-				m_vertexLocalVariables += "\t\t\t" + value + '\n';
+				m_vertexLocalVariables.Append( "\t\t\t" ).Append( BranchScopeIndentOnSide( VertexScopeSide ) ).Append( value ).Append( '\n' );
+				RecordLineScope( ref m_vertexLocalVariablesScopes, value, CurrentBranchScopeOnSide( VertexScopeSide ), alreadyPresent );
 				m_dirtyVertexLocalVariables = true;
 				return true;
 			}
 			else
 			{
-				if( m_showDebugMessages ) UIUtils.ShowMessage( "AddToVertexLocalVariables:Attempting to add duplicate " + value, MessageSeverity.Warning );
+				if ( m_showDebugMessages ) UIUtils.ShowMessage( "AddToVertexLocalVariables:Attempting to add duplicate " + value, MessageSeverity.Warning );
 			}
 
 			return false;
@@ -1559,7 +2119,7 @@ namespace AmplifyShaderEditor
 		public void ClearVertexLocalVariables()
 		{
 			//m_vertexLocalVariablesDict.Clear();
-			m_vertexLocalVariables = string.Empty;
+			m_vertexLocalVariables.Length = 0;
 			m_dirtyVertexLocalVariables = false;
 		}
 
@@ -1574,7 +2134,9 @@ namespace AmplifyShaderEditor
 			if( !m_localFunctions.ContainsKey( header ) )
 			{
 				m_localFunctions.Add( header, body );
-				m_functionsList.Add( new PropertyDataCollector( -1, body.Replace( "\t\t", string.Empty ) ) );
+				// @diogo: FunctionsList feeds templates, which supply their own tag indent; the IOUtils
+				// function builders hardcode the surface indent, so re-derive it from brace depth (#365).
+				m_functionsList.Add( new PropertyDataCollector( -1, IOUtils.ReindentByBraceDepth( body ) ) );
 				m_functions += "\n" + body + "\n";
 				m_dirtyFunctions = true;
 			}
@@ -1608,11 +2170,43 @@ namespace AmplifyShaderEditor
 			return m_localFunctions.ContainsKey( functionId );
 		}
 
+		public bool HasStruct( string typeName )
+		{
+			return m_localStructs.ContainsKey( typeName );
+		}
+
+		// @diogo: a struct declaration rides the functions region: it is the last thing written before
+		// the functions that would take the type, and every template already carries that tag. Inserted
+		// ahead of the collected functions rather than appended, for the same reason
+		public bool AddStruct( int nodeId, string typeName, string declaration )
+		{
+			if ( string.IsNullOrEmpty( typeName ) || string.IsNullOrEmpty( declaration ) )
+			{
+				return false;
+			}
+
+			string collected;
+			if ( m_localStructs.TryGetValue( typeName, out collected ) )
+			{
+				// @diogo: one name cannot cover two bodies - both would be emitted and neither compiles
+				return collected.Equals( declaration );
+			}
+
+			m_localStructs.Add( typeName, declaration );
+
+			string body = IOUtils.ReindentByBraceDepth( declaration );
+			m_functionsList.Insert( m_localStructs.Count - 1, new PropertyDataCollector( nodeId, body ) );
+			m_structs += "\n\t\t" + body.Replace( "\n", "\n\t\t" ) + "\n";
+			m_dirtyFunctions = true;
+			return true;
+		}
+
 		public void AddFunction( string functionId, string body )
 		{
 			if( !m_localFunctions.ContainsKey( functionId ) )
 			{
-				m_functionsList.Add( new PropertyDataCollector( -1, body ) );
+				// @diogo: see AddFunctions - templates need the hardcoded surface indent re-derived (#365).
+				m_functionsList.Add( new PropertyDataCollector( -1, IOUtils.ReindentByBraceDepth( body ) ) );
 
 				m_localFunctions.Add( functionId, body );
 				m_functions += "\n" + body + "\n";
@@ -1738,7 +2332,8 @@ namespace AmplifyShaderEditor
 
 		public void UpdateShaderImporter( ref Shader shader )
 		{
-			ShaderImporter importer = (ShaderImporter)ShaderImporter.GetAtPath( AssetDatabase.GetAssetPath( shader ) );
+			string path = AssetDatabase.GetAssetPath( shader );
+			ShaderImporter importer = (ShaderImporter)ShaderImporter.GetAtPath( path );
 			if( m_propertyNodes.Count > 0 )
 			{
 				try
@@ -1762,7 +2357,18 @@ namespace AmplifyShaderEditor
 					Debug.LogException( e );
 				}
 			}
-			importer.SaveAndReimport();
+			if ( AmplifyShaderEditorWindow.IsBatchProcessing )
+			{
+				// During a batch resave, SaveAndReimport would force an immediate per-shader asset import,
+				// flickering Unity's "Importing assets" dialog once per shader. Persist any importer change
+				// ( default textures ) to the .meta without reimporting; the batch's StopAssetEditing imports
+				// all the resaved shaders together in a single pass at the end.
+				AssetDatabase.WriteImportSettingsIfDirty( path );
+			}
+			else
+			{
+				importer.SaveAndReimport();
+			}
 		}
 
 		public void AddCustomAppData( string value )
@@ -1817,12 +2423,6 @@ namespace AmplifyShaderEditor
 
 			m_instancedPropertiesList.Clear();
 			m_instancedPropertiesList = null;
-
-			m_dotsPropertiesList.Clear();
-			m_dotsPropertiesList = null;
-
-			m_dotsDefinesList.Clear();
-			m_dotsDefinesList = null;
 
 			m_uniformsList.Clear();
 			m_uniformsList = null;
@@ -1890,9 +2490,6 @@ namespace AmplifyShaderEditor
 			m_propertiesDict.Clear();
 			m_propertiesDict = null;
 
-			m_dotsPropertiesDict.Clear();
-			m_dotsPropertiesDict = null;
-
 			m_instancedPropertiesDict.Clear();
 			m_instancedPropertiesDict = null;
 
@@ -1928,20 +2525,35 @@ namespace AmplifyShaderEditor
 			m_localVariablesDict.Clear();
 			m_localVariablesDict = null;
 
+			m_localVariablesByNameDict.Clear();
+			m_localVariablesByNameDict = null;
+
 			m_specialLocalVariablesDict.Clear();
 			m_specialLocalVariablesDict = null;
+
+			m_specialLocalVariablesByNameDict.Clear();
+			m_specialLocalVariablesByNameDict = null;
 
 			m_vertexLocalVariablesDict.Clear();
 			m_vertexLocalVariablesDict = null;
 
+			m_vertexLocalVariablesByNameDict.Clear();
+			m_vertexLocalVariablesByNameDict = null;
+
 			m_localFunctions.Clear();
 			m_localFunctions = null;
+
+			m_localStructs.Clear();
+			m_localStructs = null;
 
 			m_vertexDataDict.Clear();
 			m_vertexDataDict = null;
 
 			m_customOutputDict.Clear();
 			m_customOutputDict = null;
+
+			m_customOutputByNameDict.Clear();
+			m_customOutputByNameDict = null;
 
 			//templates
 			m_vertexInputList.Clear();
@@ -1973,6 +2585,23 @@ namespace AmplifyShaderEditor
 
 			m_packSlotsList.Clear();
 			m_packSlotsList = null;
+
+			// @diogo: a dangling ambient collector would have OutputPort validating against dead scopes (#365).
+			if ( ActiveScopeCollector == this )
+			{
+				ActiveScopeCollector = null;
+			}
+
+			m_branchScopeStacks = null;
+			m_branchScopeParents = null;
+			m_uniformBranchScopes = null;
+			m_branchScopeConditions = null;
+			m_localVariablesScopes = null;
+			m_specialLocalVariablesScopes = null;
+			m_vertexLocalVariablesScopes = null;
+			m_customOutputScopes = null;
+			m_divergenceHazardNodes = null;
+			m_outOfScopeValueNodes = null;
 		}
 
 		public string Inputs { get { return m_input; } }
@@ -1986,8 +2615,8 @@ namespace AmplifyShaderEditor
 		public string Pragmas { get { return m_pragmas; } }
 		public string Defines { get { return m_defines; } }
 		public string LocalVariables { get { return m_localVariables; } }
-		public string SpecialLocalVariables { get { return m_specialLocalVariables; } }
-		public string VertexLocalVariables { get { return m_vertexLocalVariables; } }
+		public string SpecialLocalVariables { get { return m_specialLocalVariables.ToString(); } }
+		public string VertexLocalVariables { get { return m_vertexLocalVariables.ToString(); } }
 		//public string VertexLocalVariablesFromList
 		//{
 		//	get
@@ -2002,8 +2631,9 @@ namespace AmplifyShaderEditor
 		//	}
 		//}
 		public string VertexData { get { return m_vertexData; } }
-		public string CustomOutput { get { return m_customOutput; } }
-		public string Functions { get { return m_functions; } }
+		public string CustomOutput { get { return m_customOutput.ToString(); } }
+		// @diogo: struct declarations lead, since a function that takes one is written after it
+		public string Functions { get { return m_structs + m_functions; } }
 		public string GrabPass { get { return m_grabPass; } }
 		public bool DirtyAppData { get { return m_dirtyAppData; } }
 		public bool DirtyInstructions { get { return m_dirtyInstructions; } }
@@ -2060,6 +2690,8 @@ namespace AmplifyShaderEditor
 		public bool IsTemplate { get { return m_masterNodeCategory == AvailableShaderTypes.Template; } }
 
 		public bool IsSRP { get { return ( TemplateDataCollectorInstance.CurrentSRPType == TemplateSRPType.URP || TemplateDataCollectorInstance.CurrentSRPType == TemplateSRPType.HDRP ); } }
+		public bool IsURP { get { return ( TemplateDataCollectorInstance.CurrentSRPType == TemplateSRPType.URP ); } }
+		public bool IsHDRP { get { return ( TemplateDataCollectorInstance.CurrentSRPType == TemplateSRPType.HDRP ); } }
 
 		public AvailableShaderTypes MasterNodeCategory
 		{
@@ -2068,12 +2700,18 @@ namespace AmplifyShaderEditor
 		}
 
 		public string CurrentPassName
-		{ 
-			get 
+		{
+			get
 			{
 				var multiPassMasterNode = m_masterNode as TemplateMultiPassMasterNode;
 				return ( multiPassMasterNode != null ) ? multiPassMasterNode.PassName : string.Empty;
 			}
+		}
+
+		// Whether the current pass name contains a value, counting names it was renamed from.
+		public bool CurrentPassNameContains( string value )
+		{
+			return m_masterNode is TemplateMultiPassMasterNode multiPassMasterNode && multiPassMasterNode.Pass != null && multiPassMasterNode.Pass.NameContains( value );
 		}
 
 		/// <summary>
@@ -2280,9 +2918,10 @@ namespace AmplifyShaderEditor
 		public List<PropertyDataCollector> CustomInputList { get { return m_customInputList; } }
 		public List<PropertyDataCollector> PropertiesList { get { return m_propertiesList; } }
 		public List<PropertyDataCollector> InstancedPropertiesList { get { return m_instancedPropertiesList; } }
-		public List<PropertyDataCollector> DotsPropertiesList { get { return m_dotsPropertiesList; } }
-		public List<PropertyDataCollector> DotsDefinesList { get { return m_dotsDefinesList; } }
 		public List<PropertyDataCollector> UniformsList { get { return m_uniformsList; } }
+		public Dictionary<string, string> BorrowedSamplerValues { get { return m_borrowedSamplerValues; } }
+		public List<BorrowedSamplerData> BorrowedSamplerFallbacks { get { return m_borrowedSamplerFallbacks; } }
+		public Dictionary<string, int> PassWarnings { get { return m_passWarnings; } }
 		public List<PropertyDataCollector> MiscList { get { return m_additionalDirectivesList; } }
 		public List<PropertyDataCollector> BeforeNativeDirectivesList { get { return m_additionalDirectivesList.FindAll( obj => obj.OrderIndex < 0 ); } }
 		public List<PropertyDataCollector> AfterNativeDirectivesList { get { return m_additionalDirectivesList.FindAll( obj => obj.OrderIndex > 0 ); } }
@@ -2310,6 +2949,7 @@ namespace AmplifyShaderEditor
 		public List<string> InterpolatorList { get { return m_interpolatorsList; } }
 		public List<string> VertexInterpDeclList { get { return m_vertexInterpDeclList; } }
 		public TemplateDataCollector TemplateDataCollectorInstance { get { return m_templateDataCollector; } }
+		public MasterNode MasterNode { get { return m_masterNode; } }
 		public RenderPath CurrentRenderPath
 		{
 			get { return m_renderPath; }

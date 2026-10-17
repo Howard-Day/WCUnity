@@ -19,6 +19,14 @@ namespace AmplifyShaderEditor
 		public bool NoInterpolation;
 		public bool Sample;
 
+		// OR of the conditions of every value packed here; null when the slot is unconditional
+		[NonSerialized]
+		public InterpolatorCondition Condition;
+
+		// Struct field line held back until Condition is final, null once emitted or when emitted eagerly
+		[NonSerialized]
+		public string DeferredDeclaration;
+
 		public TemplateInterpElement( TemplateInterpElement other )
 		{
 			Semantic = other.Semantic;
@@ -31,6 +39,8 @@ namespace AmplifyShaderEditor
 			Name = other.Name;
 			NoInterpolation = other.NoInterpolation;
 			Sample = other.Sample;
+			Condition = other.Condition;
+			DeferredDeclaration = other.DeferredDeclaration;
 		}
 
 		public TemplateInterpElement( TemplateSemantics semantic )
@@ -124,6 +134,124 @@ namespace AmplifyShaderEditor
 				data = new TemplateVertexData( Semantic, type, Name, channels );
 			}
 			return data;
+		}
+	}
+
+	// Preprocessor condition of a keyword-gated interpolator: a disjunction of conjunctions of literals,
+	// "!" prefixing a negated one. Wherever a condition is stored, null means unconditional.
+	public sealed class InterpolatorCondition
+	{
+		// @diogo: past this the #if line stops paying for itself; widening to unconditional is always safe (#443)
+		private const int MaxTerms = 8;
+
+		private List<List<string>> m_terms = new List<List<string>>();
+
+		public string Expression { get; private set; }
+
+		private InterpolatorCondition() { }
+
+		public static InterpolatorCondition FromConjunction( List<string> literals )
+		{
+			InterpolatorCondition result = null;
+			if ( literals.Count > 0 )
+			{
+				List<string> term = new List<string>();
+				for ( int i = 0; i < literals.Count; i++ )
+				{
+					if ( !term.Contains( literals[ i ] ) )
+					{
+						term.Add( literals[ i ] );
+					}
+				}
+				term.Sort( string.CompareOrdinal );
+
+				result = new InterpolatorCondition();
+				result.m_terms.Add( term );
+				result.BuildExpression();
+			}
+			return result;
+		}
+
+		public static InterpolatorCondition Or( InterpolatorCondition a, InterpolatorCondition b )
+		{
+			InterpolatorCondition result = null;
+			if ( a != null && b != null )
+			{
+				List<List<string>> terms = new List<List<string>>( a.m_terms );
+				terms.AddRange( b.m_terms );
+				if ( Simplify( terms ) && terms.Count <= MaxTerms )
+				{
+					result = new InterpolatorCondition();
+					result.m_terms = terms;
+					result.BuildExpression();
+				}
+			}
+			return result;
+		}
+
+		public static bool AreEqual( InterpolatorCondition a, InterpolatorCondition b )
+		{
+			return ( a == null ) ? b == null : ( b != null && a.Expression == b.Expression );
+		}
+
+		// @diogo: absorption, plus merging two terms that differ only in one literal's sign. Returns false when the
+		// disjunction turned out always true: a merge emptied a term, and that is what null stands for
+		private static bool Simplify( List<List<string>> terms )
+		{
+			bool tautology = false;
+			bool changed = true;
+			while ( changed && !tautology )
+			{
+				changed = false;
+				for ( int i = 0; i < terms.Count && !changed; i++ )
+				{
+					for ( int j = 0; j < terms.Count && !changed; j++ )
+					{
+						if ( i != j )
+						{
+							if ( terms[ j ].TrueForAll( literal => terms[ i ].Contains( literal ) ) )
+							{
+								terms.RemoveAt( i );
+								changed = true;
+							}
+							else if ( terms[ i ].Count == terms[ j ].Count )
+							{
+								List<string> onlyInI = terms[ i ].FindAll( literal => !terms[ j ].Contains( literal ) );
+								if ( onlyInI.Count == 1 && terms[ j ].Contains( Negate( onlyInI[ 0 ] ) ) )
+								{
+									List<string> merged = new List<string>( terms[ i ] );
+									merged.Remove( onlyInI[ 0 ] );
+									tautology = merged.Count == 0;
+									terms[ i ] = merged;
+									terms.RemoveAt( j );
+									changed = true;
+								}
+							}
+						}
+					}
+				}
+			}
+			if ( !tautology )
+			{
+				terms.Sort( ( x, y ) => string.CompareOrdinal( string.Join( " && ", x ), string.Join( " && ", y ) ) );
+			}
+			return !tautology;
+		}
+
+		private static string Negate( string literal )
+		{
+			return literal.StartsWith( "!" ) ? literal.Substring( 1 ) : "!" + literal;
+		}
+
+		private void BuildExpression()
+		{
+			List<string> parts = new List<string>();
+			for ( int i = 0; i < m_terms.Count; i++ )
+			{
+				string conjunction = string.Join( " && ", m_terms[ i ] );
+				parts.Add( ( m_terms.Count > 1 && m_terms[ i ].Count > 1 ) ? "( " + conjunction + " )" : conjunction );
+			}
+			Expression = string.Join( " || ", parts );
 		}
 	}
 

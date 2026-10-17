@@ -8,7 +8,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[System.Serializable]
-	[NodeAttributes( "Vector3", "Constants And Properties", "Vector3 property", null, KeyCode.Alpha3 )]
+	[NodeAttributes( "Vector3", "Constants And Properties", "Vector3 property", null, KeyCode.Alpha3, tags: "vec3 v3 3" )]
 	public sealed class Vector3Node : PropertyNode
 	{
 		[SerializeField]
@@ -23,6 +23,10 @@ namespace AmplifyShaderEditor
 
 		public Vector3Node() : base() { }
 		public Vector3Node( int uniqueId, float x, float y, float width, float height ) : base( uniqueId, x, y, width, height ) { }
+
+		// @diogo: preview frag returns a single constant value, independent of UV (QA #5).
+		public override bool ConstantPreview { get { return true; } }
+
 		protected override void CommonInit( int uniqueId )
 		{
 			base.CommonInit( uniqueId );
@@ -33,6 +37,7 @@ namespace AmplifyShaderEditor
 			m_previewShaderGUID = "8a44d38f06246bf48944b3f314bc7920";
 			m_srpBatcherCompatible = true;
 			m_showHybridInstancedUI = true;
+			m_canBeReferenced = true;
 		}
 
 		public override void CopyDefaultsToMaterial()
@@ -151,9 +156,9 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		public override void OnNodeLayout( DrawInfo drawInfo )
+		public override void OnNodeLayout( DrawInfo drawInfo, NodeUpdateCache cache )
 		{
-			base.OnNodeLayout( drawInfo );
+			base.OnNodeLayout( drawInfo, cache );
 
 			m_propertyDrawPos = m_remainingBox;
 			m_propertyDrawPos.x = m_remainingBox.x - LabelWidth * drawInfo.InvertedZoom;
@@ -164,6 +169,12 @@ namespace AmplifyShaderEditor
 		public override void DrawGUIControls( DrawInfo drawInfo )
 		{
 			base.DrawGUIControls( drawInfo );
+
+			if( IsPropertyReference )
+			{
+				m_isEditingFields = false;
+				return;
+			}
 
 			if( drawInfo.CurrentEventType != EventType.MouseDown )
 				return;
@@ -196,6 +207,13 @@ namespace AmplifyShaderEditor
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
 		{
+			PropertyNode reference = PropertyReference;
+			if( reference != null )
+			{
+				OrderIndex = reference.RawOrderIndex;
+				return reference.GenerateShaderForOutput( outputId, ref dataCollector, ignoreLocalvar );
+			}
+
 			base.GenerateShaderForOutput( outputId, ref dataCollector, ignoreLocalvar );
 			m_precisionString = UIUtils.PrecisionWirePortToCgType( CurrentPrecisionType, m_outputPorts[ 0 ].DataType );
 
@@ -218,7 +236,7 @@ namespace AmplifyShaderEditor
 			{
 				case 0:
 				{
-					result = m_precisionString + "(" + value.x + "," + value.y + "," + value.z + ")";
+					result = m_precisionString + "( " + value.x + ", " + value.y + ", " + value.z + " )";
 				}
 				break;
 
@@ -251,13 +269,14 @@ namespace AmplifyShaderEditor
 			string x = UIUtils.PropertyFloatToString( m_defaultValue.x );
 			string y = UIUtils.PropertyFloatToString( m_defaultValue.y );
 			string z = UIUtils.PropertyFloatToString( m_defaultValue.z );
-			return PropertyAttributes + m_propertyName + "(\"" + m_propertyInspectorName + "\", Vector) = (" + x + "," + y + "," + z + ",0)";
+			return PropertyAttributes + PropertyAttributesSeparator + m_propertyName + "( \"" + m_propertyInspectorName +
+				"\", Vector ) = ( " + x + ", " + y + ", " + z + ", 0 )";
 		}
 
 		public override void UpdateMaterial( Material mat )
 		{
 			base.UpdateMaterial( mat );
-			if( UIUtils.IsProperty( m_currentParameterType ) && !InsideShaderFunction )
+			if( UIUtils.IsProperty( m_currentParameterType ) && !InsideShaderFunction && !IsPropertyReference )
 			{
 				mat.SetVector( m_propertyName, m_materialValue );
 			}
@@ -291,9 +310,31 @@ namespace AmplifyShaderEditor
 
 		public override void WriteToString( ref string nodeInfo, ref string connectionsInfo )
 		{
-			base.WriteToString( ref nodeInfo, ref connectionsInfo );			
+			base.WriteToString( ref nodeInfo, ref connectionsInfo );
 			IOUtils.AddFieldValueToString( ref nodeInfo, IOUtils.Vector3ToString( m_defaultValue ) );
 			IOUtils.AddFieldValueToString( ref nodeInfo, IOUtils.Vector3ToString( m_materialValue ) );
+		}
+
+		protected override void CopyPropertyReferenceValues( PropertyNode reference )
+		{
+			Vector3Node node = reference as Vector3Node;
+			if( node == null )
+				return;
+
+			if( m_defaultValue != node.m_defaultValue || m_materialValue != node.m_materialValue )
+			{
+				m_defaultValue = node.m_defaultValue;
+				m_materialValue = node.m_materialValue;
+				PreviewIsDirty = true;
+			}
+		}
+
+		public override Vector4 TypeChangeDefaultValue { get { return new Vector4( m_defaultValue.x, m_defaultValue.y, m_defaultValue.z, 0 ); } }
+		public override Vector4 TypeChangeMaterialValue { get { return new Vector4( m_materialValue.x, m_materialValue.y, m_materialValue.z, 0 ); } }
+		public override void SetTypeChangeValues( Vector4 defaultValue, Vector4 materialValue )
+		{
+			m_defaultValue = new Vector3( defaultValue.x, defaultValue.y, defaultValue.z );
+			m_materialValue = new Vector3( materialValue.x, materialValue.y, materialValue.z );
 		}
 
 		public override void SetGlobalValue() { Shader.SetGlobalVector( m_propertyName, m_defaultValue ); }

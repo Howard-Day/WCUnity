@@ -2,10 +2,10 @@
 {
 	Properties
 	{
-		_A("_RGB", 2D) = "white" {}
-		_B("_RGB", 2D) = "white" {}
-		_C("_RGB", 2D) = "white" {}
-		_D ("_RGB", 2D) = "white" {}
+		_A("_RGB", 2DArray) = "white" {}
+		_B("_RGB", 2DArray) = "white" {}
+		_C("_RGB", 2DArray) = "white" {}
+		_D ("_RGB", 2DArray) = "white" {}
 		_UseTileScale("_UseTileScale", Float) = 0
 		_TileScale ("_TileScale", Int) = 1
 		_MinkowskiPower("_MinkowskiPower", Float) = 0
@@ -19,10 +19,11 @@
 	{
 		Tags { "RenderType"="Opaque" }
 		CGINCLUDE
-		sampler2D _A;
-		sampler2D _B;
-		sampler2D _C;
-		sampler2D _D;
+		#include "Preview.cginc"
+		ASE_PORT( _A );
+		ASE_PORT( _B );
+		ASE_PORT( _C );
+		ASE_PORT( _D );
 		float _UseTileScale = 0;
 		int _TileScale = 1;
 		float _MinkowskiPower = 1;
@@ -154,8 +155,10 @@
 		{
 			CGPROGRAM
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#pragma vertex vert_img
 			#pragma fragment frag
+			#pragma target 3.5
 
 			inline float2 UnityVoronoiRandomVector (float2 UV, float offset)
 			{
@@ -193,9 +196,9 @@
 			{
 				float2 uvValue = i.uv;
 				if (_CustomUVs == 1)
-						uvValue = tex2D(_A, i.uv).rg;
-				float angleOffset = tex2D(_B, i.uv).r;
-				float cellDensity = tex2D(_C, i.uv).r;
+						uvValue = ASE_SAMPLE_PORT( _A, i.uv).rg;
+				float angleOffset = ASE_SAMPLE_PORT( _B, i.uv).r;
+				float cellDensity = ASE_SAMPLE_PORT( _C, i.uv).r;
 				float2 uv = 0;
 				float3 voronoiVal = UnityVoronoi( uvValue, angleOffset , cellDensity, uv );
 				if( _PreviewID == 2)
@@ -212,17 +215,19 @@
 		{
 			CGPROGRAM
 			#include "UnityCG.cginc"
+			#include "Preview.cginc"
 			#pragma vertex vert_img
 			#pragma fragment frag
+			#pragma target 3.5
 
 			float4 frag (v2f_img i) : SV_Target
 			{
 				float2 uvValue = i.uv;
 				if (_CustomUVs == 1)
-						uvValue = tex2D(_A, i.uv).rg;
-				float time = tex2D (_B, i.uv).r;
-				float scale = tex2D (_C, i.uv).r;
-				float smoothness = tex2D (_D, i.uv).r;
+						uvValue = ASE_SAMPLE_PORT( _A, i.uv).rg;
+				float time = ASE_SAMPLE_PORT( _B, i.uv).r;
+				float scale = ASE_SAMPLE_PORT( _C, i.uv).r;
+				float smoothness = ASE_SAMPLE_PORT( _D, i.uv).r;
 				
 				float2 id = 0;
 				float2 uv = 0;

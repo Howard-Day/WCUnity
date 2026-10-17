@@ -1,39 +1,19 @@
 // Amplify Shader Editor - Visual Shader Editing Tool
 // Copyright (c) Amplify Creations, Lda <info@amplify.pt>
 
+using UnityEditor;
+
 namespace AmplifyShaderEditor
 {
 	// Catch when scene is saved (Ctr+S) and also save ase shader
 	public class SceneSaveCallback : UnityEditor.AssetModificationProcessor
 	{
-		private const string UnityStr = ".unity";
-
 		static string[] OnWillSaveAssets( string[] paths )
 		{
-			if( !Preferences.User.UpdateOnSceneSave )
-				return paths;
-
-			bool canSave = false;
-
-			if ( paths.Length == 0 )
+			if ( Preferences.User.UpdateOnSceneSave && UIUtils.CurrentWindow != null && EditorWindow.focusedWindow == UIUtils.CurrentWindow )
 			{
-				canSave = true;
-			}
-			else
-			{
-				for ( int i = 0; i < paths.Length; i++ )
-				{
-					// Only save shader when saving scenes
-					if ( !string.IsNullOrEmpty( paths[ i ] ) && paths[ i ].Contains( UnityStr ) )
-					{
-						canSave = true;
-						break;
-					}
-				}
-			}
-			if ( canSave && UIUtils.CurrentWindow )
 				UIUtils.CurrentWindow.SetCtrlSCallback( false );
-
+			}
 			return paths;
 		}
 	}
